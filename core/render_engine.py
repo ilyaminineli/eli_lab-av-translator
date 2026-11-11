@@ -131,18 +131,6 @@ class RenderEngine:
             if layer.id in self._pending_generator_errors:
                 self._generator_errors[layer.id] = self._pending_generator_errors.pop(layer.id)
                 self._generator_requested.pop(layer.id, None)
-            # If the static fingerprint changed, keep the last successful texture
-            # visible until a replacement snapshot is ready.
-            pending = self._pending_generator_textures.get(layer.id)
-            if pending is not None:
-                fingerprint, pixels = pending
-                if self._generator_signatures.get(layer.id) != fingerprint:
-                    self.compositor.update_texture(source_id, pixels)
-                    uploaded_bytes += int(pixels.nbytes)
-                    self._generator_signatures[layer.id] = fingerprint
-                    self._generator_sources[layer.id] = source_id
-                self._pending_generator_textures.pop(layer.id, None)
-
             try:
                 from generators.rasterizer import GeneratorRasterizer
 
@@ -151,9 +139,19 @@ class RenderEngine:
                 self._generator_errors[layer.id] = str(exc)
                 continue
 
+            # Ignore queued results for a settings revision that is no longer
+            # current; otherwise an old completion could briefly replace newer text.
+            pending = self._pending_generator_textures.pop(layer.id, None)
+            if pending is not None and pending[0] == fingerprint:
+                if self._generator_signatures.get(layer.id) != fingerprint:
+                    self.compositor.update_texture(source_id, pending[1])
+                    uploaded_bytes += int(pending[1].nbytes)
+                    self._generator_signatures[layer.id] = fingerprint
+                    self._generator_sources[layer.id] = source_id
+                    self._generator_errors.pop(layer.id, None)
+
             if (
                     self._generator_signatures.get(layer.id) == fingerprint
-                    or (pending is not None and pending[0] == fingerprint)
                     or self._generator_requested.get(layer.id) == fingerprint
                     or self._rejected_generator_fingerprints.get(layer.id) == fingerprint
             ):
