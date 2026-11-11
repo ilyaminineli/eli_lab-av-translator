@@ -540,6 +540,11 @@ class GeneratorsPanel(QWidget):
             layer.id,
             generator_settings=normalized,
         )
+        # Advance the shared revision now, not on the next renderer paint. A
+        # slow older text render must become stale as soon as this commit lands.
+        self.application.generator_raster_service.request(
+            layer.id, "text", normalized
+        )
         self._committed_text = str(normalized["text"])
         if layer.id == self.layer_combo.currentData():
             self.hint_label.setText(
@@ -1189,6 +1194,13 @@ class GeneratorsPanel(QWidget):
             layer.id,
             generator_settings=normalized,
         )
+        if generator_type == "text":
+            # Typography/layout settings are part of the same versioned text
+            # snapshot as the committed string. Animation-only changes dedupe
+            # because the raster fingerprint excludes GPU-evaluated properties.
+            self.application.generator_raster_service.request(
+                layer.id, generator_type, normalized
+            )
         self.manual_target_changed.emit("generator.*")
         self.composition_changed.emit()
         self.hint_label.setText(

@@ -54,12 +54,20 @@ class PerformanceView(QOpenGLWidget):
         self._timer.timeout.connect(self.update)
         self._timer.start()
 
-    def _on_generator_raster_ready(self, layer_id: str, fingerprint: str, pixels) -> None:
-        self.engine.accept_generator_raster(layer_id, fingerprint, pixels)
+    def _on_generator_raster_ready(
+            self, layer_id: str, revision: int, fingerprint: str, pixels
+    ) -> None:
+        self.engine.accept_generator_raster(
+            layer_id, revision, fingerprint, pixels
+        )
         self.update()
 
-    def _on_generator_raster_failed(self, layer_id: str, fingerprint: str, message: str) -> None:
-        self.engine.accept_generator_error(layer_id, fingerprint, message)
+    def _on_generator_raster_failed(
+            self, layer_id: str, revision: int, fingerprint: str, message: str
+    ) -> None:
+        self.engine.accept_generator_error(
+            layer_id, revision, fingerprint, message
+        )
         self.update()
 
     def initializeGL(self) -> None:

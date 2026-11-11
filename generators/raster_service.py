@@ -20,8 +20,8 @@ class GeneratorRasterService(QObject):
     their own OpenGL context is current.
     """
 
-    raster_ready = Signal(str, str, object)
-    raster_failed = Signal(str, str, str)
+    raster_ready = Signal(str, int, str, object)
+    raster_failed = Signal(str, int, str, str)
 
     def __init__(self, parent: QObject | None = None) -> None:
         super().__init__(parent)
@@ -30,7 +30,7 @@ class GeneratorRasterService(QObject):
             thread_name_prefix="generator-raster",
         )
         self._lock = threading.Lock()
-        self._generation: dict[str, int] = {}
+        self._latest_revision: dict[str, int] = {}
         self._latest_fingerprint: dict[str, str] = {}
         self._completed: dict[str, tuple[str, Any]] = {}
         self._futures: dict[str, Future] = {}
@@ -43,8 +43,13 @@ class GeneratorRasterService(QObject):
             layer_id: str,
             generator_type: str,
             settings: dict[str, Any],
-    ) -> str:
-        """Queue a normalized-by-rasterizer snapshot; supersede older requests."""
+    ) -> tuple[str, int]:
+        """Request a snapshot and return its per-layer, monotonically increasing revision.
+
+        A new fingerprint advances the revision immediately, before cancellation
+        or submission. This makes older completions stale as soon as a committed
+        text/font update reaches the service, even if the next paint has not run.
+        """
         snapshot = dict(settings)
         fingerprint = self._rasterizer.fingerprint_settings(
             generator_type, snapshot
@@ -53,18 +58,20 @@ class GeneratorRasterService(QObject):
         previous_to_cancel = None
         with self._lock:
             if self._closed:
-                return fingerprint
+                return fingerprint, self._latest_revision.get(layer_id, 0)
             if self._latest_fingerprint.get(layer_id) == fingerprint:
+                revision = self._latest_revision.get(layer_id, 0)
                 completed = self._completed.get(layer_id)
                 if completed is not None and completed[0] == fingerprint:
                     replay = completed[1]
                 else:
                     # The identical snapshot is already queued or running.
-                    return fingerprint
+                    return fingerprint, revision
             else:
-                generation = self._generation.get(layer_id, 0) + 1
-                self._generation[layer_id] = generation
+                revision = self._latest_revision.get(layer_id, 0) + 1
+                self._latest_revision[layer_id] = revision
                 self._latest_fingerprint[layer_id] = fingerprint
+                self._completed.pop(layer_id, None)
                 previous = self._futures.get(layer_id)
                 if previous is not None and not previous.done():
                     previous_to_cancel = previous
@@ -77,8 +84,8 @@ class GeneratorRasterService(QObject):
         if replay is not None:
             # A newly opened projector/preview renderer must be able to acquire
             # the last successful CPU snapshot without another QPainter pass.
-            self.raster_ready.emit(layer_id, fingerprint, replay)
-            return fingerprint
+            self.raster_ready.emit(layer_id, revision, fingerprint, replay)
+            return fingerprint, revision
 
         future = self._executor.submit(
             self._worker_rasterizer.render_settings,
@@ -87,53 +94,72 @@ class GeneratorRasterService(QObject):
             snapshot,
         )
         with self._lock:
-            if not self._closed and self._generation.get(layer_id) == generation:
+            if (
+                    not self._closed
+                    and self._latest_revision.get(layer_id) == revision
+                    and self._latest_fingerprint.get(layer_id) == fingerprint
+            ):
                 self._futures[layer_id] = future
         future.add_done_callback(
-            lambda result, key=layer_id, version=generation:
-            self._finish(key, version, result)
+            lambda result, key=layer_id, version=revision, expected=fingerprint:
+            self._finish(key, version, expected, result)
         )
-        return fingerprint
+        return fingerprint, revision
+
+    def is_current(self, layer_id: str, revision: int, fingerprint: str) -> bool:
+        """Return whether a completion still matches the newest requested snapshot."""
+        with self._lock:
+            return (
+                not self._closed
+                and self._latest_revision.get(layer_id) == revision
+                and self._latest_fingerprint.get(layer_id) == fingerprint
+            )
 
     def _finish(
             self,
             layer_id: str,
-            generation: int,
+            revision: int,
+            expected_fingerprint: str,
             future: Future,
     ) -> None:
         try:
             fingerprint, pixels = future.result()
         except Exception as exc:
             with self._lock:
-                current = not self._closed and (
-                    self._generation.get(layer_id) == generation
+                current = (
+                    not self._closed
+                    and self._latest_revision.get(layer_id) == revision
+                    and self._latest_fingerprint.get(layer_id) == expected_fingerprint
                 )
-                failure_fingerprint = self._latest_fingerprint.get(layer_id, "")
                 if self._futures.get(layer_id) is future:
                     self._futures.pop(layer_id, None)
             if current:
                 from concurrent.futures import CancelledError
 
                 if not isinstance(exc, CancelledError):
-                    self.raster_failed.emit(layer_id, failure_fingerprint, str(exc))
+                    self.raster_failed.emit(
+                        layer_id, revision, expected_fingerprint, str(exc)
+                    )
                     _LOG.exception("Generator rasterization failed for %s", layer_id)
             return
 
         with self._lock:
-            current = not self._closed and (
-                self._generation.get(layer_id) == generation
-                and self._latest_fingerprint.get(layer_id) == fingerprint
+            current = (
+                not self._closed
+                and self._latest_revision.get(layer_id) == revision
+                and self._latest_fingerprint.get(layer_id) == expected_fingerprint
+                and fingerprint == expected_fingerprint
             )
             if self._futures.get(layer_id) is future:
                 self._futures.pop(layer_id, None)
             if current:
                 self._completed[layer_id] = (fingerprint, pixels)
         if current:
-            self.raster_ready.emit(layer_id, fingerprint, pixels)
+            self.raster_ready.emit(layer_id, revision, fingerprint, pixels)
 
     def invalidate(self, layer_id: str) -> None:
         with self._lock:
-            self._generation[layer_id] = self._generation.get(layer_id, 0) + 1
+            self._latest_revision[layer_id] = self._latest_revision.get(layer_id, 0) + 1
             self._latest_fingerprint.pop(layer_id, None)
             self._completed.pop(layer_id, None)
             future = self._futures.pop(layer_id, None)
@@ -143,8 +169,8 @@ class GeneratorRasterService(QObject):
     def invalidate_missing(self, active_layer_ids: set[str]) -> None:
         futures_to_cancel: list[Future] = []
         with self._lock:
-            for layer_id in set(self._generation) - active_layer_ids:
-                self._generation[layer_id] = self._generation.get(layer_id, 0) + 1
+            for layer_id in set(self._latest_revision) - active_layer_ids:
+                self._latest_revision[layer_id] = self._latest_revision.get(layer_id, 0) + 1
                 self._latest_fingerprint.pop(layer_id, None)
                 self._completed.pop(layer_id, None)
                 future = self._futures.pop(layer_id, None)
@@ -158,7 +184,7 @@ class GeneratorRasterService(QObject):
             if self._closed:
                 return
             self._closed = True
-            self._generation.clear()
+            self._latest_revision.clear()
             self._latest_fingerprint.clear()
             self._completed.clear()
             futures = tuple(self._futures.values())
