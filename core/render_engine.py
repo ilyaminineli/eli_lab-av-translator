@@ -33,6 +33,8 @@ class RenderEngine:
         self._generator_signatures: dict[str, str] = {}
         self._generator_sources: dict[str, str] = {}
         self._generator_errors: dict[str, str] = {}
+        self._pending_generator_textures: dict[str, tuple[str, Any]] = {}
+        self._generator_requested: dict[str, str] = {}
 
     def initialize(self) -> None:
         try:
@@ -86,6 +88,9 @@ class RenderEngine:
             if layer.source_type == "generator" and layer.visible
         ]
         active_generator_ids = {layer.id for layer in generator_layers}
+        # CPU rasterization is shared by all output renderers and happens on a
+        # worker. This context only uploads completed pixel snapshots.
+        service = getattr(composition, "_generator_raster_service", None)
         for layer in generator_layers:
             source_id = layer.source_id or f"generator:{layer.id}"
             if layer.generator_type == "particles":
@@ -93,28 +98,38 @@ class RenderEngine:
                 self._generator_signatures.pop(layer.id, None)
                 self._generator_sources.pop(layer.id, None)
                 self._generator_errors.pop(layer.id, None)
-                continue
-            try:
-                fingerprint, pixels = self.generator_rasterizer.render(layer)
-            except Exception as exc:
-                message = str(exc)
-                if self._generator_errors.get(layer.id) != message:
-                    _LOG.exception(
-                        "Generator layer %s failed to render; skipping this layer",
-                        layer.name,
-                    )
-                self._generator_errors[layer.id] = message
-                self.compositor.remove_texture(source_id)
-                self._generator_signatures.pop(layer.id, None)
-                self._generator_sources.pop(layer.id, None)
+                self._pending_generator_textures.pop(layer.id, None)
                 continue
 
-            self._generator_errors.pop(layer.id, None)
-            if self._generator_signatures.get(layer.id) != fingerprint:
-                self.compositor.update_texture(source_id, pixels)
-                uploaded_bytes += int(pixels.nbytes)
-                self._generator_signatures[layer.id] = fingerprint
-                self._generator_sources[layer.id] = source_id
+            pending = self._pending_generator_textures.get(layer.id)
+            if pending is not None:
+                fingerprint, pixels = pending
+                if self._generator_signatures.get(layer.id) != fingerprint:
+                    self.compositor.update_texture(source_id, pixels)
+                    uploaded_bytes += int(pixels.nbytes)
+                    self._generator_signatures[layer.id] = fingerprint
+                    self._generator_sources[layer.id] = source_id
+                self._pending_generator_textures.pop(layer.id, None)
+
+            try:
+                from generators.rasterizer import GeneratorRasterizer
+
+                fingerprint = GeneratorRasterizer.fingerprint(layer)
+            except Exception as exc:
+                self._generator_errors[layer.id] = str(exc)
+                continue
+
+            if (
+                    self._generator_signatures.get(layer.id) == fingerprint
+                    or (pending is not None and pending[0] == fingerprint)
+                    or self._generator_requested.get(layer.id) == fingerprint
+            ):
+                continue
+            request = getattr(self, "_request_generator_raster", None)
+            if request is not None:
+                self._generator_requested[layer.id] = fingerprint
+                request(layer.id, layer.generator_type or "geometry",
+                        dict(layer.generator_settings))
 
         tracked_generator_ids = (
                 set(self._generator_signatures) | set(self._generator_errors)
@@ -126,7 +141,16 @@ class RenderEngine:
                 self.compositor.remove_texture(source_id)
             self._generator_signatures.pop(layer_id, None)
             self._generator_errors.pop(layer_id, None)
-        self.generator_rasterizer.remove_missing(active_generator_ids)
+        self._pending_generator_textures = {
+            layer_id: value
+            for layer_id, value in self._pending_generator_textures.items()
+            if layer_id in active_generator_ids
+        }
+        self._generator_requested = {
+            layer_id: value
+            for layer_id, value in self._generator_requested.items()
+            if layer_id in active_generator_ids
+        }
 
         # Dispose textures for overlay layers removed from the composition.
         active_source_ids = {
@@ -164,5 +188,7 @@ class RenderEngine:
         self._generator_sources.clear()
         self._generator_errors.clear()
         self.generator_rasterizer.clear()
+        self._pending_generator_textures.clear()
+        self._generator_requested.clear()
         self.context = None
         self.initialized = False
