@@ -27,6 +27,7 @@ class RenderEngine:
         self.last_composite_ms = 0.0
         self.last_upload_bytes = 0
         self.raster_service = raster_service
+        self._fallback_rasterizer = None
         # Keep shader phase small and stable during long performances.
         self._time_origin = time.perf_counter()
         self._generator_signatures: dict[str, str] = {}
@@ -165,6 +166,19 @@ class RenderEngine:
                 )
                 if requested != fingerprint:
                     self._generator_requested[layer.id] = requested
+            else:
+                # Preserve standalone RenderEngine usage for callers/tests that
+                # do not provide the application-owned background service.
+                from generators.rasterizer import GeneratorRasterizer
+
+                if self._fallback_rasterizer is None:
+                    self._fallback_rasterizer = GeneratorRasterizer()
+                rendered_fingerprint, pixels = self._fallback_rasterizer.render(layer)
+                if self._generator_signatures.get(layer.id) != rendered_fingerprint:
+                    self.compositor.update_texture(source_id, pixels)
+                    uploaded_bytes += int(pixels.nbytes)
+                    self._generator_signatures[layer.id] = rendered_fingerprint
+                    self._generator_sources[layer.id] = source_id
 
         tracked_generator_ids = (
                 set(self._generator_signatures)
@@ -237,5 +251,8 @@ class RenderEngine:
         self._pending_generator_errors.clear()
         self._active_generator_ids.clear()
         self._rejected_generator_fingerprints.clear()
+        if self._fallback_rasterizer is not None:
+            self._fallback_rasterizer.clear()
+            self._fallback_rasterizer = None
         self.context = None
         self.initialized = False
