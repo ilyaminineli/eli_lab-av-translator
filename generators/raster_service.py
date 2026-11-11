@@ -32,6 +32,7 @@ class GeneratorRasterService(QObject):
         self._lock = threading.Lock()
         self._generation: dict[str, int] = {}
         self._latest_fingerprint: dict[str, str] = {}
+        self._completed: dict[str, tuple[str, Any]] = {}
         self._closed = False
         self._rasterizer = GeneratorRasterizer()
         self._worker_rasterizer = GeneratorRasterizer()
@@ -47,14 +48,26 @@ class GeneratorRasterService(QObject):
         fingerprint = self._rasterizer.fingerprint_settings(
             generator_type, snapshot
         )
+        replay = None
         with self._lock:
             if self._closed:
                 return fingerprint
             if self._latest_fingerprint.get(layer_id) == fingerprint:
-                return fingerprint
-            generation = self._generation.get(layer_id, 0) + 1
-            self._generation[layer_id] = generation
-            self._latest_fingerprint[layer_id] = fingerprint
+                completed = self._completed.get(layer_id)
+                if completed is not None and completed[0] == fingerprint:
+                    replay = completed[1]
+                else:
+                    return fingerprint
+            else:
+                generation = self._generation.get(layer_id, 0) + 1
+                self._generation[layer_id] = generation
+                self._latest_fingerprint[layer_id] = fingerprint
+
+        if replay is not None:
+            # A newly opened projector/preview renderer must be able to acquire
+            # the last successful CPU snapshot without another QPainter pass.
+            self.raster_ready.emit(layer_id, fingerprint, replay)
+            return fingerprint
 
         future = self._executor.submit(
             self._worker_rasterizer.render_settings,
@@ -92,6 +105,8 @@ class GeneratorRasterService(QObject):
                 self._generation.get(layer_id) == generation
                 and self._latest_fingerprint.get(layer_id) == fingerprint
             )
+            if current:
+                self._completed[layer_id] = (fingerprint, pixels)
         if current:
             self.raster_ready.emit(layer_id, fingerprint, pixels)
 
@@ -99,12 +114,14 @@ class GeneratorRasterService(QObject):
         with self._lock:
             self._generation[layer_id] = self._generation.get(layer_id, 0) + 1
             self._latest_fingerprint.pop(layer_id, None)
+            self._completed.pop(layer_id, None)
 
     def invalidate_missing(self, active_layer_ids: set[str]) -> None:
         with self._lock:
             for layer_id in set(self._generation) - active_layer_ids:
                 self._generation[layer_id] = self._generation.get(layer_id, 0) + 1
                 self._latest_fingerprint.pop(layer_id, None)
+                self._completed.pop(layer_id, None)
 
     def shutdown(self) -> None:
         with self._lock:
@@ -113,4 +130,5 @@ class GeneratorRasterService(QObject):
             self._closed = True
             self._generation.clear()
             self._latest_fingerprint.clear()
+            self._completed.clear()
         self._executor.shutdown(wait=False, cancel_futures=True)
