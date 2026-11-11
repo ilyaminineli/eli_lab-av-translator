@@ -88,6 +88,9 @@ class Application:
     """Coordinates application services without depending on Qt widgets."""
 
     def __init__(self) -> None:
+        from generators.raster_service import GeneratorRasterService
+
+        self.generator_raster_service = GeneratorRasterService()
         self.events = EventBus()
         self.control_events = ControlEventQueue()
         self.osc_receiver = OSCReceiver(self.submit_control_event)
@@ -2611,6 +2614,7 @@ class Application:
     def shutdown(self) -> None:
         if self.performance_mode.enabled:
             self.stop_performance_mode()
+        self.generator_raster_service.shutdown()
         self.midi_input.stop()
         self.osc_receiver.stop()
         self.control_events.clear()
