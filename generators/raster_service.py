@@ -50,6 +50,7 @@ class GeneratorRasterService(QObject):
             generator_type, snapshot
         )
         replay = None
+        previous_to_cancel = None
         with self._lock:
             if self._closed:
                 return fingerprint
@@ -66,8 +67,12 @@ class GeneratorRasterService(QObject):
                 self._latest_fingerprint[layer_id] = fingerprint
                 previous = self._futures.get(layer_id)
                 if previous is not None and not previous.done():
-                    # A queued obsolete raster should not hold up the latest text.
-                    previous.cancel()
+                    previous_to_cancel = previous
+
+        if previous_to_cancel is not None:
+            # Future callbacks can run synchronously inside cancel(), so never
+            # cancel while holding the service lock.
+            previous_to_cancel.cancel()
 
         if replay is not None:
             # A newly opened projector/preview renderer must be able to acquire
@@ -132,10 +137,11 @@ class GeneratorRasterService(QObject):
             self._latest_fingerprint.pop(layer_id, None)
             self._completed.pop(layer_id, None)
             future = self._futures.pop(layer_id, None)
-            if future is not None:
-                future.cancel()
+        if future is not None:
+            future.cancel()
 
     def invalidate_missing(self, active_layer_ids: set[str]) -> None:
+        futures_to_cancel: list[Future] = []
         with self._lock:
             for layer_id in set(self._generation) - active_layer_ids:
                 self._generation[layer_id] = self._generation.get(layer_id, 0) + 1
@@ -143,7 +149,9 @@ class GeneratorRasterService(QObject):
                 self._completed.pop(layer_id, None)
                 future = self._futures.pop(layer_id, None)
                 if future is not None:
-                    future.cancel()
+                    futures_to_cancel.append(future)
+        for future in futures_to_cancel:
+            future.cancel()
 
     def shutdown(self) -> None:
         with self._lock:
@@ -155,6 +163,6 @@ class GeneratorRasterService(QObject):
             self._completed.clear()
             futures = tuple(self._futures.values())
             self._futures.clear()
-            for future in futures:
-                future.cancel()
+        for future in futures:
+            future.cancel()
         self._executor.shutdown(wait=False, cancel_futures=True)
