@@ -536,13 +536,14 @@ class GeneratorsPanel(QWidget):
             generator_settings=normalized,
         )
         if layer.id == self.layer_combo.currentData():
+            if layer.id == self.layer_combo.currentData():
             self._committed_text = str(normalized["text"])
+            self.hint_label.setText(
+                f"Text committed · {len(self._committed_text)} characters. "
+                "Rasterization continues in the background."
+            )
         self.manual_target_changed.emit("generator.*")
         self.composition_changed.emit()
-        self.hint_label.setText(
-            f"Text committed · {len(self._committed_text)} characters. "
-            "Rasterization continues in the background."
-        )
 
     def randomize_text(self) -> None:
         language = str(self.random_language_combo.currentData())
