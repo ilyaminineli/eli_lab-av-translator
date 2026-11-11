@@ -509,6 +509,7 @@ class GeneratorsPanel(QWidget):
         """Commit the current editor buffer without rebuilding other controls."""
         self._text_commit_timer.stop()
         target_id = self._pending_text_layer_id
+        has_pending_buffer = target_id is not None
         self._pending_text_layer_id = None
         layer = (
             self.application.composition.get_layer(target_id)
@@ -523,7 +524,7 @@ class GeneratorsPanel(QWidget):
             return
         text_snapshot = (
             self._editing_text_buffer
-            if layer.id == self.layer_combo.currentData()
+            if has_pending_buffer or layer.id == self.layer_combo.currentData()
             else str(layer.generator_settings.get("text", ""))
         )
         snapshot = dict(layer.generator_settings)
