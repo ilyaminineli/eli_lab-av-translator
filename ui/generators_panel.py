@@ -546,6 +546,9 @@ class GeneratorsPanel(QWidget):
         self.composition_changed.emit()
 
     def randomize_text(self) -> None:
+        layer = self._selected_layer()
+        if layer is None or layer.generator_type != "text" or layer.locked:
+            return
         language = str(self.random_language_combo.currentData())
         theme = str(self.random_theme_combo.currentData())
         count = int(self.random_count_combo.currentData())
@@ -560,7 +563,10 @@ class GeneratorsPanel(QWidget):
         self.text_color_mode_combo.setCurrentIndex(
             max(0, self.text_color_mode_combo.findData("alternate"))
         )
-        self.apply_settings()
+        self._editing_text_buffer = self.text_edit.toPlainText()
+        self._pending_text_layer_id = layer.id
+        self.commit_text()
+        self._apply_non_text_settings()
 
     def add_overlay_media(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
