@@ -170,7 +170,9 @@ class GeneratorRasterService(QObject):
         futures_to_cancel: list[Future] = []
         with self._lock:
             for layer_id in set(self._latest_revision) - active_layer_ids:
-                self._latest_revision[layer_id] = self._latest_revision.get(layer_id, 0) + 1
+                self._latest_revision[layer_id] = (
+                    self._latest_revision.get(layer_id, 0) + 1
+                )
                 self._latest_fingerprint.pop(layer_id, None)
                 self._completed.pop(layer_id, None)
                 future = self._futures.pop(layer_id, None)
