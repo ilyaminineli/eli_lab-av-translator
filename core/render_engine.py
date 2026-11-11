@@ -119,11 +119,10 @@ class RenderEngine:
         self._active_generator_ids = active_generator_ids
         # CPU rasterization is shared by all output renderers and happens on a
         # worker. This context only uploads completed pixel snapshots.
-        for layer_id, message in tuple(self._pending_generator_errors.items()):
-            self._generator_errors[layer_id] = message
-            self._pending_generator_errors.pop(layer_id, None)
         for layer in generator_layers:
             source_id = layer.source_id or f"generator:{layer.id}"
+            if layer.id in self._pending_generator_errors:
+                self._generator_errors[layer.id] = self._pending_generator_errors.pop(layer.id)
             if layer.generator_type == "particles":
                 self.compositor.remove_texture(source_id)
                 self._generator_signatures.pop(layer.id, None)
