@@ -7,7 +7,6 @@ from typing import Any
 from config import OPENGL_REQUIREMENT
 from core.composition import Composition
 from effects.settings import EffectSettings
-from generators.rasterizer import GeneratorRasterizer
 from rendering.compositor import Compositor
 
 _LOG = logging.getLogger(__name__)
