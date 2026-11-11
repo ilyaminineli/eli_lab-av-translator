@@ -52,7 +52,12 @@ class RenderEngine:
         self._pending_generator_errors.pop(layer_id, None)
         self._rejected_generator_fingerprints.pop(layer_id, None)
 
-    def accept_generator_error(self, layer_id: str, message: str) -> None:
+    def accept_generator_error(
+            self,
+            layer_id: str,
+            fingerprint: str,
+            message: str,
+    ) -> None:
         if layer_id not in self._active_generator_ids:
             return
         self._generator_requested.pop(layer_id, None)
@@ -128,6 +133,8 @@ class RenderEngine:
                 self._pending_generator_textures.pop(layer.id, None)
                 continue
 
+            # If the static fingerprint changed, keep the last successful texture
+            # visible until a replacement snapshot is ready.
             pending = self._pending_generator_textures.get(layer.id)
             if pending is not None:
                 fingerprint, pixels = pending
@@ -162,7 +169,11 @@ class RenderEngine:
                 )
 
         tracked_generator_ids = (
-                set(self._generator_signatures) | set(self._generator_errors)
+                set(self._generator_signatures)
+                | set(self._generator_errors)
+                | set(self._generator_requested)
+                | set(self._pending_generator_textures)
+                | set(self._pending_generator_errors)
         )
         removed_ids = tracked_generator_ids - active_generator_ids
         for layer_id in removed_ids:
