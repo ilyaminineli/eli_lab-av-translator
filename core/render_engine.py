@@ -127,6 +127,9 @@ class RenderEngine:
                 self._generator_sources.pop(layer.id, None)
                 self._generator_errors.pop(layer.id, None)
                 self._pending_generator_textures.pop(layer.id, None)
+                self._pending_generator_errors.pop(layer.id, None)
+                self._generator_requested.pop(layer.id, None)
+                self._rejected_generator_fingerprints.pop(layer.id, None)
                 continue
 
             if layer.id in self._pending_generator_errors:
