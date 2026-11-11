@@ -121,8 +121,6 @@ class RenderEngine:
         # worker. This context only uploads completed pixel snapshots.
         for layer in generator_layers:
             source_id = layer.source_id or f"generator:{layer.id}"
-            if layer.id in self._pending_generator_errors:
-                self._generator_errors[layer.id] = self._pending_generator_errors.pop(layer.id)
             if layer.generator_type == "particles":
                 self.compositor.remove_texture(source_id)
                 self._generator_signatures.pop(layer.id, None)
@@ -131,6 +129,9 @@ class RenderEngine:
                 self._pending_generator_textures.pop(layer.id, None)
                 continue
 
+            if layer.id in self._pending_generator_errors:
+                self._generator_errors[layer.id] = self._pending_generator_errors.pop(layer.id)
+                self._generator_requested.pop(layer.id, None)
             # If the static fingerprint changed, keep the last successful texture
             # visible until a replacement snapshot is ready.
             pending = self._pending_generator_textures.get(layer.id)
