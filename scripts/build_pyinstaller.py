@@ -2,12 +2,11 @@ from __future__ import annotations
 
 import argparse
 import hashlib
-import importlib.util
 import os
 import struct
 import subprocess
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -135,7 +134,10 @@ def main() -> int:
             "and Windows SDK must be installed.",
             flush=True,
         )
-        run([python, "-m", "pip", "install", "--no-binary=python-rtmidi", "-r", str(MIDI_REQUIREMENTS)])
+        run([
+            python, "-m", "pip", "install",
+            "--no-binary=python-rtmidi", "-r", str(MIDI_REQUIREMENTS),
+        ])
     run([python, "-m", "pip", "check"])
 
     # Verify the expected runtime imports before starting packaging.
@@ -144,7 +146,9 @@ def main() -> int:
         "import PySide6, moderngl, glcontext, av, numpy, soundcard, pythonosc, mido; "
         "print('Core runtime imports: PASS'); "
         "import importlib.util; "
-        "print('Native MIDI backend:', 'available' if importlib.util.find_spec('rtmidi') else 'not installed (optional)')",
+        "print('Native MIDI backend:', "
+        "'available' if importlib.util.find_spec('rtmidi') "
+        "else 'not installed (optional)')",
     ])
 
     run([
@@ -187,7 +191,7 @@ def main() -> int:
     digest = sha256_file(EXE)
     report = (
         "eli_lab AV Translator — PyInstaller build report\n"
-        f"Built (UTC): {datetime.now(timezone.utc).isoformat()}\n"
+        f"Built (UTC): {datetime.now(UTC).isoformat()}\n"
         f"Python: {sys.version.split()[0]} x64\n"
         f"PyInstaller: {__import__('PyInstaller').__version__}\n"
         f"Native MIDI backend: {'included' if midi_available else 'not included (optional)'}\n"
