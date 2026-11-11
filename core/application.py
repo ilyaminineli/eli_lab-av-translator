@@ -129,6 +129,7 @@ class Application:
         # Built-in and user assets are indexed lazily when the asset-library dock opens.
         self.performance_manager = PerformanceManager()
         self.automation = AutomationDirector()
+        self.automation.generator_settings_changed = self._request_generator_raster
         self.effects = EffectSettings()
         self.decks: dict[str, VideoDeck] = {
             deck_id: VideoDeck(deck_id) for deck_id in VIDEO_DECK_IDS
@@ -144,6 +145,18 @@ class Application:
         self._create_default_layers()
         self.current_project_path: Path | None = None
         self.window: Any | None = None
+
+    def _request_generator_raster(self, layer: Layer) -> None:
+        """Advance the shared render revision after a live generator mutation."""
+        if layer.source_type != "generator" or not layer.generator_type:
+            return
+        if layer.generator_type == "particles":
+            return
+        self.generator_raster_service.request(
+            layer.id,
+            layer.generator_type,
+            dict(layer.generator_settings),
+        )
 
     def _create_default_layers(self) -> None:
         positions = ((0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75))
@@ -1020,6 +1033,7 @@ class Application:
                     if key in values and key in palette:
                         values[key] = palette[key]
                 layer.generator_settings = normalize_settings(layer.generator_type, values)
+                self._request_generator_raster(layer)
         self.events.publish(
             "performance.scene.activated",
             profile=profile.to_dict(),
@@ -1335,6 +1349,7 @@ class Application:
                 else float(value)
             )
             layer.generator_settings = normalize_settings(layer.generator_type, settings)
+            self._request_generator_raster(layer)
             return True
         if target_id.startswith("overlay."):
             player = self._overlay_images.get(layer.id)
@@ -1675,6 +1690,7 @@ class Application:
                 else float(value)
             )
             layer.generator_settings = normalize_settings(layer.generator_type, settings)
+            self._request_generator_raster(layer)
             self.events.publish("layer.modulated", layer_id=layer.id, target=target_id)
             return True
 
