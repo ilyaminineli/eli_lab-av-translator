@@ -497,13 +497,10 @@ class GeneratorsPanel(QWidget):
         layer = self._selected_layer()
         if layer is None:
             return
-        if self._pending_text_layer_id == layer.id:
-            self._apply_timer.stop()
-            self.commit_text()
         if layer.generator_type == "text":
-            # Preserve the committed text while applying unrelated controls.
-            self._apply_timer.stop()
-            self.commit_text()
+            if self._pending_text_layer_id == layer.id:
+                self.commit_text()
+            # Other text controls still use the normal generator settings path.
             self._apply_non_text_settings()
             return
         self.apply_settings()
@@ -539,7 +536,6 @@ class GeneratorsPanel(QWidget):
             generator_settings=normalized,
         )
         if layer.id == self.layer_combo.currentData():
-            if layer.id == self.layer_combo.currentData():
             self._committed_text = str(normalized["text"])
             self.hint_label.setText(
                 f"Text committed · {len(self._committed_text)} characters. "
