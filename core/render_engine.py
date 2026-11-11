@@ -160,11 +160,13 @@ class RenderEngine:
                 continue
             if self.raster_service is not None:
                 self._generator_requested[layer.id] = fingerprint
-                self.raster_service.request(
+                requested = self.raster_service.request(
                     layer.id,
                     layer.generator_type or "geometry",
                     dict(layer.generator_settings),
                 )
+                if requested != fingerprint:
+                    self._generator_requested[layer.id] = requested
 
         tracked_generator_ids = (
                 set(self._generator_signatures)
