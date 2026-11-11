@@ -405,6 +405,7 @@ class GeneratorsPanel(QWidget):
         self._editing_text_buffer = ""
         self._committed_text = ""
         self._pending_text_layer_id: str | None = None
+        self._pending_settings_layer_id: str | None = None
         self._connect_live_updates()
         self.refresh()
 
@@ -480,8 +481,10 @@ class GeneratorsPanel(QWidget):
         self.shadow_check.toggled.connect(self._schedule_apply)
 
     def _schedule_apply(self, *_args) -> None:
-        if self._loading or self._selected_layer() is None:
+        layer = self._selected_layer()
+        if self._loading or layer is None:
             return
+        self._pending_settings_layer_id = layer.id
         self._apply_timer.start()
 
     def _text_buffer_changed(self) -> None:
@@ -494,16 +497,17 @@ class GeneratorsPanel(QWidget):
         self._text_commit_timer.start()
 
     def _flush_generator_settings(self) -> None:
-        layer = self._selected_layer()
+        target_id = self._pending_settings_layer_id
+        self._pending_settings_layer_id = None
+        layer = (
+            self.application.composition.get_layer(target_id)
+            if target_id else self._selected_layer()
+        )
         if layer is None:
             return
-        if layer.generator_type == "text":
-            if self._pending_text_layer_id == layer.id:
-                self.commit_text()
-            # Other text controls still use the normal generator settings path.
-            self._apply_non_text_settings()
-            return
-        self.apply_settings()
+        if self._pending_text_layer_id == layer.id:
+            self.commit_text()
+        self._apply_non_text_settings(target_layer=layer)
 
     def commit_text(self) -> None:
         """Commit the current editor buffer without rebuilding other controls."""
@@ -546,6 +550,8 @@ class GeneratorsPanel(QWidget):
         self.composition_changed.emit()
 
     def randomize_text(self) -> None:
+        self._apply_timer.stop()
+        self._pending_settings_layer_id = None
         layer = self._selected_layer()
         if layer is None or layer.generator_type != "text" or layer.locked:
             return
@@ -650,7 +656,14 @@ class GeneratorsPanel(QWidget):
     def load_selected(self, *_args) -> None:
         if self._pending_text_layer_id is not None:
             self.commit_text()
+        if self._apply_timer.isActive() and self._pending_settings_layer_id is not None:
+            pending_layer = self.application.composition.get_layer(
+                self._pending_settings_layer_id
+            )
+            if pending_layer is not None:
+                self._apply_non_text_settings(target_layer=pending_layer)
         self._apply_timer.stop()
+        self._pending_settings_layer_id = None
         layer = self._selected_layer()
         enabled = layer is not None
         is_overlay = bool(layer and layer.source_type == "overlay")
@@ -1071,6 +1084,7 @@ class GeneratorsPanel(QWidget):
 
     def apply_settings(self) -> None:
         self._apply_timer.stop()
+        self._pending_settings_layer_id = None
         layer = self._selected_layer()
         if layer is None or layer.locked:
             return
@@ -1080,8 +1094,8 @@ class GeneratorsPanel(QWidget):
             return
         self._apply_non_text_settings()
 
-    def _apply_non_text_settings(self) -> None:
-        layer = self._selected_layer()
+    def _apply_non_text_settings(self, target_layer=None) -> None:
+        layer = target_layer or self._selected_layer()
         if layer is None or layer.locked:
             return
         if layer.source_type == "overlay":
@@ -1190,6 +1204,7 @@ class GeneratorsPanel(QWidget):
             self._text_commit_timer.stop()
             self._pending_text_layer_id = None
         self._apply_timer.stop()
+        self._pending_settings_layer_id = None
         self.application.generator_raster_service.invalidate(removed_id)
         self.application.remove_layer(removed_id)
         self.refresh()
