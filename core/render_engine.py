@@ -16,7 +16,7 @@ _LOG = logging.getLogger(__name__)
 class RenderEngine:
     """Owns per-window ModernGL resources and reports CPU-side render costs."""
 
-    def __init__(self) -> None:
+    def __init__(self, raster_service=None) -> None:
         self.context: Any | None = None
         self.compositor: Compositor | None = None
         self.initialized = False
@@ -27,7 +27,7 @@ class RenderEngine:
         self.last_upload_ms = 0.0
         self.last_composite_ms = 0.0
         self.last_upload_bytes = 0
-        self.generator_rasterizer = GeneratorRasterizer()
+        self.raster_service = raster_service
         # Keep shader phase small and stable during long performances.
         self._time_origin = time.perf_counter()
         self._generator_signatures: dict[str, str] = {}
@@ -90,7 +90,6 @@ class RenderEngine:
         active_generator_ids = {layer.id for layer in generator_layers}
         # CPU rasterization is shared by all output renderers and happens on a
         # worker. This context only uploads completed pixel snapshots.
-        service = getattr(composition, "_generator_raster_service", None)
         for layer in generator_layers:
             source_id = layer.source_id or f"generator:{layer.id}"
             if layer.generator_type == "particles":
@@ -125,11 +124,13 @@ class RenderEngine:
                     or self._generator_requested.get(layer.id) == fingerprint
             ):
                 continue
-            request = getattr(self, "_request_generator_raster", None)
-            if request is not None:
+            if self.raster_service is not None:
                 self._generator_requested[layer.id] = fingerprint
-                request(layer.id, layer.generator_type or "geometry",
-                        dict(layer.generator_settings))
+                self.raster_service.request(
+                    layer.id,
+                    layer.generator_type or "geometry",
+                    dict(layer.generator_settings),
+                )
 
         tracked_generator_ids = (
                 set(self._generator_signatures) | set(self._generator_errors)
@@ -187,7 +188,6 @@ class RenderEngine:
         self._generator_signatures.clear()
         self._generator_sources.clear()
         self._generator_errors.clear()
-        self.generator_rasterizer.clear()
         self._pending_generator_textures.clear()
         self._generator_requested.clear()
         self.context = None
