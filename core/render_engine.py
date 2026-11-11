@@ -35,6 +35,21 @@ class RenderEngine:
         self._generator_errors: dict[str, str] = {}
         self._pending_generator_textures: dict[str, tuple[str, Any]] = {}
         self._generator_requested: dict[str, str] = {}
+        self._pending_generator_errors: dict[str, str] = {}
+
+    def accept_generator_raster(
+            self,
+            layer_id: str,
+            fingerprint: str,
+            pixels: Any,
+    ) -> None:
+        self._pending_generator_textures[layer_id] = (fingerprint, pixels)
+        self._generator_requested.pop(layer_id, None)
+        self._pending_generator_errors.pop(layer_id, None)
+
+    def accept_generator_error(self, layer_id: str, message: str) -> None:
+        self._generator_requested.pop(layer_id, None)
+        self._pending_generator_errors[layer_id] = message
 
     def initialize(self) -> None:
         try:
@@ -90,6 +105,9 @@ class RenderEngine:
         active_generator_ids = {layer.id for layer in generator_layers}
         # CPU rasterization is shared by all output renderers and happens on a
         # worker. This context only uploads completed pixel snapshots.
+        for layer_id, message in tuple(self._pending_generator_errors.items()):
+            self._generator_errors[layer_id] = message
+            self._pending_generator_errors.pop(layer_id, None)
         for layer in generator_layers:
             source_id = layer.source_id or f"generator:{layer.id}"
             if layer.generator_type == "particles":
@@ -190,5 +208,6 @@ class RenderEngine:
         self._generator_errors.clear()
         self._pending_generator_textures.clear()
         self._generator_requested.clear()
+        self._pending_generator_errors.clear()
         self.context = None
         self.initialized = False
