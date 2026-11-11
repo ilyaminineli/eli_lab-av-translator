@@ -59,7 +59,7 @@ class PerformanceView(QOpenGLWidget):
         self.update()
 
     def _on_generator_raster_failed(self, layer_id: str, fingerprint: str, message: str) -> None:
-        self.engine.accept_generator_error(layer_id, message)
+        self.engine.accept_generator_error(layer_id, fingerprint, message)
         self.update()
 
     def initializeGL(self) -> None:
