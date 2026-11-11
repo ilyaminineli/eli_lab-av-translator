@@ -34,6 +34,7 @@ class GeneratorRasterService(QObject):
         self._latest_fingerprint: dict[str, str] = {}
         self._closed = False
         self._rasterizer = GeneratorRasterizer()
+        self._worker_rasterizer = GeneratorRasterizer()
 
     def request(
             self,
@@ -54,7 +55,7 @@ class GeneratorRasterService(QObject):
             self._latest_fingerprint[layer_id] = fingerprint
 
         future = self._executor.submit(
-            self._rasterizer.render_settings,
+            self._worker_rasterizer.render_settings,
             layer_id,
             generator_type,
             snapshot,
@@ -78,8 +79,9 @@ class GeneratorRasterService(QObject):
                 current = not self._closed and (
                     self._generation.get(layer_id) == generation
                 )
+                fingerprint = self._latest_fingerprint.get(layer_id, "")
             if current:
-                self.raster_failed.emit(layer_id, "", str(exc))
+                self.raster_failed.emit(layer_id, fingerprint, str(exc))
             _LOG.exception("Generator rasterization failed for %s", layer_id)
             return
 
