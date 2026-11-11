@@ -23,7 +23,13 @@ class PerformanceView(QOpenGLWidget):
     def __init__(self, application: Application, parent=None) -> None:
         super().__init__(parent)
         self.application = application
-        self.engine = RenderEngine()
+        self.engine = RenderEngine(application.generator_raster_service)
+        application.generator_raster_service.raster_ready.connect(
+            self._on_generator_raster_ready
+        )
+        application.generator_raster_service.raster_failed.connect(
+            self._on_generator_raster_failed
+        )
         self._initialization_error: str | None = None
         self._last_render_error: str | None = None
         self._last_fps_time = time.perf_counter()
@@ -47,6 +53,14 @@ class PerformanceView(QOpenGLWidget):
         self._timer.setInterval(interval_ms)
         self._timer.timeout.connect(self.update)
         self._timer.start()
+
+    def _on_generator_raster_ready(self, layer_id: str, fingerprint: str, pixels) -> None:
+        self.engine.accept_generator_raster(layer_id, fingerprint, pixels)
+        self.update()
+
+    def _on_generator_raster_failed(self, layer_id: str, fingerprint: str, message: str) -> None:
+        self.engine.accept_generator_error(layer_id, message)
+        self.update()
 
     def initializeGL(self) -> None:
         try:
@@ -176,6 +190,15 @@ class PerformanceView(QOpenGLWidget):
 
     def shutdown_renderer(self) -> None:
         self._timer.stop()
+        try:
+            self.application.generator_raster_service.raster_ready.disconnect(
+                self._on_generator_raster_ready
+            )
+            self.application.generator_raster_service.raster_failed.disconnect(
+                self._on_generator_raster_failed
+            )
+        except (RuntimeError, TypeError):
+            pass
         if self.engine.initialized and self.isValid():
             self.makeCurrent()
             try:
