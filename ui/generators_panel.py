@@ -540,8 +540,8 @@ class GeneratorsPanel(QWidget):
             layer.id,
             generator_settings=normalized,
         )
+        self._committed_text = str(normalized["text"])
         if layer.id == self.layer_combo.currentData():
-            self._committed_text = str(normalized["text"])
             self.hint_label.setText(
                 f"Text committed · {len(self._committed_text)} characters. "
                 "Rasterization continues in the background."
