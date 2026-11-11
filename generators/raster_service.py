@@ -50,6 +50,8 @@ class GeneratorRasterService(QObject):
         with self._lock:
             if self._closed:
                 return fingerprint
+            if self._latest_fingerprint.get(layer_id) == fingerprint:
+                return fingerprint
             generation = self._generation.get(layer_id, 0) + 1
             self._generation[layer_id] = generation
             self._latest_fingerprint[layer_id] = fingerprint
