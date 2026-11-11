@@ -59,14 +59,19 @@ class GeneratorRasterizer:
         encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
         return hashlib.sha1(encoded).hexdigest()
 
-    def render(self, layer: Layer) -> tuple[str, np.ndarray]:
-        generator_type = layer.generator_type or "geometry"
-        fingerprint = self.fingerprint(layer)
-        cached = self._cache.get(layer.id)
+    def render_settings(
+            self,
+            layer_id: str,
+            generator_type: str,
+            raw_settings: dict[str, Any],
+    ) -> tuple[str, np.ndarray]:
+        """Render an immutable settings snapshot; safe to call from a worker thread."""
+        fingerprint = self.fingerprint_settings(generator_type, raw_settings)
+        cached = self._cache.get(layer_id)
         if cached and cached[0] == fingerprint:
             return cached
 
-        settings = normalize_settings(generator_type, layer.generator_settings)
+        settings = normalize_settings(generator_type, raw_settings)
         image = QImage(
             self.width,
             self.height,
@@ -91,8 +96,37 @@ class GeneratorRasterizer:
             self.height, self.width, 4
         ).copy()
         result = (fingerprint, pixels)
-        self._cache[layer.id] = result
+        self._cache[layer_id] = result
         return result
+
+    def render(self, layer: Layer) -> tuple[str, np.ndarray]:
+        return self.render_settings(
+            layer.id,
+            layer.generator_type or "geometry",
+            dict(layer.generator_settings),
+        )
+
+    @staticmethod
+    def fingerprint_settings(
+            generator_type: str,
+            raw_settings: dict[str, Any],
+    ) -> str:
+        settings = normalize_settings(generator_type, raw_settings)
+        # Animation is evaluated in the compositor, so it must not invalidate
+        # the static raster texture or trigger another CPU-side text/shape pass.
+        for key in (
+                "animation", "animation_speed", "animation_amount",
+                "text_animation", "text_animation_speed", "text_animation_amount",
+                "text_animation_columns",
+        ):
+            settings.pop(key, None)
+        payload = {
+            "type": generator_type,
+            "settings": settings,
+            "size": [GENERATOR_WIDTH, GENERATOR_HEIGHT],
+        }
+        encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
+        return hashlib.sha1(encoded).hexdigest()
 
     def remove_missing(self, layer_ids: set[str]) -> None:
         for layer_id in tuple(self._cache):
