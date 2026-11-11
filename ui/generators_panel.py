@@ -397,7 +397,13 @@ class GeneratorsPanel(QWidget):
         self._apply_timer = QTimer(self)
         self._apply_timer.setSingleShot(True)
         self._apply_timer.setInterval(150)
-        self._apply_timer.timeout.connect(self.apply_settings)
+        self._apply_timer.timeout.connect(self._flush_generator_settings)
+        self._text_commit_timer = QTimer(self)
+        self._text_commit_timer.setSingleShot(True)
+        self._text_commit_timer.setInterval(280)
+        self._text_commit_timer.timeout.connect(self.commit_text)
+        self._editing_text_buffer = ""
+        self._committed_text = ""
         self._connect_live_updates()
         self.refresh()
 
@@ -424,7 +430,6 @@ class GeneratorsPanel(QWidget):
 
     def _connect_live_updates(self) -> None:
         for widget in (
-                self.text_edit,
                 self.font_combo,
                 self.weight_combo,
                 self.text_color_mode_combo,
@@ -446,6 +451,7 @@ class GeneratorsPanel(QWidget):
                 signal = getattr(widget, "currentTextChanged", None)
             if signal is not None:
                 signal.connect(self._schedule_apply)
+        self.text_edit.textChanged.connect(self._text_buffer_changed)
         for slider in (
                 self.text_size_slider,
                 self.tracking_slider,
@@ -476,6 +482,52 @@ class GeneratorsPanel(QWidget):
         if self._loading or self._selected_layer() is None:
             return
         self._apply_timer.start()
+
+    def _text_buffer_changed(self) -> None:
+        if self._loading:
+            return
+        self._editing_text_buffer = self.text_edit.toPlainText()
+        self._text_commit_timer.start()
+
+    def _flush_generator_settings(self) -> None:
+        layer = self._selected_layer()
+        if layer is None:
+            return
+        if layer.generator_type == "text":
+            # Preserve the committed text while applying unrelated controls.
+            self._apply_timer.stop()
+            self.commit_text()
+            self._apply_non_text_settings()
+            return
+        self.apply_settings()
+
+    def commit_text(self) -> None:
+        """Commit the current editor buffer without rebuilding other controls."""
+        self._text_commit_timer.stop()
+        layer = self._selected_layer()
+        if (
+                layer is None
+                or layer.source_type != "generator"
+                or layer.generator_type != "text"
+                or layer.locked
+        ):
+            return
+        snapshot = dict(layer.generator_settings)
+        snapshot["text"] = self._editing_text_buffer
+        normalized = normalize_settings("text", snapshot)
+        if normalized == layer.generator_settings:
+            return
+        self.application.layer_manager.update_layer(
+            layer.id,
+            generator_settings=normalized,
+        )
+        self._committed_text = str(normalized["text"])
+        self.manual_target_changed.emit("generator.*")
+        self.composition_changed.emit()
+        self.hint_label.setText(
+            f"Text committed · {len(self._committed_text)} characters. "
+            "Rasterization continues in the background."
+        )
 
     def randomize_text(self) -> None:
         language = str(self.random_language_combo.currentData())
@@ -676,7 +728,9 @@ class GeneratorsPanel(QWidget):
         values = normalize_settings(generator_type or "geometry", layer.generator_settings)
 
         if generator_type == "text":
-            self.text_edit.setPlainText(str(values["text"]))
+            self._committed_text = str(values["text"])
+            self._editing_text_buffer = self._committed_text
+            self.text_edit.setPlainText(self._editing_text_buffer)
             self.random_language_combo.setCurrentIndex(
                 max(
                     0,
@@ -990,6 +1044,17 @@ class GeneratorsPanel(QWidget):
             )
 
     def apply_settings(self) -> None:
+        self._apply_timer.stop()
+        layer = self._selected_layer()
+        if layer is None or layer.locked:
+            return
+        if layer.source_type == "generator" and layer.generator_type == "text":
+            self.commit_text()
+            self._apply_non_text_settings()
+            return
+        self._apply_non_text_settings()
+
+    def _apply_non_text_settings(self) -> None:
         layer = self._selected_layer()
         if layer is None or layer.locked:
             return
@@ -1027,7 +1092,7 @@ class GeneratorsPanel(QWidget):
 
         if generator_type == "text":
             settings.update({
-                "text": self.text_edit.toPlainText(),
+                "text": self._committed_text,
                 "text_pool_language": str(self.random_language_combo.currentData()),
                 "text_pool_theme": str(self.random_theme_combo.currentData()),
                 "text_pool_count": int(self.random_count_combo.currentData()),
@@ -1095,6 +1160,9 @@ class GeneratorsPanel(QWidget):
         if layer is None:
             return
         removed_id = layer.id
+        self._text_commit_timer.stop()
+        self._apply_timer.stop()
+        self.application.generator_raster_service.invalidate(removed_id)
         self.application.remove_layer(removed_id)
         self.refresh()
         self.composition_changed.emit()
