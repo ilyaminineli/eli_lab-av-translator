@@ -103,6 +103,22 @@ class GeneratorRasterService(QObject):
             self.raster_ready.emit(layer_id, revision, fingerprint, replay)
         return fingerprint, revision
 
+    def has_latest_snapshot(
+            self,
+            layer_id: str,
+            generator_type: str,
+            settings: dict[str, Any],
+    ) -> bool:
+        """Return whether the latest request already represents this static raster."""
+        fingerprint = self._rasterizer.fingerprint_settings(
+            generator_type, settings
+        )
+        with self._lock:
+            return (
+                not self._closed
+                and self._latest_fingerprint.get(layer_id) == fingerprint
+            )
+
     def is_current(self, layer_id: str, revision: int, fingerprint: str) -> bool:
         """Return whether a completion matches the newest requested snapshot."""
         with self._lock:

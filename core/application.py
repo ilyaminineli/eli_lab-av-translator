@@ -152,10 +152,15 @@ class Application:
             return
         if layer.generator_type == "particles":
             return
+        settings = dict(layer.generator_settings)
+        if self.generator_raster_service.has_latest_snapshot(
+                layer.id, layer.generator_type, settings
+        ):
+            return
         self.generator_raster_service.request(
             layer.id,
             layer.generator_type,
-            dict(layer.generator_settings),
+            settings,
         )
 
     def _create_default_layers(self) -> None:

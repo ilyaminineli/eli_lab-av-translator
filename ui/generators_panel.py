@@ -158,24 +158,27 @@ class GeneratorsPanel(QWidget):
         self.collage_variation_slider, self.collage_variation_value = self._slider(
             text_form, "COLLAGE VARIATION", 0, 100, 65
         )
+        self.text_motion_group = QGroupBox("ANIMATED TYPOGRAPHY · GPU SHADER")
+        motion_form = QFormLayout(self.text_motion_group)
         self.text_animation_combo = QComboBox()
         self.text_animation_combo.addItem("None", "none")
         self.text_animation_combo.addItem("Type-on", "type_on")
         self.text_animation_combo.addItem("Word / column reveal", "word_reveal")
         self.text_animation_combo.addItem("Line wave", "line_wave")
         self.text_animation_combo.addItem("Glyph jitter", "jitter")
-        self.text_animation_combo.addItem("Crawl", "crawl")
+        self.text_animation_combo.addItem("Text scrolling", "crawl")
         self.text_animation_combo.addItem("Signal glitch", "glitch")
-        text_form.addRow("TEXT MOTION", self.text_animation_combo)
+        motion_form.addRow("MOTION", self.text_animation_combo)
         self.text_animation_speed_slider, self.text_animation_speed_value = self._slider(
-            text_form, "MOTION SPEED", 0, 800, 100
+            motion_form, "MOTION SPEED", 0, 800, 100
         )
         self.text_animation_amount_slider, self.text_animation_amount_value = self._slider(
-            text_form, "MOTION AMOUNT", 0, 180, 25
+            motion_form, "MOTION AMOUNT", 0, 180, 25
         )
         self.text_animation_columns_slider, self.text_animation_columns_value = self._slider(
-            text_form, "REVEAL STEPS", 2, 80, 18
+            motion_form, "REVEAL STEPS", 2, 80, 18
         )
+        text_form.addRow(self.text_motion_group)
 
         random_group = QGroupBox("RANDOM TEXT POOL · ENGLISH / 日本語")
         random_form = QFormLayout(random_group)
@@ -402,9 +405,14 @@ class GeneratorsPanel(QWidget):
         self._text_commit_timer.setSingleShot(True)
         self._text_commit_timer.setInterval(280)
         self._text_commit_timer.timeout.connect(self.commit_text)
+        self._text_motion_timer = QTimer(self)
+        self._text_motion_timer.setSingleShot(True)
+        self._text_motion_timer.setInterval(24)
+        self._text_motion_timer.timeout.connect(self._flush_text_motion_settings)
         self._editing_text_buffer = ""
         self._committed_text = ""
         self._pending_text_layer_id: str | None = None
+        self._pending_text_motion_layer_id: str | None = None
         self._pending_settings_layer_id: str | None = None
         self._connect_live_updates()
         self.refresh()
@@ -443,7 +451,6 @@ class GeneratorsPanel(QWidget):
                 self.secondary_color,
                 self.background_color,
                 self.animation_combo,
-                self.text_animation_combo,
                 self.geometry_pattern_combo,
                 self.waveform_pattern_combo,
                 self.particle_mode_combo,
@@ -460,9 +467,6 @@ class GeneratorsPanel(QWidget):
                 self.line_spacing_slider,
                 self.text_outline_slider,
                 self.collage_variation_slider,
-                self.text_animation_speed_slider,
-                self.text_animation_amount_slider,
-                self.text_animation_columns_slider,
                 self.geometry_density_slider,
                 self.geometry_width_slider,
                 self.waveform_density_slider,
@@ -478,6 +482,15 @@ class GeneratorsPanel(QWidget):
                 self.amount_slider,
         ):
             slider.valueChanged.connect(self._schedule_apply)
+        self.text_animation_combo.currentIndexChanged.connect(
+            self._schedule_text_motion_apply
+        )
+        for slider in (
+                self.text_animation_speed_slider,
+                self.text_animation_amount_slider,
+                self.text_animation_columns_slider,
+        ):
+            slider.valueChanged.connect(self._schedule_text_motion_apply)
         self.shadow_check.toggled.connect(self._schedule_apply)
 
     def _schedule_apply(self, *_args) -> None:
@@ -486,6 +499,55 @@ class GeneratorsPanel(QWidget):
             return
         self._pending_settings_layer_id = layer.id
         self._apply_timer.start()
+
+    def _schedule_text_motion_apply(self, *_args) -> None:
+        layer = self._selected_layer()
+        if (
+                self._loading
+                or layer is None
+                or layer.source_type != "generator"
+                or layer.generator_type != "text"
+                or layer.locked
+        ):
+            return
+        self._pending_text_motion_layer_id = layer.id
+        self._text_motion_timer.start()
+
+    def _flush_text_motion_settings(self) -> None:
+        """Update shader uniforms on the layer without requesting a new raster."""
+        self._text_motion_timer.stop()
+        target_id = self._pending_text_motion_layer_id
+        self._pending_text_motion_layer_id = None
+        if target_id is None:
+            return
+        layer = self.application.composition.get_layer(target_id)
+        if (
+                layer is None
+                or layer.source_type != "generator"
+                or layer.generator_type != "text"
+                or layer.locked
+        ):
+            return
+        settings = dict(layer.generator_settings)
+        settings.update({
+            "text_animation": str(self.text_animation_combo.currentData() or "none"),
+            "text_animation_speed": self.text_animation_speed_slider.value() / 100.0,
+            "text_animation_amount": (
+                self.text_animation_amount_slider.value() / 1000.0
+            ),
+            "text_animation_columns": self.text_animation_columns_slider.value(),
+        })
+        normalized = normalize_settings("text", settings)
+        if normalized == layer.generator_settings:
+            return
+        self.application.layer_manager.update_layer(
+            layer.id,
+            generator_settings=normalized,
+        )
+        # The compositor reads these fields as per-frame uniforms. No
+        # GeneratorRasterService request is made by this path.
+        self.manual_target_changed.emit("generator.*")
+        self.composition_changed.emit()
 
     def _text_buffer_changed(self) -> None:
         if self._loading:
@@ -659,6 +721,7 @@ class GeneratorsPanel(QWidget):
         self.layer_combo.setCurrentIndex(index)
 
     def load_selected(self, *_args) -> None:
+        self._flush_text_motion_settings()
         if self._pending_text_layer_id is not None:
             self.commit_text()
         if self._apply_timer.isActive() and self._pending_settings_layer_id is not None:
@@ -1090,6 +1153,7 @@ class GeneratorsPanel(QWidget):
     def apply_settings(self) -> None:
         self._apply_timer.stop()
         self._pending_settings_layer_id = None
+        self._flush_text_motion_settings()
         layer = self._selected_layer()
         if layer is None or layer.locked:
             return
@@ -1146,12 +1210,6 @@ class GeneratorsPanel(QWidget):
                 "text_layout": str(self.text_layout_combo.currentData()),
                 "collage_seed": self._collage_seed,
                 "collage_font_variation": self.collage_variation_slider.value() / 100.0,
-                "text_animation": str(self.text_animation_combo.currentData()),
-                "text_animation_speed": self.text_animation_speed_slider.value() / 100.0,
-                "text_animation_amount": (
-                        self.text_animation_amount_slider.value() / 1000.0
-                ),
-                "text_animation_columns": self.text_animation_columns_slider.value(),
                 "font_family": self.font_combo.currentText().strip() or "Arial",
                 "font_size": self.text_size_slider.value(),
                 "font_weight": int(self.weight_combo.currentData()),
@@ -1212,6 +1270,9 @@ class GeneratorsPanel(QWidget):
         if layer is None:
             return
         removed_id = layer.id
+        if self._pending_text_motion_layer_id == removed_id:
+            self._text_motion_timer.stop()
+            self._pending_text_motion_layer_id = None
         if self._pending_text_layer_id == removed_id:
             self._text_commit_timer.stop()
             self._pending_text_layer_id = None
