@@ -299,6 +299,7 @@ class Application:
         self._overlay_frames.clear()
 
     def remove_layer(self, layer_id: str) -> bool:
+        self.generator_raster_service.invalidate(layer_id)
         layer = self.composition.get_layer(layer_id)
         if layer is not None and layer.source_type == "overlay":
             self._remove_overlay_runtime(layer_id)
@@ -323,6 +324,7 @@ class Application:
             deck.locked = False
             deck.set_loop(True)
         self._frame_snapshots.clear()
+        self.generator_raster_service.invalidate_missing(set())
         self.composition = Composition()
         self.layer_manager = LayerManager(self.composition, self.events)
         self._create_default_layers()
@@ -2507,6 +2509,7 @@ class Application:
             deck.locked = False
 
         self._frame_snapshots.clear()
+        self.generator_raster_service.invalidate_missing(set())
         self.composition = composition
         self.layer_manager = LayerManager(self.composition, self.events)
         for layer in self.composition.layers:
