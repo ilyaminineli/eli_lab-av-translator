@@ -1,7 +1,7 @@
 # eli_lab AV Translator — Product Roadmap
 
 **Roadmap snapshot:** 6 November 2026  
-**Current priority:** release packaging, Lenovo/HDMI projector validation, Windows loopback reconnect and the live SONATA 384-bar rehearsal. M4 software and M5 autonomous orchestration are implemented; the Video Mixer hardware release gate remains separate and open.
+**Current priority:** M5 live SONATA validation and master-output recording/audio muxing, followed by M6 definition. M4/M5 software foundations are merged to main; Windows loopback, target-machine/projector acceptance and the independent Video Mixer hardware release gate remain open.
 
 ## Product goal
 
@@ -336,7 +336,7 @@ See [SONATA Expanded integration notes](SONIC_PI_SONATA_INTEGRATION.md).
 
 ## Status
 
-**Autonomous Performance Mode and Sonic Pi orchestration are merged to main. A Windows x64 one-file release build is configured on `release/windows-onefile-readiness`; its native Windows build and Lenovo/projector acceptance tests remain pending. M5 exit remains open for master-output recording and target-machine rehearsal.**
+**M5 software implementation is merged to main. Autonomous Performance Mode, the Modulator Bank, per-layer performance modifiers and Sonic Pi orchestration are implemented. Live SONATA and target-machine validation remain manual sign-off; master-output recording/audio muxing is not implemented, so the M5 milestone exit remains open. A Windows x64 one-file release build is configured on `release/windows-onefile-readiness`; its native Windows build and Lenovo/projector acceptance tests remain pending.**
 
 ## Implemented
 
@@ -363,7 +363,7 @@ See [SONATA Expanded integration notes](SONIC_PI_SONATA_INTEGRATION.md).
 - The `tests/` unit-test suite and pytest dependencies were removed at the user's request. CI has been replaced with Python compilation and Ruff checks; it no longer runs unit tests.
 - A static quality workflow must pass on the latest PR head. Hardware and musical rehearsal remain manual sign-off.
 
-**M5 exit condition is not yet met** until master-output recording and target-machine output validation are complete.
+**M5 exit condition is not yet met** until master-output recording/audio muxing is delivered and the target-machine validation gates are completed. For the same-computer SONATA setup and the exact live rehearsal checklist, see [M5 Completion & Live Validation Handoff](M5_COMPLETION_HANDOFF.md).
 
 See [M5 Autonomous Performance](M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance Environment](M5_PERFORMANCE_ENVIRONMENT.md), [M5 Unified Mapping Matrix](M5_MAPPING_MATRIX.md), [M5 Performance Modifiers](M5_PERFORMANCE_MODIFIERS.md) and [M5 Modulator Bank](M5_MODULATOR_BANK.md).
 
