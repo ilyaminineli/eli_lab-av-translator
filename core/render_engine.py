@@ -44,8 +44,9 @@ class RenderEngine:
             fingerprint: str,
             pixels: Any,
     ) -> None:
-        if layer_id not in self._active_generator_ids:
-            return
+        # A result may arrive before this renderer's first paint (or after it
+        # has been recreated). Keep the CPU snapshot; render() uploads only for
+        # layers present in the current composition.
         self._pending_generator_textures[layer_id] = (fingerprint, pixels)
         self._generator_requested.pop(layer_id, None)
         self._pending_generator_errors.pop(layer_id, None)
@@ -57,8 +58,6 @@ class RenderEngine:
             fingerprint: str,
             message: str,
     ) -> None:
-        if layer_id not in self._active_generator_ids:
-            return
         self._generator_requested.pop(layer_id, None)
         self._pending_generator_errors[layer_id] = message
         if fingerprint:
