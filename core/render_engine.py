@@ -37,6 +37,7 @@ class RenderEngine:
         self._generator_requested: dict[str, str] = {}
         self._pending_generator_errors: dict[str, str] = {}
         self._active_generator_ids: set[str] = set()
+        self._rejected_generator_fingerprints: dict[str, str] = {}
 
     def accept_generator_raster(
             self,
@@ -49,12 +50,15 @@ class RenderEngine:
         self._pending_generator_textures[layer_id] = (fingerprint, pixels)
         self._generator_requested.pop(layer_id, None)
         self._pending_generator_errors.pop(layer_id, None)
+        self._rejected_generator_fingerprints.pop(layer_id, None)
 
     def accept_generator_error(self, layer_id: str, message: str) -> None:
         if layer_id not in self._active_generator_ids:
             return
         self._generator_requested.pop(layer_id, None)
         self._pending_generator_errors[layer_id] = message
+        if fingerprint:
+            self._rejected_generator_fingerprints[layer_id] = fingerprint
 
     def initialize(self) -> None:
         try:
@@ -146,6 +150,7 @@ class RenderEngine:
                     self._generator_signatures.get(layer.id) == fingerprint
                     or (pending is not None and pending[0] == fingerprint)
                     or self._generator_requested.get(layer.id) == fingerprint
+                    or self._rejected_generator_fingerprints.get(layer.id) == fingerprint
             ):
                 continue
             if self.raster_service is not None:
@@ -166,6 +171,7 @@ class RenderEngine:
                 self.compositor.remove_texture(source_id)
             self._generator_signatures.pop(layer_id, None)
             self._generator_errors.pop(layer_id, None)
+            self._rejected_generator_fingerprints.pop(layer_id, None)
         self._pending_generator_textures = {
             layer_id: value
             for layer_id, value in self._pending_generator_textures.items()
@@ -174,6 +180,11 @@ class RenderEngine:
         self._generator_requested = {
             layer_id: value
             for layer_id, value in self._generator_requested.items()
+            if layer_id in active_generator_ids
+        }
+        self._rejected_generator_fingerprints = {
+            layer_id: value
+            for layer_id, value in self._rejected_generator_fingerprints.items()
             if layer_id in active_generator_ids
         }
 
@@ -216,5 +227,6 @@ class RenderEngine:
         self._generator_requested.clear()
         self._pending_generator_errors.clear()
         self._active_generator_ids.clear()
+        self._rejected_generator_fingerprints.clear()
         self.context = None
         self.initialized = False
