@@ -69,7 +69,9 @@ class GeneratorRasterService(QObject):
                     replay = completed[1]
                 elif (
                         layer_id in self._pending_requests
-                        or self._active_requests.get(layer_id) == (revision, fingerprint)
+                        or self._active_requests.get(layer_id) == (
+                            revision, fingerprint
+                        )
                         or self._failed.get(layer_id) == (revision, fingerprint)
                 ):
                     # Identical snapshots are already pending, running, or failed.
