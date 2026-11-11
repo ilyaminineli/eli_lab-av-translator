@@ -51,6 +51,19 @@ The shared LayerPerformanceModifierEngine evaluates these at the application tic
 
 Static generator rasterization is performed by a single shared background worker. The generator editor maintains an editing buffer and a committed settings snapshot; the text field has its own short debounce and commits only the text value, while other generator controls use the regular settings debounce. Each distinct raster request receives a monotonically increasing per-layer revision alongside its copied settings snapshot and fingerprint. Text and typography commits submit that snapshot immediately, so a newer revision invalidates older work before the next render frame. When a worker finishes, the service caches and emits the result only if its revision and fingerprint still match the newest request; renderers check the revision again when receiving the signal and immediately before uploading. The worker uses an ordered pending map keyed by layer; new edits replace that layer's queued snapshot in place. There is at most one active raster globally and one pending snapshot per layer, so obsolete keystrokes do not accumulate as queued work items. Completed pixels are delivered to the GUI thread as CPU memory; preview and projector renderers each upload that snapshot only while their own OpenGL context is current. The last successful texture remains visible while a replacement is being rasterized. OpenGL objects and context-bound uploads are never created on the worker thread.
 
+### Static and animated typography
+
+Text rendering keeps one shared raster texture and the existing compositor shader; it does not create a second text renderer.
+
+| Operation | Processing path |
+| --- | --- |
+| Typing/editing characters | UI editing buffer only; committed text is submitted after the text debounce |
+| Changing text, font family/weight/size, tracking, line spacing, alignment, layout, stroke or static colours | Versioned background CPU raster request |
+| Type-on, word/column reveal, line wave, glyph jitter, text scrolling and signal glitch | Existing GPU compositor shader |
+| Motion mode, speed, amount and reveal columns | Layer settings consumed as per-frame shader uniforms; no raster request |
+
+The raster fingerprint is built from the static settings projection. GPU-uniform keys are explicitly excluded in one shared definition, so changing motion cannot invalidate the text texture. The editor has a dedicated motion-control update path and timer; it changes only the four shader settings and never calls the raster service. Static typography retains the normal raster debounce/revision path. AUTO and other live generator mutation callbacks also compare the static fingerprint before submitting work, avoiding redundant requests when only shader uniforms changed.
+
 ### Modulator Bank
 
 Performance Mode ensures the built-in Sonic Pi energy/cutoff followers, beat/onset envelopes and phrase LFO exist. These become reusable named sources in the Modulator Bank and can feed multiple compatible layer targets. Existing modulator definitions with those AUTO names are re-enabled rather than duplicated.

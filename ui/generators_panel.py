@@ -100,7 +100,10 @@ class GeneratorsPanel(QWidget):
         )
         self.text_edit.setMinimumHeight(84)
         self.text_edit.setMaximumHeight(120)
-        text_form.addRow("CONTENT", self.text_edit)
+        text_form.addRow("CONTENT · EDIT BUFFER", self.text_edit)
+        static_raster_heading = QLabel("STATIC TYPOGRAPHY · CPU RASTER")
+        static_raster_heading.setObjectName("sectionHeading")
+        text_form.addRow(static_raster_heading)
 
         self.text_layout_combo = QComboBox()
         self.text_layout_combo.addItem("Single text block", "single")
@@ -545,8 +548,11 @@ class GeneratorsPanel(QWidget):
             generator_settings=normalized,
         )
         # The compositor reads these fields as per-frame uniforms. No
-        # GeneratorRasterService request is made by this path.
-        self.manual_target_changed.emit("generator.*")
+        # GeneratorRasterService request is made by this path. Only pause
+        # automation on shader parameters that actually changed.
+        for key in ("text_animation_speed", "text_animation_amount"):
+            if settings.get(key) != normalized.get(key):
+                self.manual_target_changed.emit(f"generator.{key}")
         self.composition_changed.emit()
 
     def _text_buffer_changed(self) -> None:

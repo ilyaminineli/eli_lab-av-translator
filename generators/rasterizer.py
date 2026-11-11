@@ -24,6 +24,27 @@ from generators.catalog import normalize_settings
 GENERATOR_WIDTH = 1600
 GENERATOR_HEIGHT = 900
 
+_GPU_UNIFORM_SETTINGS = (
+    "animation",
+    "animation_speed",
+    "animation_amount",
+    "text_animation",
+    "text_animation_speed",
+    "text_animation_amount",
+    "text_animation_columns",
+)
+
+
+def _static_raster_settings(
+        generator_type: str,
+        raw_settings: dict[str, Any],
+) -> dict[str, Any]:
+    """Return only settings that change the CPU-rasterized generator image."""
+    settings = normalize_settings(generator_type, raw_settings)
+    for key in _GPU_UNIFORM_SETTINGS:
+        settings.pop(key, None)
+    return settings
+
 
 class GeneratorRasterizer:
     """Rasterizes static generator content once; animation stays in the GPU compositor."""
@@ -39,18 +60,10 @@ class GeneratorRasterizer:
 
     @staticmethod
     def fingerprint(layer: Layer) -> str:
-        settings = normalize_settings(
+        settings = _static_raster_settings(
             layer.generator_type or "geometry",
             layer.generator_settings,
         )
-        # Animation is evaluated in the compositor, so it must not invalidate
-        # the static raster texture or trigger another CPU-side text/shape pass.
-        for key in (
-                "animation", "animation_speed", "animation_amount",
-                "text_animation", "text_animation_speed", "text_animation_amount",
-                "text_animation_columns",
-        ):
-            settings.pop(key, None)
         payload = {
             "type": layer.generator_type,
             "settings": settings,
@@ -111,15 +124,7 @@ class GeneratorRasterizer:
             generator_type: str,
             raw_settings: dict[str, Any],
     ) -> str:
-        settings = normalize_settings(generator_type, raw_settings)
-        # Animation is evaluated in the compositor, so it must not invalidate
-        # the static raster texture or trigger another CPU-side text/shape pass.
-        for key in (
-                "animation", "animation_speed", "animation_amount",
-                "text_animation", "text_animation_speed", "text_animation_amount",
-                "text_animation_columns",
-        ):
-            settings.pop(key, None)
+        settings = _static_raster_settings(generator_type, raw_settings)
         payload = {
             "type": generator_type,
             "settings": settings,
