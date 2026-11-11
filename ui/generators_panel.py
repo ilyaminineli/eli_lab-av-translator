@@ -404,6 +404,7 @@ class GeneratorsPanel(QWidget):
         self._text_commit_timer.timeout.connect(self.commit_text)
         self._editing_text_buffer = ""
         self._committed_text = ""
+        self._pending_text_layer_id: str | None = None
         self._connect_live_updates()
         self.refresh()
 
@@ -487,6 +488,9 @@ class GeneratorsPanel(QWidget):
         if self._loading:
             return
         self._editing_text_buffer = self.text_edit.toPlainText()
+        layer = self._selected_layer()
+        if layer is not None and layer.generator_type == "text":
+            self._pending_text_layer_id = layer.id
         self._text_commit_timer.start()
 
     def _flush_generator_settings(self) -> None:
@@ -504,7 +508,12 @@ class GeneratorsPanel(QWidget):
     def commit_text(self) -> None:
         """Commit the current editor buffer without rebuilding other controls."""
         self._text_commit_timer.stop()
-        layer = self._selected_layer()
+        target_id = self._pending_text_layer_id
+        self._pending_text_layer_id = None
+        layer = (
+            self.application.composition.get_layer(target_id)
+            if target_id else self._selected_layer()
+        )
         if (
                 layer is None
                 or layer.source_type != "generator"
@@ -512,8 +521,13 @@ class GeneratorsPanel(QWidget):
                 or layer.locked
         ):
             return
+        text_snapshot = (
+            self._editing_text_buffer
+            if layer.id == self.layer_combo.currentData()
+            else str(layer.generator_settings.get("text", ""))
+        )
         snapshot = dict(layer.generator_settings)
-        snapshot["text"] = self._editing_text_buffer
+        snapshot["text"] = text_snapshot
         normalized = normalize_settings("text", snapshot)
         if normalized == layer.generator_settings:
             return
@@ -521,7 +535,8 @@ class GeneratorsPanel(QWidget):
             layer.id,
             generator_settings=normalized,
         )
-        self._committed_text = str(normalized["text"])
+        if layer.id == self.layer_combo.currentData():
+            self._committed_text = str(normalized["text"])
         self.manual_target_changed.emit("generator.*")
         self.composition_changed.emit()
         self.hint_label.setText(
@@ -626,6 +641,9 @@ class GeneratorsPanel(QWidget):
         self.layer_combo.setCurrentIndex(index)
 
     def load_selected(self, *_args) -> None:
+        if self._pending_text_layer_id is not None:
+            self.commit_text()
+        self._apply_timer.stop()
         layer = self._selected_layer()
         enabled = layer is not None
         is_overlay = bool(layer and layer.source_type == "overlay")
@@ -1160,7 +1178,9 @@ class GeneratorsPanel(QWidget):
         if layer is None:
             return
         removed_id = layer.id
-        self._text_commit_timer.stop()
+        if self._pending_text_layer_id == removed_id:
+            self._text_commit_timer.stop()
+            self._pending_text_layer_id = None
         self._apply_timer.stop()
         self.application.generator_raster_service.invalidate(removed_id)
         self.application.remove_layer(removed_id)
