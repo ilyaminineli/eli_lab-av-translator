@@ -497,6 +497,9 @@ class GeneratorsPanel(QWidget):
         layer = self._selected_layer()
         if layer is None:
             return
+        if self._pending_text_layer_id == layer.id:
+            self._apply_timer.stop()
+            self.commit_text()
         if layer.generator_type == "text":
             # Preserve the committed text while applying unrelated controls.
             self._apply_timer.stop()
@@ -755,6 +758,7 @@ class GeneratorsPanel(QWidget):
         if generator_type == "text":
             self._committed_text = str(values["text"])
             self._editing_text_buffer = self._committed_text
+            self._pending_text_layer_id = None
             self.text_edit.setPlainText(self._editing_text_buffer)
             self.random_language_combo.setCurrentIndex(
                 max(
