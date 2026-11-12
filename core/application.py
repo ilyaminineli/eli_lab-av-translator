@@ -154,7 +154,7 @@ class Application:
         """Advance the shared render revision after a live generator mutation."""
         if layer.source_type != "generator" or not layer.generator_type:
             return
-        if layer.generator_type == "particles":
+        if layer.generator_type in {"particles", "particle_system_2"}:
             return
         settings = dict(layer.generator_settings)
         if self.generator_raster_service.has_latest_snapshot(
@@ -197,12 +197,14 @@ class Application:
             "text": "Text Art",
             "waveform": "Waveform Generator",
             "particles": "Particle Field",
+            "particle_system_2": "Particle System 2.0",
         }
         blend_modes = {
             "geometry": "screen",
             "text": "normal",
             "waveform": "screen",
             "particles": "screen",
+            "particle_system_2": "screen",
         }
         layer = self.layer_manager.create_layer(
             name=labels[generator_type],

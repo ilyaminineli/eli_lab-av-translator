@@ -144,7 +144,7 @@ class RenderEngine:
         # worker. This context only uploads completed pixel snapshots.
         for layer in generator_layers:
             source_id = layer.source_id or f"generator:{layer.id}"
-            if layer.generator_type == "particles":
+            if layer.generator_type in {"particles", "particle_system_2"}:
                 self.compositor.remove_texture(source_id)
                 self._generator_signatures.pop(layer.id, None)
                 self._generator_sources.pop(layer.id, None)

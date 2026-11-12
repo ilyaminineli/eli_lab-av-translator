@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
-GENERATOR_TYPES = ("geometry", "text", "waveform", "particles")
+GENERATOR_TYPES = ("geometry", "text", "waveform", "particles", "particle_system_2")
 
 _DEFAULTS: dict[str, dict[str, Any]] = {
     "geometry": {
@@ -71,6 +71,35 @@ _DEFAULTS: dict[str, dict[str, Any]] = {
         "spread": 0.42,
         "trail": 0.18,
         "mode": "drift",
+        "animation": "none",
+        "animation_speed": 0.0,
+        "animation_amount": 0.0,
+    },
+    "particle_system_2": {
+        "primary_color": "#E8E4DA",
+        "secondary_color": "#C35C75",
+        "particle_count": 4096,
+        "population_count": 2,
+        "emitter_type": "point",
+        "emitter_center": [0.5, 0.5],
+        "emitter_radius": 0.18,
+        "emitter_size": [0.34, 0.24],
+        "direction": "radial",
+        "lifetime": 4.5,
+        "speed": 0.22,
+        "spread": 0.36,
+        "acceleration": [0.0, 0.0],
+        "turbulence": 0.14,
+        "turbulence_scale": 5.0,
+        "force_type": "none",
+        "force_center": [0.5, 0.5],
+        "force_strength": 0.55,
+        "force_radius": 0.34,
+        "drag": 0.08,
+        "trail": 0.72,
+        "particle_size": 6.0,
+        "size_curve": "shrink",
+        "seed": 20261112,
         "animation": "none",
         "animation_speed": 0.0,
         "animation_amount": 0.0,
@@ -168,6 +197,52 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
         result["trail"] = max(0.0, min(1.0, float(result["trail"])))
         if result.get("mode") not in {"drift", "rise", "fall", "orbit"}:
             result["mode"] = "drift"
+    elif generator_type == "particle_system_2":
+        result["particle_count"] = max(128, min(8192, int(result["particle_count"])))
+        result["population_count"] = max(1, min(4, int(result["population_count"])))
+        if result["emitter_type"] not in {"point", "circle", "rectangle"}:
+            result["emitter_type"] = "point"
+        if result["direction"] not in {"radial", "random", "up", "down", "left", "right"}:
+            result["direction"] = "radial"
+        if result["force_type"] not in {"none", "attract", "repel", "orbit"}:
+            result["force_type"] = "none"
+        if result["size_curve"] not in {"constant", "grow", "shrink", "pulse"}:
+            result["size_curve"] = "shrink"
+        def pair(value, fallback, low, high):
+            try:
+                values = list(value)
+                if len(values) < 2:
+                    raise ValueError("Pair needs two values")
+                return [
+                    max(low, min(high, float(values[0]))),
+                    max(low, min(high, float(values[1]))),
+                ]
+            except (TypeError, ValueError, OverflowError):
+                return list(fallback)
+        result["emitter_center"] = pair(
+            result["emitter_center"], (0.5, 0.5), 0.0, 1.0
+        )
+        result["emitter_size"] = pair(
+            result["emitter_size"], (0.34, 0.24), 0.01, 1.0
+        )
+        result["acceleration"] = pair(
+            result["acceleration"], (0.0, 0.0), -2.0, 2.0
+        )
+        result["force_center"] = pair(
+            result["force_center"], (0.5, 0.5), 0.0, 1.0
+        )
+        result["emitter_radius"] = max(0.01, min(0.5, float(result["emitter_radius"])))
+        result["lifetime"] = max(0.25, min(60.0, float(result["lifetime"])))
+        result["speed"] = max(0.0, min(1.5, float(result["speed"])))
+        result["spread"] = max(0.0, min(2.0, float(result["spread"])))
+        result["turbulence"] = max(0.0, min(1.5, float(result["turbulence"])))
+        result["turbulence_scale"] = max(0.1, min(24.0, float(result["turbulence_scale"])))
+        result["force_strength"] = max(0.0, min(4.0, float(result["force_strength"])))
+        result["force_radius"] = max(0.01, min(1.0, float(result["force_radius"])))
+        result["drag"] = max(0.0, min(4.0, float(result["drag"])))
+        result["trail"] = max(0.0, min(1.0, float(result["trail"])))
+        result["particle_size"] = max(1.0, min(48.0, float(result["particle_size"])))
+        result["seed"] = max(0, min(2 ** 31 - 1, int(result["seed"])))
 
     if result.get("animation") not in _ANIMATIONS:
         result["animation"] = "none"

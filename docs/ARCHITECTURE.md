@@ -31,6 +31,19 @@ Worker threads publish immutable or copied CPU-side data. They do not update Qt 
 
 The two outputs share application/composition state and CPU frame snapshots. They do **not** share GL texture objects or GL contexts. Feedback history is also per-renderer: preview and projector maintain independent GPU rings that are resized, reset and released with their own GL context. Project files persist feedback settings and reset generation, never frame history or GL handles.
 
+## GPU particle simulation lifecycle
+
+The legacy `particles` generator remains a procedural shader field in the layer compositor. The separate `particle_system_2` generator is owned by each output's `Compositor` and never uses the shared CPU generator-raster worker.
+
+- Each particle-system layer owns ping-pong RGBA32F state/metadata textures and framebuffer pairs. Position, velocity, age, lifetime, respawn cycle and per-particle variation remain on the GPU.
+- Simulation advances at a fixed 60 Hz step with at most four substeps per render. Spawn randomness is derived from the configured seed, particle index and respawn cycle; no CPU particle arrays are updated per frame.
+- A system contains one to four independently seeded populations. They share physics settings in D1 but have stable emitter offsets and visual variation.
+- Particle sprites accumulate into a pair of renderer-local RGBA8 trail targets at half output resolution. The resulting texture enters the normal layer compositor, so position/scale/opacity/blend and layer effects remain shared with other layers.
+- The compositor enforces at most four active Particle System 2.0 layers and 16384 particles total per output, with at most 8192 per system. Allocation follows layer order so the resource ceiling is deterministic.
+- Layer removal, output resize and context teardown release simulation and trail targets. Projects and VJ scenes persist the settings/seed, never GPU state textures or transient particle positions.
+
+Preview and projector deliberately run independent simulations in their own GL contexts. A matching seed/settings yields the same deterministic spawn sequence, but neither renderer shares mutable simulation or trail resources.
+
 ## Generator raster lifecycle
 
 Static generator rasterization is owned by one `GeneratorRasterService` created by `Application` and shared by all output renderers.
