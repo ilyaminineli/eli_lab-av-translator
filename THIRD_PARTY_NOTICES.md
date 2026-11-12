@@ -1,6 +1,6 @@
 # Third-party notices and release audit
 
-This file records the direct runtime/build components used by the Windows x64 release profile. It is a notice index, not a substitute for the full licence texts that accompany each wheel or native library. The current one-file build explicitly includes this notice; it does not yet prove that every full upstream licence text is copied into the EXE. Retain the upstream licence files for the exact wheel/native-library set used to build a release.
+This file records the direct runtime components collected by the current Windows x64 PyInstaller profile. It is a notice index, not a substitute for the full licence texts that accompany each wheel or native library. The one-file build explicitly bundles this notice; it does not by itself prove that every full upstream licence text is copied into the EXE. Retain the upstream licence files for the exact wheel/native-library set used to build a release.
 
 ## Direct runtime dependencies
 
@@ -15,15 +15,15 @@ This file records the direct runtime/build components used by the Windows x64 re
 | SoundCard | 0.4.6 | BSD-3-Clause. See [SoundCard on PyPI](https://pypi.org/project/SoundCard/0.4.6/). |
 | python-osc | 1.10.2 | Unlicense / public-domain dedication. See [python-osc on PyPI](https://pypi.org/project/python-osc/1.10.2/). |
 | Mido | 1.3.3 | MIT. See [Mido on PyPI](https://pypi.org/project/mido/). |
-| python-rtmidi | 1.5.8 | MIT. See [python-rtmidi on PyPI](https://pypi.org/project/python-rtmidi/1.5.8/). |
+| python-rtmidi | optional native backend | MIT. Native MIDI backend availability depends on the selected Python version and local build toolchain. See [python-rtmidi on PyPI](https://pypi.org/project/python-rtmidi/). |
 
-The Windows release profile also installs ordered-set and zstandard for Nuitka deployment. They are build dependencies; they are not application features. The build tools Nuitka and Ruff are likewise build-time dependencies, not part of the Python application's declared runtime requirements.
+PyInstaller and Ruff are build-time tools, not application features. PyInstaller is installed from `requirements-build-pyinstaller.txt`. The native `python-rtmidi` backend is optional and is only built when explicitly requested with `scripts/build_pyinstaller.py --with-midi`.
 
 ## Important Qt and FFmpeg conditions
 
-PySide6/Qt is available under LGPL/GPL and commercial terms. Packaging Qt libraries inside a one-file executable does not by itself establish compliance with the applicable licence. Before distributing the executable to other people, review the exact Qt modules and native libraries collected by the generated deployment spec and confirm that the LGPL/GPL requirements (including notices, source access and replaceability/relinking where applicable) are satisfied. A commercial Qt licence is an alternative where appropriate.
+PySide6/Qt is available under LGPL/GPL and commercial terms. Packaging Qt libraries inside a one-file executable does not by itself establish compliance with the applicable licence. Before distributing the executable to other people, review the exact Qt modules and native libraries collected by `AVTranslator.spec` and confirm that the LGPL/GPL requirements (including notices, source access and replaceability/relinking where applicable) are satisfied. A commercial Qt licence is an alternative where appropriate.
 
-PyAV's Python bindings are BSD-3-Clause, but a PyAV wheel also brings FFmpeg native libraries. The licence of those exact FFmpeg binaries depends on their configure options and enabled external libraries. Upstream discussion has raised a specific concern about GPL-enabled FFmpeg components in PyAV binary wheels. The pinned wheel's actual notices/configuration must therefore be inspected before public redistribution. The build self-check reports FFmpeg library versions; it does not prove licence compliance.
+PyAV's Python bindings are BSD-3-Clause, but a PyAV wheel also brings FFmpeg native libraries. The licence of those exact FFmpeg binaries depends on their configure options and enabled external libraries. The pinned wheel's actual notices/configuration must therefore be inspected before public redistribution. The build self-check reports FFmpeg library versions; it does not prove licence compliance.
 
 ## Bundled visual resources — clearance still required
 
