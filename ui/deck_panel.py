@@ -78,7 +78,9 @@ class DeckCard(QGroupBox):
         self.progress_bar.setValue(0)
         self.position_label = QLabel("--:-- / --:--")
         self.position_label.setObjectName("mutedLabel")
-        self.position_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+        self.position_label.setAlignment(
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+        )
         progress_row.addWidget(self.progress_bar, 1)
         progress_row.addWidget(self.position_label, 0)
         layout.addLayout(progress_row)
