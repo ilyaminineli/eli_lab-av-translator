@@ -203,7 +203,9 @@ void main() {
         * (0.65 + metadata.w * 0.7) * size_curve);
     vec2 corner = QUAD[gl_VertexID];
     vec2 clip_offset = corner * (2.0 * radius / max(u_output_size, vec2(1.0)));
-    gl_Position = vec4(state.xy * 2.0 - 1.0 + clip_offset, 0.0, 1.0);
+    // Match the compositor's top-left source-texture sampling convention.
+    vec2 clip_position = vec2(state.x * 2.0 - 1.0, 1.0 - state.y * 2.0);
+    gl_Position = vec4(clip_position + clip_offset, 0.0, 1.0);
     v_quad_uv = corner * 0.5 + 0.5;
 
     float color_mix = fract(metadata.w * 0.73 + float(index % 13) * 0.037);
@@ -404,6 +406,9 @@ class ParticleSystem2:
         self.signature = signature
         self.accumulator = 0.0
         self.last_time = None
+        self.trail_index = 0
+        for framebuffer in self.trail_framebuffers:
+            framebuffer.clear(0.0, 0.0, 0.0, 0.0)
 
     def _ensure_trails(self, width: int, height: int) -> None:
         size = (
@@ -582,7 +587,7 @@ class ParticleSystem2:
         if normalized_trail > 0.0001:
             self.trail_textures[self.trail_index].use(location=0)
             tail_seconds = 0.08 + normalized_trail * 2.4
-            decay = math.exp(-max(frame_delta, self.FIXED_STEP) / tail_seconds)
+            decay = math.exp(-max(frame_delta, 1.0 / 240.0) / tail_seconds)
             self.trail_program["u_decay"].value = decay
             self.trail_vao.render(mode=moderngl.TRIANGLE_STRIP)
         else:
