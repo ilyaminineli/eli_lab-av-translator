@@ -46,14 +46,23 @@ uniform float u_drag;
 layout(location = 0) out vec4 out_state;
 layout(location = 1) out vec4 out_metadata;
 
-float random_value(float value) {
-    return fract(sin(value) * 43758.5453123);
+uint hash_u32(uint value) {
+    value ^= value >> 16;
+    value *= 0x7feb352du;
+    value ^= value >> 15;
+    value *= 0x846ca68bu;
+    value ^= value >> 16;
+    return value;
 }
 
-vec2 random_pair(float value) {
+float random_value(uint value) {
+    return float(hash_u32(value) & 0x00ffffffu) / 16777216.0;
+}
+
+vec2 random_pair(uint value) {
     return vec2(
-        random_value(value * 1.173 + 19.19),
-        random_value(value * 2.417 + 71.71)
+        random_value(value ^ 0x9e3779b9u),
+        random_value(value ^ 0x85ebca6bu)
     );
 }
 
@@ -76,10 +85,10 @@ void main() {
 
     if (age >= lifetime || lifetime <= 0.0) {
         cycle += 1.0;
-        float key = float(particle_index) * 17.17
-            + cycle * 91.73 + float(u_seed) * 0.0137;
+        uint key = uint(particle_index) * 0x9e3779b9u
+            ^ uint(cycle) * 0x85ebca6bu ^ uint(u_seed);
         vec2 random_a = random_pair(key);
-        vec2 random_b = random_pair(key + 37.31);
+        vec2 random_b = random_pair(key ^ 0x68bc21ebu);
         vec2 position = u_emitter_center;
 
         if (u_emitter_type == 1) {
@@ -110,7 +119,7 @@ void main() {
         float life_factor = 0.75 + random_b.y * 0.5;
         age = 0.0;
         lifetime = max(0.05, u_lifetime * life_factor);
-        size_variation = random_value(key + 119.0);
+        size_variation = random_value(key ^ 0x02e5be93u);
         state = vec4(position, velocity);
     } else {
         vec2 position = state.xy;
@@ -594,10 +603,17 @@ class ParticleSystem2:
             self.trail_framebuffers[next_index].clear(0.0, 0.0, 0.0, 0.0)
 
         self.ctx.enable(moderngl.BLEND)
-        self.ctx.blend_func = (moderngl.SRC_ALPHA, moderngl.ONE_MINUS_SRC_ALPHA)
-        for index, population in enumerate(self.populations):
-            self._draw_population(population, normalized, index)
-        self.ctx.disable(moderngl.BLEND)
+        self.ctx.blend_func = (
+            moderngl.SRC_ALPHA,
+            moderngl.ONE_MINUS_SRC_ALPHA,
+            moderngl.ONE,
+            moderngl.ONE_MINUS_SRC_ALPHA,
+        )
+        try:
+            for index, population in enumerate(self.populations):
+                self._draw_population(population, normalized, index)
+        finally:
+            self.ctx.disable(moderngl.BLEND)
         self.trail_index = next_index
         return self.trail_textures[self.trail_index]
 
