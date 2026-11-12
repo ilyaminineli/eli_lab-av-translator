@@ -163,7 +163,7 @@ class PerformanceScene:
         if self.cue and (
                 len(self.cue) > 64
                 or any(
-                    not (character.isalnum() or character in "_.:-")
+                    character not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.:-"
                     for character in self.cue
                 )
         ):
