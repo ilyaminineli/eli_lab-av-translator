@@ -50,7 +50,7 @@ from core.project_manager import ProjectManager
 from core.scene_profiles import SceneProfile, SceneProfileRegistry
 from effects.settings import EffectSettings
 from generators.catalog import GENERATOR_TYPES, default_generator_settings, normalize_settings
-from generators.palettes import palette_look
+from generators.palettes import palette_look, palette_names
 from media.asset_index import VisualAssetIndex
 from media.frame_queue import FrameSnapshot
 from media.image_overlay import ImageOverlayPlayer
