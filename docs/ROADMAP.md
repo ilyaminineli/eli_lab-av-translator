@@ -373,7 +373,7 @@ See [M5 Autonomous Performance](M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance E
 
 ## Status
 
-**In progress — M6-A1 initial live-deck surface.** M6-A0 has defined the operator model, media-bin semantics, multi-trigger policy, quantization and transition design decisions. The first A1 UI increment is on `m6/a1-live-deck-surface`; it improves per-deck identity/state, metadata, position feedback, layer mapping, transport, frame hold and restart. Media bins, synchronized multi-trigger and transitions remain subsequent slices. M6 builds on the existing four video decks, media library, composition/layer model, transport quantization, automation and preview/projector renderers.
+**In progress — M6-A1, M6-B1 and M6-C1 foundations.** The initial live-deck surface (A1) and full VJ Scene Bank capture/recall (B1) are merged to `main`. C1 advanced visual transformations is now being implemented on `m6/c1-advanced-visual-transformations`, adding GPU geometry remapping, layer-driven displacement and per-output temporal feedback. Media bins, synchronized multi-trigger, scene transitions and the later advanced-transform slices remain open.
 
 ## A. A proper live mixer
 
@@ -412,6 +412,12 @@ The detailed initial scope and staged acceptance checklist are in [M6 Advanced V
 
 See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md) for implementation details and acceptance criteria.
 
+## M6-C — Advanced Visual Transformations
+
+**C1 implementation in progress.** Extend the ModernGL compositor with GPU-only image geometry and temporal processing. The first slice includes kaleidoscope, polar remapping, mosaic/tile, directional scan displacement, selectable layer-driven displacement maps, edge extraction, ordered dithering and a dedicated feedback engine with bounded per-renderer GPU history. Feedback exposes amount, decay, zoom, rotation, translation, colour shift, distortion, motion-driven warp, datamosh blocks, blend mode, short frame delay, freeze and reset.
+
+Directional scan sorting is a controlled shader approximation, not a full image-region sorting algorithm. Motion-driven warp is temporal-difference/gradient driven, not a dense optical-flow solver. These limitations and later C2/C3 work are documented in [M6-C — Advanced Visual Transformations](M6_C_ADVANCED_VISUAL_TRANSFORMATIONS.md).
+
 ## Engineering principles across all milestones
 
 1. **Rendering must stay isolated.** Decoder, audio and OSC workers publish data; only the relevant render context owns and changes its GPU resources.
@@ -425,10 +431,10 @@ See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md) fo
 
 ## Immediate next implementation order
 
-1. Continue M6-A2: add named media bins and explicit clip routing, then move to atomic multi-trigger and mixing/transitions.
-2. Continue M6-B1: complete validation of full-scene capture/recall and scene triggers, then proceed to the dedicated transition engine.
-3. Continue M5 target-machine validation in parallel: full SONATA run, loopback reconnect, four-deck generator/text stress, projector hot-plug and long-duration rehearsal.
-4. Continue the independent Video Mixer Completion Gate; do not infer hardware release readiness from static CI.
-5. Keep master-output recording/audio muxing as a separately scoped delivery item unless explicitly brought back into a milestone.
+1. Continue M6-C1: validate GPU feedback/geometry behaviour on the target Windows GPU, including resize, freeze/reset, delay and dual-output independence.
+2. Continue M6-A2/A3: named media bins, explicit deck routing, atomic multi-trigger and quantization.
+3. Continue M6-B2: dual-scene transition engine, then scene sequences and parameter locks.
+4. Continue M5 target-machine validation in parallel: full SONATA run, loopback reconnect, four-deck generator/text stress, projector hot-plug and long-duration rehearsal.
+5. Continue the independent Video Mixer Completion Gate; do not infer hardware release readiness from static CI. Keep master-output recording/audio muxing separately scoped.
 
 See [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md) for the current M6-A scope and acceptance criteria.

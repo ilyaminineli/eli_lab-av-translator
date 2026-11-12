@@ -95,6 +95,18 @@ See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md) fo
 
 **Current B1 boundary:** compatible numeric parameters morph using the configured curve. Media source, text/generator content and other discrete settings currently use an explicit cut. Dual-scene crossfade, midpoint source switching, fade-through-black, scene sequences and per-parameter locks are not yet implemented.
 
+## C. Advanced visual transformations
+
+The advanced visual path extends the existing ModernGL compositor without moving image processing to the CPU. C1 introduces the first GPU-side geometry and temporal effects:
+
+- Kaleidoscope radial symmetry, polar-coordinate remapping, mosaic/tile and directional luminance-gated scan displacement.
+- A displacement map sourced from another layer's existing GPU texture, with RG/luma interpretation and scale/amount controls.
+- Edge extraction and ordered dithering alongside the existing posterize controls.
+- A per-output feedback engine backed by a bounded five-texture GPU history ring. Controls include amount, decay, zoom, rotation, translation, colour shift, distortion, motion-difference-driven warp, block displacement, blend mode and up to three frames of delay.
+- Feedback freeze and generation-based reset; history remains local to each output's GL context and is never serialized as a GPU resource.
+
+The C1 directional scan-sort and motion-driven warp are intentionally shader approximations, not a full GPU sort algorithm or a dense optical-flow solver. Full pixel sorting, high-quality flow estimation, dedicated line-composition tools and multi-stage temporal transitions remain later C slices. See [M6-C — Advanced Visual Transformations](M6_C_ADVANCED_VISUAL_TRANSFORMATIONS.md).
+
 ## Acceptance criteria
 
 M6-A is ready for operator rehearsal when:

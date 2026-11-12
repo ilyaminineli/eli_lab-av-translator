@@ -7,6 +7,7 @@ from core.composition import Layer
 from effects.layer_settings import normalize_layer_effects
 from effects.settings import EffectSettings
 from generators.catalog import animation_code, text_animation_code
+from rendering.feedback import FeedbackEngine
 
 _VERTEX_SHADER = """#version 330
 in vec2 in_position;
@@ -342,6 +343,21 @@ uniform float u_invert;
 uniform float u_halftone;
 uniform float u_solarize;
 uniform float u_mix;
+uniform sampler2D u_displacement_map;
+uniform int u_displacement_enabled;
+uniform int u_displacement_luma;
+uniform int u_transform_mode;
+uniform float u_transform_mix;
+uniform float u_kaleidoscope_slices;
+uniform float u_kaleidoscope_rotation;
+uniform float u_kaleidoscope_zoom;
+uniform float u_mosaic_tiles;
+uniform float u_pixel_sort_amount;
+uniform float u_pixel_sort_threshold;
+uniform float u_edge_amount;
+uniform float u_dither;
+uniform float u_displacement_amount;
+uniform float u_displacement_scale;
 
 in vec2 v_uv;
 out vec4 frag_color;
@@ -353,8 +369,53 @@ float hash21(vec2 p) {
 }
 
 void main() {
-    vec3 original_color = texture(u_texture, v_uv).rgb;
     vec2 uv = v_uv;
+    float aspect = u_resolution.x / max(u_resolution.y, 1.0);
+    if (u_transform_mode == 1) {
+        vec2 centered = (uv - vec2(0.5)) * vec2(aspect, 1.0);
+        float radius = length(centered) / max(u_kaleidoscope_zoom, 0.01);
+        float angle = atan(centered.y, centered.x) - radians(u_kaleidoscope_rotation);
+        float slice_angle = 6.2831853 / max(u_kaleidoscope_slices, 2.0);
+        angle = abs(mod(angle + slice_angle * 0.5, slice_angle) - slice_angle * 0.5);
+        centered = vec2(cos(angle), sin(angle)) * radius;
+        uv = vec2(centered.x / max(aspect, 0.001), centered.y) + vec2(0.5);
+    } else if (u_transform_mode == 2) {
+        vec2 centered = (uv - vec2(0.5)) * vec2(aspect, 1.0);
+        float angle = atan(centered.y, centered.x);
+        float radius = length(centered) * 1.41421356;
+        uv = vec2(fract(angle / 6.2831853 + 0.5), clamp(radius, 0.0, 1.0));
+    } else if (u_transform_mode == 3) {
+        vec2 grid = vec2(max(4.0, u_mosaic_tiles) * aspect, max(4.0, u_mosaic_tiles));
+        uv = (floor(uv * grid) + vec2(0.5)) / grid;
+    } else if (u_transform_mode == 4) {
+        float source_luma = dot(texture(u_texture, uv).rgb, vec3(0.2126, 0.7152, 0.0722));
+        float gate = smoothstep(
+            u_pixel_sort_threshold - 0.04,
+            u_pixel_sort_threshold + 0.04,
+            source_luma
+        );
+        float row = floor(uv.y * u_resolution.y / 3.0);
+        float scan_seed = hash21(vec2(row, floor(u_time * 3.0)));
+        uv.x += (scan_seed - 0.5) * u_pixel_sort_amount * 0.18 * gate;
+    }
+    if (u_displacement_enabled == 1) {
+        vec2 map_uv = fract(uv * max(u_displacement_scale, 0.01));
+        vec4 map_value = texture(u_displacement_map, map_uv);
+        vec2 displacement = map_value.rg * 2.0 - 1.0;
+        if (u_displacement_luma == 1) {
+            float map_luma = dot(map_value.rgb, vec3(0.2126, 0.7152, 0.0722));
+            displacement = vec2(map_luma * 2.0 - 1.0);
+        }
+        uv += displacement * u_displacement_amount * 0.06;
+    }
+    uv = clamp(uv, vec2(0.001), vec2(0.999));
+    vec3 untransformed_color = texture(u_texture, v_uv).rgb;
+    vec3 transformed_color = texture(u_texture, uv).rgb;
+    vec3 original_color = mix(
+        untransformed_color,
+        transformed_color,
+        clamp(u_transform_mix, 0.0, 1.0)
+    );
 
     float row_seed = hash21(vec2(floor(uv.y * u_resolution.y), floor(u_time * 19.0)));
     float glitch_gate = step(0.986, row_seed) * u_glitch;
@@ -398,9 +459,53 @@ void main() {
         yiq_y - 1.106 * rotated_i + 1.703 * rotated_q
     );
 
-    if (u_posterize > 0.001) {
+    if (u_posterize > 0.001 || u_dither > 0.001) {
         float levels = mix(24.0, 3.0, clamp(u_posterize, 0.0, 1.0));
-        color = floor(clamp(color, 0.0, 1.0) * levels) / levels;
+        vec2 ordered_cell = mod(floor(gl_FragCoord.xy), 4.0);
+        float ordered_rank = mod(
+            ordered_cell.x * 2.0 + ordered_cell.y * 3.0
+                + ordered_cell.x * ordered_cell.y * 5.0,
+            16.0
+        ) / 16.0;
+        float dither_offset = (ordered_rank - 0.5) * u_dither / levels;
+        color = floor(clamp(color + dither_offset, 0.0, 1.0) * levels) / levels;
+    }
+    if (u_edge_amount > 0.001) {
+        vec2 pixel = 1.0 / max(u_resolution, vec2(1.0));
+        float left_luma = dot(
+            texture(
+                u_texture,
+                clamp(uv - vec2(pixel.x, 0.0), vec2(0.0), vec2(1.0))
+            ).rgb,
+            vec3(0.2126, 0.7152, 0.0722)
+        );
+        float right_luma = dot(
+            texture(
+                u_texture,
+                clamp(uv + vec2(pixel.x, 0.0), vec2(0.0), vec2(1.0))
+            ).rgb,
+            vec3(0.2126, 0.7152, 0.0722)
+        );
+        float down_luma = dot(
+            texture(
+                u_texture,
+                clamp(uv - vec2(0.0, pixel.y), vec2(0.0), vec2(1.0))
+            ).rgb,
+            vec3(0.2126, 0.7152, 0.0722)
+        );
+        float up_luma = dot(
+            texture(
+                u_texture,
+                clamp(uv + vec2(0.0, pixel.y), vec2(0.0), vec2(1.0))
+            ).rgb,
+            vec3(0.2126, 0.7152, 0.0722)
+        );
+        float edge_value = clamp(
+            length(vec2(right_luma - left_luma, up_luma - down_luma)) * 2.4,
+            0.0,
+            1.0
+        );
+        color = mix(color, vec3(edge_value), u_edge_amount);
     }
     color = mix(color, vec3(1.0) - color, clamp(u_invert, 0.0, 1.0));
 
@@ -501,6 +606,7 @@ class Compositor:
         self.composite_program["u_particle_mode"].value = 0
         self.composite_program["u_layer_fx_enabled"].value = 0
         self.post_program["u_texture"].value = 0
+        self.post_program["u_displacement_map"].value = 1
         self.particle_stub = context.texture(
             (1, 1),
             4,
@@ -513,6 +619,9 @@ class Compositor:
         self.source_textures: dict[str, moderngl.Texture] = {}
         self.targets: list[moderngl.Texture] = []
         self.framebuffers: list[moderngl.Framebuffer] = []
+        self.post_target: moderngl.Texture | None = None
+        self.post_framebuffer: moderngl.Framebuffer | None = None
+        self.feedback_engine = FeedbackEngine(context, self.vertex_buffer)
         self.size = (0, 0)
 
     @staticmethod
@@ -569,6 +678,13 @@ class Compositor:
             framebuffer = self.ctx.framebuffer(color_attachments=[texture])
             self.targets.append(texture)
             self.framebuffers.append(framebuffer)
+        self.post_target = self.ctx.texture((width, height), 4, dtype="f1")
+        self.post_target.filter = (moderngl.LINEAR, moderngl.LINEAR)
+        self.post_framebuffer = self.ctx.framebuffer(
+            color_attachments=[self.post_target]
+        )
+        if self.feedback_engine.size != (0, 0):
+            self.feedback_engine.resize(width, height)
         self.size = (width, height)
 
     def _apply_effects(
@@ -584,6 +700,14 @@ class Compositor:
         destination.use()
         self.ctx.viewport = (0, 0, width, height)
         texture.use(location=0)
+        displacement_texture = (
+            self.source_textures.get(effects.displacement_source_id)
+            if effects.displacement_source_id else None
+        )
+        if displacement_texture is None:
+            self.particle_stub.use(location=1)
+        else:
+            displacement_texture.use(location=1)
         effects.clamp()
         values = {
             "u_resolution": (float(width), float(height)),
@@ -607,6 +731,24 @@ class Compositor:
             "u_halftone": effects.halftone,
             "u_solarize": effects.solarize,
             "u_mix": effects.mix if effects.enabled else 0.0,
+            "u_displacement_enabled": int(
+                displacement_texture is not None and abs(effects.displacement_amount) > 0.0001
+            ),
+            "u_displacement_luma": int(effects.displacement_luma),
+            "u_transform_mode": {
+                "none": 0, "kaleidoscope": 1, "polar": 2, "mosaic": 3, "pixel_sort": 4,
+            }.get(effects.transform_mode, 0),
+            "u_transform_mix": effects.transform_mix,
+            "u_kaleidoscope_slices": float(effects.kaleidoscope_slices),
+            "u_kaleidoscope_rotation": effects.kaleidoscope_rotation,
+            "u_kaleidoscope_zoom": effects.kaleidoscope_zoom,
+            "u_mosaic_tiles": float(effects.mosaic_tiles),
+            "u_pixel_sort_amount": effects.pixel_sort_amount,
+            "u_pixel_sort_threshold": effects.pixel_sort_threshold,
+            "u_edge_amount": effects.edge_amount,
+            "u_dither": effects.dither,
+            "u_displacement_amount": effects.displacement_amount,
+            "u_displacement_scale": effects.displacement_scale,
         }
         for uniform_name, value in values.items():
             self.post_program[uniform_name].value = value
@@ -753,14 +895,33 @@ class Compositor:
             self.composite_vao.render(mode=moderngl.TRIANGLE_STRIP)
             current = next_target
 
+        active_effects = effects or EffectSettings()
+        active_effects.clamp()
+        feedback_active = (
+            active_effects.feedback_enabled and active_effects.feedback_amount > 0.0001
+        )
+        post_target_fbo = (
+            self.post_framebuffer.glo
+            if feedback_active and self.post_framebuffer is not None
+            else target_fbo
+        )
         self._apply_effects(
             self.targets[current],
-            target_fbo,
+            post_target_fbo,
             width,
             height,
-            effects or EffectSettings(),
+            active_effects,
             time_seconds,
         )
+        if feedback_active and self.post_target is not None:
+            self.feedback_engine.render(
+                self.post_target,
+                target_fbo,
+                width,
+                height,
+                active_effects,
+                time_seconds,
+            )
 
     def remove_texture(self, source_id: str) -> None:
         texture = self.source_textures.pop(source_id, None)
@@ -774,9 +935,16 @@ class Compositor:
             texture.release()
         self.framebuffers.clear()
         self.targets.clear()
+        if self.post_framebuffer is not None:
+            self.post_framebuffer.release()
+            self.post_framebuffer = None
+        if self.post_target is not None:
+            self.post_target.release()
+            self.post_target = None
 
     def release(self) -> None:
         self._release_targets()
+        self.feedback_engine.release()
         for texture in self.source_textures.values():
             texture.release()
         self.source_textures.clear()
