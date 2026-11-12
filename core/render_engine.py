@@ -159,10 +159,23 @@ class RenderEngine:
             if layer.id in self._pending_generator_errors:
                 self._generator_errors[layer.id] = self._pending_generator_errors.pop(layer.id)
                 self._generator_requested.pop(layer.id, None)
+                if (
+                        self.raster_service is not None
+                        and not self.raster_service.keep_last_valid_texture
+                ):
+                    self.compositor.remove_texture(source_id)
+                    self._generator_signatures.pop(layer.id, None)
             try:
                 from generators.rasterizer import GeneratorRasterizer
 
-                fingerprint = GeneratorRasterizer.fingerprint(layer)
+                if self.raster_service is not None:
+                    fingerprint = self.raster_service.fingerprint_for(
+                        layer.id,
+                        layer.generator_type or "geometry",
+                        dict(layer.generator_settings),
+                    )
+                else:
+                    fingerprint = GeneratorRasterizer.fingerprint(layer)
             except Exception as exc:
                 self._generator_errors[layer.id] = str(exc)
                 continue

@@ -77,37 +77,49 @@ class GeneratorRasterizer:
             layer_id: str,
             generator_type: str,
             raw_settings: dict[str, Any],
+            *,
+            width: int | None = None,
+            height: int | None = None,
     ) -> tuple[str, np.ndarray]:
-        """Render an immutable settings snapshot; safe to call from a worker thread."""
-        fingerprint = self.fingerprint_settings(generator_type, raw_settings)
+        """Render an immutable snapshot at its requested raster dimensions."""
+        target_width = max(320, int(width or self.width))
+        target_height = max(180, int(height or self.height))
+        fingerprint = self.fingerprint_settings(
+            generator_type, raw_settings, width=target_width, height=target_height
+        )
         cached = self._cache.get(layer_id)
         if cached and cached[0] == fingerprint:
             return cached
 
-        settings = normalize_settings(generator_type, raw_settings)
-        image = QImage(
-            self.width,
-            self.height,
-            QImage.Format.Format_RGBA8888,
-        )
-        image.fill(QColor(0, 0, 0, 0))
-        painter = QPainter(image)
+        previous_size = (self.width, self.height)
+        self.width, self.height = target_width, target_height
         try:
-            painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-            painter.setRenderHint(QPainter.RenderHint.TextAntialiasing, True)
-            if generator_type == "geometry":
-                self._draw_geometry(painter, settings)
-            elif generator_type == "text":
-                self._draw_text(painter, settings)
-            elif generator_type == "waveform":
-                self._draw_waveform(painter, settings)
+            settings = normalize_settings(generator_type, raw_settings)
+            image = QImage(
+                self.width,
+                self.height,
+                QImage.Format.Format_RGBA8888,
+            )
+            image.fill(QColor(0, 0, 0, 0))
+            painter = QPainter(image)
+            try:
+                painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+                painter.setRenderHint(QPainter.RenderHint.TextAntialiasing, True)
+                if generator_type == "geometry":
+                    self._draw_geometry(painter, settings)
+                elif generator_type == "text":
+                    self._draw_text(painter, settings)
+                elif generator_type == "waveform":
+                    self._draw_waveform(painter, settings)
+            finally:
+                painter.end()
+            rgba = image.bits().tobytes()
+            pixels = np.frombuffer(rgba, dtype=np.uint8).reshape(
+                self.height, self.width, 4
+            ).copy()
         finally:
-            painter.end()
+            self.width, self.height = previous_size
 
-        rgba = image.bits().tobytes()
-        pixels = np.frombuffer(rgba, dtype=np.uint8).reshape(
-            self.height, self.width, 4
-        ).copy()
         result = (fingerprint, pixels)
         self._cache[layer_id] = result
         return result
@@ -123,12 +135,15 @@ class GeneratorRasterizer:
     def fingerprint_settings(
             generator_type: str,
             raw_settings: dict[str, Any],
+            *,
+            width: int = GENERATOR_WIDTH,
+            height: int = GENERATOR_HEIGHT,
     ) -> str:
         settings = _static_raster_settings(generator_type, raw_settings)
         payload = {
             "type": generator_type,
             "settings": settings,
-            "size": [GENERATOR_WIDTH, GENERATOR_HEIGHT],
+            "size": [int(width), int(height)],
         }
         encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
         return hashlib.sha1(encoded).hexdigest()

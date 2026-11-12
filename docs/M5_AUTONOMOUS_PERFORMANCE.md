@@ -62,7 +62,23 @@ Text rendering keeps one shared raster texture and the existing compositor shade
 | Type-on, word/column reveal, line wave, glyph jitter, text scrolling and signal glitch | Existing GPU compositor shader |
 | Motion mode, speed, amount and reveal columns | Layer settings consumed as per-frame shader uniforms; no raster request |
 
-The raster fingerprint is built from the static settings projection. GPU-uniform keys are explicitly excluded in one shared definition, so changing motion cannot invalidate the text texture. The editor has a dedicated motion-control update path and timer; it changes only the four shader settings and never calls the raster service. Static typography retains the normal raster debounce/revision path. AUTO and other live generator mutation callbacks also compare the static fingerprint before submitting work, avoiding redundant requests when only shader uniforms changed.
+The raster fingerprint is built from the static settings projection and includes the requested raster dimensions. GPU-uniform keys are explicitly excluded in one shared definition, so changing motion cannot invalidate the text texture. The editor has a dedicated motion-control update path and timer; it changes only the four shader settings and never calls the raster service. Static typography retains the normal raster debounce/revision path. AUTO and other live generator mutation callbacks also compare the resolution-aware static fingerprint before submitting work, avoiding redundant requests when only shader uniforms changed.
+
+#### Text raster performance controls
+
+The TEXT RASTER PERFORMANCE section gives the operator independent controls over editing and raster work:
+
+- **Live Preview:** when enabled, committed text snapshots are rasterized automatically. When disabled, edits may still be committed to the composition, but the last uploaded texture is held until preview is re-enabled or Apply Immediately is invoked.
+- **Commit on pause:** commits the editor buffer after the short typing debounce. Turning it off leaves the buffer pending until an explicit apply or layer switch.
+- **Preview quality:** Draft (25%), Balanced (50%), High (75%) or Maximum (100%) scales CPU raster dimensions while retaining the 16:9 texture aspect ratio. The selected dimensions are part of the raster fingerprint so preview and projector renderers agree on the same snapshot.
+- **Full-resolution final rendering:** Apply Immediately can bypass preview scaling and submit a 1600×900 raster. This is an explicit operator action; motion uniforms stay GPU-side.
+- **Maximum raster rate:** text jobs start at no more than the configured 1–20 Hz rate (default 4 Hz). The single worker still coalesces to one pending snapshot per layer, and non-text generator jobs are not held behind the text-rate limiter.
+- **Freeze current text texture:** keeps the currently uploaded image visible while newer settings are retained as the newest deferred snapshot. Unfreezing schedules only that latest snapshot.
+- **Last-valid recovery:** when enabled (default), a failed replacement leaves the previous successful texture in each renderer. Disabling it explicitly clears the affected texture on the next raster failure.
+
+The status readout follows the service lifecycle: **EDITING → RASTERIZING → READY**. A failed render is shown as FAILED and indicates that the last valid texture is retained when recovery is enabled. A frozen layer reports FROZEN. These controls affect the text raster path only; shader motion, video decoding, layer effects and audio-reactive updates continue on their existing real-time paths.
+
+The four-deck/multi-layer acceptance test remains a target-machine rehearsal: keep all four video decks, several text and other generator layers, per-layer effects, audio reactivity and projector output active while continuously typing Japanese/English multiline text. Verify the editor remains responsive, obsolete rasters are discarded, no more than the configured number of text jobs start per second, and all renderers converge to the newest revision. Record GUI input responsiveness, raster duration, upload time, FPS and dropped-frame metrics. This repository-side implementation does not claim that hardware acceptance test has been performed.
 
 ### Modulator Bank
 
