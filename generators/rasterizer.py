@@ -24,6 +24,27 @@ from generators.catalog import normalize_settings
 GENERATOR_WIDTH = 1600
 GENERATOR_HEIGHT = 900
 
+_GPU_UNIFORM_SETTINGS = (
+    "animation",
+    "animation_speed",
+    "animation_amount",
+    "text_animation",
+    "text_animation_speed",
+    "text_animation_amount",
+    "text_animation_columns",
+)
+
+
+def _static_raster_settings(
+        generator_type: str,
+        raw_settings: dict[str, Any],
+) -> dict[str, Any]:
+    """Return only settings that change the CPU-rasterized generator image."""
+    settings = normalize_settings(generator_type, raw_settings)
+    for key in _GPU_UNIFORM_SETTINGS:
+        settings.pop(key, None)
+    return settings
+
 
 class GeneratorRasterizer:
     """Rasterizes static generator content once; animation stays in the GPU compositor."""
@@ -39,18 +60,10 @@ class GeneratorRasterizer:
 
     @staticmethod
     def fingerprint(layer: Layer) -> str:
-        settings = normalize_settings(
+        settings = _static_raster_settings(
             layer.generator_type or "geometry",
             layer.generator_settings,
         )
-        # Animation is evaluated in the compositor, so it must not invalidate
-        # the static raster texture or trigger another CPU-side text/shape pass.
-        for key in (
-                "animation", "animation_speed", "animation_amount",
-                "text_animation", "text_animation_speed", "text_animation_amount",
-                "text_animation_columns",
-        ):
-            settings.pop(key, None)
         payload = {
             "type": layer.generator_type,
             "settings": settings,
@@ -59,17 +72,29 @@ class GeneratorRasterizer:
         encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
         return hashlib.sha1(encoded).hexdigest()
 
-    def render(self, layer: Layer) -> tuple[str, np.ndarray]:
-        generator_type = layer.generator_type or "geometry"
-        fingerprint = self.fingerprint(layer)
-        cached = self._cache.get(layer.id)
+    def render_settings(
+            self,
+            layer_id: str,
+            generator_type: str,
+            raw_settings: dict[str, Any],
+            *,
+            width: int | None = None,
+            height: int | None = None,
+    ) -> tuple[str, np.ndarray]:
+        """Render an immutable snapshot at its requested raster dimensions."""
+        target_width = max(320, int(width or self.width))
+        target_height = max(180, int(height or self.height))
+        fingerprint = self.fingerprint_settings(
+            generator_type, raw_settings, width=target_width, height=target_height
+        )
+        cached = self._cache.get(layer_id)
         if cached and cached[0] == fingerprint:
             return cached
 
-        settings = normalize_settings(generator_type, layer.generator_settings)
+        settings = normalize_settings(generator_type, raw_settings)
         image = QImage(
-            self.width,
-            self.height,
+            target_width,
+            target_height,
             QImage.Format.Format_RGBA8888,
         )
         image.fill(QColor(0, 0, 0, 0))
@@ -77,6 +102,13 @@ class GeneratorRasterizer:
         try:
             painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
             painter.setRenderHint(QPainter.RenderHint.TextAntialiasing, True)
+            # Draw in the canonical 1600×900 coordinate space, then scale the
+            # painter as a whole. Font sizes, margins, strokes and collage
+            # placement therefore retain the same proportions in draft preview.
+            painter.scale(
+                target_width / self.width,
+                target_height / self.height,
+            )
             if generator_type == "geometry":
                 self._draw_geometry(painter, settings)
             elif generator_type == "text":
@@ -85,14 +117,38 @@ class GeneratorRasterizer:
                 self._draw_waveform(painter, settings)
         finally:
             painter.end()
-
         rgba = image.bits().tobytes()
         pixels = np.frombuffer(rgba, dtype=np.uint8).reshape(
-            self.height, self.width, 4
+            target_height, target_width, 4
         ).copy()
+
         result = (fingerprint, pixels)
-        self._cache[layer.id] = result
+        self._cache[layer_id] = result
         return result
+
+    def render(self, layer: Layer) -> tuple[str, np.ndarray]:
+        return self.render_settings(
+            layer.id,
+            layer.generator_type or "geometry",
+            dict(layer.generator_settings),
+        )
+
+    @staticmethod
+    def fingerprint_settings(
+            generator_type: str,
+            raw_settings: dict[str, Any],
+            *,
+            width: int = GENERATOR_WIDTH,
+            height: int = GENERATOR_HEIGHT,
+    ) -> str:
+        settings = _static_raster_settings(generator_type, raw_settings)
+        payload = {
+            "type": generator_type,
+            "settings": settings,
+            "size": [int(width), int(height)],
+        }
+        encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
+        return hashlib.sha1(encoded).hexdigest()
 
     def remove_missing(self, layer_ids: set[str]) -> None:
         for layer_id in tuple(self._cache):

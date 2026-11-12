@@ -230,8 +230,14 @@ class SceneMorph:
 
     def value(self, now: float | None = None) -> tuple[float, dict[str, float]]:
         stamp = time.monotonic() if now is None else float(now)
-        fraction = 1.0 if self.duration <= 0 else max(0.0, min(1.0,
-                                                               (stamp - self.started_at) / self.duration))
+        fraction = (
+            1.0
+            if self.duration <= 0
+            else max(
+                0.0,
+                min(1.0, (stamp - self.started_at) / self.duration),
+            )
+        )
         eased = fraction * fraction * (3.0 - 2.0 * fraction)
         return fraction, {key: self.start[key] + (self.end[key] - self.start[key]) * eased
                           for key in self.start.keys() & self.end.keys()}
@@ -266,8 +272,10 @@ class MIDIInputService:
         self.stop()
         try:
             import mido
-            self._port = mido.open_input(device_name,
-                                         callback=lambda message: self._receive(device_name, message))
+            self._port = mido.open_input(
+                device_name,
+                callback=lambda message: self._receive(device_name, message),
+            )
             self.device_id = str(device_name)
             self.state, self.error = "running", ""
             return True

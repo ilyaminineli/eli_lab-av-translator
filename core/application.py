@@ -88,6 +88,9 @@ class Application:
     """Coordinates application services without depending on Qt widgets."""
 
     def __init__(self) -> None:
+        from generators.raster_service import GeneratorRasterService
+
+        self.generator_raster_service = GeneratorRasterService()
         self.events = EventBus()
         self.control_events = ControlEventQueue()
         self.osc_receiver = OSCReceiver(self.submit_control_event)
@@ -126,6 +129,7 @@ class Application:
         # Built-in and user assets are indexed lazily when the asset-library dock opens.
         self.performance_manager = PerformanceManager()
         self.automation = AutomationDirector()
+        self.automation.generator_settings_changed = self._request_generator_raster
         self.effects = EffectSettings()
         self.decks: dict[str, VideoDeck] = {
             deck_id: VideoDeck(deck_id) for deck_id in VIDEO_DECK_IDS
@@ -141,6 +145,23 @@ class Application:
         self._create_default_layers()
         self.current_project_path: Path | None = None
         self.window: Any | None = None
+
+    def _request_generator_raster(self, layer: Layer) -> None:
+        """Advance the shared render revision after a live generator mutation."""
+        if layer.source_type != "generator" or not layer.generator_type:
+            return
+        if layer.generator_type == "particles":
+            return
+        settings = dict(layer.generator_settings)
+        if self.generator_raster_service.has_latest_snapshot(
+                layer.id, layer.generator_type, settings
+        ):
+            return
+        self.generator_raster_service.request(
+            layer.id,
+            layer.generator_type,
+            settings,
+        )
 
     def _create_default_layers(self) -> None:
         positions = ((0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75))
@@ -296,6 +317,7 @@ class Application:
         self._overlay_frames.clear()
 
     def remove_layer(self, layer_id: str) -> bool:
+        self.generator_raster_service.invalidate(layer_id)
         layer = self.composition.get_layer(layer_id)
         if layer is not None and layer.source_type == "overlay":
             self._remove_overlay_runtime(layer_id)
@@ -320,6 +342,7 @@ class Application:
             deck.locked = False
             deck.set_loop(True)
         self._frame_snapshots.clear()
+        self.generator_raster_service.invalidate_missing(set())
         self.composition = Composition()
         self.layer_manager = LayerManager(self.composition, self.events)
         self._create_default_layers()
@@ -1015,6 +1038,7 @@ class Application:
                     if key in values and key in palette:
                         values[key] = palette[key]
                 layer.generator_settings = normalize_settings(layer.generator_type, values)
+                self._request_generator_raster(layer)
         self.events.publish(
             "performance.scene.activated",
             profile=profile.to_dict(),
@@ -1330,6 +1354,7 @@ class Application:
                 else float(value)
             )
             layer.generator_settings = normalize_settings(layer.generator_type, settings)
+            self._request_generator_raster(layer)
             return True
         if target_id.startswith("overlay."):
             player = self._overlay_images.get(layer.id)
@@ -1670,6 +1695,7 @@ class Application:
                 else float(value)
             )
             layer.generator_settings = normalize_settings(layer.generator_type, settings)
+            self._request_generator_raster(layer)
             self.events.publish("layer.modulated", layer_id=layer.id, target=target_id)
             return True
 
@@ -2504,6 +2530,7 @@ class Application:
             deck.locked = False
 
         self._frame_snapshots.clear()
+        self.generator_raster_service.invalidate_missing(set())
         self.composition = composition
         self.layer_manager = LayerManager(self.composition, self.events)
         for layer in self.composition.layers:
@@ -2611,6 +2638,7 @@ class Application:
     def shutdown(self) -> None:
         if self.performance_mode.enabled:
             self.stop_performance_mode()
+        self.generator_raster_service.shutdown()
         self.midi_input.stop()
         self.osc_receiver.stop()
         self.control_events.clear()

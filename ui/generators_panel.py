@@ -100,7 +100,78 @@ class GeneratorsPanel(QWidget):
         )
         self.text_edit.setMinimumHeight(84)
         self.text_edit.setMaximumHeight(120)
-        text_form.addRow("CONTENT", self.text_edit)
+        text_form.addRow("CONTENT · EDIT BUFFER", self.text_edit)
+
+        raster_group = QGroupBox("TEXT RASTER PERFORMANCE")
+        raster_form = QFormLayout(raster_group)
+        self.text_live_preview_check = QCheckBox("Live preview")
+        self.text_live_preview_check.setChecked(True)
+        self.text_live_preview_check.setToolTip(
+            "When off, edits still commit to the composition but raster updates wait "
+            "until Live Preview is enabled or Apply Immediately is pressed."
+        )
+        raster_form.addRow("PREVIEW", self.text_live_preview_check)
+        self.text_commit_pause_check = QCheckBox("Commit after typing pause")
+        self.text_commit_pause_check.setChecked(True)
+        self.text_commit_pause_check.setToolTip(
+            "Automatically commit the editor buffer after the short typing debounce."
+        )
+        raster_form.addRow("COMMIT", self.text_commit_pause_check)
+        self.text_preview_quality_combo = QComboBox()
+        for label, scale in (
+                ("Draft · 25%", 0.25),
+                ("Balanced · 50%", 0.5),
+                ("High · 75%", 0.75),
+                ("Maximum · 100%", 1.0),
+        ):
+            self.text_preview_quality_combo.addItem(label, scale)
+        self.text_preview_quality_combo.setCurrentIndex(1)
+        raster_form.addRow("PREVIEW QUALITY", self.text_preview_quality_combo)
+        self.text_final_resolution_check = QCheckBox(
+            "Use full resolution for Apply Immediately"
+        )
+        self.text_final_resolution_check.setChecked(True)
+        raster_form.addRow("FINAL RENDER", self.text_final_resolution_check)
+        self.text_update_rate_spin = QSpinBox()
+        self.text_update_rate_spin.setRange(1, 20)
+        self.text_update_rate_spin.setValue(4)
+        self.text_update_rate_spin.setSuffix(" Hz")
+        self.text_update_rate_spin.setToolTip(
+            "Maximum start rate for CPU text raster jobs. "
+            "Newer pending snapshots replace older ones."
+        )
+        raster_form.addRow("MAX RASTER RATE", self.text_update_rate_spin)
+        self.text_freeze_check = QCheckBox("Freeze current text texture")
+        self.text_freeze_check.setToolTip(
+            "Hold the last uploaded text texture. Edits are coalesced and rasterized when unfrozen."
+        )
+        raster_form.addRow("TEXTURE", self.text_freeze_check)
+        self.text_fallback_check = QCheckBox(
+            "Keep last valid texture if rasterization fails"
+        )
+        self.text_fallback_check.setChecked(True)
+        self.text_fallback_check.setToolTip(
+            "When enabled, renderers retain their last successful texture after a raster error."
+        )
+        raster_form.addRow("RECOVERY", self.text_fallback_check)
+        self.text_raster_status = QLabel("TEXT PIPELINE · READY")
+        self.text_raster_status.setObjectName("mutedLabel")
+        self.text_raster_status.setToolTip(
+            "EDITING → RASTERIZING → READY. "
+            "A failed render preserves the last valid texture when recovery is enabled."
+        )
+        raster_form.addRow("STATUS", self.text_raster_status)
+        self.apply_text_now_button = QPushButton("APPLY IMMEDIATELY")
+        self.apply_text_now_button.setToolTip(
+            "Commit current text and typography now, bypassing the pause debounce "
+            "and using final resolution when enabled."
+        )
+        raster_form.addRow(self.apply_text_now_button)
+        text_form.addRow(raster_group)
+
+        static_raster_heading = QLabel("STATIC TYPOGRAPHY · CPU RASTER")
+        static_raster_heading.setObjectName("sectionHeading")
+        text_form.addRow(static_raster_heading)
 
         self.text_layout_combo = QComboBox()
         self.text_layout_combo.addItem("Single text block", "single")
@@ -158,24 +229,27 @@ class GeneratorsPanel(QWidget):
         self.collage_variation_slider, self.collage_variation_value = self._slider(
             text_form, "COLLAGE VARIATION", 0, 100, 65
         )
+        self.text_motion_group = QGroupBox("ANIMATED TYPOGRAPHY · GPU SHADER")
+        motion_form = QFormLayout(self.text_motion_group)
         self.text_animation_combo = QComboBox()
         self.text_animation_combo.addItem("None", "none")
         self.text_animation_combo.addItem("Type-on", "type_on")
         self.text_animation_combo.addItem("Word / column reveal", "word_reveal")
         self.text_animation_combo.addItem("Line wave", "line_wave")
         self.text_animation_combo.addItem("Glyph jitter", "jitter")
-        self.text_animation_combo.addItem("Crawl", "crawl")
+        self.text_animation_combo.addItem("Text scrolling", "crawl")
         self.text_animation_combo.addItem("Signal glitch", "glitch")
-        text_form.addRow("TEXT MOTION", self.text_animation_combo)
+        motion_form.addRow("MOTION", self.text_animation_combo)
         self.text_animation_speed_slider, self.text_animation_speed_value = self._slider(
-            text_form, "MOTION SPEED", 0, 800, 100
+            motion_form, "MOTION SPEED", 0, 800, 100
         )
         self.text_animation_amount_slider, self.text_animation_amount_value = self._slider(
-            text_form, "MOTION AMOUNT", 0, 180, 25
+            motion_form, "MOTION AMOUNT", 0, 180, 25
         )
         self.text_animation_columns_slider, self.text_animation_columns_value = self._slider(
-            text_form, "REVEAL STEPS", 2, 80, 18
+            motion_form, "REVEAL STEPS", 2, 80, 18
         )
+        text_form.addRow(self.text_motion_group)
 
         random_group = QGroupBox("RANDOM TEXT POOL · ENGLISH / 日本語")
         random_form = QFormLayout(random_group)
@@ -393,11 +467,43 @@ class GeneratorsPanel(QWidget):
         self.import_palette_button.clicked.connect(self.import_palette)
         self.apply_button.clicked.connect(self.apply_settings)
         self.random_text_button.clicked.connect(self.randomize_text)
+        self.apply_text_now_button.clicked.connect(self.apply_text_immediately)
+        self.text_live_preview_check.toggled.connect(self._text_live_preview_toggled)
+        self.text_commit_pause_check.toggled.connect(self._commit_on_pause_toggled)
+        self.text_preview_quality_combo.currentIndexChanged.connect(
+            self._text_preview_quality_changed
+        )
+        self.text_update_rate_spin.valueChanged.connect(
+            self.application.generator_raster_service.set_max_text_update_hz
+        )
+        self.text_freeze_check.toggled.connect(self._text_freeze_toggled)
+        self.text_fallback_check.toggled.connect(
+            self.application.generator_raster_service.set_keep_last_valid_texture
+        )
+        service = self.application.generator_raster_service
+        service.raster_started.connect(self._on_text_raster_started)
+        service.raster_ready.connect(self._on_text_raster_ready)
+        service.raster_failed.connect(self._on_text_raster_failed)
+        service.set_max_text_update_hz(self.text_update_rate_spin.value())
+        service.set_keep_last_valid_texture(self.text_fallback_check.isChecked())
         self._collage_seed = 211
         self._apply_timer = QTimer(self)
         self._apply_timer.setSingleShot(True)
         self._apply_timer.setInterval(150)
-        self._apply_timer.timeout.connect(self.apply_settings)
+        self._apply_timer.timeout.connect(self._flush_generator_settings)
+        self._text_commit_timer = QTimer(self)
+        self._text_commit_timer.setSingleShot(True)
+        self._text_commit_timer.setInterval(280)
+        self._text_commit_timer.timeout.connect(self.commit_text)
+        self._text_motion_timer = QTimer(self)
+        self._text_motion_timer.setSingleShot(True)
+        self._text_motion_timer.setInterval(24)
+        self._text_motion_timer.timeout.connect(self._flush_text_motion_settings)
+        self._editing_text_buffer = ""
+        self._committed_text = ""
+        self._pending_text_layer_id: str | None = None
+        self._pending_text_motion_layer_id: str | None = None
+        self._pending_settings_layer_id: str | None = None
         self._connect_live_updates()
         self.refresh()
 
@@ -424,7 +530,6 @@ class GeneratorsPanel(QWidget):
 
     def _connect_live_updates(self) -> None:
         for widget in (
-                self.text_edit,
                 self.font_combo,
                 self.weight_combo,
                 self.text_color_mode_combo,
@@ -436,7 +541,6 @@ class GeneratorsPanel(QWidget):
                 self.secondary_color,
                 self.background_color,
                 self.animation_combo,
-                self.text_animation_combo,
                 self.geometry_pattern_combo,
                 self.waveform_pattern_combo,
                 self.particle_mode_combo,
@@ -446,15 +550,13 @@ class GeneratorsPanel(QWidget):
                 signal = getattr(widget, "currentTextChanged", None)
             if signal is not None:
                 signal.connect(self._schedule_apply)
+        self.text_edit.textChanged.connect(self._text_buffer_changed)
         for slider in (
                 self.text_size_slider,
                 self.tracking_slider,
                 self.line_spacing_slider,
                 self.text_outline_slider,
                 self.collage_variation_slider,
-                self.text_animation_speed_slider,
-                self.text_animation_amount_slider,
-                self.text_animation_columns_slider,
                 self.geometry_density_slider,
                 self.geometry_width_slider,
                 self.waveform_density_slider,
@@ -470,14 +572,257 @@ class GeneratorsPanel(QWidget):
                 self.amount_slider,
         ):
             slider.valueChanged.connect(self._schedule_apply)
+        self.text_animation_combo.currentIndexChanged.connect(
+            self._schedule_text_motion_apply
+        )
+        for slider in (
+                self.text_animation_speed_slider,
+                self.text_animation_amount_slider,
+                self.text_animation_columns_slider,
+        ):
+            slider.valueChanged.connect(self._schedule_text_motion_apply)
         self.shadow_check.toggled.connect(self._schedule_apply)
 
     def _schedule_apply(self, *_args) -> None:
-        if self._loading or self._selected_layer() is None:
+        layer = self._selected_layer()
+        if self._loading or layer is None:
             return
+        self._pending_settings_layer_id = layer.id
         self._apply_timer.start()
 
+    def _schedule_text_motion_apply(self, *_args) -> None:
+        layer = self._selected_layer()
+        if (
+                self._loading
+                or layer is None
+                or layer.source_type != "generator"
+                or layer.generator_type != "text"
+                or layer.locked
+        ):
+            return
+        self._pending_text_motion_layer_id = layer.id
+        self._text_motion_timer.start()
+
+    def _flush_text_motion_settings(self) -> None:
+        """Update shader uniforms on the layer without requesting a new raster."""
+        self._text_motion_timer.stop()
+        target_id = self._pending_text_motion_layer_id
+        self._pending_text_motion_layer_id = None
+        if target_id is None:
+            return
+        layer = self.application.composition.get_layer(target_id)
+        if (
+                layer is None
+                or layer.source_type != "generator"
+                or layer.generator_type != "text"
+                or layer.locked
+        ):
+            return
+        settings = dict(layer.generator_settings)
+        settings.update({
+            "text_animation": str(self.text_animation_combo.currentData() or "none"),
+            "text_animation_speed": self.text_animation_speed_slider.value() / 100.0,
+            "text_animation_amount": (
+                self.text_animation_amount_slider.value() / 1000.0
+            ),
+            "text_animation_columns": self.text_animation_columns_slider.value(),
+        })
+        normalized = normalize_settings("text", settings)
+        if normalized == layer.generator_settings:
+            return
+        self.application.layer_manager.update_layer(
+            layer.id,
+            generator_settings=normalized,
+        )
+        # The compositor reads these fields as per-frame uniforms. No
+        # GeneratorRasterService request is made by this path. Only pause
+        # automation on shader parameters that actually changed.
+        for key in ("text_animation_speed", "text_animation_amount"):
+            if settings.get(key) != normalized.get(key):
+                self.manual_target_changed.emit(f"generator.{key}")
+        self.composition_changed.emit()
+
+    def _text_buffer_changed(self) -> None:
+        if self._loading:
+            return
+        self._editing_text_buffer = self.text_edit.toPlainText()
+        layer = self._selected_layer()
+        if layer is not None and layer.generator_type == "text":
+            self._pending_text_layer_id = layer.id
+            self._set_text_raster_status("editing")
+        if self.text_commit_pause_check.isChecked():
+            self._text_commit_timer.start()
+        else:
+            self._text_commit_timer.stop()
+
+    def _flush_generator_settings(self) -> None:
+        target_id = self._pending_settings_layer_id
+        self._pending_settings_layer_id = None
+        layer = (
+            self.application.composition.get_layer(target_id)
+            if target_id else self._selected_layer()
+        )
+        if layer is None:
+            return
+        if (
+                self._pending_text_layer_id == layer.id
+                and self.text_commit_pause_check.isChecked()
+        ):
+            self.commit_text()
+        self._apply_non_text_settings(target_layer=layer)
+
+    def _set_text_raster_status(self, phase: str, detail: str = "") -> None:
+        labels = {
+            "editing": "EDITING",
+            "rasterizing": "RASTERIZING",
+            "ready": "READY",
+            "failed": "FAILED",
+            "frozen": "FROZEN · LAST VALID TEXTURE",
+        }
+        label = labels.get(phase, "READY")
+        suffix = f" · {detail}" if detail else ""
+        self.text_raster_status.setText(f"TEXT PIPELINE · {label}{suffix}")
+
+    def _sync_text_raster_status(self) -> None:
+        layer = self._selected_layer()
+        if layer is None or layer.generator_type != "text":
+            self._set_text_raster_status("ready")
+        elif self._pending_text_layer_id == layer.id:
+            self._set_text_raster_status("editing")
+        else:
+            self._set_text_raster_status(
+                self.application.generator_raster_service.status(layer.id)
+            )
+
+    def _on_text_raster_started(self, layer_id: str, _revision: int) -> None:
+        if layer_id == self.layer_combo.currentData():
+            phase = (
+                "editing"
+                if self._pending_text_layer_id == layer_id
+                else "rasterizing"
+            )
+            self._set_text_raster_status(phase)
+
+    def _on_text_raster_ready(
+            self, layer_id: str, _revision: int, _fingerprint: str, _pixels: object
+    ) -> None:
+        if layer_id == self.layer_combo.currentData():
+            phase = (
+                "editing"
+                if self._pending_text_layer_id == layer_id
+                else "ready"
+            )
+            self._set_text_raster_status(phase)
+
+    def _on_text_raster_failed(
+            self, layer_id: str, _revision: int, _fingerprint: str, message: str
+    ) -> None:
+        if layer_id == self.layer_combo.currentData():
+            phase = (
+                "editing"
+                if self._pending_text_layer_id == layer_id
+                else "failed"
+            )
+            self._set_text_raster_status(phase, message[:72])
+
+    def _text_live_preview_toggled(self, enabled: bool) -> None:
+        service = self.application.generator_raster_service
+        service.set_live_preview_enabled(enabled)
+        if enabled:
+            layer = self._selected_layer()
+            if layer is not None and layer.generator_type == "text":
+                service.request(layer.id, "text", dict(layer.generator_settings))
+        self._sync_text_raster_status()
+
+    def _commit_on_pause_toggled(self, enabled: bool) -> None:
+        if not enabled:
+            self._text_commit_timer.stop()
+
+    def _text_preview_quality_changed(self, _index: int) -> None:
+        service = self.application.generator_raster_service
+        service.set_text_preview_scale(
+            float(self.text_preview_quality_combo.currentData() or 0.5)
+        )
+        layer = self._selected_layer()
+        if layer is not None and layer.generator_type == "text":
+            service.request(
+                layer.id,
+                "text",
+                dict(layer.generator_settings),
+                full_resolution=False,
+            )
+        self._sync_text_raster_status()
+
+    def _text_freeze_toggled(self, frozen: bool) -> None:
+        layer = self._selected_layer()
+        if layer is None or layer.generator_type != "text":
+            return
+        self.application.generator_raster_service.set_frozen(layer.id, frozen)
+        self._sync_text_raster_status()
+
+    def commit_text(
+            self,
+            *,
+            request_raster: bool = True,
+            force_render: bool = False,
+            full_resolution: bool = False,
+    ) -> None:
+        """Commit the current editor buffer without rebuilding other controls."""
+        self._text_commit_timer.stop()
+        target_id = self._pending_text_layer_id
+        has_pending_buffer = target_id is not None
+        self._pending_text_layer_id = None
+        layer = (
+            self.application.composition.get_layer(target_id)
+            if target_id else self._selected_layer()
+        )
+        if (
+                layer is None
+                or layer.source_type != "generator"
+                or layer.generator_type != "text"
+                or layer.locked
+        ):
+            return
+        text_snapshot = (
+            self._editing_text_buffer
+            if has_pending_buffer or layer.id == self.layer_combo.currentData()
+            else str(layer.generator_settings.get("text", ""))
+        )
+        snapshot = dict(layer.generator_settings)
+        snapshot["text"] = text_snapshot
+        normalized = normalize_settings("text", snapshot)
+        if normalized == layer.generator_settings:
+            return
+        self.application.layer_manager.update_layer(
+            layer.id,
+            generator_settings=normalized,
+        )
+        # Advance the shared revision now, not on the next renderer paint. A
+        # slow older text render must become stale as soon as this commit lands.
+        if request_raster:
+            self.application.generator_raster_service.request(
+                layer.id,
+                "text",
+                normalized,
+                force=force_render,
+                full_resolution=full_resolution,
+            )
+        self._committed_text = str(normalized["text"])
+        if layer.id == self.layer_combo.currentData():
+            self.hint_label.setText(
+                f"Text committed · {len(self._committed_text)} characters. "
+                "Rasterization continues in the background."
+            )
+        self.manual_target_changed.emit("generator.*")
+        self.composition_changed.emit()
+        self._sync_text_raster_status()
+
     def randomize_text(self) -> None:
+        self._apply_timer.stop()
+        self._pending_settings_layer_id = None
+        layer = self._selected_layer()
+        if layer is None or layer.generator_type != "text" or layer.locked:
+            return
         language = str(self.random_language_combo.currentData())
         theme = str(self.random_theme_combo.currentData())
         count = int(self.random_count_combo.currentData())
@@ -492,7 +837,10 @@ class GeneratorsPanel(QWidget):
         self.text_color_mode_combo.setCurrentIndex(
             max(0, self.text_color_mode_combo.findData("alternate"))
         )
-        self.apply_settings()
+        self._editing_text_buffer = self.text_edit.toPlainText()
+        self._pending_text_layer_id = layer.id
+        self.commit_text()
+        self._apply_non_text_settings()
 
     def add_overlay_media(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
@@ -574,12 +922,24 @@ class GeneratorsPanel(QWidget):
         self.layer_combo.setCurrentIndex(index)
 
     def load_selected(self, *_args) -> None:
+        self._flush_text_motion_settings()
+        if self._pending_text_layer_id is not None:
+            self.commit_text()
+        if self._apply_timer.isActive() and self._pending_settings_layer_id is not None:
+            pending_layer = self.application.composition.get_layer(
+                self._pending_settings_layer_id
+            )
+            if pending_layer is not None:
+                self._apply_non_text_settings(target_layer=pending_layer)
+        self._apply_timer.stop()
+        self._pending_settings_layer_id = None
         layer = self._selected_layer()
         enabled = layer is not None
         is_overlay = bool(layer and layer.source_type == "overlay")
         generator_type = layer.generator_type if layer and not is_overlay else None
 
         self.text_group.setVisible(generator_type == "text")
+        self.apply_text_now_button.setVisible(generator_type == "text")
         self.geometry_group.setVisible(generator_type == "geometry")
         self.waveform_group.setVisible(generator_type == "waveform")
         self.particles_group.setVisible(generator_type == "particles")
@@ -676,7 +1036,10 @@ class GeneratorsPanel(QWidget):
         values = normalize_settings(generator_type or "geometry", layer.generator_settings)
 
         if generator_type == "text":
-            self.text_edit.setPlainText(str(values["text"]))
+            self._committed_text = str(values["text"])
+            self._editing_text_buffer = self._committed_text
+            self._pending_text_layer_id = None
+            self.text_edit.setPlainText(self._editing_text_buffer)
             self.random_language_combo.setCurrentIndex(
                 max(
                     0,
@@ -710,6 +1073,11 @@ class GeneratorsPanel(QWidget):
             self.text_animation_columns_slider.setValue(
                 int(values["text_animation_columns"])
             )
+            self.text_freeze_check.blockSignals(True)
+            self.text_freeze_check.setChecked(
+                self.application.generator_raster_service.is_frozen(layer.id)
+            )
+            self.text_freeze_check.blockSignals(False)
             self.font_combo.setCurrentText(str(values["font_family"]))
             weight_index = self.weight_combo.findData(int(values["font_weight"]))
             self.weight_combo.setCurrentIndex(max(0, weight_index))
@@ -761,6 +1129,7 @@ class GeneratorsPanel(QWidget):
         self._loading = False
         if layer is not None:
             self.selected_layer_changed.emit(layer.id)
+            self._sync_text_raster_status()
 
     def sync_live_modulation(self) -> None:
         """Reflect live per-layer modifier values without rebuilding text or controls."""
@@ -989,8 +1358,51 @@ class GeneratorsPanel(QWidget):
                 layer.overlay_loop,
             )
 
-    def apply_settings(self) -> None:
+    def apply_text_immediately(self) -> None:
         layer = self._selected_layer()
+        if (
+                layer is None
+                or layer.source_type != "generator"
+                or layer.generator_type != "text"
+                or layer.locked
+        ):
+            return
+        self._text_commit_timer.stop()
+        self._apply_timer.stop()
+        self._pending_settings_layer_id = None
+        self._flush_text_motion_settings()
+        self.commit_text(request_raster=False)
+        self._apply_non_text_settings(
+            target_layer=layer,
+            force_text_raster=True,
+            full_resolution=self.text_final_resolution_check.isChecked(),
+        )
+        self._sync_text_raster_status()
+
+    def apply_settings(self) -> None:
+        self._apply_timer.stop()
+        self._pending_settings_layer_id = None
+        self._flush_text_motion_settings()
+        layer = self._selected_layer()
+        if layer is None or layer.locked:
+            return
+        if layer.source_type == "generator" and layer.generator_type == "text":
+            self.commit_text(request_raster=False)
+            self._apply_non_text_settings(
+                force_text_raster=True,
+                full_resolution=self.text_final_resolution_check.isChecked(),
+            )
+            return
+        self._apply_non_text_settings()
+
+    def _apply_non_text_settings(
+            self,
+            target_layer=None,
+            *,
+            force_text_raster: bool = False,
+            full_resolution: bool = False,
+    ) -> None:
+        layer = target_layer or self._selected_layer()
         if layer is None or layer.locked:
             return
         if layer.source_type == "overlay":
@@ -1027,7 +1439,7 @@ class GeneratorsPanel(QWidget):
 
         if generator_type == "text":
             settings.update({
-                "text": self.text_edit.toPlainText(),
+                "text": self._committed_text,
                 "text_pool_language": str(self.random_language_combo.currentData()),
                 "text_pool_theme": str(self.random_theme_combo.currentData()),
                 "text_pool_count": int(self.random_count_combo.currentData()),
@@ -1036,12 +1448,6 @@ class GeneratorsPanel(QWidget):
                 "text_layout": str(self.text_layout_combo.currentData()),
                 "collage_seed": self._collage_seed,
                 "collage_font_variation": self.collage_variation_slider.value() / 100.0,
-                "text_animation": str(self.text_animation_combo.currentData()),
-                "text_animation_speed": self.text_animation_speed_slider.value() / 100.0,
-                "text_animation_amount": (
-                        self.text_animation_amount_slider.value() / 1000.0
-                ),
-                "text_animation_columns": self.text_animation_columns_slider.value(),
                 "font_family": self.font_combo.currentText().strip() or "Arial",
                 "font_size": self.text_size_slider.value(),
                 "font_weight": int(self.weight_combo.currentData()),
@@ -1084,6 +1490,17 @@ class GeneratorsPanel(QWidget):
             layer.id,
             generator_settings=normalized,
         )
+        if generator_type == "text":
+            # Typography/layout settings are part of the same versioned text
+            # snapshot as the committed string. Animation-only changes dedupe
+            # because the raster fingerprint excludes GPU-evaluated properties.
+            self.application.generator_raster_service.request(
+                layer.id,
+                generator_type,
+                normalized,
+                force=force_text_raster,
+                full_resolution=full_resolution if force_text_raster else None,
+            )
         self.manual_target_changed.emit("generator.*")
         self.composition_changed.emit()
         self.hint_label.setText(
@@ -1095,6 +1512,15 @@ class GeneratorsPanel(QWidget):
         if layer is None:
             return
         removed_id = layer.id
+        if self._pending_text_motion_layer_id == removed_id:
+            self._text_motion_timer.stop()
+            self._pending_text_motion_layer_id = None
+        if self._pending_text_layer_id == removed_id:
+            self._text_commit_timer.stop()
+            self._pending_text_layer_id = None
+        self._apply_timer.stop()
+        self._pending_settings_layer_id = None
+        self.application.generator_raster_service.invalidate(removed_id)
         self.application.remove_layer(removed_id)
         self.refresh()
         self.composition_changed.emit()

@@ -119,6 +119,7 @@ class AutomationDirector:
         self._performance_bar_index = 0
         self._performance_section = "idle"
         self._last_musical_event_at = 0.0
+        self.generator_settings_changed = None
 
     @staticmethod
     def _interval(rng: random.Random, low: float, high: float) -> float:
@@ -412,6 +413,8 @@ class AutomationDirector:
 
                 if updated:
                     layer.generator_settings = normalize_settings(kind, values)
+                    if self.generator_settings_changed is not None:
+                        self.generator_settings_changed(layer)
                     changed += 1
 
             if (
