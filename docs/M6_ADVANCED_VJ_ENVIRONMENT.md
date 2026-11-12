@@ -24,7 +24,7 @@ Design a dedicated live-mixer surface around the four existing video decks:
 
 **Initial implementation checkpoint — M6-A1**
 
-The first operator-surface increment adds four persistent deck cards with clip identity, cached library thumbnail/metadata, playback position, duration feedback and the associated composition-layer name. Each card exposes PLAY, PAUSE, HOLD/UNHOLD, RESTART and STOP, plus the existing loop and lock controls. Deck status refreshes independently of the render cadence.
+The first operator-surface increment adds four persistent deck cards with clip identity, cached library thumbnail/metadata, playback position, duration feedback and the associated composition-layer name. Each card exposes LOAD, PLAY, PAUSE, HOLD/UNHOLD, RESTART and STOP, plus the existing loop and lock controls. LOAD opens the Media Library with that deck preselected; browsing does not replace its current source. Deck status refreshes independently of the render cadence.
 
 HOLD pauses only the selected deck's decoder and retains its most recently presented frame. The preview and projector continue to consume their existing shared CPU frame snapshots and renderer-local GPU resources. No decoder or OpenGL ownership has moved into the widgets.
 
