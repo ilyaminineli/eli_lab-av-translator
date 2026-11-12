@@ -631,7 +631,19 @@ class MainWindow(QMainWindow):
     def deck_action(self, deck_id: str, action: str) -> None:
         deck = self.application.decks[deck_id]
         try:
-            if action == "play":
+            if action == "load":
+                deck_index = self.media_browser.deck_combo.findData(deck_id)
+                if deck_index >= 0:
+                    self.media_browser.deck_combo.setCurrentIndex(deck_index)
+                self.media_dock.show()
+                self.media_dock.raise_()
+                self.media_browser.asset_list.setFocus()
+                self.statusBar().showMessage(
+                    f"Choose a clip to load into {deck_id.upper()}. "
+                    "The current source remains active until you choose one.",
+                    5000,
+                )
+            elif action == "play":
                 deck.play()
             elif action == "pause":
                 deck.pause()
