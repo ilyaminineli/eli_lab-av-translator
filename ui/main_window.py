@@ -218,6 +218,13 @@ class MainWindow(QMainWindow):
         self._runtime_timer.timeout.connect(self._runtime_tick)
         self._runtime_timer.start()
 
+        # Deck meters are presentation-only and need not follow the 30 FPS
+        # renderer cadence. Keep their progress/status updates lightweight.
+        self._deck_status_timer = QTimer(self)
+        self._deck_status_timer.setInterval(100)
+        self._deck_status_timer.timeout.connect(self.deck_panel.refresh)
+        self._deck_status_timer.start()
+
         self._status_timer = QTimer(self)
         self._status_timer.setInterval(500)
         self._status_timer.timeout.connect(self._refresh_automation_status)
@@ -624,14 +631,37 @@ class MainWindow(QMainWindow):
     def deck_action(self, deck_id: str, action: str) -> None:
         deck = self.application.decks[deck_id]
         try:
-            if action == "play":
+            if action == "load":
+                deck_index = self.media_browser.deck_combo.findData(deck_id)
+                if deck_index >= 0:
+                    self.media_browser.deck_combo.setCurrentIndex(deck_index)
+                self.media_dock.show()
+                self.media_dock.raise_()
+                self.media_browser.asset_list.setFocus()
+                self.statusBar().showMessage(
+                    f"Choose a clip to load into {deck_id.upper()}. "
+                    "The current source remains active until you choose one.",
+                    5000,
+                )
+            elif action == "play":
                 deck.play()
             elif action == "pause":
                 deck.pause()
+            elif action == "hold":
+                if not deck.hold():
+                    self.statusBar().showMessage(
+                        "Wait for the first decoded frame before holding this deck.",
+                        3000,
+                    )
+            elif action == "release_hold":
+                deck.release_hold()
+            elif action == "restart":
+                deck.restart()
             elif action == "stop":
                 deck.stop()
             self.deck_panel.refresh()
         except Exception as exc:
+            _LOG.exception("Deck action failed: %s · %s", deck_id, action)
             QMessageBox.warning(self, "Deck error", str(exc))
 
     def set_deck_loop(self, deck_id: str, enabled: bool) -> None:

@@ -24,6 +24,7 @@ class VideoDeck:
         self.segment_end: float | None = None
         self.loop = True
         self.locked = False
+        self._held = False
 
     @property
     def is_playing(self) -> bool:
@@ -32,6 +33,19 @@ class VideoDeck:
     @property
     def error(self) -> str | None:
         return self.decoder.last_error if self.decoder else None
+
+    @property
+    def is_held(self) -> bool:
+        return self._held
+
+    @property
+    def is_paused(self) -> bool:
+        return bool(
+            self.decoder
+            and self.decoder.is_running
+            and not self.decoder.is_playing
+            and not self._held
+        )
 
     def _retire_decoder(self, decoder: VideoDecoder) -> None:
         stopped = decoder.stop(timeout=0.2)
@@ -75,6 +89,7 @@ class VideoDeck:
         self.current_frame = None
         self.frame_revision += 1
         self.path = str(source)
+        self._held = False
         self.asset_id = asset_id
         self.collection_id = collection_id
         self.segment_start = start
@@ -95,6 +110,7 @@ class VideoDeck:
     def play(self) -> None:
         if not self.path:
             return
+        self._held = False
         if self.decoder is None or not self.decoder.is_running:
             self.load(
                 self.path,
@@ -108,10 +124,40 @@ class VideoDeck:
             self.decoder.play()
 
     def pause(self) -> None:
+        self._held = False
         if self.decoder:
             self.decoder.pause()
 
+    def hold(self) -> bool:
+        """Hold the most recently presented frame without releasing the deck source."""
+        if self.current_frame is None or self.decoder is None:
+            return False
+        self.decoder.pause()
+        self._held = True
+        # Drop frames already queued before the hold request. consume_latest_frame()
+        # also discards any in-flight publication while the deck remains held.
+        self.frame_queue.clear()
+        return True
+
+    def release_hold(self) -> None:
+        if self._held:
+            self.play()
+
+    def restart(self) -> None:
+        """Restart the loaded source from its current segment in-point."""
+        if not self.path:
+            return
+        self.load(
+            self.path,
+            asset_id=self.asset_id,
+            collection_id=self.collection_id,
+            segment_start=self.segment_start,
+            segment_end=self.segment_end,
+            loop=self.loop,
+        )
+
     def stop(self) -> None:
+        self._held = False
         if self.decoder:
             self._retire_decoder(self.decoder)
             self.decoder = None
@@ -120,6 +166,7 @@ class VideoDeck:
         self._reap_retired_decoders()
         self.frame_queue.clear()
         self.current_frame = None
+        self._held = False
         self.frame_revision += 1
 
     def seek(self, seconds: float) -> None:
@@ -132,6 +179,10 @@ class VideoDeck:
             self.decoder.set_loop(enabled)
 
     def consume_latest_frame(self) -> VideoFrameData | None:
+        if self._held:
+            self.frame_queue.clear()
+            self._reap_retired_decoders()
+            return None
         latest = self.frame_queue.pop_latest()
         if latest is not None:
             self.current_frame = latest

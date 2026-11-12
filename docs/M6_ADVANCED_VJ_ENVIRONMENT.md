@@ -1,6 +1,6 @@
 # M6 — Advanced VJ Environment
 
-**Status:** planned; implementation has not started.  
+**Status:** M6-A0 interaction specification complete; M6-A1 initial live-deck surface implemented on branch `m6/a1-live-deck-surface`. Target-machine rehearsal and the remaining M6-A scope are still open.  
 **First workstream:** A. A proper live mixer.  
 **Design references:** live-mixer / media-bin workflows in Resolume Arena, VDMX media bins and TouchDesigner performance interfaces. These are interaction references, not a requirement to clone another product's UI.
 
@@ -21,6 +21,14 @@ Design a dedicated live-mixer surface around the four existing video decks:
 - Direct access to load, play/trigger, stop, restart, hold/freeze and deck lock without navigating through layer editing panels.
 - Clear indication of the relationship between a deck, its media source and the composition layer it feeds.
 - Keep detailed media management, generator authoring, effects and modulation in their existing specialist panels; the live surface should be optimized for operation rather than exposing every parameter at once.
+
+**Initial implementation checkpoint — M6-A1**
+
+The first operator-surface increment adds four persistent deck cards with clip identity, cached library thumbnail/metadata, playback position, duration feedback and the associated composition-layer name. Each card exposes LOAD, PLAY, PAUSE, HOLD/UNHOLD, RESTART and STOP, plus the existing loop and lock controls. LOAD opens the Media Library with that deck preselected; browsing does not replace its current source. Deck status refreshes independently of the render cadence.
+
+HOLD pauses only the selected deck's decoder and retains its most recently presented frame. The preview and projector continue to consume their existing shared CPU frame snapshots and renderer-local GPU resources. No decoder or OpenGL ownership has moved into the widgets.
+
+This is an initial A1 foundation, not the completion of all A1 requirements. Media-bin preparation and trigger routing belong to A2; more advanced seeking, speed/reverse and segment editing need their own decoder/timestamp design and acceptance checks.
 
 ### A2. Media bins and clip triggering
 
@@ -70,8 +78,8 @@ The exact A/B grouping, crossfader curve, transition duration and whether previe
 
 | Slice | Intended result |
 |---|---|
-| M6-A0 — Interaction specification | Deck states, bin model, multi-select target mapping, trigger semantics, quantization and transition decisions documented before implementation. |
-| M6-A1 — Live deck surface | Compact four-deck operator view with clear source/status/transport feedback and direct control. |
+| M6-A0 — Interaction specification | Complete in the M6 design document: deck states, bin model, multi-select target mapping, trigger semantics, quantization and transition decisions. |
+| M6-A1 — Live deck surface | Initial implementation on `m6/a1-live-deck-surface`: four deck cards, clip identity/metadata/thumbnail, position feedback, layer mapping, direct transport, frame hold, restart, loop and lock. Remaining A1 refinements and target-machine rehearsal are open. |
 | M6-A2 — Media bins | Named performance bins, clip assignment and explicit deck-targeted trigger actions. |
 | M6-A3 — Multi-trigger and quantization | Atomic multi-deck launch, common quantized boundary, pending/cancel feedback and defined collision policy. |
 | M6-A4 — Mix and transitions | Operator-facing A/B/group/crossfade controls, deterministic hard cut and measured dissolve/transition path. |
