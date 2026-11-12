@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import random
 import time
 
@@ -105,6 +106,17 @@ class GeneratorsPanel(QWidget):
         self.text_edit.setMinimumHeight(84)
         self.text_edit.setMaximumHeight(120)
         text_form.addRow("CONTENT · EDIT BUFFER", self.text_edit)
+        self.rich_runs_edit = QPlainTextEdit()
+        self.rich_runs_edit.setPlaceholderText(
+            '[{"text":"TITLE","font_size":180,"font_weight":900,"color":"#F2EEE6"}, '
+            '{"text":"subtitle","font_size":64,"color":"#C35C75"}]'
+        )
+        self.rich_runs_edit.setMaximumHeight(112)
+        self.rich_runs_edit.setToolTip(
+            "Optional JSON array of styled text runs. Each run can set text, font_family, "
+            "font_size, font_weight, color, letter_spacing, stroke_color, stroke_width and shadow."
+        )
+        text_form.addRow("RICH TEXT RUNS · JSON", self.rich_runs_edit)
 
         raster_group = QGroupBox("TEXT RASTER PERFORMANCE")
         raster_form = QFormLayout(raster_group)
@@ -181,6 +193,28 @@ class GeneratorsPanel(QWidget):
         self.text_layout_combo.addItem("Single text block", "single")
         self.text_layout_combo.addItem("Typographic word collage", "collage")
         text_form.addRow("LAYOUT", self.text_layout_combo)
+        self.text_writing_mode_combo = QComboBox()
+        self.text_writing_mode_combo.addItem("Horizontal", "horizontal")
+        self.text_writing_mode_combo.addItem("Vertical · right to left", "vertical_rl")
+        self.text_writing_mode_combo.addItem("Vertical · left to right", "vertical_lr")
+        text_form.addRow("WRITING MODE", self.text_writing_mode_combo)
+        self.text_path_mode_combo = QComboBox()
+        self.text_path_mode_combo.addItem("Straight layout", "none")
+        self.text_path_mode_combo.addItem("Circular", "circle")
+        self.text_path_mode_combo.addItem("Arc", "arc")
+        self.text_path_mode_combo.addItem("Custom polyline", "custom")
+        text_form.addRow("TEXT ON PATH", self.text_path_mode_combo)
+        self.text_path_edit = QPlainTextEdit()
+        self.text_path_edit.setPlaceholderText(
+            "0.12, 0.68\n0.34, 0.28\n0.66, 0.72\n0.88, 0.32"
+        )
+        self.text_path_edit.setMaximumBlockCount(64)
+        self.text_path_edit.setMaximumHeight(88)
+        self.text_path_edit.setToolTip(
+            "Custom path points in normalized canvas coordinates (x, y from 0 to 1), "
+            "one point per line. Used when Custom polyline is selected."
+        )
+        text_form.addRow("PATH POINTS · 0–1", self.text_path_edit)
 
         self.font_combo = QComboBox()
         self.font_combo.setEditable(True)
@@ -243,6 +277,14 @@ class GeneratorsPanel(QWidget):
         self.text_animation_combo.addItem("Glyph jitter", "jitter")
         self.text_animation_combo.addItem("Text scrolling", "crawl")
         self.text_animation_combo.addItem("Signal glitch", "glitch")
+        self.text_animation_combo.addItem("Reverse typewriter", "reverse_typewriter")
+        self.text_animation_combo.addItem("Dissolve", "dissolve")
+        self.text_animation_combo.addItem("Flicker", "flicker")
+        self.text_animation_combo.addItem("Character displacement", "character_displacement")
+        self.text_animation_combo.addItem("Vertical writing reveal", "vertical_reveal")
+        self.text_animation_combo.addItem("Scattered glyph field", "scattered_glyphs")
+        self.text_animation_combo.addItem("Word collision bands", "word_collisions")
+        self.text_animation_combo.addItem("Mechanical scroll", "mechanical_scroll")
         motion_form.addRow("MOTION", self.text_animation_combo)
         self.text_animation_speed_slider, self.text_animation_speed_value = self._slider(
             motion_form, "MOTION SPEED", 0, 800, 100
@@ -671,6 +713,8 @@ class GeneratorsPanel(QWidget):
                 self.weight_combo,
                 self.text_color_mode_combo,
                 self.text_layout_combo,
+                self.text_writing_mode_combo,
+                self.text_path_mode_combo,
                 self.alignment_combo,
                 self.vertical_alignment_combo,
                 self.stroke_color,
@@ -695,6 +739,8 @@ class GeneratorsPanel(QWidget):
             if signal is not None:
                 signal.connect(self._schedule_apply)
         self.text_edit.textChanged.connect(self._text_buffer_changed)
+        self.rich_runs_edit.textChanged.connect(self._schedule_apply)
+        self.text_path_edit.textChanged.connect(self._schedule_apply)
         self.particle_path_edit.textChanged.connect(self._schedule_apply)
         self.particle_source_refresh_button.clicked.connect(
             lambda: self._sync_particle_emitter_sources()
@@ -801,6 +847,37 @@ class GeneratorsPanel(QWidget):
         if len(points) >= 2:
             return points
         return [list(point) for point in fallback]
+
+    def _read_typography_path_points(self, fallback: list) -> list[list[float]]:
+        points: list[list[float]] = []
+        for line in self.text_path_edit.toPlainText().splitlines()[:64]:
+            parts = line.replace(";", ",").split(",")
+            if len(parts) < 2:
+                continue
+            try:
+                x_value = float(parts[0].strip())
+                y_value = float(parts[1].strip())
+            except (TypeError, ValueError, OverflowError):
+                continue
+            points.append([
+                max(0.0, min(1.0, x_value)),
+                max(0.0, min(1.0, y_value)),
+            ])
+        return points if len(points) >= 2 else [list(point) for point in fallback]
+
+    def _read_text_runs(self) -> list[dict]:
+        source = self.rich_runs_edit.toPlainText().strip()
+        if not source:
+            return []
+        try:
+            parsed = json.loads(source)
+        except json.JSONDecodeError as exc:
+            raise ValueError(f"invalid JSON at line {exc.lineno}, column {exc.colno}") from exc
+        if not isinstance(parsed, list):
+            raise ValueError("expected a JSON array of run objects")
+        if len(parsed) > 64 or any(not isinstance(run, dict) for run in parsed):
+            raise ValueError("use up to 64 run objects")
+        return parsed
 
     def _randomize_particle_seed(self) -> None:
         self.particle_seed_spin.setValue(random.randint(0, 2 ** 31 - 1))
@@ -1053,6 +1130,7 @@ class GeneratorsPanel(QWidget):
             random_text_sample(language, theme, count, self._collage_seed,
                                use_dictionary=self.dictionary_check.isChecked())
         )
+        self.rich_runs_edit.clear()
         self.text_layout_combo.setCurrentIndex(
             max(0, self.text_layout_combo.findData("collage"))
         )
@@ -1281,6 +1359,20 @@ class GeneratorsPanel(QWidget):
             self.text_layout_combo.setCurrentIndex(
                 max(0, self.text_layout_combo.findData(values["text_layout"]))
             )
+            self.rich_runs_edit.setPlainText(
+                json.dumps(values["text_runs"], ensure_ascii=False, indent=2)
+                if values["text_runs"] else ""
+            )
+            self.text_writing_mode_combo.setCurrentIndex(
+                max(0, self.text_writing_mode_combo.findData(values["text_writing_mode"]))
+            )
+            self.text_path_mode_combo.setCurrentIndex(
+                max(0, self.text_path_mode_combo.findData(values["text_path_mode"]))
+            )
+            self.text_path_edit.setPlainText("\n".join(
+                f"{point[0]:.4f}, {point[1]:.4f}"
+                for point in values["text_path_points"]
+            ))
             self._collage_seed = int(values["collage_seed"])
             self.collage_variation_slider.setValue(
                 round(float(values["collage_font_variation"]) * 100)
@@ -1720,8 +1812,19 @@ class GeneratorsPanel(QWidget):
         )
 
         if generator_type == "text":
+            try:
+                text_runs = self._read_text_runs()
+            except ValueError as exc:
+                self.hint_label.setText(f"Rich text runs not applied · {exc}")
+                return
             settings.update({
                 "text": self._committed_text,
+                "text_runs": text_runs,
+                "text_writing_mode": str(self.text_writing_mode_combo.currentData()),
+                "text_path_mode": str(self.text_path_mode_combo.currentData()),
+                "text_path_points": self._read_typography_path_points(
+                    settings.get("text_path_points", [])
+                ),
                 "text_pool_language": str(self.random_language_combo.currentData()),
                 "text_pool_theme": str(self.random_theme_combo.currentData()),
                 "text_pool_count": int(self.random_count_combo.currentData()),

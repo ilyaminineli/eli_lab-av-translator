@@ -424,6 +424,18 @@ Directional scan sorting is a controlled shader approximation, not a full image-
 
 Per-population overrides and advanced vector/collision fields remain D3 work. See [M6-D — Advanced Particle Simulation](M6_D_ADVANCED_PARTICLE_SIMULATION.md).
 
+## M6-E — Typography as an independent visual instrument
+
+E1 is under implementation on `m6/e1-typographic-instrument`. It extends Text Art without moving layout or raster work into the frame loop:
+
+- Styled rich-text runs with per-run typeface, size, weight, colour, tracking, outline and shadow.
+- Horizontal mixed-language layout, vertical right-to-left / left-to-right columns, and text on circular, arc and custom paths.
+- GPU texture-space animation controls for reverse typewriter reveal, dissolve, flicker, character-cell displacement, vertical reveal, scattered glyph motion, segmented collision-style movement and mechanical scrolling.
+
+The next E2 slice should introduce a bounded glyph atlas/instance representation for truly independent per-character transforms, deterministic replacement, and word/character timing. E3 can address reusable typographic presets and a dedicated text-feedback route. E1's vertical layout and shader modes require visual validation on the Windows target GPU; they are not yet a per-glyph engine.
+
+See [M6-E — Typography as an Independent Visual Instrument](M6_E_TYPOGRAPHY.md).
+
 ## Engineering principles across all milestones
 
 1. **Rendering must stay isolated.** Decoder, audio and OSC workers publish data; only the relevant render context owns and changes its GPU resources.

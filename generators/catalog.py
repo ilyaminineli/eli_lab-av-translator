@@ -20,6 +20,10 @@ _DEFAULTS: dict[str, dict[str, Any]] = {
     },
     "text": {
         "text": "THE SHAPE OF\nA VANISHING\nSIGNAL",
+        "text_runs": [],
+        "text_writing_mode": "horizontal",
+        "text_path_mode": "none",
+        "text_path_points": [[0.12, 0.68], [0.34, 0.28], [0.66, 0.72], [0.88, 0.32]],
         "text_pool_language": "bilingual",
         "text_pool_theme": "random",
         "text_pool_count": 16,
@@ -171,12 +175,77 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
         result["shadow"] = bool(result["shadow"])
         if result.get("text_layout") not in {"single", "collage"}:
             result["text_layout"] = "single"
+        if result.get("text_writing_mode") not in {
+                "horizontal", "vertical_rl", "vertical_lr",
+        }:
+            result["text_writing_mode"] = "horizontal"
+        if result.get("text_path_mode") not in {"none", "circle", "arc", "custom"}:
+            result["text_path_mode"] = "none"
+        raw_path_points = result.get("text_path_points", [])
+        path_points = []
+        if isinstance(raw_path_points, (list, tuple)):
+            for point in raw_path_points[:64]:
+                try:
+                    if len(point) < 2:
+                        continue
+                    path_points.append([
+                        max(0.0, min(1.0, float(point[0]))),
+                        max(0.0, min(1.0, float(point[1]))),
+                    ])
+                except (TypeError, ValueError, OverflowError):
+                    continue
+        if len(path_points) < 2:
+            path_points = [[0.12, 0.68], [0.34, 0.28], [0.66, 0.72], [0.88, 0.32]]
+        result["text_path_points"] = path_points
+        raw_runs = result.get("text_runs", [])
+        text_runs = []
+        total_run_characters = 0
+        if isinstance(raw_runs, (list, tuple)):
+            for raw_run in raw_runs[:64]:
+                if not isinstance(raw_run, dict):
+                    continue
+                run_text = str(raw_run.get("text", ""))[:4096]
+                if not run_text:
+                    continue
+                total_run_characters += len(run_text)
+                if total_run_characters > 8192:
+                    break
+                run = {"text": run_text}
+                family = str(raw_run.get("font_family", result["font_family"]))[:128].strip()
+                run["font_family"] = family or str(result["font_family"])
+                run["font_size"] = max(
+                    12, min(420, int(raw_run.get("font_size", result["font_size"])))
+                )
+                requested_run_weight = max(
+                    100, min(900, int(raw_run.get("font_weight", result["font_weight"])))
+                )
+                run["font_weight"] = min(
+                    (100, 200, 300, 400, 500, 600, 700, 800, 900),
+                    key=lambda weight: abs(weight - requested_run_weight),
+                )
+                for key, fallback in (
+                        ("color", result["primary_color"]),
+                        ("stroke_color", result["stroke_color"]),
+                ):
+                    value = str(raw_run.get(key, fallback)).strip()
+                    run[key] = value[:32] if value.startswith("#") else fallback
+                run["letter_spacing"] = max(
+                    -8.0, min(48.0, float(raw_run.get("letter_spacing", result["letter_spacing"])))
+                )
+                run["stroke_width"] = max(
+                    0.0, min(24.0, float(raw_run.get("stroke_width", result["stroke_width"])))
+                )
+                run["shadow"] = bool(raw_run.get("shadow", result["shadow"]))
+                text_runs.append(run)
+        result["text_runs"] = text_runs
         result["collage_seed"] = max(0, min(2 ** 31 - 1, int(result["collage_seed"])))
         result["collage_font_variation"] = max(
             0.0, min(1.0, float(result["collage_font_variation"]))
         )
         if result.get("text_animation") not in {
-            "none", "type_on", "word_reveal", "line_wave", "jitter", "crawl", "glitch"
+            "none", "type_on", "word_reveal", "line_wave", "jitter", "crawl", "glitch",
+            "reverse_typewriter", "dissolve", "flicker", "character_displacement",
+            "vertical_reveal", "scattered_glyphs", "word_collisions", "mechanical_scroll",
         }:
             result["text_animation"] = "none"
         result["text_animation_speed"] = max(
@@ -312,4 +381,12 @@ def text_animation_code(settings: dict[str, Any]) -> int:
         "jitter": 4,
         "crawl": 5,
         "glitch": 6,
+        "reverse_typewriter": 7,
+        "dissolve": 8,
+        "flicker": 9,
+        "character_displacement": 10,
+        "vertical_reveal": 11,
+        "scattered_glyphs": 12,
+        "word_collisions": 13,
+        "mechanical_scroll": 14,
     }.get(str(settings.get("text_animation", "none")), 0)

@@ -304,6 +304,15 @@ class GeneratorRasterizer:
         painter.restore()
 
     def _draw_text(self, painter: QPainter, settings: dict[str, Any]) -> None:
+        if (
+                settings.get("text_runs")
+                or settings.get("text_writing_mode") != "horizontal"
+                or settings.get("text_path_mode") != "none"
+        ):
+            from generators.typography import draw_typography
+
+            draw_typography(painter, settings, self.width, self.height)
+            return
         text = str(settings.get("text", "")).replace("\\n", "\n")
         if not text:
             return

@@ -1,6 +1,6 @@
 # M6 — Advanced VJ Environment
 
-**Status:** M6-A1 and M6-B1 are merged to `main`. M6-C1 is in draft PR #24 on `m6/c1-advanced-visual-transformations`; M6-D1/D2 Particle System 2.0 is in draft PR #25 stacked on C1. Quality workflow #143 passed Python compilation and Ruff on the current D1/D2 head. Target-GPU shader and visual validation remains open. The remaining A/B/C/D slices are open.  
+**Status:** M6-A1 and M6-B1 are merged to `main`. M6-C1 is in draft PR #24 on `m6/c1-advanced-visual-transformations`; M6-D1/D2 Particle System 2.0 is in draft PR #25 stacked on C1; M6-E1 typography is in draft PR #26 on `m6/e1-typographic-instrument`. E1 covers rich runs, practical vertical layouts, text paths and texture-space GPU animation. E2 glyph instancing and E3 presets/text feedback remain future slices. Target-GPU shader and visual validation for C1/D1/D2/E1 remains open. Remaining A/B/C/D work is open.  
 **First workstream:** A. A proper live mixer.  
 **Design references:** live-mixer / media-bin workflows in Resolume Arena, VDMX media bins and TouchDesigner performance interfaces. These are interaction references, not a requirement to clone another product's UI.
 
@@ -159,6 +159,30 @@ Per-population overrides, per-population modulation targets, advanced vector/col
 - A 4-deck composition with the maximum particle budget maintains responsive rendering on the target performance GPU.
 
 See [M6-D — Advanced Particle Simulation](M6_D_ADVANCED_PARTICLE_SIMULATION.md).
+
+## E. Typography as an independent visual instrument
+
+The Text Art system is being extended as a first-class typographic instrument rather than just repairing the current single-style text renderer.
+
+### E1 — Rich composition, vertical layout and path typography
+
+The E1 branch adds:
+
+- Optional rich-text runs with independent typeface, size, weight, fill, tracking, outline and shadow. The editor accepts a bounded JSON array; existing one-style layers remain supported.
+- Horizontal mixed-language run composition and practical Japanese vertical columns in right-to-left or left-to-right order.
+- Text on circular, arc and custom polyline paths, using up to 64 normalized path points.
+- Additional GPU-side shader modes: reverse typewriter reveal, dissolve, flicker, character-cell displacement, vertical reveal, scattered glyph motion, segmented collision-style movement and mechanical scrolling.
+- A separate typography layout module called by the existing CPU raster worker. The compositor animates the cached texture with uniforms; animation-only changes do not start a new raster job.
+
+The new shader effects are bounded texture-space approximations, not one independently simulated GPU instance per glyph. The vertical writer is a practical column compositor with orientation heuristics; full OpenType vertical forms and shaping remain future work.
+
+### E1 boundaries and next work
+
+True glyph-level animation, semantic word/character timing, per-character entrance/exit schedules, deterministic kanji replacement, real word collision physics, dedicated text-feedback routing, and named typographic presets are not claimed as E1 features.
+
+E2 should introduce a bounded GPU glyph atlas and per-glyph instance data so position, scale, rotation, alpha, colour and timing can be evaluated without creating Qt/Python objects per frame. E3 can add saved typographic compositions and a dedicated text feedback route.
+
+See [M6-E — Typography as an Independent Visual Instrument](M6_E_TYPOGRAPHY.md) for the implementation boundaries, pipeline contract, E2 proposal and target-GPU acceptance checklist.
 
 ## Acceptance criteria
 
