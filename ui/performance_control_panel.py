@@ -181,12 +181,25 @@ class PerformanceControlPanel(QWidget):
             "Duration for compatible numeric parameters. Discrete media/text changes "
             "still use the scene's explicit cut policy in this first increment."
         )
+        self.performance_scene_curve = QComboBox()
+        for label, value in (
+                ("Linear", "linear"),
+                ("Smoothstep", "smoothstep"),
+                ("Ease in", "ease_in"),
+                ("Ease out", "ease_out"),
+        ):
+            self.performance_scene_curve.addItem(label, value)
+        self.performance_scene_curve.setCurrentIndex(
+            self.performance_scene_curve.findData("smoothstep")
+        )
         self.performance_scene_list = QListWidget()
         self.performance_scene_list.setMaximumHeight(110)
         scene_form.addRow("SCENE NAME", self.performance_scene_name)
         scene_form.addRow("OSC CUE", self.performance_scene_cue)
         scene_form.addRow("RECALL QUANTIZATION", self.performance_scene_quantization)
         scene_form.addRow("TRANSITION DURATION", self.performance_scene_morph)
+        scene_form.addRow("NUMERIC CURVE", self.performance_scene_curve)
+        scene_form.addRow("DISCRETE POLICY", QLabel("CUT · B1"))
         scene_form.addRow("SCENES", self.performance_scene_list)
         scene_buttons = QGridLayout()
         self.performance_scene_capture = QPushButton("CAPTURE SCENE")
@@ -547,7 +560,7 @@ class PerformanceControlPanel(QWidget):
                 cue=self.performance_scene_cue.text().strip(),
                 transition={
                     "duration": self.performance_scene_morph.value(),
-                    "curve": "smoothstep",
+                    "curve": str(self.performance_scene_curve.currentData()),
                     "discrete": "cut",
                 },
             )
@@ -606,6 +619,10 @@ class PerformanceControlPanel(QWidget):
         self.performance_scene_morph.setValue(
             float(scene.transition.get("duration", 0.0))
         )
+        curve_index = self.performance_scene_curve.findData(
+            scene.transition.get("curve", "smoothstep")
+        )
+        self.performance_scene_curve.setCurrentIndex(max(0, curve_index))
         index = self.performance_scene_quantization.findData(scene.quantization)
         self.performance_scene_quantization.setCurrentIndex(max(0, index))
 
