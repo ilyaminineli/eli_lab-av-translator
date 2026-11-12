@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import time
 from pathlib import Path
 
 from PySide6.QtCore import Qt, Signal
@@ -173,6 +174,7 @@ class DeckCard(QGroupBox):
             duration_seconds: float | None,
             asset: MediaAsset | None,
             has_frame: bool,
+            layer_name: str | None,
     ) -> None:
         self.file_label.setText(
             asset.name if asset else (Path(path).name if path else "No video loaded")
@@ -192,21 +194,22 @@ class DeckCard(QGroupBox):
             state = "EMPTY"
         self.state_label.setText(state)
 
+        details = [f"LAYER · {layer_name}"] if layer_name else ["LAYER · NOT ATTACHED"]
         if asset:
-            details = []
             if asset.width and asset.height:
                 details.append(f"{asset.width}×{asset.height}")
             if asset.fps:
                 details.append(f"{asset.fps:.2f} fps")
             if asset.codec:
                 details.append(str(asset.codec).upper())
-            self.detail_label.setText(" · ".join(details) or str(asset.path))
             self._set_thumbnail(asset.thumbnail_path)
         else:
-            self.detail_label.setText(
-                str(path) if path else "Load a clip from the Media Library"
-            )
+            if path:
+                details.append(str(path))
+            else:
+                details.append("Load a clip from the Media Library")
             self._set_thumbnail(None)
+        self.detail_label.setText(" · ".join(details))
 
         duration = (
             max(0.0, float(duration_seconds))
@@ -253,6 +256,7 @@ class DeckPanel(QWidget):
         self.application = application
         self._asset_ids: dict[str, str | None] = {}
         self._asset_cache: dict[str, MediaAsset | None] = {}
+        self._asset_cache_refresh_at = 0.0
         layout = QGridLayout(self)
         layout.setContentsMargins(6, 6, 6, 6)
         layout.setHorizontalSpacing(8)
@@ -279,8 +283,13 @@ class DeckPanel(QWidget):
         self.application.decks[deck_id].locked = locked
         self.lock_changed.emit(deck_id, locked)
 
-    def _asset_for_deck(self, deck_id: str, asset_id: str | None) -> MediaAsset | None:
-        if self._asset_ids.get(deck_id) != asset_id:
+    def _asset_for_deck(
+            self,
+            deck_id: str,
+            asset_id: str | None,
+            refresh_cache: bool = False,
+    ) -> MediaAsset | None:
+        if refresh_cache or self._asset_ids.get(deck_id) != asset_id:
             self._asset_ids[deck_id] = asset_id
             self._asset_cache[deck_id] = (
                 self.application.media_library.get_asset(asset_id)
@@ -289,13 +298,23 @@ class DeckPanel(QWidget):
         return self._asset_cache.get(deck_id)
 
     def refresh(self) -> None:
+        refresh_assets = time.monotonic() >= self._asset_cache_refresh_at
+        if refresh_assets:
+            self._asset_cache_refresh_at = time.monotonic() + 2.0
         for deck_id, deck in self.application.decks.items():
-            asset = self._asset_for_deck(deck_id, deck.asset_id)
+            asset = self._asset_for_deck(deck_id, deck.asset_id, refresh_assets)
             frame = deck.current_frame
             position = frame.timestamp if frame is not None else deck.segment_start
             duration = (
                 asset.duration if asset and asset.duration
                 else deck.segment_end
+            )
+            source_layer = next(
+                (
+                    layer for layer in self.application.composition.layers
+                    if layer.source_type == "video" and layer.source_id == deck_id
+                ),
+                None,
             )
             self.cards[deck_id].update_state(
                 path=deck.path,
@@ -309,4 +328,5 @@ class DeckPanel(QWidget):
                 duration_seconds=duration,
                 asset=asset,
                 has_frame=frame is not None,
+                layer_name=source_layer.name if source_layer else None,
             )
