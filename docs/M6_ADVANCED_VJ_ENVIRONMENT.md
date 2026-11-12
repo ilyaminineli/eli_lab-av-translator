@@ -1,6 +1,6 @@
 # M6 — Advanced VJ Environment
 
-**Status:** M6-A0 is documented and the initial M6-A1 live-deck surface is merged to `main`. M6-B0 is documented and M6-B1 full-scene capture/recall is implemented on branch `m6/b1-vj-scene-bank`. Target-machine rehearsal and the remaining A/B slices are open.  
+**Status:** M6-A1 and M6-B1 are merged to `main`. M6-C1 is in draft PR #24 on `m6/c1-advanced-visual-transformations`; M6-D1/D2 Particle System 2.0 is in draft PR #25 stacked on C1. Quality workflow #143 passed Python compilation and Ruff on the current D1/D2 head. Target-GPU shader and visual validation remains open. The remaining A/B/C/D slices are open.  
 **First workstream:** A. A proper live mixer.  
 **Design references:** live-mixer / media-bin workflows in Resolume Arena, VDMX media bins and TouchDesigner performance interfaces. These are interaction references, not a requirement to clone another product's UI.
 
@@ -106,6 +106,59 @@ The advanced visual path extends the existing ModernGL compositor without moving
 - Feedback freeze and generation-based reset; history remains local to each output's GL context and is never serialized as a GPU resource.
 
 The C1 directional scan-sort and motion-driven warp are intentionally shader approximations, not a full GPU sort algorithm or a dense optical-flow solver. Full pixel sorting, high-quality flow estimation, dedicated line-composition tools and multi-stage temporal transitions remain later C slices. See [M6-C — Advanced Visual Transformations](M6_C_ADVANCED_VISUAL_TRANSFORMATIONS.md).
+
+## D. Advanced particle simulation
+
+Preserve the original `particles` generator as a cheap procedural field. Particle System 2.0 is a separate generator type with its own GPU simulation state, fixed-step physics and trail buffers.
+
+### D1 — General-purpose GPU particle foundation
+
+The D1 implementation adds:
+
+- Point, circle and rectangular emitters.
+- Deterministic seeded spawning and respawning, with independently seeded populations.
+- One to four populations per system, each with its own GPU position/velocity and age/lifetime state.
+- Particle lifetime, initial velocity and spread, acceleration, drag and velocity integration.
+- Procedural turbulence and attraction, repulsion and orbit force fields.
+- Constant, grow, shrink and pulse size-over-lifetime curves.
+- GPU trail accumulation.
+- Fixed 60 Hz simulation steps, capped at four substeps per render to bound catch-up work.
+- Resource ceilings: 8192 particles per system, four systems per output renderer and 16384 particles total per output. Allocation is deterministic by layer order.
+- Renderer-local floating-point state textures and half-resolution trail targets. No per-particle CPU simulation or GPU readback is used.
+
+The populations currently share the system-level physics controls but receive stable seed offsets, small emitter offsets, colour variation and size/speed variation. This gives multiple independent streams without multiplying the control surface in the first slice.
+
+### D2 — Source and path emitters
+
+The current development branch extends the simulation shader with:
+
+- Editable path/polyline emission (up to 64 normalized points), including tangent-following launch direction.
+- Video brightness, image alpha/luminance silhouette and contour/edge sampling from an existing video or overlay layer texture.
+- Deterministic thresholded source selection with 1–16 candidate probes per particle respawn.
+- Source target storage and configurable reform strength. When reform is enabled, target positions refresh from the current source at a selectable 0.1–10 second interval, with sampled coordinates mapped through the source layer transform.
+- UI source selection, map mode, threshold, probe count, sample cadence, reformation and path-point editing.
+
+Source sampling and particle reformation run in the output renderer's GPU context. A missing source frame disables that source path safely; no CPU particle simulation or duplicate source-frame upload is introduced.
+
+### D1/D2 boundaries
+
+Per-population overrides, per-population modulation targets, advanced vector/collision fields and higher-level shape authoring remain future D3 work. Target-GPU shader and visual acceptance for D1/D2 is still required.
+
+### Particle System 2.0 acceptance
+
+- The original Particle Field remains available and retains its existing look and settings.
+- Particle System 2.0 can be added, saved, reopened and edited as a normal composition layer.
+- Repeated playback with the same seed and settings produces the same spawn sequence.
+- Lifetime, velocity, acceleration, turbulence, force fields, size curves and trails visibly affect the simulation.
+- Multiple populations render with stable, distinct seed/colour/size variation.
+- The per-renderer particle and system ceilings are enforced even with multiple visible particle layers.
+- Video/image source emission is thresholded, and contour/alpha/luma modes behave correctly for the selected layer.
+- Source target resampling and reform strength reconstruct the current source silhouette after dispersion.
+- Preview and projector own independent simulation state and trail textures.
+- Resize, layer removal and GL-context teardown release all simulation and trail resources.
+- A 4-deck composition with the maximum particle budget maintains responsive rendering on the target performance GPU.
+
+See [M6-D — Advanced Particle Simulation](M6_D_ADVANCED_PARTICLE_SIMULATION.md).
 
 ## Acceptance criteria
 

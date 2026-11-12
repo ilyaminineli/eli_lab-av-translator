@@ -373,7 +373,7 @@ See [M5 Autonomous Performance](M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance E
 
 ## Status
 
-**In progress — M6-A1, M6-B1 and M6-C1 foundations.** The initial live-deck surface (A1) and full VJ Scene Bank capture/recall (B1) are merged to `main`. C1 advanced visual transformations is now being implemented on `m6/c1-advanced-visual-transformations`, adding GPU geometry remapping, layer-driven displacement and per-output temporal feedback. Media bins, synchronized multi-trigger, scene transitions and the later advanced-transform slices remain open.
+**In progress — M6-A1, M6-B1, M6-C1 and M6-D1/D2 foundations.** A1 and B1 are merged to `main`. C1 is in draft PR #24; D1/D2 Particle System 2.0 is in draft PR #25 stacked on C1. Quality workflow #143 passed on the D1/D2 head; GPU visual validation remains open. D1/D2 preserve the legacy field and add bounded GPU physics, path/video/image/contour emitters and source reformation. Media bins, synchronized multi-trigger, scene transitions, later advanced transforms and D3 particle authoring remain open.
 
 ## A. A proper live mixer
 
@@ -418,6 +418,12 @@ See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md) fo
 
 Directional scan sorting is a controlled shader approximation, not a full image-region sorting algorithm. Motion-driven warp is temporal-difference/gradient driven, not a dense optical-flow solver. These limitations and later C2/C3 work are documented in [M6-C — Advanced Visual Transformations](M6_C_ADVANCED_VISUAL_TRANSFORMATIONS.md).
 
+## M6-D — Advanced Particle Simulation
+
+**D1 + D2 implementation in progress on `m6/d1-particle-system-2`.** Particle System 2.0 is separate from the legacy procedural `particles` field. D1 adds point/circle/rectangle emitters, deterministic seeded populations, fixed-step GPU lifetime/velocity/acceleration simulation, turbulence, attract/repel/orbit fields, size curves and trails. D2 adds editable path emitters, video-luminance, image alpha/luma silhouette and contour emitters, plus GPU source-target reformation with periodic target resampling. Resource ceilings remain 8192 particles per system, four systems and 16384 particles per output renderer. Simulation and source sampling are owned by each Compositor/GL context and bypass the CPU raster service.
+
+Per-population overrides and advanced vector/collision fields remain D3 work. See [M6-D — Advanced Particle Simulation](M6_D_ADVANCED_PARTICLE_SIMULATION.md).
+
 ## Engineering principles across all milestones
 
 1. **Rendering must stay isolated.** Decoder, audio and OSC workers publish data; only the relevant render context owns and changes its GPU resources.
@@ -431,10 +437,10 @@ Directional scan sorting is a controlled shader approximation, not a full image-
 
 ## Immediate next implementation order
 
-1. Continue M6-C1: validate GPU feedback/geometry behaviour on the target Windows GPU, including resize, freeze/reset, delay and dual-output independence.
-2. Continue M6-A2/A3: named media bins, explicit deck routing, atomic multi-trigger and quantization.
-3. Continue M6-B2: dual-scene transition engine, then scene sequences and parameter locks.
-4. Continue M5 target-machine validation in parallel: full SONATA run, loopback reconnect, four-deck generator/text stress, projector hot-plug and long-duration rehearsal.
-5. Continue the independent Video Mixer Completion Gate; do not infer hardware release readiness from static CI. Keep master-output recording/audio muxing separately scoped.
+1. Validate M6-C1 geometry/feedback on the target Windows GPU, including resize, freeze/reset, delay and dual-output independence.
+2. Validate M6-D1/D2 simulation on the target GPU: determinism, source/path emitters, reformation against live footage, resource ceilings, particle/trail quality, resize, layer removal and dual-output independence.
+3. Continue M6-A2/A3: named media bins, explicit deck routing, atomic multi-trigger and quantization.
+4. Continue M6-B2: dual-scene transition engine, then scene sequences and parameter locks.
+5. Continue M5 target-machine validation and the independent Video Mixer Completion Gate. Keep recording/audio muxing separately scoped.
 
 See [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md) for the current M6-A scope and acceptance criteria.

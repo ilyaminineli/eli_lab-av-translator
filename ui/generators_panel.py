@@ -72,17 +72,21 @@ class GeneratorsPanel(QWidget):
         row_one.addWidget(self.add_text_button)
         row_two = QHBoxLayout()
         self.add_waveform_button = QPushButton("+ WAVEFORM")
-        self.add_particles_button = QPushButton("+ PARTICLES")
+        self.add_particles_button = QPushButton("+ PARTICLES · FIELD")
         row_two.addWidget(self.add_waveform_button)
         row_two.addWidget(self.add_particles_button)
         row_three = QHBoxLayout()
+        self.add_particle_system_button = QPushButton("+ PARTICLE SYSTEM 2.0")
+        row_three.addWidget(self.add_particle_system_button)
+        row_four = QHBoxLayout()
         self.add_overlay_button = QPushButton("+ IMAGE / VIDEO OVERLAY")
         self.remove_button = QPushButton("REMOVE SELECTED LAYER")
-        row_three.addWidget(self.add_overlay_button)
-        row_three.addWidget(self.remove_button)
+        row_four.addWidget(self.add_overlay_button)
+        row_four.addWidget(self.remove_button)
         add_layout.addLayout(row_one)
         add_layout.addLayout(row_two)
         add_layout.addLayout(row_three)
+        add_layout.addLayout(row_four)
         root.addWidget(add_group)
 
         selected_heading = QLabel("SELECTED GENERATOR / OVERLAY")
@@ -324,10 +328,10 @@ class GeneratorsPanel(QWidget):
         )
         root.addWidget(self.waveform_group)
 
-        self.particles_group = QGroupBox("GPU PARTICLE FIELD")
+        self.particles_group = QGroupBox("GPU PARTICLE FIELD · LEGACY")
         particles_form = QFormLayout(self.particles_group)
         self.particle_density_slider, self.particle_density_value = self._slider(
-            particles_form, "PARTICLE COUNT", 4, 120, 42
+            particles_form, "FIELD DENSITY", 4, 120, 42
         )
         self.particle_speed_slider, self.particle_speed_value = self._slider(
             particles_form, "SPEED", 0, 200, 22
@@ -343,8 +347,138 @@ class GeneratorsPanel(QWidget):
         )
         self.particle_mode_combo = QComboBox()
         self.particle_mode_combo.addItems(["drift", "rise", "fall", "orbit"])
-        particles_form.addRow("EMITTER MODE", self.particle_mode_combo)
+        particles_form.addRow("FIELD MODE", self.particle_mode_combo)
         root.addWidget(self.particles_group)
+
+        self.particle_system_group = QGroupBox("PARTICLE SYSTEM 2.0 · GPU PHYSICS")
+        system_form = QFormLayout(self.particle_system_group)
+        self.particle_system_count_slider, self.particle_system_count_value = self._slider(
+            system_form, "PARTICLES · HARD CAP 8192", 128, 8192, 4096
+        )
+        self.particle_population_slider, self.particle_population_value = self._slider(
+            system_form, "INDEPENDENT POPULATIONS", 1, 4, 2
+        )
+        self.particle_emitter_combo = QComboBox()
+        self.particle_emitter_combo.addItems([
+            "point", "circle", "rectangle", "path", "video_luminance",
+            "image_silhouette", "contour",
+        ])
+        system_form.addRow("EMITTER", self.particle_emitter_combo)
+        source_row = QHBoxLayout()
+        self.particle_emitter_source_combo = QComboBox()
+        self.particle_source_refresh_button = QPushButton("REFRESH")
+        source_row.addWidget(self.particle_emitter_source_combo, 1)
+        source_row.addWidget(self.particle_source_refresh_button)
+        system_form.addRow("VIDEO / IMAGE SOURCE", source_row)
+        self.particle_emitter_map_combo = QComboBox()
+        self.particle_emitter_map_combo.addItem("Brightness / luminance", "luminance")
+        self.particle_emitter_map_combo.addItem("Image alpha silhouette", "alpha")
+        self.particle_emitter_map_combo.addItem("Contour / edge strength", "contour")
+        system_form.addRow("SOURCE MAP", self.particle_emitter_map_combo)
+        self.particle_emitter_threshold_slider, self.particle_emitter_threshold_value = (
+            self._slider(system_form, "EMISSION THRESHOLD", 0, 100, 52)
+        )
+        self.particle_emitter_attempts_combo = QComboBox()
+        for count in (4, 8, 12, 16):
+            self.particle_emitter_attempts_combo.addItem(str(count), count)
+        self.particle_emitter_attempts_combo.setCurrentIndex(2)
+        system_form.addRow("SOURCE SAMPLES / PARTICLE", self.particle_emitter_attempts_combo)
+        self.particle_emitter_interval_slider, self.particle_emitter_interval_value = (
+            self._slider(system_form, "SOURCE RESAMPLE · 0.1 SEC", 1, 100, 5)
+        )
+        self.particle_reform_slider, self.particle_reform_value = self._slider(
+            system_form, "REFORM TO SOURCE", 0, 400, 0
+        )
+        self.particle_path_edit = QPlainTextEdit()
+        self.particle_path_edit.setMaximumBlockCount(64)
+        self.particle_path_edit.setMaximumHeight(88)
+        self.particle_path_edit.setPlaceholderText(
+            "One normalized x, y point per line\n0.12, 0.50\n0.34, 0.18\n"
+            "0.66, 0.82\n0.88, 0.50"
+        )
+        system_form.addRow("PATH POINTS · 0–1", self.particle_path_edit)
+        self.particle_emitter_radius_slider, self.particle_emitter_radius_value = self._slider(
+            system_form, "CIRCLE RADIUS", 1, 50, 18
+        )
+        self.particle_emitter_width_spin = QDoubleSpinBox()
+        self.particle_emitter_width_spin.setRange(0.01, 1.0)
+        self.particle_emitter_width_spin.setSingleStep(0.01)
+        self.particle_emitter_width_spin.setValue(0.34)
+        system_form.addRow("RECTANGLE WIDTH", self.particle_emitter_width_spin)
+        self.particle_emitter_height_spin = QDoubleSpinBox()
+        self.particle_emitter_height_spin.setRange(0.01, 1.0)
+        self.particle_emitter_height_spin.setSingleStep(0.01)
+        self.particle_emitter_height_spin.setValue(0.24)
+        system_form.addRow("RECTANGLE HEIGHT", self.particle_emitter_height_spin)
+        self.particle_direction_combo = QComboBox()
+        self.particle_direction_combo.addItems(
+            ["radial", "random", "up", "down", "left", "right", "tangent"]
+        )
+        system_form.addRow("EMISSION DIRECTION", self.particle_direction_combo)
+        self.particle_lifetime_slider, self.particle_lifetime_value = self._slider(
+            system_form, "LIFETIME · 0.01 SEC", 25, 600, 450
+        )
+        self.particle_system_speed_slider, self.particle_system_speed_value = self._slider(
+            system_form, "INITIAL SPEED", 0, 150, 22
+        )
+        self.particle_system_spread_slider, self.particle_system_spread_value = self._slider(
+            system_form, "VELOCITY SPREAD", 0, 200, 36
+        )
+        self.particle_acceleration_x_spin = QDoubleSpinBox()
+        self.particle_acceleration_x_spin.setRange(-2.0, 2.0)
+        self.particle_acceleration_x_spin.setSingleStep(0.05)
+        self.particle_acceleration_x_spin.setValue(0.0)
+        system_form.addRow("ACCELERATION X", self.particle_acceleration_x_spin)
+        self.particle_acceleration_y_spin = QDoubleSpinBox()
+        self.particle_acceleration_y_spin.setRange(-2.0, 2.0)
+        self.particle_acceleration_y_spin.setSingleStep(0.05)
+        self.particle_acceleration_y_spin.setValue(0.0)
+        system_form.addRow("ACCELERATION Y", self.particle_acceleration_y_spin)
+        self.particle_turbulence_slider, self.particle_turbulence_value = self._slider(
+            system_form, "TURBULENCE", 0, 150, 14
+        )
+        self.particle_turbulence_scale_slider, self.particle_turbulence_scale_value = self._slider(
+            system_form, "TURBULENCE SCALE · 0.1", 1, 240, 50
+        )
+        self.particle_force_combo = QComboBox()
+        self.particle_force_combo.addItems(["none", "attract", "repel", "orbit"])
+        system_form.addRow("FORCE FIELD", self.particle_force_combo)
+        self.particle_force_strength_slider, self.particle_force_strength_value = self._slider(
+            system_form, "FORCE STRENGTH", 0, 400, 55
+        )
+        self.particle_force_radius_slider, self.particle_force_radius_value = self._slider(
+            system_form, "FORCE RADIUS", 1, 100, 34
+        )
+        self.particle_drag_slider, self.particle_drag_value = self._slider(
+            system_form, "VELOCITY DRAG", 0, 400, 8
+        )
+        self.particle_system_trail_slider, self.particle_system_trail_value = self._slider(
+            system_form, "TRAIL PERSISTENCE", 0, 100, 72
+        )
+        self.particle_system_size_slider, self.particle_system_size_value = self._slider(
+            system_form, "PARTICLE RADIUS · PX", 1, 48, 6
+        )
+        self.particle_size_curve_combo = QComboBox()
+        self.particle_size_curve_combo.addItems(["constant", "grow", "shrink", "pulse"])
+        system_form.addRow("SIZE OVER LIFETIME", self.particle_size_curve_combo)
+        seed_row = QHBoxLayout()
+        self.particle_seed_spin = QSpinBox()
+        self.particle_seed_spin.setRange(0, 2 ** 31 - 1)
+        self.particle_seed_spin.setValue(20261112)
+        self.particle_random_seed_button = QPushButton("RANDOMIZE")
+        seed_row.addWidget(self.particle_seed_spin, 1)
+        seed_row.addWidget(self.particle_random_seed_button)
+        system_form.addRow("DETERMINISTIC SEED", seed_row)
+        self.particle_system_hint = QLabel(
+            "GPU simulation · fixed 60 Hz steps · max 8192 per layer / 16384 per output. "
+            "Path, video luminance, image alpha and contour emitters sample existing layer "
+            "textures. Reform follows refreshed source targets at the selected cadence."
+        )
+        self.particle_system_hint.setWordWrap(True)
+        self.particle_system_hint.setObjectName("mutedLabel")
+        system_form.addRow(self.particle_system_hint)
+        root.addWidget(self.particle_system_group)
+        self.particle_system_group.setVisible(False)
 
         self.style_group = QGroupBox("COLOUR AND ANIMATION")
         style_form = QFormLayout(self.style_group)
@@ -447,6 +581,9 @@ class GeneratorsPanel(QWidget):
         self.add_text_button.clicked.connect(lambda: self.add_generator("text"))
         self.add_waveform_button.clicked.connect(lambda: self.add_generator("waveform"))
         self.add_particles_button.clicked.connect(lambda: self.add_generator("particles"))
+        self.add_particle_system_button.clicked.connect(
+            lambda: self.add_generator("particle_system_2")
+        )
         self.add_overlay_button.clicked.connect(self.add_overlay_media)
         self.remove_button.clicked.connect(self.remove_selected)
         self.layer_combo.currentIndexChanged.connect(self.load_selected)
@@ -544,6 +681,13 @@ class GeneratorsPanel(QWidget):
                 self.geometry_pattern_combo,
                 self.waveform_pattern_combo,
                 self.particle_mode_combo,
+                self.particle_emitter_combo,
+                self.particle_emitter_source_combo,
+                self.particle_emitter_map_combo,
+                self.particle_emitter_attempts_combo,
+                self.particle_direction_combo,
+                self.particle_force_combo,
+                self.particle_size_curve_combo,
         ):
             signal = getattr(widget, "textChanged", None)
             if signal is None:
@@ -551,6 +695,10 @@ class GeneratorsPanel(QWidget):
             if signal is not None:
                 signal.connect(self._schedule_apply)
         self.text_edit.textChanged.connect(self._text_buffer_changed)
+        self.particle_path_edit.textChanged.connect(self._schedule_apply)
+        self.particle_source_refresh_button.clicked.connect(
+            lambda: self._sync_particle_emitter_sources()
+        )
         for slider in (
                 self.text_size_slider,
                 self.tracking_slider,
@@ -568,6 +716,22 @@ class GeneratorsPanel(QWidget):
                 self.particle_size_slider,
                 self.particle_spread_slider,
                 self.particle_trail_slider,
+                self.particle_system_count_slider,
+                self.particle_population_slider,
+                self.particle_emitter_radius_slider,
+                self.particle_emitter_threshold_slider,
+                self.particle_emitter_interval_slider,
+                self.particle_reform_slider,
+                self.particle_lifetime_slider,
+                self.particle_system_speed_slider,
+                self.particle_system_spread_slider,
+                self.particle_turbulence_slider,
+                self.particle_turbulence_scale_slider,
+                self.particle_force_strength_slider,
+                self.particle_force_radius_slider,
+                self.particle_drag_slider,
+                self.particle_system_trail_slider,
+                self.particle_system_size_slider,
                 self.speed_slider,
                 self.amount_slider,
         ):
@@ -582,6 +746,64 @@ class GeneratorsPanel(QWidget):
         ):
             slider.valueChanged.connect(self._schedule_text_motion_apply)
         self.shadow_check.toggled.connect(self._schedule_apply)
+        for spin_box in (
+                self.particle_emitter_width_spin,
+                self.particle_emitter_height_spin,
+                self.particle_acceleration_x_spin,
+                self.particle_acceleration_y_spin,
+                self.particle_seed_spin,
+        ):
+            spin_box.valueChanged.connect(self._schedule_apply)
+        self.particle_random_seed_button.clicked.connect(self._randomize_particle_seed)
+
+    def _sync_particle_emitter_sources(self, selected_source: str | None = None) -> None:
+        selected = (
+            str(selected_source)
+            if selected_source is not None
+            else str(self.particle_emitter_source_combo.currentData() or "")
+        )
+        self.particle_emitter_source_combo.blockSignals(True)
+        self.particle_emitter_source_combo.clear()
+        self.particle_emitter_source_combo.addItem("No source", "")
+        for candidate in self.application.composition.layers:
+            if candidate.source_type not in {"video", "overlay"} or not candidate.source_id:
+                continue
+            media_kind = (
+                "VIDEO" if candidate.source_type == "video"
+                else str(candidate.overlay_kind or "IMAGE").upper()
+            )
+            self.particle_emitter_source_combo.addItem(
+                f"{candidate.name} · {media_kind}", candidate.source_id
+            )
+        if selected and self.particle_emitter_source_combo.findData(selected) < 0:
+            self.particle_emitter_source_combo.addItem(
+                f"{selected} · unavailable", selected
+            )
+        index = self.particle_emitter_source_combo.findData(selected)
+        self.particle_emitter_source_combo.setCurrentIndex(max(0, index))
+        self.particle_emitter_source_combo.blockSignals(False)
+
+    def _read_particle_path_points(self, fallback: list) -> list[list[float]]:
+        points: list[list[float]] = []
+        for line in self.particle_path_edit.toPlainText().splitlines()[:64]:
+            parts = line.replace(";", ",").split(",")
+            if len(parts) < 2:
+                continue
+            try:
+                x_value = float(parts[0].strip())
+                y_value = float(parts[1].strip())
+            except (TypeError, ValueError, OverflowError):
+                continue
+            points.append([
+                max(0.0, min(1.0, x_value)),
+                max(0.0, min(1.0, y_value)),
+            ])
+        if len(points) >= 2:
+            return points
+        return [list(point) for point in fallback]
+
+    def _randomize_particle_seed(self) -> None:
+        self.particle_seed_spin.setValue(random.randint(0, 2 ** 31 - 1))
 
     def _schedule_apply(self, *_args) -> None:
         layer = self._selected_layer()
@@ -890,7 +1112,8 @@ class GeneratorsPanel(QWidget):
             "geometry": "GEOMETRY",
             "text": "TEXT ART",
             "waveform": "WAVEFORM",
-            "particles": "PARTICLES",
+            "particles": "PARTICLES · FIELD",
+            "particle_system_2": "PARTICLE SYSTEM 2.0",
         }
         self._loading = True
         self.layer_combo.blockSignals(True)
@@ -943,6 +1166,7 @@ class GeneratorsPanel(QWidget):
         self.geometry_group.setVisible(generator_type == "geometry")
         self.waveform_group.setVisible(generator_type == "waveform")
         self.particles_group.setVisible(generator_type == "particles")
+        self.particle_system_group.setVisible(generator_type == "particle_system_2")
         self.style_group.setVisible(bool(layer and not is_overlay))
         self.layer_appearance_group.setVisible(enabled)
         self.overlay_group.setVisible(is_overlay)
@@ -1109,6 +1333,64 @@ class GeneratorsPanel(QWidget):
             self.particle_spread_slider.setValue(round(float(values["spread"]) * 100))
             self.particle_trail_slider.setValue(round(float(values["trail"]) * 100))
             self.particle_mode_combo.setCurrentText(str(values["mode"]))
+        elif generator_type == "particle_system_2":
+            self.particle_system_count_slider.setValue(int(values["particle_count"]))
+            self.particle_population_slider.setValue(int(values["population_count"]))
+            self.particle_emitter_combo.setCurrentText(str(values["emitter_type"]))
+            self._sync_particle_emitter_sources(
+                str(values.get("emitter_source_id", ""))
+            )
+            self.particle_emitter_map_combo.setCurrentIndex(
+                max(0, self.particle_emitter_map_combo.findData(
+                    values.get("emitter_map_mode", "luminance")
+                ))
+            )
+            self.particle_emitter_threshold_slider.setValue(
+                round(float(values.get("emitter_threshold", 0.52)) * 100)
+            )
+            self.particle_emitter_attempts_combo.setCurrentIndex(
+                max(0, self.particle_emitter_attempts_combo.findData(
+                    int(values.get("emitter_sample_attempts", 12))
+                ))
+            )
+            self.particle_emitter_interval_slider.setValue(
+                round(float(values.get("emitter_sample_interval", 0.5)) * 10)
+            )
+            self.particle_reform_slider.setValue(
+                round(float(values.get("reform_strength", 0.0)) * 100)
+            )
+            path_lines = [
+                f"{float(point[0]):.4f}, {float(point[1]):.4f}"
+                for point in values.get("path_points", [])
+            ]
+            self.particle_path_edit.setPlainText("\n".join(path_lines))
+            self.particle_emitter_radius_slider.setValue(
+                round(float(values["emitter_radius"]) * 100)
+            )
+            self.particle_emitter_width_spin.setValue(float(values["emitter_size"][0]))
+            self.particle_emitter_height_spin.setValue(float(values["emitter_size"][1]))
+            self.particle_direction_combo.setCurrentText(str(values["direction"]))
+            self.particle_lifetime_slider.setValue(round(float(values["lifetime"]) * 100))
+            self.particle_system_speed_slider.setValue(round(float(values["speed"]) * 100))
+            self.particle_system_spread_slider.setValue(round(float(values["spread"]) * 100))
+            self.particle_acceleration_x_spin.setValue(float(values["acceleration"][0]))
+            self.particle_acceleration_y_spin.setValue(float(values["acceleration"][1]))
+            self.particle_turbulence_slider.setValue(round(float(values["turbulence"]) * 100))
+            self.particle_turbulence_scale_slider.setValue(
+                round(float(values["turbulence_scale"]) * 10)
+            )
+            self.particle_force_combo.setCurrentText(str(values["force_type"]))
+            self.particle_force_strength_slider.setValue(
+                round(float(values["force_strength"]) * 100)
+            )
+            self.particle_force_radius_slider.setValue(
+                round(float(values["force_radius"]) * 100)
+            )
+            self.particle_drag_slider.setValue(round(float(values["drag"]) * 100))
+            self.particle_system_trail_slider.setValue(round(float(values["trail"]) * 100))
+            self.particle_system_size_slider.setValue(round(float(values["particle_size"])))
+            self.particle_size_curve_combo.setCurrentText(str(values["size_curve"]))
+            self.particle_seed_spin.setValue(int(values["seed"]))
 
         self.primary_color.setText(str(values["primary_color"]))
         self.secondary_color.setText(str(values.get("secondary_color", "#C35C75")))
@@ -1483,6 +1765,54 @@ class GeneratorsPanel(QWidget):
                 "spread": self.particle_spread_slider.value() / 100.0,
                 "trail": self.particle_trail_slider.value() / 100.0,
                 "mode": self.particle_mode_combo.currentText(),
+            })
+        elif generator_type == "particle_system_2":
+            settings.update({
+                "particle_count": self.particle_system_count_slider.value(),
+                "population_count": self.particle_population_slider.value(),
+                "emitter_type": self.particle_emitter_combo.currentText(),
+                "emitter_source_id": str(
+                    self.particle_emitter_source_combo.currentData() or ""
+                ),
+                "emitter_map_mode": str(
+                    self.particle_emitter_map_combo.currentData() or "luminance"
+                ),
+                "emitter_threshold": (
+                    self.particle_emitter_threshold_slider.value() / 100.0
+                ),
+                "emitter_sample_attempts": int(
+                    self.particle_emitter_attempts_combo.currentData() or 12
+                ),
+                "emitter_sample_interval": (
+                    self.particle_emitter_interval_slider.value() / 10.0
+                ),
+                "reform_strength": self.particle_reform_slider.value() / 100.0,
+                "path_points": self._read_particle_path_points(
+                    settings.get("path_points", [])
+                ),
+                "emitter_radius": self.particle_emitter_radius_slider.value() / 100.0,
+                "emitter_size": [
+                    self.particle_emitter_width_spin.value(),
+                    self.particle_emitter_height_spin.value(),
+                ],
+                "direction": self.particle_direction_combo.currentText(),
+                "lifetime": self.particle_lifetime_slider.value() / 100.0,
+                "speed": self.particle_system_speed_slider.value() / 100.0,
+                "spread": self.particle_system_spread_slider.value() / 100.0,
+                "acceleration": [
+                    self.particle_acceleration_x_spin.value(),
+                    self.particle_acceleration_y_spin.value(),
+                ],
+                "turbulence": self.particle_turbulence_slider.value() / 100.0,
+                "turbulence_scale": self.particle_turbulence_scale_slider.value() / 10.0,
+                "force_type": self.particle_force_combo.currentText(),
+                "force_strength": self.particle_force_strength_slider.value() / 100.0,
+                "force_radius": self.particle_force_radius_slider.value() / 100.0,
+                "drag": self.particle_drag_slider.value() / 100.0,
+                "trail": self.particle_system_trail_slider.value() / 100.0,
+                "particle_size": float(self.particle_system_size_slider.value()),
+                "size_curve": self.particle_size_curve_combo.currentText(),
+                "seed": self.particle_seed_spin.value(),
             })
 
         normalized = normalize_settings(generator_type, settings)

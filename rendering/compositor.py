@@ -1,13 +1,18 @@
 from __future__ import annotations
 
+import logging
+
 import moderngl
 import numpy as np
 
 from core.composition import Layer
 from effects.layer_settings import normalize_layer_effects
 from effects.settings import EffectSettings
-from generators.catalog import animation_code, text_animation_code
+from generators.catalog import animation_code, normalize_settings, text_animation_code
 from rendering.feedback import FeedbackEngine
+from rendering.particle_system import ParticleSystem2
+
+_LOG = logging.getLogger(__name__)
 
 _VERTEX_SHADER = """#version 330
 in vec2 in_position;
@@ -565,7 +570,10 @@ _BLEND_MODES = {
 
 
 class Compositor:
-    """GPU video-layer compositor followed by a real-time master effects pass."""
+    """GPU video-layer compositor followed by real-time master/temporal effects."""
+
+    MAX_PARTICLE_SYSTEMS = 4
+    MAX_TOTAL_PARTICLES = 16384
 
     def __init__(self, context: moderngl.Context) -> None:
         self.ctx = context
@@ -622,6 +630,7 @@ class Compositor:
         self.post_target: moderngl.Texture | None = None
         self.post_framebuffer: moderngl.Framebuffer | None = None
         self.feedback_engine = FeedbackEngine(context, self.vertex_buffer)
+        self.particle_systems: dict[str, ParticleSystem2] = {}
         self.size = (0, 0)
 
     @staticmethod
@@ -776,14 +785,103 @@ class Compositor:
         self.framebuffers[0].use()
         self.framebuffers[0].clear(0.025, 0.028, 0.035, 1.0)
 
+        ordered_layers = sorted(layers, key=lambda item: item.z_index)
+        active_particle_ids: set[str] = set()
+        particle_outputs: dict[str, moderngl.Texture] = {}
+        particle_budget = self.MAX_TOTAL_PARTICLES
+        active_particle_systems = 0
+        source_layers = {
+            layer.source_id: layer
+            for layer in ordered_layers
+            if layer.source_id
+        }
+
+        # Simulation state and output targets belong to this Compositor's GL context.
+        # Particle allocation is deterministic by layer order and globally bounded.
+        for particle_layer in ordered_layers:
+            if (
+                    particle_layer.source_type != "generator"
+                    or particle_layer.generator_type != "particle_system_2"
+                    or not particle_layer.visible
+                    or particle_layer.opacity <= 0.0
+            ):
+                continue
+            if active_particle_systems >= self.MAX_PARTICLE_SYSTEMS or particle_budget <= 0:
+                continue
+            settings = normalize_settings(
+                "particle_system_2", particle_layer.generator_settings
+            )
+            requested = min(
+                int(settings["particle_count"]),
+                ParticleSystem2.MAX_PARTICLES_PER_SYSTEM,
+                particle_budget,
+            )
+            if requested <= 0:
+                continue
+            system = self.particle_systems.get(particle_layer.id)
+            if system is None:
+                try:
+                    system = ParticleSystem2(self.ctx, self.vertex_buffer)
+                    self.particle_systems[particle_layer.id] = system
+                except Exception:
+                    _LOG.exception("Could not initialize Particle System 2.0 for %s",
+                                   particle_layer.name)
+                    continue
+            try:
+                emitter_source_id = str(settings["emitter_source_id"])
+                emitter_source = (
+                    self.source_textures.get(emitter_source_id)
+                    if emitter_source_id else None
+                )
+                source_layer = source_layers.get(emitter_source_id)
+                source_transform = (
+                    (
+                        tuple(float(value) for value in source_layer.position),
+                        tuple(float(value) for value in source_layer.scale),
+                        float(source_layer.rotation),
+                    )
+                    if source_layer is not None else None
+                )
+                texture = system.render(
+                    settings,
+                    width,
+                    height,
+                    time_seconds,
+                    particle_limit=requested,
+                    emitter_source=emitter_source,
+                    emitter_source_transform=source_transform,
+                )
+            except Exception:
+                _LOG.exception("Particle System 2.0 render failed for %s", particle_layer.name)
+                system.release()
+                self.particle_systems.pop(particle_layer.id, None)
+                continue
+            if texture is not None:
+                particle_outputs[particle_layer.id] = texture
+                active_particle_ids.add(particle_layer.id)
+                particle_budget -= requested
+                active_particle_systems += 1
+
+        for layer_id in tuple(self.particle_systems):
+            if layer_id not in active_particle_ids:
+                self.particle_systems.pop(layer_id).release()
+
         current = 0
-        for layer in sorted(layers, key=lambda item: item.z_index):
+        for layer in ordered_layers:
             if not layer.visible or layer.opacity <= 0.0:
                 continue
             is_particle_layer = (
                     layer.source_type == "generator" and layer.generator_type == "particles"
             )
-            layer_texture = self.source_textures.get(layer.source_id)
+            is_particle_system = (
+                    layer.source_type == "generator"
+                    and layer.generator_type == "particle_system_2"
+            )
+            layer_texture = (
+                particle_outputs.get(layer.id)
+                if is_particle_system
+                else self.source_textures.get(layer.source_id)
+            )
             if layer_texture is None and not is_particle_layer:
                 continue
 
@@ -832,6 +930,7 @@ class Compositor:
                 "particles": 1,
                 "text": 2,
                 "geometry": 3,
+                "particle_system_2": 4,
             }.get(generator_kind, 0)
             self.composite_program["u_text_animation"].value = (
                 text_animation_code(animation) if generator_kind == "text" else 0
@@ -945,6 +1044,9 @@ class Compositor:
     def release(self) -> None:
         self._release_targets()
         self.feedback_engine.release()
+        for system in self.particle_systems.values():
+            system.release()
+        self.particle_systems.clear()
         for texture in self.source_textures.values():
             texture.release()
         self.source_textures.clear()
