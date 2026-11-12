@@ -2349,6 +2349,72 @@ class Application:
             self.events.publish("performance.scene_bank.updated", scene_id=scene_id)
         return removed
 
+    def _restore_scene_decks(self, values: object) -> None:
+        """Restore saved deck assignments while respecting live deck locks and missing media."""
+        if not isinstance(values, list):
+            return
+        for state in values:
+            if not isinstance(state, dict):
+                continue
+            deck_id = str(state.get("id", ""))
+            deck = self.decks.get(deck_id)
+            if deck is None or deck.locked:
+                continue
+            media_path = state.get("path")
+            if not media_path:
+                deck.close()
+                self._frame_snapshots.pop(deck_id, None)
+                continue
+            source = Path(str(media_path)).expanduser()
+            if not source.is_file():
+                _LOG.warning(
+                    "VJ scene %s references missing media for %s: %s; keeping current deck source",
+                    state.get("id", "unknown"),
+                    deck_id,
+                    source,
+                )
+                self.events.publish(
+                    "performance.scene.media_missing",
+                    deck_id=deck_id,
+                    path=str(source),
+                )
+                continue
+            try:
+                deck.load(
+                    source,
+                    asset_id=state.get("asset_id"),
+                    collection_id=state.get("collection_id"),
+                    segment_start=float(state.get("segment_start", 0.0)),
+                    segment_end=state.get("segment_end"),
+                    loop=bool(state.get("loop", True)),
+                )
+                if not bool(state.get("playing", True)):
+                    deck.pause()
+                self._frame_snapshots.pop(deck_id, None)
+            except (OSError, TypeError, ValueError) as exc:
+                _LOG.warning("Could not restore scene deck %s: %s", deck_id, exc)
+
+    def _restore_scene_modulators(self, snapshot: dict[str, Any]) -> None:
+        bank_state = snapshot.get("modulator_bank")
+        if isinstance(bank_state, dict):
+            self.modulator_bank.load_dict(bank_state)
+            self.modulator_bank_engine.reset()
+        routes = snapshot.get("modulation_routes")
+        if isinstance(routes, list):
+            self.modulation.load_dict(routes)
+            known_sources = {
+                f"modulator.{definition.modulator_id}"
+                for definition in self.modulator_bank.list_modulators()
+            }
+            self.modulation.routes = [
+                route for route in self.modulation.routes
+                if (
+                    not route.source_id.startswith("modulator.")
+                    or route.source_id in known_sources
+                )
+            ]
+            self.modulation.reset_runtime()
+
     def recall_performance_scene(
             self,
             scene_id: str,
@@ -2360,8 +2426,15 @@ class Application:
         composition_data = scene.snapshot.get("composition")
         if not isinstance(composition_data, dict):
             return False
+        try:
+            candidate = Composition.from_dict(composition_data)
+        except (TypeError, ValueError, KeyError) as exc:
+            _LOG.warning("VJ scene %s has invalid composition data: %s", scene.scene_id, exc)
+            return False
+
+        # Capture numeric start values before replacing the scene. Existing layer IDs
+        # are morphed where target types are compatible; discrete payloads switch now.
         start_values = self._midi_target_values() if morph_seconds > 0.0 else {}
-        candidate = Composition.from_dict(composition_data)
         for current in self.composition.layers:
             if not current.locked:
                 continue
@@ -2370,9 +2443,11 @@ class Application:
                 candidate.layers[candidate.layers.index(replacement)] = current
             else:
                 candidate.add_layer(current)
+
         self.composition = candidate
         self.layer_manager = LayerManager(self.composition, self.events)
         self.performance_modifier_engine.reset()
+        self._restore_scene_decks(scene.snapshot.get("decks"))
         self._clear_overlays()
         for layer in self.composition.layers:
             if layer.source_type == "overlay":
@@ -2380,6 +2455,7 @@ class Application:
                     self._attach_overlay_layer(layer)
                 except Exception as exc:
                     _LOG.warning("Could not restore scene overlay %s: %s", layer.name, exc)
+
         if isinstance(scene.snapshot.get("effects"), dict):
             loaded = EffectSettings.from_dict(scene.snapshot["effects"])
             for key, value in loaded.to_dict().items():
@@ -2400,11 +2476,16 @@ class Application:
                 self.transport.load_settings(transport_settings)
             except (TypeError, ValueError):
                 _LOG.warning("Skipping invalid transport settings in scene %s", scene.scene_id)
+        self._restore_scene_modulators(scene.snapshot)
+
+        palette = str(scene.snapshot.get("palette", self.active_palette))
+        if palette in palette_names():
+            self.active_palette = palette
+
         control_state = scene.snapshot.get("performance_control")
         if isinstance(control_state, dict):
-            current_intensity = float(self.performance_control.intensity)
             requested_intensity = float(
-                control_state.get("intensity", current_intensity)
+                control_state.get("intensity", self.performance_control.intensity)
             )
             self.performance_control.intensity = max(
                 0.0, min(1.0, requested_intensity)
@@ -2413,7 +2494,10 @@ class Application:
             if isinstance(macros, dict):
                 for name, value in macros.items():
                     if name in self.performance_control.macros:
-                        self.performance_control.macros[name] = max(0.0, min(1.0, float(value)))
+                        self.performance_control.macros[name] = max(
+                            0.0, min(1.0, float(value))
+                        )
+
         self._active_scene_morph = None
         if morph_seconds > 0.0:
             end_values = self._midi_target_values()
@@ -2426,6 +2510,7 @@ class Application:
                     morph_end,
                     time.monotonic(),
                     max(0.01, min(60.0, float(morph_seconds))),
+                    curve=str(scene.transition.get("curve", "smoothstep")),
                 )
                 for target, value in morph_start.items():
                     self._apply_midi_target(target, value)
@@ -2433,6 +2518,8 @@ class Application:
             "performance.scene.recalled",
             scene_id=scene.scene_id,
             morph_seconds=max(0.0, float(morph_seconds)),
+            discrete_mode=scene.transition.get("discrete", "cut"),
+            palette=self.active_palette,
         )
         return True
 
