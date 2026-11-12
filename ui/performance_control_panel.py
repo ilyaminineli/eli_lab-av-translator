@@ -590,7 +590,8 @@ class PerformanceControlPanel(QWidget):
         scene_id = str(item.data(Qt.ItemDataRole.UserRole))
         self.application.remove_performance_scene(scene_id)
         self.refresh_performance_scenes(force=True)
-        self.midi_status_label.setText("Performance scene removed.")
+        self._refresh_midi_target_choices()
+        self.midi_status_label.setText("VJ scene removed.")
 
     def _load_performance_scene_editor(self, current, previous=None) -> None:
         if current is None:
