@@ -41,10 +41,3 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP"]
 
-[tool.pyside6.deploy]
-title = "eli_lab AV Translator"
-input_file = "main.py"
-exec_directory = "dist"
-icon = "resources/icons/Icon.ico"
-mode = "onefile"
-extra_args = "--windows-console-mode=attach --include-data-dir=resources=resources --include-data-dir=dictionary=dictionary --include-data-files=THIRD_PARTY_NOTICES.md=THIRD_PARTY_NOTICES.md --include-package=av --include-package=soundcard --include-package=glcontext --include-package=mido --include-package=rtmidi --include-package=pythonosc --include-package=moderngl"
