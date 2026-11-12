@@ -938,6 +938,10 @@ class Application:
                             self.recall_performance_scene(scene_id, morph_seconds=duration)
                         else:
                             self._activate_scene_profile(scene_id)
+                    elif event.kind == "cue.trigger":
+                        self.trigger_performance_scene_cue(str(event.payload.get("name", "")))
+                    if event.kind in {"clock.beat", "clock.bar"}:
+                        self._fire_due_external_scene_recall()
                     self._handle_performance_mode_event(event)
             except (TypeError, ValueError, KeyError) as exc:
                 _LOG.warning(
@@ -1030,6 +1034,7 @@ class Application:
 
     def _activate_scene_profile(self, scene_id: str) -> None:
         profile = self.scene_profiles.get(scene_id)
+        self.active_palette = profile.palette
         if profile.master_look:
             self.effects.apply_preset(profile.master_look)
         try:
@@ -2098,6 +2103,14 @@ class Application:
             self._apply_midi_target(target, mapped)
 
     def _apply_midi_target(self, target: str, value: float) -> bool:
+        if target.startswith("scene.trigger."):
+            scene_id = target.removeprefix("scene.trigger.")
+            active = float(value) >= 0.5
+            was_active = self._midi_scene_trigger_state.get(target, False)
+            self._midi_scene_trigger_state[target] = active
+            if active and not was_active:
+                return self.schedule_performance_scene(scene_id)
+            return False
         if target.startswith("macro."):
             name = target.removeprefix("macro.")
             if not name or not name.replace("_", "").isalnum():
