@@ -1,7 +1,7 @@
 # eli_lab AV Translator — Product Roadmap
 
 **Roadmap snapshot:** 12 November 2026  
-**Current priority:** M6 — Advanced VJ Environment. M6-A0 is documented, and the first M6-A1 live-deck surface implementation is underway on `m6/a1-live-deck-surface`. M0–M5 software foundations are merged to main. M5 target-machine validation and the independent Video Mixer release gate remain open and continue in parallel; master-output recording/audio muxing is a separate deferred deliverable.
+**Current priority:** M6 — Advanced VJ Environment. The initial M6-A1 live-deck surface is merged to main. M6-B0 is documented and M6-B1 full-scene capture/recall is underway on `m6/b1-vj-scene-bank`. M0–M5 software foundations are merged to main. M5 target-machine validation and the independent Video Mixer release gate remain open and continue in parallel; master-output recording/audio muxing is a separate deferred deliverable.
 
 ## Product goal
 
@@ -404,6 +404,14 @@ Before coding, settle the policy when more clips are selected than decks are ava
 
 The detailed initial scope and staged acceptance checklist are in [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md).
 
+## M6-B — VJ Scene and Composition Banks
+
+**In progress — M6-B1 full-scene capture/recall.** The existing Performance Scene Bank is being promoted into a first-class VJ Scene Bank without creating a parallel persistence system. B1 captures deck assignments, composition/layers, master and layer effects, palette, automation/transport, modulation routes and Modulator Bank definitions. It adds cue-based OSC and MIDI scene triggering, internal/external clock quantization and compatible random selection.
+
+**Transition boundary:** current numeric-compatible parameters morph; discrete media/text/generator changes still use a cut. Dual-scene crossfade, midpoint switching, sequences and per-parameter locks remain planned.
+
+See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md) for implementation details and acceptance criteria.
+
 ## Engineering principles across all milestones
 
 1. **Rendering must stay isolated.** Decoder, audio and OSC workers publish data; only the relevant render context owns and changes its GPU resources.
@@ -417,9 +425,10 @@ The detailed initial scope and staged acceptance checklist are in [M6 Advanced V
 
 ## Immediate next implementation order
 
-1. Continue M6-A1: finish the live deck operator surface and validate its state/hold/restart behaviour; then proceed to M6-A2 media bins and explicit clip routing.
-2. Continue M5 target-machine validation in parallel: full SONATA run, loopback reconnect, four-deck generator/text stress, projector hot-plug and long-duration rehearsal.
-3. Continue the independent Video Mixer Completion Gate; do not infer hardware release readiness from static CI.
-4. Keep master-output recording/audio muxing as a separately scoped delivery item unless explicitly brought back into a milestone.
+1. Continue M6-A2: add named media bins and explicit clip routing, then move to atomic multi-trigger and mixing/transitions.
+2. Continue M6-B1: complete validation of full-scene capture/recall and scene triggers, then proceed to the dedicated transition engine.
+3. Continue M5 target-machine validation in parallel: full SONATA run, loopback reconnect, four-deck generator/text stress, projector hot-plug and long-duration rehearsal.
+4. Continue the independent Video Mixer Completion Gate; do not infer hardware release readiness from static CI.
+5. Keep master-output recording/audio muxing as a separately scoped delivery item unless explicitly brought back into a milestone.
 
 See [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md) for the current M6-A scope and acceptance criteria.
