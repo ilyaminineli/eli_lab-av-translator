@@ -373,7 +373,7 @@ See [M5 Autonomous Performance](M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance E
 
 ## Status
 
-**In progress — M6-A1, M6-B1, M6-C1 and M6-D1 foundations.** A1 and B1 are merged to `main`. C1 is in draft PR #24; D1 Particle System 2.0 is being developed on a branch stacked on C1. D1 keeps the legacy particle field intact and adds a separate deterministic, bounded GPU physics system. Media bins, synchronized multi-trigger, scene transitions, later advanced transforms and video/contour particle emitters remain open.
+**In progress — M6-A1, M6-B1, M6-C1 and M6-D1/D2 foundations.** A1 and B1 are merged to `main`. C1 is in draft PR #24; D1/D2 Particle System 2.0 is in draft PR #25 stacked on C1. Quality workflow #143 passed on the D1/D2 head; GPU visual validation remains open. D1/D2 preserve the legacy field and add bounded GPU physics, path/video/image/contour emitters and source reformation. Media bins, synchronized multi-trigger, scene transitions, later advanced transforms and D3 particle authoring remain open.
 
 ## A. A proper live mixer
 
@@ -438,7 +438,7 @@ Per-population overrides and advanced vector/collision fields remain D3 work. Se
 ## Immediate next implementation order
 
 1. Validate M6-C1 geometry/feedback on the target Windows GPU, including resize, freeze/reset, delay and dual-output independence.
-2. Validate M6-D1 simulation on the target GPU: determinism, resource ceilings, particle/trail quality, resize, layer removal and dual-output independence.
+2. Validate M6-D1/D2 simulation on the target GPU: determinism, source/path emitters, reformation against live footage, resource ceilings, particle/trail quality, resize, layer removal and dual-output independence.
 3. Continue M6-A2/A3: named media bins, explicit deck routing, atomic multi-trigger and quantization.
 4. Continue M6-B2: dual-scene transition engine, then scene sequences and parameter locks.
 5. Continue M5 target-machine validation and the independent Video Mixer Completion Gate. Keep recording/audio muxing separately scoped.

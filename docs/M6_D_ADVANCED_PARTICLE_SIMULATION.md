@@ -2,7 +2,7 @@
 
 ## Status
 
-**D1 + D2 software implementation is on `m6/d1-particle-system-2`, stacked on the C1 branch.** Static quality CI for the initial D1 foundation passed. The path/source-emitter extension awaits a fresh CI run and target-GPU visual validation. The original `particles` procedural field remains unchanged.
+**D1 + D2 software implementation is on `m6/d1-particle-system-2`, stacked on the C1 branch.** Quality workflow #143 passed Python compilation and Ruff on the current D1/D2 head. Target-GPU shader and visual validation remains open. The original `particles` procedural field remains unchanged.
 
 ## Objective
 
