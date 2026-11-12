@@ -151,7 +151,7 @@ class PerformanceScene:
     transition: dict[str, Any] = field(default_factory=lambda: {
         "duration": 0.0,
         "curve": "smoothstep",
-        "discrete": "switch_midpoint",
+        "discrete": "cut",
     })
 
     def normalize(self) -> None:
@@ -186,7 +186,7 @@ class PerformanceScene:
         curve = str(raw_transition.get("curve", "smoothstep"))
         if curve not in {"linear", "smoothstep", "ease_in", "ease_out"}:
             curve = "smoothstep"
-        discrete = str(raw_transition.get("discrete", "switch_midpoint"))
+        discrete = str(raw_transition.get("discrete", "cut"))
         if discrete not in {"cut", "switch_midpoint", "fade_through_black"}:
             discrete = "switch_midpoint"
         self.transition = {
