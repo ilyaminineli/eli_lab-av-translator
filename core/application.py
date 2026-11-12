@@ -2626,6 +2626,7 @@ class Application:
                 "audio_analysis": self.audio_capture.settings.to_dict(),
                 "modulation_routes": self.modulation.to_dict(),
                 "scene_profiles": self.scene_profiles.to_dict(),
+                "active_palette": self.active_palette,
                 "modulator_bank": self.modulator_bank.to_dict(),
                 "midi_mappings": getattr(
                     getattr(self, "midi_mapping_engine", None), "to_dict", lambda: []
@@ -2854,6 +2855,11 @@ class Application:
                 self.update_audio_analysis_settings(AudioAnalysisSettings(**audio_values))
             self.modulation.load_dict(performance_settings.get("modulation_routes", []))
             self.scene_profiles.load_dict(performance_settings.get("scene_profiles", []))
+            active_palette = str(
+                performance_settings.get("active_palette", self.active_palette)
+            )
+            if active_palette in palette_names():
+                self.active_palette = active_palette
             self.modulator_bank.load_dict(
                 performance_settings.get("modulator_bank", {})
             )
