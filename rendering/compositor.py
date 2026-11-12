@@ -273,6 +273,66 @@ void main() {
             float line = floor(local.y * 45.0);
             float gate = step(0.86, hash21(vec2(line, floor(text_phase * 12.0))));
             sample_local.x += gate * sin(text_phase * 19.0 + line) * u_text_animation_amount;
+        } else if (u_text_animation == 7) {
+            float reveal = fract(text_phase * 0.08);
+            text_mask = smoothstep(
+                1.0 - reveal - 0.012, 1.0 - reveal + 0.012, local.x
+            );
+        } else if (u_text_animation == 8) {
+            vec2 grid = vec2(
+                max(4.0, u_text_animation_columns),
+                max(3.0, u_text_animation_columns * 0.5625)
+            );
+            float cell_noise = hash21(floor(local * grid));
+            float dissolve = fract(text_phase * 0.08);
+            text_mask = 1.0 - smoothstep(
+                dissolve - 0.035, dissolve + 0.035, cell_noise
+            );
+        } else if (u_text_animation == 9) {
+            vec2 grid = vec2(
+                max(4.0, u_text_animation_columns),
+                max(3.0, u_text_animation_columns * 0.5625)
+            );
+            vec2 cell = floor(local * grid);
+            float pulse = hash21(cell + floor(text_phase * 12.0));
+            text_mask *= mix(0.08, 1.0, step(0.22, pulse));
+        } else if (u_text_animation == 10) {
+            vec2 grid = vec2(
+                max(4.0, u_text_animation_columns),
+                max(3.0, u_text_animation_columns * 0.5625)
+            );
+            vec2 cell = floor(local * grid);
+            vec2 random_offset = vec2(
+                hash21(cell + 17.0), hash21(cell + 43.0)
+            ) - 0.5;
+            float phase = sin(text_phase * 2.4 + hash21(cell) * 6.28318);
+            sample_local += random_offset * phase * u_text_animation_amount * 0.18;
+        } else if (u_text_animation == 11) {
+            float reveal = fract(text_phase * 0.08);
+            text_mask = 1.0 - smoothstep(
+                reveal - 0.012, reveal + 0.012, local.y
+            );
+        } else if (u_text_animation == 12) {
+            vec2 grid = vec2(
+                max(4.0, u_text_animation_columns),
+                max(3.0, u_text_animation_columns * 0.5625)
+            );
+            vec2 cell = floor(local * grid);
+            vec2 random_offset = vec2(
+                hash21(cell + 71.0), hash21(cell + 113.0)
+            ) - 0.5;
+            float scatter = sin(text_phase * 1.7 + hash21(cell) * 6.28318);
+            sample_local += random_offset * scatter * u_text_animation_amount * 0.3;
+        } else if (u_text_animation == 13) {
+            float segment = floor(local.x * max(4.0, u_text_animation_columns * 0.5));
+            float collision = sin(text_phase * 2.0 + segment * 1.37);
+            float direction = step(0.5, hash21(vec2(segment, 91.0))) * 2.0 - 1.0;
+            sample_local.x += collision * direction * u_text_animation_amount * 0.22;
+            sample_local.y += abs(collision) * u_text_animation_amount * 0.06;
+        } else if (u_text_animation == 14) {
+            float rows = max(8.0, u_text_animation_columns);
+            float offset = text_phase * 0.9;
+            sample_local.y = fract(floor((local.y + offset) * rows) / rows);
         }
     }
 
