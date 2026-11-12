@@ -1,56 +1,67 @@
 # Windows one-file build with PyInstaller
 
-## What this build profile does
+## Supported build path
 
-Builds a native Windows x64 one-file executable using the AV Translator repository's own `.venv`. It collects the application's resources, icon, dictionaries, PySide6/Qt, PyAV/FFmpeg, ModernGL/glcontext, SoundCard, OSC and Mido packages.
-
-## Important Python 3.14 note
-
-PyInstaller 6.15 and later supports Python 3.14. The current PyAV Windows wheel uses the stable CPython 3.12 ABI (`abi3`) and can be used by CPython 3.14. The `python-rtmidi` project currently publishes a Windows x64 binary wheel for CPython 3.12, not CPython 3.14. Therefore the default Python 3.14 build treats native MIDI hardware input as optional. OSC/Sonic Pi integration and all other bundled features remain independent of this backend.
-
-## Install files
-
-Extract/merge this archive into the AV Translator repository root. Do not delete or replace the application's existing folders.
-
-## Apply the one-time self-check compatibility patch
-
-From the repository root:
+The supported local Windows x64 one-file build is:
 
 ```powershell
-git apply .\patches\main_optional_rtmidi.patch
+.\.venv\Scripts\python.exe .\scripts\build_pyinstaller.py
 ```
 
-This changes only `main.py`'s `--self-check`: `rtmidi` is reported as an optional backend rather than a mandatory import. The runtime MIDI service already catches an unavailable backend and returns no devices; this patch does not fake MIDI support.
+The project-local `.venv` is required. The script automatically relaunches itself through that environment if another Python environment is active.
 
-If `git apply` says the patch does not apply, do not force it. Compare `patches/main_optional_rtmidi.py` with the current `main.py` and make the same small change manually.
+## Build machine
 
-## Build
+- Windows 10/11 x64.
+- 64-bit CPython 3.12, 3.13 or 3.14.
+- Internet access for the pinned Python wheels/build dependencies.
+- Enough free disk space for the virtual environment, PyInstaller work directory and final executable.
+- Visual Studio C++ Build Tools are **not required** for the normal build. They are needed only if you choose to compile the optional native MIDI backend.
 
-Run in the PyCharm terminal from the repository root:
+Create the project environment once, choosing an installed interpreter:
 
 ```powershell
-python .\scripts\build_pyinstaller.py
+py -3.14 -m venv .venv
+.\.venv\Scripts\python.exe -m pip install --upgrade pip
 ```
 
-The script redirects to the repository's `.venv` if another project's venv is active. It supports 64-bit CPython 3.12, 3.13 and 3.14, installs required packages and PyInstaller, checks dependencies, compiles source, packages the EXE, runs `--self-check`, and writes a SHA-256 report.
+Use `py -3.12` or `py -3.13` instead if preferred. Do not substitute another project's active virtual environment.
+
+## What the build script does
+
+`scripts/build_pyinstaller.py`:
+
+1. Verifies Windows x64 and 64-bit CPython 3.12–3.14.
+2. Verifies the source files, resource folders, dictionaries and PyInstaller spec are present.
+3. Installs/updates pip and installs `requirements-build-pyinstaller.txt` in the project-local environment.
+4. Runs `pip check` and checks the runtime imports.
+5. Compiles the application modules.
+6. Runs PyInstaller using `AVTranslator.spec` to produce a one-file windowed executable.
+7. Runs the packaged executable with `--self-check`.
+8. Writes `build\pyinstaller-build-report.txt` with runtime/build versions, executable size and SHA-256.
 
 Output:
 
 `dist\eli_lab AV Translator.exe`
 
-## Optional: native MIDI hardware input
+No compatibility patch to `main.py` is required. The current self-check treats native `rtmidi` as optional.
 
-For a Python 3.14 build with native MIDI input, install Visual Studio 2022 Build Tools with Desktop development with C++ and Windows SDK, then run:
+## Optional native MIDI hardware input
+
+The default build includes the `mido` abstraction and does not require `python-rtmidi`. To attempt to include the native MIDI backend:
 
 ```powershell
-python .\scripts\build_pyinstaller.py --with-midi
+.\.venv\Scripts\python.exe .\scripts\build_pyinstaller.py --with-midi
 ```
 
-That option compiles `python-rtmidi` from source. It can fail if the toolchain or Python 3.14 source compatibility is incomplete. The normal build deliberately does not require it.
+This compiles `python-rtmidi` from source and requires Visual Studio 2022 Build Tools with **Desktop development with C++** and the Windows SDK. Native MIDI is optional; Sonic Pi OSC integration does not depend on it.
 
 ## Target computer
 
-The target computer does not need Python, pip, FFmpeg, PyInstaller or Visual Studio. It does need Windows 11 x64 and a graphics driver supporting OpenGL 3.3 Core. Sonic Pi remains a separate installation for SONATA OSC integration. Video footage, project files, and user-added media also remain separate and must be copied/relinked.
+The target computer needs Windows 11 x64 and a graphics driver supporting OpenGL 3.3 Core Profile. It does not need Python, pip, PyInstaller, FFmpeg or Visual Studio. Sonic Pi, GPU drivers, audio devices, source video, project files and user-added assets remain external.
 
-The self-check verifies imports and bundled data, not a real OpenGL context, audio loopback, projector output, MIDI device enumeration, multi-deck performance or long-duration stability. Test those on the actual performance laptop.
+Run the executable with `--self-check` to validate packaged Python imports and bundled resources. The check does **not** initialize OpenGL, enumerate MIDI devices, test loopback capture, exercise projector output, run four video decks or measure long-duration performance. Those checks must be performed on the actual performance machine.
 
+## GitHub Actions workflow
+
+The repository's **Windows Onefile Build** workflow is manual-dispatch only. It is an optional CI build path and does not run automatically on pushes or pull requests. The regular local build command remains `scripts/build_pyinstaller.py`.

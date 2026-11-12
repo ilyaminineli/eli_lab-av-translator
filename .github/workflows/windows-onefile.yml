@@ -1,7 +1,10 @@
 name: Windows Onefile Build
 
+# Optional manual fallback only. Normal builds are performed locally with
+# scripts/build_pyinstaller.py; do not run on pushes or pull requests.
 on:
   workflow_dispatch:
+
 permissions:
   contents: read
 
@@ -13,19 +16,23 @@ jobs:
       - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Set up CPython 3.12 x64
+      - name: Set up CPython 3.14 x64
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12"
+          python-version: "3.14"
           architecture: "x64"
           cache: pip
-          cache-dependency-path: requirements-build-win-x64.txt
+          cache-dependency-path: requirements-build-pyinstaller.txt
 
-      - name: Build and self-check onefile executable
+      - name: Create project-local environment
         shell: pwsh
-        run: .\scripts\build_windows.ps1
+        run: py -3.14 -m venv .venv
 
-      - name: Upload onefile executable
+      - name: Build and self-check with PyInstaller
+        shell: pwsh
+        run: .\.venv\Scripts\python.exe .\scripts\build_pyinstaller.py
+
+      - name: Upload one-file executable
         uses: actions/upload-artifact@v4
         with:
           name: eli-lab-av-translator-windows-x64

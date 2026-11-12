@@ -1,81 +1,84 @@
 # Architecture
 
-## Product direction
+## Product and runtime boundaries
 
-eli_lab AV Translator is a Windows-first live video collage and VJ performance environment. Its first unattended workflow is: import a local footage folder, run randomized clip segments across four decks, change collage arrangements and master effect looks automatically, and send the master output to a separate fullscreen display.
+eli_lab AV Translator is a Windows-first live audiovisual/VJ performance environment. The application combines four independent video decks, composition layers, procedural generators, overlays, GPU effects and renderer-independent performance controls. M5 adds autonomous show orchestration and a shared asynchronous generator-raster pipeline. M6 is planned to make the operator experience more like a dedicated live VJ mixer.
 
-## Runtime boundaries
+The main ownership boundaries are:
 
-- UI owns Qt widgets, automation controls and output-window lifecycle.
-- Application core owns composition, project state, events, automation scheduling and orchestration.
-- Media owns discovery, metadata, thumbnails, frame queues, video decks and decoding.
-- Rendering owns OpenGL resources, video textures, layer compositing and post-processing.
-- Effects owns master look parameters and filter presets.
-- Performance control owns normalized transport, scene, intensity, macro and cue state.
-- Audio, OSC and MIDI adapters publish normalized control events; they do not replace or own renderer resources.
+- **UI** owns Qt widgets, editor state, dock/window lifecycle and operator controls.
+- **Application core** owns the composition, project state, service coordination, event application and automation/performance ticks.
+- **Media** owns discovery, metadata, thumbnails, decoder workers and bounded video/image frame queues.
+- **Generators** own normalized settings, CPU rasterization and the application-shared raster job service.
+- **Rendering** owns per-window OpenGL resources, video/generator textures, composition and post-processing.
+- **Effects** own master and per-layer effect settings/presets.
+- **Performance control** owns normalized transport, scene, audio, OSC/MIDI, modulation, modifier and Performance Mode state.
 
-Decoder workers must never call OpenGL. They publish timestamped CPU frames to bounded queues. The main application refreshes a shared latest-frame snapshot cache. Each output renderer independently uploads new revisions into its own OpenGL context.
-
-## Runtime resources and packaged deployment
-
-The application has two distinct filesystem domains:
-
-- Read-only application resources are resolved from RESOURCE_DIR, beneath the source tree in development or the Nuitka runtime extraction directory in a one-file build. The same root is used for the bundled dictionary files.
-- Writable per-user state is resolved independently under %LOCALAPPDATA%\eli_lab\AV Translator on Windows. The SQLite media database, thumbnail cache and application logs never live inside the executable or its temporary extraction directory.
-
-Nuitka one-file builds unpack embedded files to a temporary runtime directory when launched. The configuration module uses Nuitka's python_runtime_dir attribute to locate the embedded resources. User footage, .eliav projects and user-added asset folders remain external and are not copied into the executable.
-
-The built-in visual-asset index is not scanned during Application construction. The Asset Library starts its scan when the dock is first shown, using a bounded Qt thread-pool worker. The worker scans a snapshot of registered roots; if roots change during a scan, its stale result is discarded and a fresh scan starts. Only the UI thread installs the final index result and updates widgets.
-
-The Windows release build uses PySide6 deployment (Nuitka onefile) on a native Windows x64 build machine. The target computer does not need Python or build tools, but still needs a working OpenGL 3.3 driver and any external application/device such as Sonic Pi or a projector.
+Worker threads publish immutable or copied CPU-side data. They do not update Qt widgets, mutate the composition or create/change OpenGL resources.
 
 ## Rendering lifecycle
 
-1. Qt creates a QOpenGLWidget context for the preview or projector window.
-2. PerformanceView.initializeGL creates a per-window ModernGL wrapper and compositor.
-3. Each VideoDecoder worker decodes frames into a bounded queue.
-4. The application refresh loop consumes each queue once and stores a FrameSnapshot.
-5. Each PerformanceView reads the current snapshots without consuming the queues.
-6. Each RenderEngine uploads only unseen frame revisions to its local GPU textures.
-7. The compositor blends visible video layers into ping-pong framebuffers.
-8. A master GLSL effect pass applies the current look / overlay parameters.
+1. Qt creates a `QOpenGLWidget` context for the local preview or projector output.
+2. `PerformanceView.initializeGL` creates that window's ModernGL wrapper and compositor.
+3. Each video decoder produces timestamped CPU frames into its bounded queue.
+4. The application tick consumes each deck queue and updates shared latest-frame snapshots.
+5. Preview and projector renderers read the same CPU snapshots independently.
+6. Each `RenderEngine` uploads only unseen revisions into textures owned by its own GL context.
+7. The compositor blends visible video, generator and overlay layers into ping-pong framebuffers, applying per-layer FX.
+8. The master GLSL effect pass processes the composed output.
 9. The final framebuffer is drawn into that output window's Qt framebuffer.
 
-The preview and projector windows share application state and CPU frame snapshots, not OpenGL texture objects.
+The two outputs share application/composition state and CPU frame snapshots. They do **not** share GL texture objects or GL contexts.
 
-## Automation lifecycle
+## Generator raster lifecycle
 
-AutomationDirector uses monotonic deadlines for each deck, layout change, effect-look change and session expiry. It is ticked by the application/UI timer. It accepts an RNG seed for deterministic tests.
+Static generator rasterization is owned by one `GeneratorRasterService` created by `Application` and shared by all output renderers.
 
-## Performance control plane
+- The service uses a single condition-driven background worker. It creates CPU pixel arrays only.
+- Requests carry a copied settings snapshot, dimensions, fingerprint and monotonically increasing per-layer revision.
+- An ordered pending map holds at most one waiting snapshot per layer. A newer request replaces that layer's pending snapshot instead of adding an obsolete keystroke to a backlog.
+- There is at most one active raster job globally. Text jobs have a configurable start-rate limit; non-text generator jobs are not blocked by that text-only limiter.
+- Completion or failure is accepted only when the job's revision and fingerprint still match the newest request. Renderers validate again when receiving the signal and before uploading.
+- The service caches the latest completed CPU snapshot. Each renderer performs its own upload only while its own GL context is current.
+- Deleting layers, project reset/load and application shutdown invalidate pending/completed work. The previous valid texture can remain displayed while a replacement is generated or when a replacement fails.
 
-M3 adds a renderer-independent control layer across the performance-control, transport, audio-analysis, audio-capture and modulation modules.
+Static text content and typography are rasterized on the CPU. Text motion (type-on, word/column reveal, line wave, jitter, crawl and signal glitch) is applied by the existing compositor shader using per-frame uniforms; motion-only changes do not submit a CPU raster job.
 
-1. Source adapters create validated ControlEvent messages.
-2. Events enter a bounded, thread-safe ControlEventQueue.
-3. The normal application/UI tick drains a bounded batch and applies it to PerformanceControlState.
-4. InternalTransport advances from monotonic deadlines; it emits beat/bar events and quantized scene changes without a sleeping clock thread.
-5. The SoundCard worker owns the active input/loopback recorder, analyzes captured blocks and publishes into a bounded latest-frame queue.
-6. The application tick consumes audio feature snapshots (RMS, peak, low/mid/high, onset and optional tempo/confidence) and combines them with transport and named macro sources.
-7. ModulationMatrix maps only registered sources to registered visual targets with safe ranges, curves, smoothing, bypass, hold, intensity ceilings, layer locks and manual-override precedence.
-8. Resulting values update existing effect/layer/generator/automation models. Renderers remain unaware of SoundCard, input devices or any source protocol.
+Text editing keeps a UI buffer separate from committed layer settings. The operator can pause live preview, commit after a typing pause, apply immediately, select 25/50/75/100% preview quality, request full-resolution 1600×900 output, rate-limit text raster starts, freeze the currently displayed texture and retain the last valid result after a failure. Pipeline state is exposed to the editor.
 
-Audio workers never call Qt widgets or OpenGL. Device loss is isolated to the capture service; the video session continues. Synthetic and fixture-replay sources use the same analysis path as hardware input.
+## Performance-control lifecycle
 
-## Scene profiles
+M3 introduced the normalized transport/audio/control model. M4 adds the versioned `/eli_lab/v1` OSC adapter. M5 connects those sources to Performance Mode, AUTO PERFORMANCE, the Modulator Bank and per-layer performance modifiers.
 
-SceneProfileRegistry stores user-facing scene IDs, intensity, master look and Japanese colour palette. The initial profiles match the 16 scene IDs in the SONATA patch. Scene changes may apply immediately or be quantized to a beat, bar or phrase boundary. M4 OSC will publish normalized events into the same control contract rather than directly mutating visual objects.
+1. Audio, OSC, MIDI and internal transport adapters validate input and publish normalized events or feature snapshots.
+2. Network/device callbacks place bounded items into thread-safe queues; they do not mutate composition or UI state.
+3. The application tick drains a bounded batch, updates performance-control state and evaluates modulation/modifiers.
+4. Registered targets update existing layer, generator, effect or automation settings subject to range, lock, manual-override and ownership rules.
+5. Performance Mode installs only missing defaults, tracks which services it started and releases only resources it owns when stopped.
+6. Project files persist user-facing configuration and stable IDs, not live device handles, worker threads, active GL resources or transient signal buffers.
+
+Sonic Pi macros are normalized musical controls, not raw audio. System loopback is needed for local RMS/FFT/onset analysis of the sound output.
+
+## Runtime resources and writable data
+
+Read-only packaged resources (icons, textures, sketches and dictionaries) are resolved from the source tree during development or from the frozen application bundle at runtime. PyInstaller's one-file bootloader extracts bundled data into its runtime directory; bundled module `__file__` paths resolve inside that extraction root. The runtime hook also supplies safe stdout/stderr sinks for a windowed executable.
+
+Writable data is kept separately under:
+
+`%LOCALAPPDATA%\eli_lab\AV Translator\`
+
+This includes the SQLite media database, thumbnail cache and logs. User footage, project files and user-added asset roots remain external and are never written into the temporary one-file extraction directory.
+
+## Packaging and checks
+
+The supported local Windows one-file build is `scripts/build_pyinstaller.py`, using the repository-local `.venv` and `AVTranslator.spec`. It supports 64-bit CPython 3.12–3.14, installs the pinned build requirements, checks imports and dependencies, compiles the source, creates the one-file executable and runs its `--self-check`. Native `python-rtmidi` support is optional and may be built separately with `--with-midi`.
+
+The GitHub Windows Onefile Build workflow is manual-dispatch only. The normal Quality workflow performs Python compilation and Ruff; it is not a GUI, OpenGL, audio-device or hardware integration test. See [Windows PyInstaller build guide](BUILD_PYINSTALLER_WINDOWS.md).
 
 ## Project data
 
-A project file uses the .eliav extension and UTF-8 JSON. Schema version 2 stores composition, deck assignments, segment in/out points, loop settings, effect settings and automation settings. User-facing M3 transport configuration, analysis settings, modulation routes and scene profiles are persisted; transient live transport position, source handles and audio buffers are not project data.
+`.eliav` projects persist composition/layers, deck assignments, effects and performance configuration. `.eliset` performance sets persist a reusable performance setup, including deck state, automation/performance settings, scenes and MIDI mappings. Media files are referenced by path and are not embedded. Runtime handles, GPU objects and transient frame/audio queues are recreated when a project/set is loaded.
 
-## Future extensions
+## M6 direction
 
-- M4 versioned Sonic Pi OSC event bridge and visual action mapping.
-- MIDI mapping, performance banks, recording and advanced output routing.
-
-
-## Sonic Pi OSC bridge
-
-The `core.osc_protocol` adapter validates the versioned `/eli_lab/v1` namespace and converts only registered transport, bar, scene, macro, cue and heartbeat messages into `ControlEvent` objects. A single background UDP worker submits those events to the bounded application queue. The normal application tick is the only place that applies events to performance state, scene profiles or modulation. OSC configuration and live session/buffer state are not stored in .eliav projects.
+M6 — Advanced VJ Environment — is planned. Its first defined workstream is a live-mixer interaction model with media-bin clip triggering, including simultaneous triggers. The current four video decks remain the playback foundation; M6 should build a dedicated operator surface without moving decode, composition or GPU ownership into the UI. See [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md).
