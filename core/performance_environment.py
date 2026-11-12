@@ -140,20 +140,73 @@ class MIDIMappingEngine:
 
 @dataclass
 class PerformanceScene:
+    """First-class VJ scene: a versioned, recallable audiovisual composition snapshot."""
+
     scene_id: str
     label: str
     snapshot: dict[str, Any]
     quantization: str = "bar"
     cue: str = ""
+    tags: list[str] = field(default_factory=list)
+    transition: dict[str, Any] = field(default_factory=lambda: {
+        "duration": 0.0,
+        "curve": "smoothstep",
+        "discrete": "cut",
+    })
 
     def normalize(self) -> None:
         self.scene_id = str(self.scene_id).strip()[:64]
         self.label = str(self.label).strip()[:80] or self.scene_id
         if self.quantization not in {"immediate", "beat", "bar", "phrase"}:
             self.quantization = "bar"
-        self.cue = str(self.cue).strip()[:128]
+        self.cue = str(self.cue).strip()
+        if self.cue and (
+                len(self.cue) > 64
+                or any(
+                    character not in (
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.:-"
+                    )
+                    for character in self.cue
+                )
+        ):
+            raise ValueError(
+                "OSC scene cue must be 1–64 characters using letters, numbers, "
+                "period, underscore, colon or hyphen."
+            )
         if not self.scene_id or not isinstance(self.snapshot, dict):
             raise ValueError("Performance scene requires an ID and snapshot object.")
+
+        clean_tags = []
+        seen_tags = set()
+        for raw in self.tags if isinstance(self.tags, list) else []:
+            tag = str(raw).strip()[:32]
+            key = tag.casefold()
+            if tag and key not in seen_tags:
+                clean_tags.append(tag)
+                seen_tags.add(key)
+            if len(clean_tags) >= 16:
+                break
+        self.tags = clean_tags
+
+        raw_transition = self.transition if isinstance(self.transition, dict) else {}
+        try:
+            duration = float(raw_transition.get("duration", 0.0))
+        except (TypeError, ValueError):
+            duration = 0.0
+        import math
+        if not math.isfinite(duration):
+            duration = 0.0
+        curve = str(raw_transition.get("curve", "smoothstep"))
+        if curve not in {"linear", "smoothstep", "ease_in", "ease_out"}:
+            curve = "smoothstep"
+        # B1 implements a deterministic cut. Future milestones may add
+        # midpoint switching and fade-through-black semantics.
+        discrete = "cut"
+        self.transition = {
+            "duration": max(0.0, min(60.0, duration)),
+            "curve": curve,
+            "discrete": discrete,
+        }
 
     def to_dict(self) -> dict[str, Any]:
         self.normalize()
@@ -227,6 +280,7 @@ class SceneMorph:
     end: dict[str, float]
     started_at: float
     duration: float
+    curve: str = "smoothstep"
 
     def value(self, now: float | None = None) -> tuple[float, dict[str, float]]:
         stamp = time.monotonic() if now is None else float(now)
@@ -238,9 +292,18 @@ class SceneMorph:
                 min(1.0, (stamp - self.started_at) / self.duration),
             )
         )
-        eased = fraction * fraction * (3.0 - 2.0 * fraction)
-        return fraction, {key: self.start[key] + (self.end[key] - self.start[key]) * eased
-                          for key in self.start.keys() & self.end.keys()}
+        if self.curve == "linear":
+            eased = fraction
+        elif self.curve == "ease_in":
+            eased = fraction * fraction
+        elif self.curve == "ease_out":
+            eased = 1.0 - (1.0 - fraction) * (1.0 - fraction)
+        else:
+            eased = fraction * fraction * (3.0 - 2.0 * fraction)
+        return fraction, {
+            key: self.start[key] + (self.end[key] - self.start[key]) * eased
+            for key in self.start.keys() & self.end.keys()
+        }
 
 
 class MIDIInputService:

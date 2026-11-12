@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import random
 import tempfile
 import time
 from pathlib import Path
@@ -49,7 +50,7 @@ from core.project_manager import ProjectManager
 from core.scene_profiles import SceneProfile, SceneProfileRegistry
 from effects.settings import EffectSettings
 from generators.catalog import GENERATOR_TYPES, default_generator_settings, normalize_settings
-from generators.palettes import palette_look
+from generators.palettes import palette_look, palette_names
 from media.asset_index import VisualAssetIndex
 from media.frame_queue import FrameSnapshot
 from media.image_overlay import ImageOverlayPlayer
@@ -105,11 +106,14 @@ class Application:
         self._midi_learn_last_event = ""
         self.performance_scenes: dict[str, PerformanceScene] = {}
         self._pending_scene_morph_seconds: dict[str, float] = {}
+        self._pending_external_scene_recall: dict[str, dict[str, float]] = {}
         self._active_scene_morph: SceneMorph | None = None
+        self._midi_scene_trigger_state: dict[str, bool] = {}
         self.midi_input = MIDIInputService(self._handle_midi_event)
         self.transport = InternalTransport()
         self._external_clock_bar_at: float | None = None
         self.scene_profiles = SceneProfileRegistry()
+        self.active_palette = palette_names()[0]
         self.modulation = ModulationMatrix()
         self.modulator_bank = ModulatorBank()
         self.modulator_bank_engine = ModulatorBankEngine()
@@ -335,7 +339,9 @@ class Application:
         self._midi_learn_last_event = ""
         self.performance_scenes.clear()
         self._pending_scene_morph_seconds.clear()
+        self._pending_external_scene_recall.clear()
         self._active_scene_morph = None
+        self._midi_scene_trigger_state.clear()
         self._clear_overlays()
         for deck in self.decks.values():
             deck.close()
@@ -360,6 +366,7 @@ class Application:
         self.modulator_bank_engine.reset()
         self.performance_modifier_engine.reset()
         self.scene_profiles = SceneProfileRegistry()
+        self.active_palette = palette_names()[0]
         self.audio_capture.stop()
         self.audio_capture.update_settings(AudioAnalysisSettings())
         self._audio_sources.clear()
@@ -931,6 +938,10 @@ class Application:
                             self.recall_performance_scene(scene_id, morph_seconds=duration)
                         else:
                             self._activate_scene_profile(scene_id)
+                    elif event.kind == "cue.trigger":
+                        self.trigger_performance_scene_cue(str(event.payload.get("name", "")))
+                    if event.kind in {"clock.beat", "clock.bar"}:
+                        self._fire_due_external_scene_recall()
                     self._handle_performance_mode_event(event)
             except (TypeError, ValueError, KeyError) as exc:
                 _LOG.warning(
@@ -1023,6 +1034,7 @@ class Application:
 
     def _activate_scene_profile(self, scene_id: str) -> None:
         profile = self.scene_profiles.get(scene_id)
+        self.active_palette = profile.palette
         if profile.master_look:
             self.effects.apply_preset(profile.master_look)
         try:
@@ -2091,6 +2103,14 @@ class Application:
             self._apply_midi_target(target, mapped)
 
     def _apply_midi_target(self, target: str, value: float) -> bool:
+        if target.startswith("scene.trigger."):
+            scene_id = target.removeprefix("scene.trigger.")
+            active = float(value) > 0.0
+            was_active = self._midi_scene_trigger_state.get(target, False)
+            self._midi_scene_trigger_state[target] = active
+            if active and not was_active:
+                return self.schedule_performance_scene(scene_id)
+            return False
         if target.startswith("macro."):
             name = target.removeprefix("macro.")
             if not name or not name.replace("_", "").isalnum():
@@ -2124,12 +2144,42 @@ class Application:
             scene_id: str,
             label: str = "",
             quantization: Quantization = "bar",
+            cue: str = "",
+            tags: list[str] | None = None,
+            transition: dict[str, Any] | None = None,
     ) -> PerformanceScene:
+        """Capture a complete VJ scene without copying source media or runtime handles."""
         scene_id = str(scene_id).strip()
         if not scene_id:
             raise ValueError("Scene ID cannot be empty.")
+        cue = str(cue).strip()[:128]
+        duplicate_cue = next(
+            (
+                scene for existing_id, scene in self.performance_scenes.items()
+                if existing_id != scene_id
+                and cue
+                and scene.cue.casefold() == cue.casefold()
+            ),
+            None,
+        )
+        if duplicate_cue is not None:
+            raise ValueError(
+                f"OSC cue '{cue}' is already assigned to scene '{duplicate_cue.label}'."
+            )
+
+        existing = self.performance_scenes.get(scene_id)
+        selected_transition = (
+            dict(transition)
+            if isinstance(transition, dict)
+            else dict(existing.transition) if existing else None
+        )
+        selected_tags = list(tags) if tags is not None else (
+            list(existing.tags) if existing else []
+        )
         snapshot = {
+            "schema_version": 2,
             "composition": self.composition.to_dict(),
+            "decks": [deck.to_dict() for deck in self.decks.values()],
             "effects": self.effects.to_dict(),
             "automation_settings": self.automation.settings.to_dict(),
             "transport": self.transport.to_dict(),
@@ -2137,39 +2187,89 @@ class Application:
                 "intensity": self.performance_control.intensity,
                 "macros": dict(self.performance_control.macros),
             },
+            "modulation_routes": self.modulation.to_dict(),
+            "modulator_bank": self.modulator_bank.to_dict(),
+            "palette": self.active_palette,
         }
         scene = PerformanceScene(
             scene_id,
             label or scene_id.replace("_", " ").title(),
             snapshot,
             quantization=quantization,
+            cue=cue,
+            tags=selected_tags,
+            transition=selected_transition or {
+                "duration": 0.0,
+                "curve": "smoothstep",
+                "discrete": "cut",
+            },
         )
         scene.normalize()
         self.performance_scenes[scene.scene_id] = scene
-        self.events.publish("performance.scene_bank.updated", scene_id=scene.scene_id)
+        self.events.publish(
+            "performance.scene_bank.updated",
+            scene_id=scene.scene_id,
+            label=scene.label,
+            layer_count=len(self.composition.layers),
+            deck_count=len(self.decks),
+        )
         return scene
 
     def schedule_performance_scene(
             self,
             scene_id: str,
-            morph_seconds: float = 0.0,
+            morph_seconds: float | None = None,
     ) -> bool:
+        """Recall a scene immediately or at the selected internal/external clock boundary."""
         scene = self.performance_scenes.get(str(scene_id))
         if scene is None:
             return False
-        duration = max(0.0, min(60.0, float(morph_seconds)))
-        if (
-                scene.quantization == "immediate"
-                or not self.transport.running
-                or self.transport.paused
-        ):
-            return self.recall_performance_scene(scene.scene_id, morph_seconds=duration)
-        self._pending_scene_morph_seconds[scene.scene_id] = duration
-        self.transport.schedule_scene(
-            scene.scene_id,
-            self.performance_control.intensity,
-            quantization=scene.quantization,
+        requested_duration = (
+            scene.transition.get("duration", 0.0)
+            if morph_seconds is None else morph_seconds
         )
+        duration = max(0.0, min(60.0, float(requested_duration)))
+        if scene.quantization == "immediate":
+            return self.recall_performance_scene(scene.scene_id, morph_seconds=duration)
+
+        internal_clock = self.transport.running and not self.transport.paused
+        external_clock = (
+            self.performance_control.source_id == "sonic_pi"
+            and self.performance_control.transport_running
+            and not self.performance_control.transport_paused
+        )
+        if internal_clock:
+            self._pending_scene_morph_seconds[scene.scene_id] = duration
+            self.transport.schedule_scene(
+                scene.scene_id,
+                self.performance_control.intensity,
+                quantization=scene.quantization,
+            )
+        elif external_clock:
+            current_bar = max(1, int(self.performance_control.bar_index))
+            current_beat = max(0, int(self.performance_control.beat_index))
+            beats_per_bar = max(1, int(self.performance_control.beats_per_bar))
+            if scene.quantization == "beat":
+                if current_beat + 1 < beats_per_bar:
+                    due_bar, due_beat = current_bar, current_beat + 1
+                else:
+                    due_bar, due_beat = current_bar + 1, 0
+            elif scene.quantization == "bar":
+                due_bar, due_beat = current_bar + 1, 0
+            else:
+                phrase_bars = max(1, int(self.transport.phrase_bars))
+                due_bar = (
+                    ((current_bar - 1) // phrase_bars + 1) * phrase_bars + 1
+                )
+                due_beat = 0
+            self._pending_external_scene_recall[scene.scene_id] = {
+                "due_bar": float(due_bar),
+                "due_beat": float(due_beat),
+                "morph_seconds": duration,
+            }
+        else:
+            return self.recall_performance_scene(scene.scene_id, morph_seconds=duration)
+
         self.events.publish(
             "performance.scene.scheduled",
             scene_id=scene.scene_id,
@@ -2178,13 +2278,160 @@ class Application:
         )
         return True
 
+    def _fire_due_external_scene_recall(self) -> None:
+        if not self._pending_external_scene_recall:
+            return
+        current_bar = max(0, int(self.performance_control.bar_index))
+        current_beat = max(0, int(self.performance_control.beat_index))
+        due = []
+        for scene_id, request in self._pending_external_scene_recall.items():
+            due_bar = int(request["due_bar"])
+            due_beat = int(request["due_beat"])
+            if (current_bar, current_beat) >= (due_bar, due_beat):
+                due.append((scene_id, float(request["morph_seconds"])))
+        for scene_id, duration in due:
+            self._pending_external_scene_recall.pop(scene_id, None)
+            self.recall_performance_scene(scene_id, morph_seconds=duration)
+
+    def trigger_performance_scene_cue(self, cue: str) -> bool:
+        """Resolve a user scene by its OSC cue, scene ID or exact display label."""
+        key = str(cue).strip().casefold()
+        if not key:
+            return False
+        matches = [
+            scene for scene in self.performance_scenes.values()
+            if key in {
+                scene.cue.casefold(),
+                scene.scene_id.casefold(),
+                scene.label.casefold(),
+            }
+        ]
+        if len(matches) != 1:
+            if len(matches) > 1:
+                _LOG.warning("Scene cue '%s' is ambiguous; no scene was triggered.", cue)
+            return False
+        return self.schedule_performance_scene(matches[0].scene_id)
+
+    @staticmethod
+    def _scene_compatibility_key(snapshot: dict[str, Any]) -> tuple[Any, ...]:
+        composition_data = snapshot.get("composition", {})
+        if not isinstance(composition_data, dict):
+            return ()
+        layers = composition_data.get("layers", [])
+        if not isinstance(layers, list):
+            return ()
+        signature = []
+        for raw in layers:
+            if not isinstance(raw, dict):
+                continue
+            signature.append((
+                str(raw.get("id", "")),
+                str(raw.get("source_type", "")),
+                str(raw.get("generator_type") or ""),
+                str(raw.get("overlay_kind") or ""),
+            ))
+        return (
+            int(composition_data.get("width", 0)),
+            int(composition_data.get("height", 0)),
+            tuple(sorted(signature)),
+        )
+
+    def compatible_performance_scenes(self) -> list[PerformanceScene]:
+        current = {"composition": self.composition.to_dict()}
+        key = self._scene_compatibility_key(current)
+        return [
+            scene for scene in self.performance_scenes.values()
+            if scene.scene_id
+            and self._scene_compatibility_key(scene.snapshot) == key
+        ]
+
+    def random_performance_scene(self) -> PerformanceScene | None:
+        """Choose a random scene with the same layer topology as the current composition."""
+        candidates = self.compatible_performance_scenes()
+        if not candidates:
+            self.events.publish("performance.scene.random.empty")
+            return None
+        scene = random.choice(candidates)
+        if self.schedule_performance_scene(scene.scene_id):
+            self.events.publish("performance.scene.random.selected", scene_id=scene.scene_id)
+            return scene
+        return None
+
     def remove_performance_scene(self, scene_id: str) -> bool:
         scene_id = str(scene_id)
         removed = self.performance_scenes.pop(scene_id, None) is not None
         self._pending_scene_morph_seconds.pop(scene_id, None)
+        self._pending_external_scene_recall.pop(scene_id, None)
+        self._midi_scene_trigger_state.pop(f"scene.trigger.{scene_id}", None)
         if removed:
             self.events.publish("performance.scene_bank.updated", scene_id=scene_id)
         return removed
+
+    def _restore_scene_decks(self, values: object) -> None:
+        """Restore saved deck assignments while respecting live deck locks and missing media."""
+        if not isinstance(values, list):
+            return
+        for state in values:
+            if not isinstance(state, dict):
+                continue
+            deck_id = str(state.get("id", ""))
+            deck = self.decks.get(deck_id)
+            if deck is None or deck.locked:
+                continue
+            media_path = state.get("path")
+            if not media_path:
+                deck.close()
+                self._frame_snapshots.pop(deck_id, None)
+                continue
+            source = Path(str(media_path)).expanduser()
+            if not source.is_file():
+                _LOG.warning(
+                    "VJ scene %s references missing media for %s: %s; keeping current deck source",
+                    state.get("id", "unknown"),
+                    deck_id,
+                    source,
+                )
+                self.events.publish(
+                    "performance.scene.media_missing",
+                    deck_id=deck_id,
+                    path=str(source),
+                )
+                continue
+            try:
+                deck.load(
+                    source,
+                    asset_id=state.get("asset_id"),
+                    collection_id=state.get("collection_id"),
+                    segment_start=float(state.get("segment_start", 0.0)),
+                    segment_end=state.get("segment_end"),
+                    loop=bool(state.get("loop", True)),
+                )
+                if not bool(state.get("playing", True)):
+                    deck.pause()
+                self._frame_snapshots.pop(deck_id, None)
+            except (OSError, TypeError, ValueError) as exc:
+                _LOG.warning("Could not restore scene deck %s: %s", deck_id, exc)
+
+    def _restore_scene_modulators(self, snapshot: dict[str, Any]) -> None:
+        bank_state = snapshot.get("modulator_bank")
+        if isinstance(bank_state, dict):
+            self.modulator_bank.load_dict(bank_state)
+            self.modulator_bank_engine.reset()
+        routes = snapshot.get("modulation_routes")
+        if isinstance(routes, list):
+            self.modulation.load_dict(routes)
+            known_sources = {
+                f"modulator.{definition.modulator_id}"
+                for definition in self.modulator_bank.list_modulators()
+            }
+            self.modulation.routes = [
+                route for route in self.modulation.routes
+                if (
+                    not route.source_id.startswith("modulator.")
+                    or route.source_id in known_sources
+                )
+            ]
+            self.modulation.reset_runtime()
 
     def recall_performance_scene(
             self,
@@ -2197,8 +2444,15 @@ class Application:
         composition_data = scene.snapshot.get("composition")
         if not isinstance(composition_data, dict):
             return False
+        try:
+            candidate = Composition.from_dict(composition_data)
+        except (TypeError, ValueError, KeyError) as exc:
+            _LOG.warning("VJ scene %s has invalid composition data: %s", scene.scene_id, exc)
+            return False
+
+        # Capture numeric start values before replacing the scene. Existing layer IDs
+        # are morphed where target types are compatible; discrete payloads switch now.
         start_values = self._midi_target_values() if morph_seconds > 0.0 else {}
-        candidate = Composition.from_dict(composition_data)
         for current in self.composition.layers:
             if not current.locked:
                 continue
@@ -2207,9 +2461,11 @@ class Application:
                 candidate.layers[candidate.layers.index(replacement)] = current
             else:
                 candidate.add_layer(current)
+
         self.composition = candidate
         self.layer_manager = LayerManager(self.composition, self.events)
         self.performance_modifier_engine.reset()
+        self._restore_scene_decks(scene.snapshot.get("decks"))
         self._clear_overlays()
         for layer in self.composition.layers:
             if layer.source_type == "overlay":
@@ -2217,6 +2473,7 @@ class Application:
                     self._attach_overlay_layer(layer)
                 except Exception as exc:
                     _LOG.warning("Could not restore scene overlay %s: %s", layer.name, exc)
+
         if isinstance(scene.snapshot.get("effects"), dict):
             loaded = EffectSettings.from_dict(scene.snapshot["effects"])
             for key, value in loaded.to_dict().items():
@@ -2237,11 +2494,16 @@ class Application:
                 self.transport.load_settings(transport_settings)
             except (TypeError, ValueError):
                 _LOG.warning("Skipping invalid transport settings in scene %s", scene.scene_id)
+        self._restore_scene_modulators(scene.snapshot)
+
+        palette = str(scene.snapshot.get("palette", self.active_palette))
+        if palette in palette_names():
+            self.active_palette = palette
+
         control_state = scene.snapshot.get("performance_control")
         if isinstance(control_state, dict):
-            current_intensity = float(self.performance_control.intensity)
             requested_intensity = float(
-                control_state.get("intensity", current_intensity)
+                control_state.get("intensity", self.performance_control.intensity)
             )
             self.performance_control.intensity = max(
                 0.0, min(1.0, requested_intensity)
@@ -2250,7 +2512,10 @@ class Application:
             if isinstance(macros, dict):
                 for name, value in macros.items():
                     if name in self.performance_control.macros:
-                        self.performance_control.macros[name] = max(0.0, min(1.0, float(value)))
+                        self.performance_control.macros[name] = max(
+                            0.0, min(1.0, float(value))
+                        )
+
         self._active_scene_morph = None
         if morph_seconds > 0.0:
             end_values = self._midi_target_values()
@@ -2263,6 +2528,7 @@ class Application:
                     morph_end,
                     time.monotonic(),
                     max(0.01, min(60.0, float(morph_seconds))),
+                    curve=str(scene.transition.get("curve", "smoothstep")),
                 )
                 for target, value in morph_start.items():
                     self._apply_midi_target(target, value)
@@ -2270,6 +2536,8 @@ class Application:
             "performance.scene.recalled",
             scene_id=scene.scene_id,
             morph_seconds=max(0.0, float(morph_seconds)),
+            discrete_mode=scene.transition.get("discrete", "cut"),
+            palette=self.active_palette,
         )
         return True
 
@@ -2363,6 +2631,7 @@ class Application:
                 "audio_analysis": self.audio_capture.settings.to_dict(),
                 "modulation_routes": self.modulation.to_dict(),
                 "scene_profiles": self.scene_profiles.to_dict(),
+                "active_palette": self.active_palette,
                 "modulator_bank": self.modulator_bank.to_dict(),
                 "midi_mappings": getattr(
                     getattr(self, "midi_mapping_engine", None), "to_dict", lambda: []
@@ -2508,6 +2777,9 @@ class Application:
     def load_project(self, path: str | Path) -> None:
         if self.performance_mode.enabled:
             self.stop_performance_mode()
+        self._pending_scene_morph_seconds.clear()
+        self._pending_external_scene_recall.clear()
+        self._active_scene_morph = None
         composition, deck_states = self.project_manager.load(path)
         self.control_events.clear()
         self.performance_control.reset()
@@ -2591,6 +2863,11 @@ class Application:
                 self.update_audio_analysis_settings(AudioAnalysisSettings(**audio_values))
             self.modulation.load_dict(performance_settings.get("modulation_routes", []))
             self.scene_profiles.load_dict(performance_settings.get("scene_profiles", []))
+            active_palette = str(
+                performance_settings.get("active_palette", self.active_palette)
+            )
+            if active_palette in palette_names():
+                self.active_palette = active_palette
             self.modulator_bank.load_dict(
                 performance_settings.get("modulator_bank", {})
             )

@@ -1,6 +1,6 @@
 # M6 — Advanced VJ Environment
 
-**Status:** M6-A0 interaction specification complete; M6-A1 initial live-deck surface implemented on branch `m6/a1-live-deck-surface`. Target-machine rehearsal and the remaining M6-A scope are still open.  
+**Status:** M6-A0 is documented and the initial M6-A1 live-deck surface is merged to `main`. M6-B0 is documented and M6-B1 full-scene capture/recall is implemented on branch `m6/b1-vj-scene-bank`. Target-machine rehearsal and the remaining A/B slices are open.  
 **First workstream:** A. A proper live mixer.  
 **Design references:** live-mixer / media-bin workflows in Resolume Arena, VDMX media bins and TouchDesigner performance interfaces. These are interaction references, not a requirement to clone another product's UI.
 
@@ -85,6 +85,16 @@ The exact A/B grouping, crossfader curve, transition duration and whether previe
 | M6-A4 — Mix and transitions | Operator-facing A/B/group/crossfade controls, deterministic hard cut and measured dissolve/transition path. |
 | M6-A5 — Performance integration | Persistence, lock/manual-override rules, diagnostics, keyboard operation and automation integration. |
 
+## B. Scene and composition banks
+
+The VJ Scene Bank promotes the existing Performance Scene Bank into a full composition snapshot system. A scene should capture video assignments, layer topology and transforms, generator/text state, layer/master effects, palette, modulation routes and Modulator Bank definitions. It should be a visual instrument state rather than a small effect preset.
+
+The implementation reuses the versioned `PerformanceScene` model to preserve existing project and performance-set compatibility. B1 adds complete deck and modulation capture/recall, operator cue metadata, MIDI/OSC scene triggers, internal/external clock quantization and compatible random scene selection.
+
+See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md) for the full payload, recall safety rules, transition boundary and B0–B4 delivery sequence.
+
+**Current B1 boundary:** compatible numeric parameters morph using the configured curve. Media source, text/generator content and other discrete settings currently use an explicit cut. Dual-scene crossfade, midpoint source switching, fade-through-black, scene sequences and per-parameter locks are not yet implemented.
+
 ## Acceptance criteria
 
 M6-A is ready for operator rehearsal when:
@@ -122,4 +132,4 @@ M6-A is ready for operator rehearsal when:
 
 M0–M5 remain the foundation. M5 code is merged to `main`; its static quality workflow passed on `358dc597`. M5's live SONATA, audio-device and projector stress checks remain manual sign-off tasks and should be carried forward in the project validation log rather than treated as passed. M6 development can proceed in parallel with those hardware checks.
 
-See [ROADMAP.md](ROADMAP.md), [ARCHITECTURE.md](ARCHITECTURE.md) and [M5 Completion Handoff](M5_COMPLETION_HANDOFF.md).
+See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md), [ROADMAP.md](ROADMAP.md), [ARCHITECTURE.md](ARCHITECTURE.md) and [M5 Completion Handoff](M5_COMPLETION_HANDOFF.md).
