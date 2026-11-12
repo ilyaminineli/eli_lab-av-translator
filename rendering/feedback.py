@@ -67,10 +67,20 @@ void main() {
 
     if (u_feedback_motion_warp > 0.0001) {
         vec2 texel = 1.0 / max(u_resolution, vec2(1.0));
-        float gx = luma(texture(u_history, clamp(history_uv + vec2(texel.x, 0.0), vec2(0.0), vec2(1.0))).rgb)
-            - luma(texture(u_history, clamp(history_uv - vec2(texel.x, 0.0), vec2(0.0), vec2(1.0))).rgb);
-        float gy = luma(texture(u_history, clamp(history_uv + vec2(0.0, texel.y), vec2(0.0), vec2(1.0))).rgb)
-            - luma(texture(u_history, clamp(history_uv - vec2(0.0, texel.y), vec2(0.0), vec2(1.0))).rgb);
+        float gx = luma(texture(
+            u_history,
+            clamp(history_uv + vec2(texel.x, 0.0), vec2(0.0), vec2(1.0))
+        ).rgb) - luma(texture(
+            u_history,
+            clamp(history_uv - vec2(texel.x, 0.0), vec2(0.0), vec2(1.0))
+        ).rgb);
+        float gy = luma(texture(
+            u_history,
+            clamp(history_uv + vec2(0.0, texel.y), vec2(0.0), vec2(1.0))
+        ).rgb) - luma(texture(
+            u_history,
+            clamp(history_uv - vec2(0.0, texel.y), vec2(0.0), vec2(1.0))
+        ).rgb);
         float temporal_delta = luma(current)
             - luma(texture(u_history, clamp(history_uv, vec2(0.0), vec2(1.0))).rgb);
         vec2 direction = normalize(vec2(gx, gy) + vec2(0.00001));

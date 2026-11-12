@@ -472,15 +472,39 @@ void main() {
     }
     if (u_edge_amount > 0.001) {
         vec2 pixel = 1.0 / max(u_resolution, vec2(1.0));
-        float left_luma = dot(texture(u_texture, clamp(uv - vec2(pixel.x, 0.0), vec2(0.0), vec2(1.0))).rgb,
-            vec3(0.2126, 0.7152, 0.0722));
-        float right_luma = dot(texture(u_texture, clamp(uv + vec2(pixel.x, 0.0), vec2(0.0), vec2(1.0))).rgb,
-            vec3(0.2126, 0.7152, 0.0722));
-        float down_luma = dot(texture(u_texture, clamp(uv - vec2(0.0, pixel.y), vec2(0.0), vec2(1.0))).rgb,
-            vec3(0.2126, 0.7152, 0.0722));
-        float up_luma = dot(texture(u_texture, clamp(uv + vec2(0.0, pixel.y), vec2(0.0), vec2(1.0))).rgb,
-            vec3(0.2126, 0.7152, 0.0722));
-        float edge_value = clamp(length(vec2(right_luma - left_luma, up_luma - down_luma)) * 2.4, 0.0, 1.0);
+        float left_luma = dot(
+            texture(
+                u_texture,
+                clamp(uv - vec2(pixel.x, 0.0), vec2(0.0), vec2(1.0))
+            ).rgb,
+            vec3(0.2126, 0.7152, 0.0722)
+        );
+        float right_luma = dot(
+            texture(
+                u_texture,
+                clamp(uv + vec2(pixel.x, 0.0), vec2(0.0), vec2(1.0))
+            ).rgb,
+            vec3(0.2126, 0.7152, 0.0722)
+        );
+        float down_luma = dot(
+            texture(
+                u_texture,
+                clamp(uv - vec2(0.0, pixel.y), vec2(0.0), vec2(1.0))
+            ).rgb,
+            vec3(0.2126, 0.7152, 0.0722)
+        );
+        float up_luma = dot(
+            texture(
+                u_texture,
+                clamp(uv + vec2(0.0, pixel.y), vec2(0.0), vec2(1.0))
+            ).rgb,
+            vec3(0.2126, 0.7152, 0.0722)
+        );
+        float edge_value = clamp(
+            length(vec2(right_luma - left_luma, up_luma - down_luma)) * 2.4,
+            0.0,
+            1.0
+        );
         color = mix(color, vec3(edge_value), u_edge_amount);
     }
     color = mix(color, vec3(1.0) - color, clamp(u_invert, 0.0, 1.0));
