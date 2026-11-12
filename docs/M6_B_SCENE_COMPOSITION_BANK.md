@@ -34,7 +34,7 @@ A scene stores media paths and stable IDs, not the original media, decoded frame
 
 - Capturing a scene does not modify the current composition.
 - Existing scene IDs are updated in place.
-- OSC cue names must be unique within the VJ Scene Bank.
+- OSC cue names must be unique within the VJ Scene Bank and use the protocol-safe 1–64 character identifier alphabet (letters, numbers, period, underscore, colon or hyphen).
 - Scene definitions are persisted in ordinary projects and performance sets.
 - Older project/performance-set scenes remain loadable; fields added by B1 have defaults.
 
