@@ -134,6 +134,9 @@ class VideoDeck:
             return False
         self.decoder.pause()
         self._held = True
+        # Drop frames already queued before the hold request. consume_latest_frame()
+        # also discards any in-flight publication while the deck remains held.
+        self.frame_queue.clear()
         return True
 
     def release_hold(self) -> None:
@@ -176,6 +179,10 @@ class VideoDeck:
             self.decoder.set_loop(enabled)
 
     def consume_latest_frame(self) -> VideoFrameData | None:
+        if self._held:
+            self.frame_queue.clear()
+            self._reap_retired_decoders()
+            return None
         latest = self.frame_queue.pop_latest()
         if latest is not None:
             self.current_frame = latest
