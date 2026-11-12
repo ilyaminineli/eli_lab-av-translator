@@ -2105,7 +2105,7 @@ class Application:
     def _apply_midi_target(self, target: str, value: float) -> bool:
         if target.startswith("scene.trigger."):
             scene_id = target.removeprefix("scene.trigger.")
-            active = float(value) >= 0.5
+            active = float(value) > 0.0
             was_active = self._midi_scene_trigger_state.get(target, False)
             self._midi_scene_trigger_state[target] = active
             if active and not was_active:
@@ -2201,7 +2201,7 @@ class Application:
             transition=selected_transition or {
                 "duration": 0.0,
                 "curve": "smoothstep",
-                "discrete": "switch_midpoint",
+                "discrete": "cut",
             },
         )
         scene.normalize()
