@@ -459,7 +459,7 @@ void main() {
         yiq_y - 1.106 * rotated_i + 1.703 * rotated_q
     );
 
-    if (u_posterize > 0.001) {
+    if (u_posterize > 0.001 || u_dither > 0.001) {
         float levels = mix(24.0, 3.0, clamp(u_posterize, 0.0, 1.0));
         vec2 ordered_cell = mod(floor(gl_FragCoord.xy), 4.0);
         float ordered_rank = mod(

@@ -45,7 +45,7 @@ _ADVANCED_SLIDERS = (
     ("kaleidoscope_rotation", "Kaleidoscope rotation", -180, 180, 1.0),
     ("kaleidoscope_zoom", "Kaleidoscope zoom", 25, 200, 100.0),
     ("mosaic_tiles", "Mosaic tile count", 4, 256, 1.0),
-    ("pixel_sort_amount", "Directional sort amount", 0, 100, 100.0),
+    ("pixel_sort_amount", "Scan displacement amount", 0, 100, 100.0),
     ("pixel_sort_threshold", "Sort brightness threshold", 0, 100, 100.0),
     ("displacement_amount", "Displacement amount", -100, 100, 100.0),
     ("displacement_scale", "Displacement map scale", 25, 400, 100.0),
@@ -125,7 +125,7 @@ class EffectsPanel(QWidget):
                 ("Kaleidoscope", "kaleidoscope"),
                 ("Polar coordinates", "polar"),
                 ("Mosaic / tile", "mosaic"),
-                ("Directional pixel-sort", "pixel_sort"),
+                ("Directional scan displacement (approx.)", "pixel_sort"),
         ):
             self.transform_mode_combo.addItem(label, value)
         geometry_form.addRow("Transform", self.transform_mode_combo)
