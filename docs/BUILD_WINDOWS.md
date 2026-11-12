@@ -1,6 +1,6 @@
 # Windows one-file build guide — current entry point
 
-The previous contents of this document described an older PySide deployment/Nuitka build profile and an obsolete release branch. Those instructions are no longer current.
+The previous contents of this document described a superseded one-file packaging profile and an obsolete release branch. Those instructions are no longer current.
 
 The supported local Windows x64 packaging path is **PyInstaller**:
 
