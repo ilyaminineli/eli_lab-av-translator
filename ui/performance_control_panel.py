@@ -154,9 +154,14 @@ class PerformanceControlPanel(QWidget):
         midi_form.addRow("STATUS", self.midi_status_label)
         root.addWidget(self.midi_group)
 
-        self.performance_scene_group = QGroupBox("PERFORMANCE SCENE BANK")
+        self.performance_scene_group = QGroupBox("VJ SCENE BANK · COMPOSITIONS")
         scene_form = QFormLayout(self.performance_scene_group)
         self.performance_scene_name = QLineEdit("Scene 01")
+        self.performance_scene_cue = QLineEdit()
+        self.performance_scene_cue.setPlaceholderText("Optional OSC cue name")
+        self.performance_scene_cue.setToolTip(
+            "A matching /eli_lab/v1/cue/trigger message recalls this VJ scene."
+        )
         self.performance_scene_quantization = QComboBox()
         for label, value in (
                 ("Immediate", "immediate"),
@@ -171,18 +176,25 @@ class PerformanceControlPanel(QWidget):
         self.performance_scene_morph.setSingleStep(0.5)
         self.performance_scene_morph.setSuffix(" s")
         self.performance_scene_morph.setValue(0.0)
+        self.performance_scene_morph.setToolTip(
+            "Duration for compatible numeric parameters. Discrete media/text changes "
+            "still use the scene's explicit cut policy in this first increment."
+        )
         self.performance_scene_list = QListWidget()
         self.performance_scene_list.setMaximumHeight(110)
         scene_form.addRow("SCENE NAME", self.performance_scene_name)
+        scene_form.addRow("OSC CUE", self.performance_scene_cue)
         scene_form.addRow("RECALL QUANTIZATION", self.performance_scene_quantization)
-        scene_form.addRow("NUMERIC MORPH", self.performance_scene_morph)
+        scene_form.addRow("TRANSITION DURATION", self.performance_scene_morph)
         scene_form.addRow("SCENES", self.performance_scene_list)
         scene_buttons = QHBoxLayout()
-        self.performance_scene_capture = QPushButton("CAPTURE")
-        self.performance_scene_recall = QPushButton("RECALL")
+        self.performance_scene_capture = QPushButton("CAPTURE SCENE")
+        self.performance_scene_recall = QPushButton("RECALL / MORPH")
+        self.performance_scene_random = QPushButton("RANDOM COMPATIBLE")
         self.performance_scene_remove = QPushButton("REMOVE")
         scene_buttons.addWidget(self.performance_scene_capture)
         scene_buttons.addWidget(self.performance_scene_recall)
+        scene_buttons.addWidget(self.performance_scene_random)
         scene_buttons.addWidget(self.performance_scene_remove)
         scene_form.addRow(scene_buttons)
         root.addWidget(self.performance_scene_group)
@@ -419,6 +431,7 @@ class PerformanceControlPanel(QWidget):
         self.performance_scene_capture.clicked.connect(self._capture_performance_scene)
         self.performance_scene_recall.clicked.connect(self._recall_performance_scene)
         self.performance_scene_remove.clicked.connect(self._remove_performance_scene)
+        self.performance_scene_random.clicked.connect(self._random_performance_scene)
         self.performance_scene_list.currentItemChanged.connect(self._load_performance_scene_editor)
         self.osc_start_button.clicked.connect(self._start_osc)
         self.osc_stop_button.clicked.connect(self._stop_osc)
@@ -488,7 +501,13 @@ class PerformanceControlPanel(QWidget):
     def refresh_performance_scenes(self, force: bool = False) -> None:
         scenes = list(self.application.performance_scenes.values())
         signature = tuple(
-            (scene.scene_id, scene.label, scene.quantization)
+            (
+                scene.scene_id,
+                scene.label,
+                scene.quantization,
+                scene.cue,
+                tuple(scene.tags),
+            )
             for scene in scenes
         )
         if not force and signature == getattr(self, "_performance_scene_signature", None):
@@ -497,8 +516,9 @@ class PerformanceControlPanel(QWidget):
         selected_id = selected.data(Qt.ItemDataRole.UserRole) if selected else None
         self.performance_scene_list.clear()
         for scene in scenes:
+            cue_label = f" · CUE: {scene.cue}" if scene.cue else ""
             item = QListWidgetItem(
-                f"{scene.label} · {scene.quantization.upper()}"
+                f"{scene.label} · {scene.quantization.upper()}{cue_label}"
             )
             item.setData(Qt.ItemDataRole.UserRole, scene.scene_id)
             self.performance_scene_list.addItem(item)
@@ -523,12 +543,19 @@ class PerformanceControlPanel(QWidget):
                 scene_id,
                 label,
                 quantization=str(self.performance_scene_quantization.currentData()),
+                cue=self.performance_scene_cue.text().strip(),
+                transition={
+                    "duration": self.performance_scene_morph.value(),
+                    "curve": "smoothstep",
+                    "discrete": "cut",
+                },
             )
         except (TypeError, ValueError) as exc:
             self.midi_status_label.setText(f"Scene not captured · {exc}")
             return
         self.refresh_performance_scenes(force=True)
-        self.midi_status_label.setText(f"Captured performance scene · {label}")
+        self._refresh_midi_target_choices()
+        self.midi_status_label.setText(f"Captured VJ scene · {label}")
 
     def _recall_performance_scene(self) -> None:
         item = self.performance_scene_list.currentItem()
@@ -541,11 +568,20 @@ class PerformanceControlPanel(QWidget):
                 morph_seconds=self.performance_scene_morph.value(),
         ):
             self.midi_status_label.setText(
-                f"Scene scheduled · {item.text()} · morph "
+                f"VJ scene scheduled · {item.text()} · transition "
                 f"{self.performance_scene_morph.value():g}s"
             )
         else:
             self.midi_status_label.setText("Scene recall could not be scheduled.")
+
+    def _random_performance_scene(self) -> None:
+        scene = self.application.random_performance_scene()
+        if scene is None:
+            self.midi_status_label.setText(
+                "No compatible VJ scenes · capture scenes with the current layer topology."
+            )
+            return
+        self.midi_status_label.setText(f"Random compatible scene · {scene.label}")
 
     def _remove_performance_scene(self) -> None:
         item = self.performance_scene_list.currentItem()
@@ -564,6 +600,10 @@ class PerformanceControlPanel(QWidget):
         if scene is None:
             return
         self.performance_scene_name.setText(scene.label)
+        self.performance_scene_cue.setText(scene.cue)
+        self.performance_scene_morph.setValue(
+            float(scene.transition.get("duration", 0.0))
+        )
         index = self.performance_scene_quantization.findData(scene.quantization)
         self.performance_scene_quantization.setCurrentIndex(max(0, index))
 
@@ -593,6 +633,11 @@ class PerformanceControlPanel(QWidget):
         ]
         for label, target in fixed:
             self.midi_target_combo.addItem(label, target)
+        for scene in self.application.performance_scenes.values():
+            self.midi_target_combo.addItem(
+                f"VJ Scene · {scene.label} · NOTE/CC trigger",
+                f"scene.trigger.{scene.scene_id}",
+            )
         layer_targets = (
             ("Opacity", "layer.opacity"), ("Rotation", "layer.rotation"),
             ("Scale", "layer.scale"), ("Position X", "layer.position_x"),
