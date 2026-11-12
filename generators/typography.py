@@ -11,7 +11,8 @@ from PySide6.QtGui import QColor, QFont, QFontMetricsF, QPainter, QPainterPath, 
 
 def _font(style: dict[str, Any], defaults: dict[str, Any]) -> QFont:
     font = QFont(str(style.get("font_family", defaults.get("font_family", "Arial"))))
-    font.setPixelSize(max(12, min(420, int(style.get("font_size", defaults.get("font_size", 148))))))
+    font_size = int(style.get("font_size", defaults.get("font_size", 148)))
+    font.setPixelSize(max(12, min(420, font_size)))
     weight = max(100, min(900, int(style.get("font_weight", defaults.get("font_weight", 700)))))
     font.setWeight(QFont.Weight(round(weight / 100) * 100))
     font.setLetterSpacing(
