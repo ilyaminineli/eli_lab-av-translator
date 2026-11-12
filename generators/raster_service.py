@@ -80,6 +80,7 @@ class GeneratorRasterService(QObject):
 
     def set_live_preview_enabled(self, enabled: bool) -> None:
         enabled = bool(enabled)
+        replays = []
         with self._condition:
             if self._live_preview_enabled == enabled:
                 return
@@ -89,30 +90,41 @@ class GeneratorRasterService(QObject):
                     generator_type, _settings, _width, _height = snapshot
                     if generator_type != "text":
                         continue
-                    self._latest_revision[layer_id] = self._latest_revision.get(layer_id, 0) + 1
+                    self._latest_revision[layer_id] = (
+                        self._latest_revision.get(layer_id, 0) + 1
+                    )
                     self._pending_requests.pop(layer_id, None)
                     self._deferred.add(layer_id)
-                    self._phase[layer_id] = "frozen" if layer_id in self._frozen else "editing"
+                    self._phase[layer_id] = (
+                        "frozen" if layer_id in self._frozen else "editing"
+                    )
             else:
-                self._queue_deferred_locked()
+                replays = self._queue_deferred_locked()
             self._condition.notify_all()
+        for replay in replays:
+            self.raster_ready.emit(*replay)
 
     def set_frozen(self, layer_id: str, frozen: bool) -> None:
+        replay = None
         with self._condition:
             if frozen:
                 self._frozen.add(layer_id)
                 if layer_id in self._latest_snapshots:
-                    self._latest_revision[layer_id] = self._latest_revision.get(layer_id, 0) + 1
+                    self._latest_revision[layer_id] = (
+                        self._latest_revision.get(layer_id, 0) + 1
+                    )
                     self._pending_requests.pop(layer_id, None)
                     self._deferred.add(layer_id)
                 self._phase[layer_id] = "frozen"
             else:
                 self._frozen.discard(layer_id)
                 if layer_id in self._deferred and self._live_preview_enabled:
-                    self._queue_layer_locked(layer_id)
+                    replay = self._queue_layer_locked(layer_id)
                 elif layer_id in self._deferred:
                     self._phase[layer_id] = "editing"
             self._condition.notify_all()
+        if replay is not None:
+            self.raster_ready.emit(*replay)
 
     def set_keep_last_valid_texture(self, enabled: bool) -> None:
         with self._lock:
@@ -131,25 +143,32 @@ class GeneratorRasterService(QObject):
         with self._lock:
             return layer_id in self._frozen
 
-    def _queue_layer_locked(self, layer_id: str) -> None:
+    def _queue_layer_locked(
+            self, layer_id: str
+    ) -> tuple[str, int, str, Any] | None:
         snapshot = self._latest_snapshots.get(layer_id)
         fingerprint = self._latest_fingerprint.get(layer_id)
         if snapshot is None or not fingerprint or self._closed:
-            return
+            return None
         completed = self._completed.get(layer_id)
         if completed is not None and completed[0] == fingerprint:
             self._phase[layer_id] = "ready"
             self._deferred.discard(layer_id)
-            return
+            return (
+                layer_id,
+                self._latest_revision.get(layer_id, 0),
+                fingerprint,
+                completed[1],
+            )
         generator_type, settings, width, height = snapshot
         if layer_id in self._frozen:
             self._phase[layer_id] = "frozen"
             self._deferred.add(layer_id)
-            return
+            return None
         if generator_type == "text" and not self._live_preview_enabled:
             self._phase[layer_id] = "editing"
             self._deferred.add(layer_id)
-            return
+            return None
         revision = self._latest_revision.get(layer_id, 0)
         self._pending_requests[layer_id] = (
             revision, fingerprint, generator_type, dict(settings), width, height
@@ -157,11 +176,16 @@ class GeneratorRasterService(QObject):
         self._deferred.discard(layer_id)
         self._phase[layer_id] = "rasterizing"
         self._condition.notify()
+        return None
 
-    def _queue_deferred_locked(self) -> None:
+    def _queue_deferred_locked(self) -> list[tuple[str, int, str, Any]]:
+        replays = []
         for layer_id in tuple(self._deferred):
             if layer_id not in self._frozen:
-                self._queue_layer_locked(layer_id)
+                replay = self._queue_layer_locked(layer_id)
+                if replay is not None:
+                    replays.append(replay)
+        return replays
 
     def request(
             self,
