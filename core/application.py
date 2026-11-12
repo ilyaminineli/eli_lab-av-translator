@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import random
 import tempfile
 import time
 from pathlib import Path
@@ -2130,12 +2131,42 @@ class Application:
             scene_id: str,
             label: str = "",
             quantization: Quantization = "bar",
+            cue: str = "",
+            tags: list[str] | None = None,
+            transition: dict[str, Any] | None = None,
     ) -> PerformanceScene:
+        """Capture a complete VJ scene without copying source media or runtime handles."""
         scene_id = str(scene_id).strip()
         if not scene_id:
             raise ValueError("Scene ID cannot be empty.")
+        cue = str(cue).strip()[:128]
+        duplicate_cue = next(
+            (
+                scene for existing_id, scene in self.performance_scenes.items()
+                if existing_id != scene_id
+                and cue
+                and scene.cue.casefold() == cue.casefold()
+            ),
+            None,
+        )
+        if duplicate_cue is not None:
+            raise ValueError(
+                f"OSC cue '{cue}' is already assigned to scene '{duplicate_cue.label}'."
+            )
+
+        existing = self.performance_scenes.get(scene_id)
+        selected_transition = (
+            dict(transition)
+            if isinstance(transition, dict)
+            else dict(existing.transition) if existing else None
+        )
+        selected_tags = list(tags) if tags is not None else (
+            list(existing.tags) if existing else []
+        )
         snapshot = {
+            "schema_version": 2,
             "composition": self.composition.to_dict(),
+            "decks": [deck.to_dict() for deck in self.decks.values()],
             "effects": self.effects.to_dict(),
             "automation_settings": self.automation.settings.to_dict(),
             "transport": self.transport.to_dict(),
@@ -2143,16 +2174,32 @@ class Application:
                 "intensity": self.performance_control.intensity,
                 "macros": dict(self.performance_control.macros),
             },
+            "modulation_routes": self.modulation.to_dict(),
+            "modulator_bank": self.modulator_bank.to_dict(),
+            "palette": self.active_palette,
         }
         scene = PerformanceScene(
             scene_id,
             label or scene_id.replace("_", " ").title(),
             snapshot,
             quantization=quantization,
+            cue=cue,
+            tags=selected_tags,
+            transition=selected_transition or {
+                "duration": 0.0,
+                "curve": "smoothstep",
+                "discrete": "switch_midpoint",
+            },
         )
         scene.normalize()
         self.performance_scenes[scene.scene_id] = scene
-        self.events.publish("performance.scene_bank.updated", scene_id=scene.scene_id)
+        self.events.publish(
+            "performance.scene_bank.updated",
+            scene_id=scene.scene_id,
+            label=scene.label,
+            layer_count=len(self.composition.layers),
+            deck_count=len(self.decks),
+        )
         return scene
 
     def schedule_performance_scene(
@@ -2160,22 +2207,52 @@ class Application:
             scene_id: str,
             morph_seconds: float = 0.0,
     ) -> bool:
+        """Recall a scene immediately or at the selected internal/external clock boundary."""
         scene = self.performance_scenes.get(str(scene_id))
         if scene is None:
             return False
         duration = max(0.0, min(60.0, float(morph_seconds)))
-        if (
-                scene.quantization == "immediate"
-                or not self.transport.running
-                or self.transport.paused
-        ):
+        if scene.quantization == "immediate":
             return self.recall_performance_scene(scene.scene_id, morph_seconds=duration)
-        self._pending_scene_morph_seconds[scene.scene_id] = duration
-        self.transport.schedule_scene(
-            scene.scene_id,
-            self.performance_control.intensity,
-            quantization=scene.quantization,
+
+        internal_clock = self.transport.running and not self.transport.paused
+        external_clock = (
+            self.performance_control.source_id == "sonic_pi"
+            and self.performance_control.transport_running
+            and not self.performance_control.transport_paused
         )
+        if internal_clock:
+            self._pending_scene_morph_seconds[scene.scene_id] = duration
+            self.transport.schedule_scene(
+                scene.scene_id,
+                self.performance_control.intensity,
+                quantization=scene.quantization,
+            )
+        elif external_clock:
+            current_bar = max(1, int(self.performance_control.bar_index))
+            current_beat = max(0, int(self.performance_control.beat_index))
+            beats_per_bar = max(1, int(self.performance_control.beats_per_bar))
+            if scene.quantization == "beat":
+                if current_beat + 1 < beats_per_bar:
+                    due_bar, due_beat = current_bar, current_beat + 1
+                else:
+                    due_bar, due_beat = current_bar + 1, 0
+            elif scene.quantization == "bar":
+                due_bar, due_beat = current_bar + 1, 0
+            else:
+                phrase_bars = max(1, int(self.transport.phrase_bars))
+                due_bar = (
+                    ((current_bar - 1) // phrase_bars + 1) * phrase_bars + 1
+                )
+                due_beat = 0
+            self._pending_external_scene_recall[scene.scene_id] = {
+                "due_bar": float(due_bar),
+                "due_beat": float(due_beat),
+                "morph_seconds": duration,
+            }
+        else:
+            return self.recall_performance_scene(scene.scene_id, morph_seconds=duration)
+
         self.events.publish(
             "performance.scene.scheduled",
             scene_id=scene.scene_id,
@@ -2184,10 +2261,90 @@ class Application:
         )
         return True
 
+    def _fire_due_external_scene_recall(self) -> None:
+        if not self._pending_external_scene_recall:
+            return
+        current_bar = max(0, int(self.performance_control.bar_index))
+        current_beat = max(0, int(self.performance_control.beat_index))
+        due = []
+        for scene_id, request in self._pending_external_scene_recall.items():
+            due_bar = int(request["due_bar"])
+            due_beat = int(request["due_beat"])
+            if (current_bar, current_beat) >= (due_bar, due_beat):
+                due.append((scene_id, float(request["morph_seconds"])))
+        for scene_id, duration in due:
+            self._pending_external_scene_recall.pop(scene_id, None)
+            self.recall_performance_scene(scene_id, morph_seconds=duration)
+
+    def trigger_performance_scene_cue(self, cue: str) -> bool:
+        """Resolve a user scene by its OSC cue, scene ID or exact display label."""
+        key = str(cue).strip().casefold()
+        if not key:
+            return False
+        matches = [
+            scene for scene in self.performance_scenes.values()
+            if key in {
+                scene.cue.casefold(),
+                scene.scene_id.casefold(),
+                scene.label.casefold(),
+            }
+        ]
+        if len(matches) != 1:
+            if len(matches) > 1:
+                _LOG.warning("Scene cue '%s' is ambiguous; no scene was triggered.", cue)
+            return False
+        return self.schedule_performance_scene(matches[0].scene_id)
+
+    @staticmethod
+    def _scene_compatibility_key(snapshot: dict[str, Any]) -> tuple[Any, ...]:
+        composition_data = snapshot.get("composition", {})
+        if not isinstance(composition_data, dict):
+            return ()
+        layers = composition_data.get("layers", [])
+        if not isinstance(layers, list):
+            return ()
+        signature = []
+        for raw in layers:
+            if not isinstance(raw, dict):
+                continue
+            signature.append((
+                str(raw.get("id", "")),
+                str(raw.get("source_type", "")),
+                str(raw.get("generator_type") or ""),
+                str(raw.get("overlay_kind") or ""),
+            ))
+        return (
+            int(composition_data.get("width", 0)),
+            int(composition_data.get("height", 0)),
+            tuple(sorted(signature)),
+        )
+
+    def compatible_performance_scenes(self) -> list[PerformanceScene]:
+        current = {"composition": self.composition.to_dict()}
+        key = self._scene_compatibility_key(current)
+        return [
+            scene for scene in self.performance_scenes.values()
+            if scene.scene_id
+            and self._scene_compatibility_key(scene.snapshot) == key
+        ]
+
+    def random_performance_scene(self) -> PerformanceScene | None:
+        """Choose a random scene with the same layer topology as the current composition."""
+        candidates = self.compatible_performance_scenes()
+        if not candidates:
+            self.events.publish("performance.scene.random.empty")
+            return None
+        scene = random.choice(candidates)
+        if self.schedule_performance_scene(scene.scene_id):
+            self.events.publish("performance.scene.random.selected", scene_id=scene.scene_id)
+            return scene
+        return None
+
     def remove_performance_scene(self, scene_id: str) -> bool:
         scene_id = str(scene_id)
         removed = self.performance_scenes.pop(scene_id, None) is not None
         self._pending_scene_morph_seconds.pop(scene_id, None)
+        self._pending_external_scene_recall.pop(scene_id, None)
         if removed:
             self.events.publish("performance.scene_bank.updated", scene_id=scene_id)
         return removed
