@@ -1,7 +1,7 @@
 # eli_lab AV Translator — Product Roadmap
 
 **Roadmap snapshot:** 12 November 2026  
-**Current priority:** M6 — Advanced VJ Environment, beginning with the live mixer/media-bin workstream. M0–M5 software foundations are merged to main. M5 target-machine validation and the independent Video Mixer release gate remain open and continue in parallel; master-output recording/audio muxing is a separate deferred deliverable.
+**Current priority:** M6 — Advanced VJ Environment. M6-A0 is documented, and the first M6-A1 live-deck surface implementation is underway on `m6/a1-live-deck-surface`. M0–M5 software foundations are merged to main. M5 target-machine validation and the independent Video Mixer release gate remain open and continue in parallel; master-output recording/audio muxing is a separate deferred deliverable.
 
 ## Product goal
 
@@ -373,7 +373,7 @@ See [M5 Autonomous Performance](M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance E
 
 ## Status
 
-**Planned; implementation has not started.** The first workstream is **A. A proper live mixer**, moving the operator experience beyond deck editing toward a dedicated live VJ surface. M6 builds on the existing four video decks, media library, composition/layer model, transport quantization, automation and preview/projector renderers.
+**In progress — M6-A1 initial live-deck surface.** M6-A0 has defined the operator model, media-bin semantics, multi-trigger policy, quantization and transition design decisions. The first A1 UI increment is on `m6/a1-live-deck-surface`; it improves per-deck identity/state, metadata, position feedback, layer mapping, transport, frame hold and restart. Media bins, synchronized multi-trigger and transitions remain subsequent slices. M6 builds on the existing four video decks, media library, composition/layer model, transport quantization, automation and preview/projector renderers.
 
 ## A. A proper live mixer
 
@@ -417,7 +417,7 @@ The detailed initial scope and staged acceptance checklist are in [M6 Advanced V
 
 ## Immediate next implementation order
 
-1. Start M6-A0: settle the live-mixer operator model, deck state/transport presentation, media-bin semantics, multi-trigger target mapping and quantized-launch collision policy.
+1. Continue M6-A1: finish the live deck operator surface and validate its state/hold/restart behaviour; then proceed to M6-A2 media bins and explicit clip routing.
 2. Continue M5 target-machine validation in parallel: full SONATA run, loopback reconnect, four-deck generator/text stress, projector hot-plug and long-duration rehearsal.
 3. Continue the independent Video Mixer Completion Gate; do not infer hardware release readiness from static CI.
 4. Keep master-output recording/audio muxing as a separately scoped delivery item unless explicitly brought back into a milestone.
