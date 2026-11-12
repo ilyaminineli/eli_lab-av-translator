@@ -1,15 +1,15 @@
 # eli_lab AV Translator — Product Roadmap
 
-**Roadmap snapshot:** 6 November 2026  
-**Current priority:** M5 live SONATA validation and master-output recording/audio muxing, followed by M6 definition. M4/M5 software foundations are merged to main; Windows loopback, target-machine/projector acceptance and the independent Video Mixer hardware release gate remain open.
+**Roadmap snapshot:** 12 November 2026  
+**Current priority:** M6 — Advanced VJ Environment, beginning with the live mixer/media-bin workstream. M0–M5 software foundations are merged to main. M5 target-machine validation and the independent Video Mixer release gate remain open and continue in parallel; master-output recording/audio muxing is a separate deferred deliverable.
 
 ## Product goal
 
 Build a dependable Windows-first audiovisual performance instrument: import a large personal footage library, compose four independent video decks into a live GPU canvas, create expressive visual treatments, run semi-random or fully unattended performances, and route the result to a second display or projector.
 
-The roadmap is deliberately staged. M0–M2 establish the visual instrument. M3 adds audio analysis and the normalized transport/scene/macro control foundation. M4 adds Sonic Pi as a timed, semantic OSC source for that same control layer. M5 turns the application into a configurable live performance environment.
+The roadmap is deliberately staged. M0–M2 establish the visual instrument. M3 adds audio analysis and the normalized transport/scene/macro control foundation. M4 adds Sonic Pi as a timed, semantic OSC source for that same control layer. M5 adds autonomous performance orchestration, Modulator Bank/per-layer control and an asynchronous generator-raster pipeline. M6 focuses on the operator-facing live VJ mixer.
 
-**Development rule:** the Video Mixer Completion Gate remains an independent release criterion and is not marked passed. M3 foundation work may proceed, but do not describe M0–M2 as release-ready until the Windows hardware and 60-minute validation has been completed.
+**Development rule:** the Video Mixer Completion Gate remains an independent release criterion and is not marked passed. Later milestones may proceed in parallel, but do not describe the mixer as hardware/release-ready until its Windows reliability, projector and sustained-session checks have been completed.
 
 ---
 
@@ -18,7 +18,7 @@ The roadmap is deliberately staged. M0–M2 establish the visual instrument. M3 
 | Milestone | Current state | Notes |
 |---|---|---|
 | M0 — Rendering Core | Core implemented; hardware hardening remains | PySide6 shell, OpenGL/ModernGL render contexts, canvas/layers, project persistence and fullscreen external output are present. |
-| M1 — Video Collage | Core implemented; reliability pass in progress | Folder indexing, four decoder decks, transforms, blending and random collage behaviour are present. Safe library cleanup, bounded import workers, decoder retirement and preview output limits are now implemented in the hardening branch. |
+| M1 — Video Collage | Core implemented; hardware/release gate open | Folder indexing, four decoder decks, transforms, blending, library cleanup, bounded import workers, decoder retirement and preview output limits are implemented on main. Manual deck, projector and long-run acceptance remains. |
 | M2 — Generative Visuals | Core generator and overlay workflow implemented; advanced extensions remain | Geometry, Text Art, waveform and GPU particle fields are available. Still/animated-image/video overlays, layer effects, shader animation and project persistence are implemented. Vector paths, shape groups and a full particle simulation with lifetime/velocity/acceleration remain future extensions. |
 | M3 — Audio-Reactive Engine & Control Foundation | Software implementation complete; Windows hardware sign-off pending | Internal transport and quantization, SoundCard input/loopback capture, FFT/onset/tempo analysis, scene profiles, editable modulation matrix, lock/manual-override precedence and persistence are implemented. Physical device/reconnect and sustained-session checks remain on the performance PC. The repository unit-test suite was removed at the user's request; current CI performs static checks only. |
 | M4 — Sonic Pi Integration | Software complete; live rehearsal pending | Versioned `/eli_lab/v1` receiver, test sender, diagnostics, bounded validation, M3 clock/modulation bridge and optional SONATA sender are implemented. Verify the complete 384-bar performance on the target machine. |
@@ -206,9 +206,9 @@ Give the video mixer a distinctive visual toolkit and make automated performance
 
 ---
 
-# Video Mixer Completion Gate — Priority Before M3
+# Independent Release Gate — Video Mixer Completion Gate
 
-This is the immediate delivery track. It closes the gap between a promising live prototype and a dependable visual performance tool.
+This is an independent reliability/release track. It closes the gap between a promising live prototype and a dependable visual performance tool; later feature milestones may proceed in parallel.
 
 ## Gate A — Reliability first
 
@@ -336,7 +336,7 @@ See [SONATA Expanded integration notes](SONIC_PI_SONATA_INTEGRATION.md).
 
 ## Status
 
-**M5 software implementation is merged to main. Autonomous Performance Mode, the Modulator Bank, per-layer performance modifiers and Sonic Pi orchestration are implemented. Live SONATA and target-machine validation remain manual sign-off; master-output recording/audio muxing is not implemented, so the M5 milestone exit remains open. A Windows x64 one-file release build is configured on `release/windows-onefile-readiness`; its native Windows build and Lenovo/projector acceptance tests remain pending.**
+**M5 software implementation is merged to main.** Performance Mode, AUTO PERFORMANCE, Modulator Bank, per-layer performance modifiers, MIDI/performance-set foundations, asynchronous generator rasterization and text-raster controls are implemented. Quality workflow #116 passed compile/Ruff on main commit `358dc597`. Live SONATA, audio-device, four-deck stress and projector acceptance remain manual sign-off. Master-output recording/audio muxing is not implemented and is tracked separately; it does not block starting M6.
 
 ## Implemented
 
@@ -351,21 +351,58 @@ See [SONATA Expanded integration notes](SONIC_PI_SONATA_INTEGRATION.md).
 - Dictionary candidates in `generators/text_pools.py` are cached by language, theme and dictionary-file version to avoid rescanning multi-megabyte dictionaries on each regeneration.
 - Unified diagnostics for OSC counters/freshness, audio state/queue/drop count, control queue, active routes/modulators, automation section/energy/cutoff and video/render metrics.
 
-## Remaining work and sign-off
+## Remaining validation and separately deferred work
 
-- Master-output recording with bounded frame handoff, encoder worker, configurable format/frame rate/destination and audio muxing.
-- Explicit output recording routing and target-machine preview/projector frame-pacing and A/V synchronisation validation.
-- Last-known-good set recovery and optional event/performance-session recording.
-- Full 384-bar SONATA rehearsal, Windows system-loopback reconnect and long-duration autonomous session validation.
+- Full 384-bar SONATA rehearsal, including scene/bar/macro/phrase timing and stop/restart recovery.
+- Windows physical-input/system-loopback selection, device loss/reconnect and sustained capture.
+- Four-deck continuous typing with multiple generators, effects, audio reactivity and projector output; record input responsiveness, raster rate/duration, FPS and dropped frames.
+- Projector open/close, display hot-plug, frame pacing and long-duration session validation.
+- Master-output recording and audio/video muxing are not implemented; keep this as a separate deferred output-delivery feature rather than treating it as completed M5 scope.
 
 ## Verification and repository cleanup
 
 - The `tests/` unit-test suite and pytest dependencies were removed at the user's request. CI has been replaced with Python compilation and Ruff checks; it no longer runs unit tests.
-- A static quality workflow must pass on the latest PR head. Hardware and musical rehearsal remain manual sign-off.
+- Quality workflow #116 passed on main commit `358dc597` with Python compilation and Ruff. CI does not execute runtime, musical, audio-device or GPU/projector validation.
 
-**M5 exit condition is not yet met** until master-output recording/audio muxing is delivered and the target-machine validation gates are completed. For the same-computer SONATA setup and the exact live rehearsal checklist, see [M5 Completion & Live Validation Handoff](M5_COMPLETION_HANDOFF.md).
+**M5 implementation exit is met and merged.** M5 live-performance acceptance remains open until the target-machine checks above are run and recorded. Recording/audio muxing is explicitly deferred as a separate deliverable. See [M5 Completion & Live Validation Handoff](M5_COMPLETION_HANDOFF.md).
 
 See [M5 Autonomous Performance](M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance Environment](M5_PERFORMANCE_ENVIRONMENT.md), [M5 Unified Mapping Matrix](M5_MAPPING_MATRIX.md), [M5 Performance Modifiers](M5_PERFORMANCE_MODIFIERS.md) and [M5 Modulator Bank](M5_MODULATOR_BANK.md).
+
+
+# M6 — Advanced VJ Environment
+
+## Status
+
+**Planned; implementation has not started.** The first workstream is **A. A proper live mixer**, moving the operator experience beyond deck editing toward a dedicated live VJ surface. M6 builds on the existing four video decks, media library, composition/layer model, transport quantization, automation and preview/projector renderers.
+
+## A. A proper live mixer
+
+The current four-deck system remains the playback foundation. The operator should be able to work more like a live VJ: prepare clips in performance-oriented media bins, trigger one or multiple clips deliberately, understand deck state at a glance and perform common source/mix actions without navigating through detailed editing docks.
+
+Initial design/implementation slices:
+
+1. **Operator model and deck surface:** clear source identity, thumbnail, playback/segment state, lock/hold/error feedback and direct deck transport.
+2. **Media bins:** named show bins/collections that reference indexed media without duplicating or moving source files.
+3. **Explicit clip routing:** single-clip trigger into a chosen deck; multi-selection mapped visibly to available decks. Selecting, loading and triggering must be distinct actions.
+4. **Multi-trigger and sync:** multiple deck launches treated as one action, with immediate launch first and optional beat/bar/phrase quantization using the existing control clock. Pending launches must be visible and cancellable.
+5. **Mix and transitions:** define deck levels/opacity, A/B or group selection and a crossfade/transition model that reuses existing layer/compositor state. Hard cuts remain deterministic; additional transitions require measured render cost.
+6. **Performance integration:** manual controls, automation, lock/manual-override precedence, event diagnostics and persistence of bins/operator preferences.
+
+Before coding, settle the policy when more clips are selected than decks are available and when a target deck is already playing. Do not silently overwrite a live source. A dedicated program/preview bus is not part of the existing architecture and should be treated as a design decision, not an already implemented feature.
+
+## M6-A acceptance
+
+- A show can be prepared in named media bins without interrupting current playback.
+- A single clip can be loaded and triggered into a selected deck.
+- Multiple clips can be mapped to available decks and launched as one operator action.
+- Quantized launches share one beat/bar/phrase boundary and can be cancelled before triggering.
+- Deck source, playback, pending, locked and failed states are visible on the live surface.
+- Manual protection and locks prevent AUTO PERFORMANCE from unexpectedly replacing operator-controlled material.
+- Four-deck playback, generators/effects and projector output continue to use the existing bounded worker and per-context rendering architecture.
+- Media/decode failures remain local and the UI stays responsive under active four-deck load.
+- Bins and assignments can be saved/reopened without persisting decoder handles or GPU resources.
+
+The detailed initial scope and staged acceptance checklist are in [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md).
 
 ## Engineering principles across all milestones
 
@@ -380,8 +417,9 @@ See [M5 Autonomous Performance](M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance E
 
 ## Immediate next implementation order
 
-1. Perform the live SONATA 384-bar rehearsal and verify bar/scene/macro timing, session restart and lost-packet recovery.
-2. Perform M3 hardware sign-off on Windows: physical input, system loopback, device unplug/reconnect, source refresh/restart and sustained capture while video is playing.
-3. Continue the Video Mixer Completion Gate as a separate release track; do not infer its hardware sign-off from M3 CI.
+1. Start M6-A0: settle the live-mixer operator model, deck state/transport presentation, media-bin semantics, multi-trigger target mapping and quantized-launch collision policy.
+2. Continue M5 target-machine validation in parallel: full SONATA run, loopback reconnect, four-deck generator/text stress, projector hot-plug and long-duration rehearsal.
+3. Continue the independent Video Mixer Completion Gate; do not infer hardware release readiness from static CI.
+4. Keep master-output recording/audio muxing as a separately scoped delivery item unless explicitly brought back into a milestone.
 
-M3 is the control foundation and audio-analysis source. M4 is the explicit Sonic Pi integration milestone. The two share the normalized event/state contract; neither needs to change the GPU renderer.
+See [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md) for the current M6-A scope and acceptance criteria.
