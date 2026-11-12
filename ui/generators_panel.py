@@ -137,7 +137,8 @@ class GeneratorsPanel(QWidget):
         self.text_update_rate_spin.setValue(4)
         self.text_update_rate_spin.setSuffix(" Hz")
         self.text_update_rate_spin.setToolTip(
-            "Maximum start rate for CPU text raster jobs. Newer pending snapshots replace older ones."
+            "Maximum start rate for CPU text raster jobs. "
+            "Newer pending snapshots replace older ones."
         )
         raster_form.addRow("MAX RASTER RATE", self.text_update_rate_spin)
         self.text_freeze_check = QCheckBox("Freeze current text texture")
@@ -156,12 +157,14 @@ class GeneratorsPanel(QWidget):
         self.text_raster_status = QLabel("TEXT PIPELINE · READY")
         self.text_raster_status.setObjectName("mutedLabel")
         self.text_raster_status.setToolTip(
-            "EDITING → RASTERIZING → READY. A failed render preserves the last valid texture when recovery is enabled."
+            "EDITING → RASTERIZING → READY. "
+            "A failed render preserves the last valid texture when recovery is enabled."
         )
         raster_form.addRow("STATUS", self.text_raster_status)
         self.apply_text_now_button = QPushButton("APPLY IMMEDIATELY")
         self.apply_text_now_button.setToolTip(
-            "Commit current text and typography now, bypassing the pause debounce and using final resolution when enabled."
+            "Commit current text and typography now, bypassing the pause debounce "
+            "and using final resolution when enabled."
         )
         raster_form.addRow(self.apply_text_now_button)
         text_form.addRow(raster_group)
@@ -661,7 +664,10 @@ class GeneratorsPanel(QWidget):
         )
         if layer is None:
             return
-        if self._pending_text_layer_id == layer.id:
+        if (
+                self._pending_text_layer_id == layer.id
+                and self.text_commit_pause_check.isChecked()
+        ):
             self.commit_text()
         self._apply_non_text_settings(target_layer=layer)
 
@@ -690,19 +696,34 @@ class GeneratorsPanel(QWidget):
 
     def _on_text_raster_started(self, layer_id: str, _revision: int) -> None:
         if layer_id == self.layer_combo.currentData():
-            self._set_text_raster_status("rasterizing")
+            phase = (
+                "editing"
+                if self._pending_text_layer_id == layer_id
+                else "rasterizing"
+            )
+            self._set_text_raster_status(phase)
 
     def _on_text_raster_ready(
             self, layer_id: str, _revision: int, _fingerprint: str, _pixels: object
     ) -> None:
         if layer_id == self.layer_combo.currentData():
-            self._set_text_raster_status("ready")
+            phase = (
+                "editing"
+                if self._pending_text_layer_id == layer_id
+                else "ready"
+            )
+            self._set_text_raster_status(phase)
 
     def _on_text_raster_failed(
             self, layer_id: str, _revision: int, _fingerprint: str, message: str
     ) -> None:
         if layer_id == self.layer_combo.currentData():
-            self._set_text_raster_status("failed", message[:72])
+            phase = (
+                "editing"
+                if self._pending_text_layer_id == layer_id
+                else "failed"
+            )
+            self._set_text_raster_status(phase, message[:72])
 
     def _text_live_preview_toggled(self, enabled: bool) -> None:
         service = self.application.generator_raster_service

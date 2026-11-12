@@ -62,8 +62,12 @@ class GeneratorRasterService(QObject):
     def fingerprint_for(self, layer_id: str, generator_type: str, settings: dict[str, Any]) -> str:
         """Fingerprint using the resolution currently assigned to this layer."""
         with self._lock:
-            width, height = self._latest_dimensions.get(layer_id, self._dimensions(generator_type))
-        return GeneratorRasterizer.fingerprint_settings(generator_type, settings, width=width, height=height)
+            width, height = self._latest_dimensions.get(
+                layer_id, self._dimensions(generator_type)
+            )
+        return GeneratorRasterizer.fingerprint_settings(
+            generator_type, settings, width=width, height=height
+        )
 
     def set_text_preview_scale(self, scale: float) -> None:
         with self._condition:
@@ -132,6 +136,11 @@ class GeneratorRasterService(QObject):
         fingerprint = self._latest_fingerprint.get(layer_id)
         if snapshot is None or not fingerprint or self._closed:
             return
+        completed = self._completed.get(layer_id)
+        if completed is not None and completed[0] == fingerprint:
+            self._phase[layer_id] = "ready"
+            self._deferred.discard(layer_id)
+            return
         generator_type, settings, width, height = snapshot
         if layer_id in self._frozen:
             self._phase[layer_id] = "frozen"
@@ -142,7 +151,9 @@ class GeneratorRasterService(QObject):
             self._deferred.add(layer_id)
             return
         revision = self._latest_revision.get(layer_id, 0)
-        self._pending_requests[layer_id] = (revision, fingerprint, generator_type, dict(settings), width, height)
+        self._pending_requests[layer_id] = (
+            revision, fingerprint, generator_type, dict(settings), width, height
+        )
         self._deferred.discard(layer_id)
         self._phase[layer_id] = "rasterizing"
         self._condition.notify()
@@ -152,15 +163,28 @@ class GeneratorRasterService(QObject):
             if layer_id not in self._frozen:
                 self._queue_layer_locked(layer_id)
 
-    def request(self, layer_id: str, generator_type: str, settings: dict[str, Any], *, force: bool = False, full_resolution: bool | None = None) -> tuple[str, int]:
+    def request(
+            self,
+            layer_id: str,
+            generator_type: str,
+            settings: dict[str, Any],
+            *,
+            force: bool = False,
+            full_resolution: bool | None = None,
+    ) -> tuple[str, int]:
         """Queue/replay a snapshot; force bypasses Live Preview, never Freeze."""
         snapshot = dict(settings)
         with self._condition:
             if full_resolution is None and layer_id in self._latest_dimensions:
                 width, height = self._latest_dimensions[layer_id]
             else:
-                width, height = self._dimensions(generator_type, full_resolution=bool(full_resolution))
-            fingerprint = GeneratorRasterizer.fingerprint_settings(generator_type, snapshot, width=width, height=height)
+                width, height = self._dimensions(
+                    generator_type,
+                    full_resolution=bool(full_resolution),
+                )
+            fingerprint = GeneratorRasterizer.fingerprint_settings(
+                generator_type, snapshot, width=width, height=height
+            )
             revision = self._latest_revision.get(layer_id, 0)
             if self._closed:
                 return fingerprint, revision
@@ -194,23 +218,39 @@ class GeneratorRasterService(QObject):
                 active = self._active_requests.get(layer_id) == (revision, fingerprint)
                 pending = layer_id in self._pending_requests
                 failed = self._failed.get(layer_id) == (revision, fingerprint)
+                if same_snapshot and failed and force:
+                    revision += 1
+                    self._latest_revision[layer_id] = revision
+                    self._failed.pop(layer_id, None)
+                    failed = False
                 if same_snapshot and (active or pending or failed):
                     return fingerprint, revision
-                self._pending_requests[layer_id] = (revision, fingerprint, generator_type, snapshot, width, height)
+                self._pending_requests[layer_id] = (
+                    revision, fingerprint, generator_type, snapshot, width, height
+                )
                 self._phase[layer_id] = "rasterizing"
                 self._condition.notify()
         if replay is not None:
             self.raster_ready.emit(layer_id, revision, fingerprint, replay)
         return fingerprint, revision
 
-    def has_latest_snapshot(self, layer_id: str, generator_type: str, settings: dict[str, Any]) -> bool:
+    def has_latest_snapshot(
+            self,
+            layer_id: str,
+            generator_type: str,
+            settings: dict[str, Any],
+    ) -> bool:
         fingerprint = self.fingerprint_for(layer_id, generator_type, settings)
         with self._lock:
             return not self._closed and self._latest_fingerprint.get(layer_id) == fingerprint
 
     def is_current(self, layer_id: str, revision: int, fingerprint: str) -> bool:
         with self._lock:
-            return (not self._closed and self._latest_revision.get(layer_id) == revision and self._latest_fingerprint.get(layer_id) == fingerprint)
+            return (
+                not self._closed
+                and self._latest_revision.get(layer_id) == revision
+                and self._latest_fingerprint.get(layer_id) == fingerprint
+            )
 
     def _worker_loop(self) -> None:
         while True:
@@ -238,12 +278,22 @@ class GeneratorRasterService(QObject):
                     self._next_text_update_at = time.monotonic() + 1.0 / self._max_text_update_hz
             self.raster_started.emit(layer_id, revision)
             try:
-                fingerprint, pixels = self._worker_rasterizer.render_settings(layer_id, generator_type, settings, width=width, height=height)
+                fingerprint, pixels = self._worker_rasterizer.render_settings(
+                    layer_id,
+                    generator_type,
+                    settings,
+                    width=width,
+                    height=height,
+                )
                 if fingerprint != expected_fingerprint:
                     raise RuntimeError("Generator rasterizer returned an unexpected fingerprint")
             except Exception as exc:
                 with self._condition:
-                    current = (not self._closed and self._latest_revision.get(layer_id) == revision and self._latest_fingerprint.get(layer_id) == expected_fingerprint)
+                    current = (
+                        not self._closed
+                        and self._latest_revision.get(layer_id) == revision
+                        and self._latest_fingerprint.get(layer_id) == expected_fingerprint
+                    )
                     if self._active_requests.get(layer_id) == (revision, expected_fingerprint):
                         self._active_requests.pop(layer_id, None)
                     if current:
@@ -254,7 +304,11 @@ class GeneratorRasterService(QObject):
                     _LOG.exception("Generator rasterization failed for %s", layer_id)
                 continue
             with self._condition:
-                current = (not self._closed and self._latest_revision.get(layer_id) == revision and self._latest_fingerprint.get(layer_id) == expected_fingerprint)
+                current = (
+                    not self._closed
+                    and self._latest_revision.get(layer_id) == revision
+                    and self._latest_fingerprint.get(layer_id) == expected_fingerprint
+                )
                 if self._active_requests.get(layer_id) == (revision, expected_fingerprint):
                     self._active_requests.pop(layer_id, None)
                 if current:
@@ -280,7 +334,11 @@ class GeneratorRasterService(QObject):
 
     def invalidate_missing(self, active_layer_ids: set[str]) -> None:
         with self._condition:
-            known_ids = set(self._latest_revision) | set(self._latest_snapshots) | set(self._completed)
+            known_ids = (
+                set(self._latest_revision)
+                | set(self._latest_snapshots)
+                | set(self._completed)
+            )
             for layer_id in known_ids - active_layer_ids:
                 self._latest_revision[layer_id] = self._latest_revision.get(layer_id, 0) + 1
                 self._latest_fingerprint.pop(layer_id, None)
