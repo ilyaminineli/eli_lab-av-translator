@@ -162,6 +162,35 @@ class EffectSettings:
     invert: float = 0.0
     halftone: float = 0.0
     solarize: float = 0.0
+    transform_mode: str = "none"
+    transform_mix: float = 1.0
+    kaleidoscope_slices: int = 8
+    kaleidoscope_rotation: float = 0.0
+    kaleidoscope_zoom: float = 1.0
+    mosaic_tiles: int = 64
+    pixel_sort_amount: float = 0.0
+    pixel_sort_threshold: float = 0.72
+    edge_amount: float = 0.0
+    dither: float = 0.0
+    displacement_source_id: str = ""
+    displacement_amount: float = 0.0
+    displacement_scale: float = 1.0
+    displacement_luma: bool = False
+    feedback_enabled: bool = False
+    feedback_amount: float = 0.35
+    feedback_decay: float = 0.94
+    feedback_zoom: float = 1.0
+    feedback_rotation: float = 0.0
+    feedback_translate_x: float = 0.0
+    feedback_translate_y: float = 0.0
+    feedback_color_shift: float = 0.0
+    feedback_distortion: float = 0.0
+    feedback_motion_warp: float = 0.0
+    feedback_datamosh: float = 0.0
+    feedback_blend_mode: str = "normal"
+    feedback_delay_frames: int = 0
+    feedback_frozen: bool = False
+    feedback_reset_generation: int = 0
     preset_name: str = "Clean"
 
     def apply_preset(self, name: str) -> None:
@@ -174,9 +203,13 @@ class EffectSettings:
         self.clamp()
 
     def reset(self) -> None:
+        # A generation bump invalidates renderer-local temporal feedback on its
+        # next frame without exposing any GPU resources to the settings model.
+        reset_generation = max(0, int(self.feedback_reset_generation)) + 1
         defaults = type(self)()
         for item in fields(self):
             setattr(self, item.name, getattr(defaults, item.name))
+        self.feedback_reset_generation = reset_generation
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
@@ -213,3 +246,44 @@ class EffectSettings:
                 "solarize",
         ):
             setattr(self, name, max(0.0, min(1.0, float(getattr(self, name)))))
+
+        self.transform_mode = str(self.transform_mode).casefold()
+        if self.transform_mode not in {
+                "none", "kaleidoscope", "polar", "mosaic", "pixel_sort",
+        }:
+            self.transform_mode = "none"
+        self.transform_mix = max(0.0, min(1.0, float(self.transform_mix)))
+        self.kaleidoscope_slices = max(2, min(64, int(self.kaleidoscope_slices)))
+        self.kaleidoscope_rotation = max(-180.0, min(180.0, float(self.kaleidoscope_rotation)))
+        self.kaleidoscope_zoom = max(0.1, min(4.0, float(self.kaleidoscope_zoom)))
+        self.mosaic_tiles = max(4, min(512, int(self.mosaic_tiles)))
+        self.pixel_sort_amount = max(0.0, min(1.0, float(self.pixel_sort_amount)))
+        self.pixel_sort_threshold = max(0.0, min(1.0, float(self.pixel_sort_threshold)))
+        self.edge_amount = max(0.0, min(1.0, float(self.edge_amount)))
+        self.dither = max(0.0, min(1.0, float(self.dither)))
+        self.displacement_source_id = str(self.displacement_source_id or "").strip()[:256]
+        self.displacement_amount = max(-1.0, min(1.0, float(self.displacement_amount)))
+        self.displacement_scale = max(0.1, min(8.0, float(self.displacement_scale)))
+        self.displacement_luma = bool(self.displacement_luma)
+        self.feedback_enabled = bool(self.feedback_enabled)
+        self.feedback_amount = max(0.0, min(1.0, float(self.feedback_amount)))
+        self.feedback_decay = max(0.0, min(1.0, float(self.feedback_decay)))
+        self.feedback_zoom = max(0.5, min(2.0, float(self.feedback_zoom)))
+        self.feedback_rotation = max(-180.0, min(180.0, float(self.feedback_rotation)))
+        self.feedback_translate_x = max(-0.25, min(0.25, float(self.feedback_translate_x)))
+        self.feedback_translate_y = max(-0.25, min(0.25, float(self.feedback_translate_y)))
+        for name in (
+                "feedback_color_shift",
+                "feedback_distortion",
+                "feedback_motion_warp",
+                "feedback_datamosh",
+        ):
+            setattr(self, name, max(0.0, min(1.0, float(getattr(self, name)))))
+        self.feedback_blend_mode = str(self.feedback_blend_mode).casefold()
+        if self.feedback_blend_mode not in {
+                "normal", "add", "screen", "multiply", "difference",
+        }:
+            self.feedback_blend_mode = "normal"
+        self.feedback_delay_frames = max(0, min(3, int(self.feedback_delay_frames)))
+        self.feedback_frozen = bool(self.feedback_frozen)
+        self.feedback_reset_generation = max(0, int(self.feedback_reset_generation))

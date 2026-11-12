@@ -25,10 +25,11 @@ Worker threads publish immutable or copied CPU-side data. They do not update Qt 
 5. Preview and projector renderers read the same CPU snapshots independently.
 6. Each `RenderEngine` uploads only unseen revisions into textures owned by its own GL context.
 7. The compositor blends visible video, generator and overlay layers into ping-pong framebuffers, applying per-layer FX.
-8. The master GLSL effect pass processes the composed output.
-9. The final framebuffer is drawn into that output window's Qt framebuffer.
+8. The master GLSL pass applies tonal processing, geometric remapping and optional layer-texture displacement.
+9. When enabled, a renderer-local feedback engine samples its own bounded GPU history ring and writes the next history frame; no history texture is read back to the CPU or shared between output contexts.
+10. The final framebuffer is drawn into that output window's Qt framebuffer.
 
-The two outputs share application/composition state and CPU frame snapshots. They do **not** share GL texture objects or GL contexts.
+The two outputs share application/composition state and CPU frame snapshots. They do **not** share GL texture objects or GL contexts. Feedback history is also per-renderer: preview and projector maintain independent GPU rings that are resized, reset and released with their own GL context. Project files persist feedback settings and reset generation, never frame history or GL handles.
 
 ## Generator raster lifecycle
 

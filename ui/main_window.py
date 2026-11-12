@@ -83,7 +83,11 @@ class MainWindow(QMainWindow):
         self.layer_dock.setMinimumWidth(280)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.layer_dock)
 
-        self.effects_panel = EffectsPanel(application.effects, self)
+        self.effects_panel = EffectsPanel(
+            application.effects,
+            source_provider=lambda: application.composition.layers,
+            parent=self,
+        )
         self.effects_dock = self._make_dock("EFFECTS + OVERLAYS", self.effects_panel)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.effects_dock)
         self.tabifyDockWidget(self.layer_dock, self.effects_dock)
