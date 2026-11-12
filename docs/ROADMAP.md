@@ -420,9 +420,9 @@ Directional scan sorting is a controlled shader approximation, not a full image-
 
 ## M6-D — Advanced Particle Simulation
 
-**D1 implementation in progress.** Add a separate `particle_system_2` generator alongside the existing procedural `particles` field. D1 includes point/circle/rectangle emitters, deterministic seeded populations, fixed-step GPU lifetime/velocity/acceleration simulation, turbulence, attract/repel/orbit fields, size curves and trails. Resource ceilings are enforced at 8192 particles per system, four systems and 16384 particles per output renderer. The simulation is owned by each Compositor/GL context and bypasses the CPU raster service.
+**D1 + D2 implementation in progress on `m6/d1-particle-system-2`.** Particle System 2.0 is separate from the legacy procedural `particles` field. D1 adds point/circle/rectangle emitters, deterministic seeded populations, fixed-step GPU lifetime/velocity/acceleration simulation, turbulence, attract/repel/orbit fields, size curves and trails. D2 adds editable path emitters, video-luminance, image alpha/luma silhouette and contour emitters, plus GPU source-target reformation with periodic target resampling. Resource ceilings remain 8192 particles per system, four systems and 16384 particles per output renderer. Simulation and source sampling are owned by each Compositor/GL context and bypass the CPU raster service.
 
-Video-luminance, image-silhouette, contour and path emitters are intentionally D2/D3 work. See [M6-D — Advanced Particle Simulation](M6_D_ADVANCED_PARTICLE_SIMULATION.md).
+Per-population overrides and advanced vector/collision fields remain D3 work. See [M6-D — Advanced Particle Simulation](M6_D_ADVANCED_PARTICLE_SIMULATION.md).
 
 ## Engineering principles across all milestones
 

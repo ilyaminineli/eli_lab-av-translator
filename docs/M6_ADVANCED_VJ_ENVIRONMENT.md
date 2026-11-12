@@ -1,6 +1,6 @@
 # M6 — Advanced VJ Environment
 
-**Status:** M6-A1 and M6-B1 are merged to `main`. M6-C1 is in draft PR #24 on `m6/c1-advanced-visual-transformations`; M6-D1 Particle System 2.0 is being developed on a branch stacked on C1. Target-GPU validation and the remaining A/B/C/D slices are open.  
+**Status:** M6-A1 and M6-B1 are merged to `main`. M6-C1 is in draft PR #24 on `m6/c1-advanced-visual-transformations`; M6-D1/D2 Particle System 2.0 is being developed on a branch stacked on C1. Static quality checks for the initial D1 foundation passed; the D2 source/path extension awaits a fresh CI run and target-GPU validation. The remaining A/B/C/D slices are open.  
 **First workstream:** A. A proper live mixer.  
 **Design references:** live-mixer / media-bin workflows in Resolume Arena, VDMX media bins and TouchDesigner performance interfaces. These are interaction references, not a requirement to clone another product's UI.
 
@@ -128,9 +128,21 @@ The D1 implementation adds:
 
 The populations currently share the system-level physics controls but receive stable seed offsets, small emitter offsets, colour variation and size/speed variation. This gives multiple independent streams without multiplying the control surface in the first slice.
 
-### D1 boundaries
+### D2 — Source and path emitters
 
-Path emitters, video-luminance emitters and image-silhouette emitters are not part of D1. The current point/circle/rectangle controls do not yet emit from existing footage. Those are the main D2 objective: sample an existing layer texture at particle birth, with brightness, alpha-silhouette and contour/edge modes. Path sampling and per-population parameter overrides can follow in D3.
+The current development branch extends the simulation shader with:
+
+- Editable path/polyline emission (up to 64 normalized points), including tangent-following launch direction.
+- Video brightness, image alpha/luminance silhouette and contour/edge sampling from an existing video or overlay layer texture.
+- Deterministic thresholded source selection with 1–16 candidate probes per particle respawn.
+- Source target storage and configurable reform strength. When reform is enabled, target positions refresh from the current source at a selectable 0.1–10 second interval, with sampled coordinates mapped through the source layer transform.
+- UI source selection, map mode, threshold, probe count, sample cadence, reformation and path-point editing.
+
+Source sampling and particle reformation run in the output renderer's GPU context. A missing source frame disables that source path safely; no CPU particle simulation or duplicate source-frame upload is introduced.
+
+### D1/D2 boundaries
+
+Per-population overrides, per-population modulation targets, advanced vector/collision fields and higher-level shape authoring remain future D3 work. Target-GPU shader and visual acceptance for D1/D2 is still required.
 
 ### Particle System 2.0 acceptance
 
@@ -140,6 +152,8 @@ Path emitters, video-luminance emitters and image-silhouette emitters are not pa
 - Lifetime, velocity, acceleration, turbulence, force fields, size curves and trails visibly affect the simulation.
 - Multiple populations render with stable, distinct seed/colour/size variation.
 - The per-renderer particle and system ceilings are enforced even with multiple visible particle layers.
+- Video/image source emission is thresholded, and contour/alpha/luma modes behave correctly for the selected layer.
+- Source target resampling and reform strength reconstruct the current source silhouette after dispersion.
 - Preview and projector own independent simulation state and trail textures.
 - Resize, layer removal and GL-context teardown release all simulation and trail resources.
 - A 4-deck composition with the maximum particle budget maintains responsive rendering on the target performance GPU.

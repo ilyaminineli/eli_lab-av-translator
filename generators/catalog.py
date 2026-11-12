@@ -82,6 +82,13 @@ _DEFAULTS: dict[str, dict[str, Any]] = {
         "population_count": 2,
         "emitter_type": "point",
         "emitter_center": [0.5, 0.5],
+        "emitter_source_id": "",
+        "emitter_map_mode": "luminance",
+        "emitter_threshold": 0.52,
+        "emitter_sample_attempts": 12,
+        "emitter_sample_interval": 0.5,
+        "reform_strength": 0.0,
+        "path_points": [[0.12, 0.5], [0.34, 0.18], [0.66, 0.82], [0.88, 0.5]],
         "emitter_radius": 0.18,
         "emitter_size": [0.34, 0.24],
         "direction": "radial",
@@ -200,9 +207,16 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
     elif generator_type == "particle_system_2":
         result["particle_count"] = max(128, min(8192, int(result["particle_count"])))
         result["population_count"] = max(1, min(4, int(result["population_count"])))
-        if result["emitter_type"] not in {"point", "circle", "rectangle"}:
+        if result["emitter_type"] not in {
+                "point", "circle", "rectangle", "path", "video_luminance",
+                "image_silhouette", "contour",
+        }:
             result["emitter_type"] = "point"
-        if result["direction"] not in {"radial", "random", "up", "down", "left", "right"}:
+        if result["emitter_map_mode"] not in {"luminance", "alpha", "contour"}:
+            result["emitter_map_mode"] = "luminance"
+        if result["direction"] not in {
+                "radial", "random", "up", "down", "left", "right", "tangent",
+        }:
             result["direction"] = "radial"
         if result["force_type"] not in {"none", "attract", "repel", "orbit"}:
             result["force_type"] = "none"
@@ -231,6 +245,27 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
         result["force_center"] = pair(
             result["force_center"], (0.5, 0.5), 0.0, 1.0
         )
+        result["emitter_source_id"] = str(result["emitter_source_id"] or "").strip()[:256]
+        result["emitter_threshold"] = max(
+            0.0, min(1.0, float(result["emitter_threshold"]))
+        )
+        result["emitter_sample_attempts"] = max(
+            1, min(16, int(result["emitter_sample_attempts"]))
+        )
+        result["emitter_sample_interval"] = max(
+            0.1, min(10.0, float(result["emitter_sample_interval"]))
+        )
+        result["reform_strength"] = max(0.0, min(4.0, float(result["reform_strength"])))
+        raw_path = result.get("path_points", [])
+        path_points = []
+        if isinstance(raw_path, (list, tuple)):
+            for point in raw_path[:64]:
+                path_points.append(pair(point, (0.5, 0.5), 0.0, 1.0))
+        if len(path_points) < 2:
+            path_points = [
+                [0.12, 0.5], [0.34, 0.18], [0.66, 0.82], [0.88, 0.5],
+            ]
+        result["path_points"] = path_points
         result["emitter_radius"] = max(0.01, min(0.5, float(result["emitter_radius"])))
         result["lifetime"] = max(0.25, min(60.0, float(result["lifetime"])))
         result["speed"] = max(0.0, min(1.5, float(result["speed"])))

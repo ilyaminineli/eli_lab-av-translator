@@ -21,6 +21,9 @@ void main() {
 _SIMULATION_FRAGMENT = """#version 330
 uniform sampler2D u_state;
 uniform sampler2D u_metadata;
+uniform sampler2D u_target;
+uniform sampler2D u_emitter_source;
+uniform sampler2D u_path_points;
 uniform vec2 u_state_size;
 uniform int u_particle_count;
 uniform float u_delta;
@@ -42,9 +45,21 @@ uniform vec2 u_force_center;
 uniform float u_force_strength;
 uniform float u_force_radius;
 uniform float u_drag;
+uniform int u_source_enabled;
+uniform int u_source_map_mode;
+uniform float u_emitter_threshold;
+uniform int u_emitter_sample_attempts;
+uniform float u_emitter_sample_interval;
+uniform int u_path_point_count;
+uniform float u_reform_strength;
+uniform vec2 u_source_texel_size;
+uniform vec2 u_emitter_source_position;
+uniform vec2 u_emitter_source_scale;
+uniform float u_emitter_source_rotation;
 
 layout(location = 0) out vec4 out_state;
 layout(location = 1) out vec4 out_metadata;
+layout(location = 2) out vec4 out_target;
 
 uint hash_u32(uint value) {
     value ^= value >> 16;
@@ -66,18 +81,122 @@ vec2 random_pair(uint value) {
     );
 }
 
+vec2 sample_path(float amount) {
+    float scaled = clamp(amount, 0.0, 1.0)
+        * float(max(1, u_path_point_count - 1));
+    int first_index = int(floor(scaled));
+    int second_index = min(first_index + 1, u_path_point_count - 1);
+    vec2 first_point = texture(
+        u_path_points,
+        vec2((float(first_index) + 0.5) / float(u_path_point_count), 0.5)
+    ).rg;
+    vec2 second_point = texture(
+        u_path_points,
+        vec2((float(second_index) + 0.5) / float(u_path_point_count), 0.5)
+    ).rg;
+    return mix(first_point, second_point, fract(scaled));
+}
+
+float source_signal(vec2 position) {
+    vec2 source_uv = vec2(position.x, 1.0 - position.y);
+    vec4 sample_color = texture(u_emitter_source, source_uv);
+    if (u_source_map_mode == 1) {
+        return sample_color.a;
+    }
+    float center_luma = dot(
+        sample_color.rgb, vec3(0.2126, 0.7152, 0.0722)
+    );
+    if (u_source_map_mode == 2) {
+        vec2 texel = max(u_source_texel_size, vec2(0.0001));
+        float left_luma = dot(
+            texture(
+                u_emitter_source,
+                clamp(source_uv - vec2(texel.x, 0.0), vec2(0.0), vec2(1.0))
+            ).rgb,
+            vec3(0.2126, 0.7152, 0.0722)
+        );
+        float right_luma = dot(
+            texture(
+                u_emitter_source,
+                clamp(source_uv + vec2(texel.x, 0.0), vec2(0.0), vec2(1.0))
+            ).rgb,
+            vec3(0.2126, 0.7152, 0.0722)
+        );
+        float down_luma = dot(
+            texture(
+                u_emitter_source,
+                clamp(source_uv - vec2(0.0, texel.y), vec2(0.0), vec2(1.0))
+            ).rgb,
+            vec3(0.2126, 0.7152, 0.0722)
+        );
+        float up_luma = dot(
+            texture(
+                u_emitter_source,
+                clamp(source_uv + vec2(0.0, texel.y), vec2(0.0), vec2(1.0))
+            ).rgb,
+            vec3(0.2126, 0.7152, 0.0722)
+        );
+        return clamp(
+            length(vec2(right_luma - left_luma, up_luma - down_luma)) * 2.5,
+            0.0,
+            1.0
+        );
+    }
+    return center_luma;
+}
+
+vec2 source_to_canvas(vec2 source_position) {
+    vec2 local = (source_position - vec2(0.5)) * u_emitter_source_scale;
+    float angle = radians(u_emitter_source_rotation);
+    float c = cos(angle);
+    float s = sin(angle);
+    vec2 rotated = vec2(
+        c * local.x - s * local.y,
+        s * local.x + c * local.y
+    );
+    return u_emitter_source_position + rotated;
+}
+
+vec3 sample_source_target(uint key) {
+    float best_signal = -1.0;
+    vec2 best_position = u_emitter_center;
+    for (int attempt = 0; attempt < 16; attempt++) {
+        if (attempt >= u_emitter_sample_attempts) break;
+        vec2 candidate = random_pair(
+            key ^ uint(attempt + 1) * 0x27d4eb2du
+        );
+        float signal = source_signal(candidate);
+        if (signal > best_signal) {
+            best_signal = signal;
+            best_position = candidate;
+        }
+        if (signal >= u_emitter_threshold) {
+            best_position = candidate;
+            best_signal = signal;
+            break;
+        }
+    }
+    float active = step(u_emitter_threshold, best_signal);
+    return vec3(source_to_canvas(best_position), active);
+}
+
 void main() {
     ivec2 pixel = ivec2(gl_FragCoord.xy);
     int particle_index = pixel.y * int(u_state_size.x) + pixel.x;
     if (particle_index >= u_particle_count) {
         out_state = vec4(0.0);
         out_metadata = vec4(0.0);
+        out_target = vec4(0.0);
         return;
     }
 
     vec2 uv = (vec2(pixel) + vec2(0.5)) / u_state_size;
     vec4 state = texture(u_state, uv);
     vec4 metadata = texture(u_metadata, uv);
+    vec4 target_data = texture(u_target, uv);
+    vec2 target_position = target_data.xy;
+    float target_strength = target_data.z;
+    float sample_phase = target_data.w;
     float age = metadata.x;
     float lifetime = metadata.y;
     float cycle = metadata.z;
@@ -90,14 +209,35 @@ void main() {
         vec2 random_a = random_pair(key);
         vec2 random_b = random_pair(key ^ 0x68bc21ebu);
         vec2 position = u_emitter_center;
+        vec2 path_tangent = vec2(0.0, 1.0);
+        target_strength = 0.0;
 
         if (u_emitter_type == 1) {
             float angle = random_a.x * 6.2831853;
             position += vec2(cos(angle), sin(angle)) * u_emitter_radius;
         } else if (u_emitter_type == 2) {
             position += (random_a - vec2(0.5)) * u_emitter_size;
+        } else if (u_emitter_type == 3 && u_path_point_count >= 2) {
+            position = sample_path(random_a.x);
+            vec2 before = sample_path(max(0.0, random_a.x - 0.01));
+            vec2 after = sample_path(min(1.0, random_a.x + 0.01));
+            vec2 tangent_delta = after - before;
+            if (length(tangent_delta) > 0.0001) {
+                path_tangent = normalize(tangent_delta);
+            }
+        } else if (u_emitter_type >= 4 && u_emitter_type <= 6
+                && u_source_enabled == 1) {
+            vec3 sampled_target = sample_source_target(key);
+            position = sampled_target.xy;
+            target_strength = sampled_target.z;
+            if (target_strength < 0.5) {
+                position = u_emitter_center;
+                age = lifetime;
+            }
         }
 
+        target_position = position;
+        sample_phase = floor(u_time / max(u_emitter_sample_interval, 0.1));
         vec2 radial = position - u_emitter_center;
         float angle = random_b.x * 6.2831853;
         vec2 random_direction = vec2(cos(angle), sin(angle));
@@ -112,6 +252,8 @@ void main() {
             direction = vec2(-1.0, 0.0);
         } else if (u_direction == 5) {
             direction = vec2(1.0, 0.0);
+        } else if (u_direction == 6 && u_emitter_type == 3) {
+            direction = path_tangent;
         }
 
         vec2 velocity = direction * u_speed
@@ -119,12 +261,33 @@ void main() {
         float life_factor = 0.75 + random_b.y * 0.5;
         age = 0.0;
         lifetime = max(0.05, u_lifetime * life_factor);
+        if (u_emitter_type >= 4 && u_emitter_type <= 6
+                && target_strength < 0.5) {
+            age = lifetime;
+        }
         size_variation = random_value(key ^ 0x02e5be93u);
         state = vec4(position, velocity);
     } else {
         vec2 position = state.xy;
         vec2 velocity = state.zw;
         vec2 acceleration = u_acceleration;
+        if (u_source_enabled == 1 && u_reform_strength > 0.0001) {
+            float next_sample_phase = floor(
+                u_time / max(u_emitter_sample_interval, 0.1)
+            );
+            if (next_sample_phase != sample_phase) {
+                uint sample_key = uint(particle_index) * 0x9e3779b9u
+                    ^ uint(cycle) * 0x85ebca6bu ^ uint(u_seed)
+                    ^ uint(next_sample_phase) * 0xc2b2ae35u;
+                vec3 sampled_target = sample_source_target(sample_key);
+                target_position = sampled_target.xy;
+                target_strength = sampled_target.z;
+                sample_phase = next_sample_phase;
+            }
+        }
+        if (u_reform_strength > 0.0001 && target_strength > 0.5) {
+            acceleration += (target_position - position) * u_reform_strength;
+        }
 
         if (u_turbulence > 0.0001) {
             float frequency = max(0.1, u_turbulence_scale);
@@ -165,6 +328,7 @@ void main() {
 
     out_state = state;
     out_metadata = vec4(age, lifetime, cycle, size_variation);
+    out_target = vec4(target_position, target_strength, sample_phase);
 }
 """
 
@@ -261,6 +425,7 @@ class _Population:
     seed: int
     states: list[moderngl.Texture]
     metadata: list[moderngl.Texture]
+    targets: list[moderngl.Texture]
     framebuffers: list[moderngl.Framebuffer]
     state_size: tuple[int, int]
     index: int = 0
@@ -268,7 +433,7 @@ class _Population:
     def release(self) -> None:
         for framebuffer in self.framebuffers:
             framebuffer.release()
-        for texture in self.states + self.metadata:
+        for texture in self.states + self.metadata + self.targets:
             texture.release()
 
 
@@ -307,18 +472,39 @@ class ParticleSystem2:
         self.particle_vao = context.vertex_array(self.particle_program, [])
         self.simulation_program["u_state"].value = 0
         self.simulation_program["u_metadata"].value = 1
+        self.simulation_program["u_target"].value = 2
+        self.simulation_program["u_emitter_source"].value = 3
+        self.simulation_program["u_path_points"].value = 4
         self.particle_program["u_state"].value = 0
         self.particle_program["u_metadata"].value = 1
         self.trail_program["u_previous"].value = 0
 
         self.populations: list[_Population] = []
+        self.emitter_stub = context.texture(
+            (1, 1), 4, bytes((0, 0, 0, 0)), alignment=1, dtype="f1"
+        )
+        self.emitter_stub.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        self.path_stub = context.texture(
+            (1, 1),
+            2,
+            np.asarray([[0.5, 0.5]], dtype=np.float32).tobytes(),
+            alignment=1,
+            dtype="f4",
+        )
+        self.path_stub.filter = (moderngl.NEAREST, moderngl.NEAREST)
+        self.path_texture: moderngl.Texture | None = None
+        self.path_signature: tuple[tuple[float, float], ...] | None = None
+        self._active_emitter_source: moderngl.Texture | None = None
+        self._active_emitter_source_transform = (
+            (0.5, 0.5), (1.0, 1.0), 0.0
+        )
         self.trail_textures: list[moderngl.Texture] = []
         self.trail_framebuffers: list[moderngl.Framebuffer] = []
         self.output_size = (0, 0)
         self.trail_index = 0
         self.accumulator = 0.0
         self.last_time: float | None = None
-        self.signature: tuple[int, int, int] | None = None
+        self.signature: tuple[object, ...] | None = None
         self.last_error: str | None = None
 
     @staticmethod
@@ -365,6 +551,7 @@ class ParticleSystem2:
         metadata_pixels = np.zeros((height, width, 4), dtype=np.float32)
         metadata_pixels[:, :, 0] = 2.0
         metadata_pixels[:, :, 1] = 0.5
+        target_pixels = np.zeros((height, width, 4), dtype=np.float32)
 
         states = [
             self.ctx.texture(size, 4, state_pixels.tobytes(), alignment=1, dtype="f4"),
@@ -378,12 +565,22 @@ class ParticleSystem2:
                 size, 4, metadata_pixels.tobytes(), alignment=1, dtype="f4"
             ),
         ]
-        for texture in states + metadata:
+        targets = [
+            self.ctx.texture(
+                size, 4, target_pixels.tobytes(), alignment=1, dtype="f4"
+            ),
+            self.ctx.texture(
+                size, 4, target_pixels.tobytes(), alignment=1, dtype="f4"
+            ),
+        ]
+        for texture in states + metadata + targets:
             texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
             texture.repeat_x = False
             texture.repeat_y = False
         framebuffers = [
-            self.ctx.framebuffer(color_attachments=[states[i], metadata[i]])
+            self.ctx.framebuffer(
+                color_attachments=[states[i], metadata[i], targets[i]]
+            )
             for i in range(2)
         ]
         return _Population(
@@ -391,17 +588,51 @@ class ParticleSystem2:
             seed=seed,
             states=states,
             metadata=metadata,
+            targets=targets,
             framebuffers=framebuffers,
             state_size=size,
         )
+
+    def _ensure_path_texture(self, path_points: list[list[float]]) -> None:
+        signature = tuple(
+            (float(point[0]), float(point[1])) for point in path_points[:64]
+        )
+        if signature == self.path_signature:
+            return
+        if self.path_texture is not None:
+            self.path_texture.release()
+            self.path_texture = None
+        if len(signature) >= 2:
+            pixels = np.asarray(signature, dtype=np.float32)
+            self.path_texture = self.ctx.texture(
+                (len(signature), 1),
+                2,
+                pixels.tobytes(),
+                alignment=1,
+                dtype="f4",
+            )
+            self.path_texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
+            self.path_texture.repeat_x = False
+            self.path_texture.repeat_y = False
+        self.path_signature = signature
 
     def _ensure_populations(
             self,
             particle_count: int,
             population_count: int,
             seed: int,
+            emitter_type: str,
+            emitter_source_id: str,
+            path_signature: tuple[tuple[float, float], ...],
     ) -> None:
-        signature = (particle_count, population_count, seed)
+        signature = (
+            particle_count,
+            population_count,
+            seed,
+            emitter_type,
+            emitter_source_id,
+            path_signature,
+        )
         if self.signature == signature:
             return
         self._release_populations()
@@ -460,19 +691,62 @@ class ParticleSystem2:
         values = {
             "u_state": 0,
             "u_metadata": 1,
+            "u_target": 2,
+            "u_emitter_source": 3,
+            "u_path_points": 4,
             "u_state_size": tuple(float(value) for value in population.state_size),
             "u_particle_count": population.count,
             "u_delta": float(delta),
             "u_time": float(time_seconds),
             "u_seed": int(population.seed),
-            "u_emitter_type": {"point": 0, "circle": 1, "rectangle": 2}.get(
-                str(settings["emitter_type"]), 0
+            "u_emitter_type": {
+                "point": 0,
+                "circle": 1,
+                "rectangle": 2,
+                "path": 3,
+                "video_luminance": 4,
+                "image_silhouette": 5,
+                "contour": 6,
+            }.get(str(settings["emitter_type"]), 0),
+            "u_source_enabled": int(
+                settings["emitter_type"] in {
+                    "video_luminance", "image_silhouette", "contour",
+                }
+                and self._active_emitter_source is not None
             ),
+            "u_source_map_mode": (
+                2 if settings["emitter_type"] == "contour"
+                else {
+                    "luminance": 0,
+                    "alpha": 1,
+                    "contour": 2,
+                }.get(str(settings["emitter_map_mode"]), 0)
+            ),
+            "u_emitter_threshold": float(settings["emitter_threshold"]),
+            "u_emitter_sample_attempts": int(settings["emitter_sample_attempts"]),
+            "u_emitter_sample_interval": float(settings["emitter_sample_interval"]),
+            "u_path_point_count": len(self.path_signature or ()),
+            "u_reform_strength": float(settings["reform_strength"]),
+            "u_source_texel_size": (
+                1.0 / max(1, int(self._active_emitter_source.size[0]))
+                if self._active_emitter_source is not None else 1.0,
+                1.0 / max(1, int(self._active_emitter_source.size[1]))
+                if self._active_emitter_source is not None else 1.0,
+            ),
+            "u_emitter_source_position": self._active_emitter_source_transform[0],
+            "u_emitter_source_scale": self._active_emitter_source_transform[1],
+            "u_emitter_source_rotation": self._active_emitter_source_transform[2],
             "u_emitter_center": center,
             "u_emitter_radius": float(settings["emitter_radius"]),
             "u_emitter_size": tuple(float(value) for value in settings["emitter_size"]),
             "u_direction": {
-                "radial": 0, "random": 1, "up": 2, "down": 3, "left": 4, "right": 5,
+                "radial": 0,
+                "random": 1,
+                "up": 2,
+                "down": 3,
+                "left": 4,
+                "right": 5,
+                "tangent": 6,
             }.get(str(settings["direction"]), 0),
             "u_lifetime": float(settings["lifetime"]),
             "u_speed": float(settings["speed"]) * (0.78 + population_index * 0.16),
@@ -501,6 +775,9 @@ class ParticleSystem2:
             write_index = 1 - population.index
             population.states[population.index].use(location=0)
             population.metadata[population.index].use(location=1)
+            population.targets[population.index].use(location=2)
+            (self._active_emitter_source or self.emitter_stub).use(location=3)
+            (self.path_texture or self.path_stub).use(location=4)
             population.framebuffers[write_index].use()
             self.ctx.viewport = (0, 0, *population.state_size)
             self._simulation_uniforms(population, settings, time_seconds, delta, index)
@@ -554,6 +831,10 @@ class ParticleSystem2:
             height: int,
             time_seconds: float,
             particle_limit: int | None = None,
+            emitter_source: moderngl.Texture | None = None,
+            emitter_source_transform: tuple[
+                tuple[float, float], tuple[float, float], float
+            ] | None = None,
     ) -> moderngl.Texture | None:
         normalized = normalize_settings("particle_system_2", settings)
         requested = int(normalized["particle_count"])
@@ -563,10 +844,20 @@ class ParticleSystem2:
         if requested <= 0:
             return None
 
+        self._ensure_path_texture(normalized["path_points"])
+        self._active_emitter_source = emitter_source
+        self._active_emitter_source_transform = (
+            emitter_source_transform
+            or ((0.5, 0.5), (1.0, 1.0), 0.0)
+        )
+        path_signature = self.path_signature or ()
         self._ensure_populations(
             requested,
             min(int(normalized["population_count"]), requested),
             int(normalized["seed"]),
+            str(normalized["emitter_type"]),
+            str(normalized["emitter_source_id"]),
+            path_signature,
         )
         self._ensure_trails(width, height)
 
@@ -626,3 +917,8 @@ class ParticleSystem2:
         self.simulation_program.release()
         self.particle_program.release()
         self.trail_program.release()
+        if self.path_texture is not None:
+            self.path_texture.release()
+            self.path_texture = None
+        self.path_stub.release()
+        self.emitter_stub.release()

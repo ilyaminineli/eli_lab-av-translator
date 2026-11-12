@@ -790,6 +790,11 @@ class Compositor:
         particle_outputs: dict[str, moderngl.Texture] = {}
         particle_budget = self.MAX_TOTAL_PARTICLES
         active_particle_systems = 0
+        source_layers = {
+            layer.source_id: layer
+            for layer in ordered_layers
+            if layer.source_id
+        }
 
         # Simulation state and output targets belong to this Compositor's GL context.
         # Particle allocation is deterministic by layer order and globally bounded.
@@ -823,12 +828,28 @@ class Compositor:
                                    particle_layer.name)
                     continue
             try:
+                emitter_source_id = str(settings["emitter_source_id"])
+                emitter_source = (
+                    self.source_textures.get(emitter_source_id)
+                    if emitter_source_id else None
+                )
+                source_layer = source_layers.get(emitter_source_id)
+                source_transform = (
+                    (
+                        tuple(float(value) for value in source_layer.position),
+                        tuple(float(value) for value in source_layer.scale),
+                        float(source_layer.rotation),
+                    )
+                    if source_layer is not None else None
+                )
                 texture = system.render(
                     settings,
                     width,
                     height,
                     time_seconds,
                     particle_limit=requested,
+                    emitter_source=emitter_source,
+                    emitter_source_transform=source_transform,
                 )
             except Exception:
                 _LOG.exception("Particle System 2.0 render failed for %s", particle_layer.name)
