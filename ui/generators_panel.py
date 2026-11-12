@@ -623,7 +623,7 @@ class GeneratorsPanel(QWidget):
             "text_animation": str(self.text_animation_combo.currentData() or "none"),
             "text_animation_speed": self.text_animation_speed_slider.value() / 100.0,
             "text_animation_amount": (
-                self.text_animation_amount_slider.value() / 1000.0
+                    self.text_animation_amount_slider.value() / 1000.0
             ),
             "text_animation_columns": self.text_animation_columns_slider.value(),
         })

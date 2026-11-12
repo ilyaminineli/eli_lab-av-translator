@@ -91,7 +91,7 @@ class GeneratorRasterService(QObject):
                     if generator_type != "text":
                         continue
                     self._latest_revision[layer_id] = (
-                        self._latest_revision.get(layer_id, 0) + 1
+                            self._latest_revision.get(layer_id, 0) + 1
                     )
                     self._pending_requests.pop(layer_id, None)
                     self._deferred.add(layer_id)
@@ -111,7 +111,7 @@ class GeneratorRasterService(QObject):
                 self._frozen.add(layer_id)
                 if layer_id in self._latest_snapshots:
                     self._latest_revision[layer_id] = (
-                        self._latest_revision.get(layer_id, 0) + 1
+                            self._latest_revision.get(layer_id, 0) + 1
                     )
                     self._pending_requests.pop(layer_id, None)
                     self._deferred.add(layer_id)
@@ -271,9 +271,9 @@ class GeneratorRasterService(QObject):
     def is_current(self, layer_id: str, revision: int, fingerprint: str) -> bool:
         with self._lock:
             return (
-                not self._closed
-                and self._latest_revision.get(layer_id) == revision
-                and self._latest_fingerprint.get(layer_id) == fingerprint
+                    not self._closed
+                    and self._latest_revision.get(layer_id) == revision
+                    and self._latest_fingerprint.get(layer_id) == fingerprint
             )
 
     def _worker_loop(self) -> None:
@@ -314,9 +314,9 @@ class GeneratorRasterService(QObject):
             except Exception as exc:
                 with self._condition:
                     current = (
-                        not self._closed
-                        and self._latest_revision.get(layer_id) == revision
-                        and self._latest_fingerprint.get(layer_id) == expected_fingerprint
+                            not self._closed
+                            and self._latest_revision.get(layer_id) == revision
+                            and self._latest_fingerprint.get(layer_id) == expected_fingerprint
                     )
                     if self._active_requests.get(layer_id) == (revision, expected_fingerprint):
                         self._active_requests.pop(layer_id, None)
@@ -329,9 +329,9 @@ class GeneratorRasterService(QObject):
                 continue
             with self._condition:
                 current = (
-                    not self._closed
-                    and self._latest_revision.get(layer_id) == revision
-                    and self._latest_fingerprint.get(layer_id) == expected_fingerprint
+                        not self._closed
+                        and self._latest_revision.get(layer_id) == revision
+                        and self._latest_fingerprint.get(layer_id) == expected_fingerprint
                 )
                 if self._active_requests.get(layer_id) == (revision, expected_fingerprint):
                     self._active_requests.pop(layer_id, None)
@@ -359,9 +359,9 @@ class GeneratorRasterService(QObject):
     def invalidate_missing(self, active_layer_ids: set[str]) -> None:
         with self._condition:
             known_ids = (
-                set(self._latest_revision)
-                | set(self._latest_snapshots)
-                | set(self._completed)
+                    set(self._latest_revision)
+                    | set(self._latest_snapshots)
+                    | set(self._completed)
             )
             for layer_id in known_ids - active_layer_ids:
                 self._latest_revision[layer_id] = self._latest_revision.get(layer_id, 0) + 1

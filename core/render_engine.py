@@ -184,14 +184,14 @@ class RenderEngine:
             # current; otherwise an old completion could briefly replace newer text.
             pending = self._pending_generator_textures.pop(layer.id, None)
             pending_is_current = (
-                pending is not None
-                and pending[1] == fingerprint
-                and (
-                    self.raster_service is None
-                    or self.raster_service.is_current(
+                    pending is not None
+                    and pending[1] == fingerprint
+                    and (
+                            self.raster_service is None
+                            or self.raster_service.is_current(
                         layer.id, pending[0], pending[1]
                     )
-                )
+                    )
             )
             if (
                     pending_is_current
