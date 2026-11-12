@@ -2218,13 +2218,17 @@ class Application:
     def schedule_performance_scene(
             self,
             scene_id: str,
-            morph_seconds: float = 0.0,
+            morph_seconds: float | None = None,
     ) -> bool:
         """Recall a scene immediately or at the selected internal/external clock boundary."""
         scene = self.performance_scenes.get(str(scene_id))
         if scene is None:
             return False
-        duration = max(0.0, min(60.0, float(morph_seconds)))
+        requested_duration = (
+            scene.transition.get("duration", 0.0)
+            if morph_seconds is None else morph_seconds
+        )
+        duration = max(0.0, min(60.0, float(requested_duration)))
         if scene.quantization == "immediate":
             return self.recall_performance_scene(scene.scene_id, morph_seconds=duration)
 
@@ -2358,6 +2362,7 @@ class Application:
         removed = self.performance_scenes.pop(scene_id, None) is not None
         self._pending_scene_morph_seconds.pop(scene_id, None)
         self._pending_external_scene_recall.pop(scene_id, None)
+        self._midi_scene_trigger_state.pop(f"scene.trigger.{scene_id}", None)
         if removed:
             self.events.publish("performance.scene_bank.updated", scene_id=scene_id)
         return removed
@@ -2772,6 +2777,9 @@ class Application:
     def load_project(self, path: str | Path) -> None:
         if self.performance_mode.enabled:
             self.stop_performance_mode()
+        self._pending_scene_morph_seconds.clear()
+        self._pending_external_scene_recall.clear()
+        self._active_scene_morph = None
         composition, deck_states = self.project_manager.load(path)
         self.control_events.clear()
         self.performance_control.reset()
