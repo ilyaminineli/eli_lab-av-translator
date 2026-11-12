@@ -46,6 +46,7 @@ class GeneratorRasterService(QObject):
         self._max_text_update_hz = 4.0
         self._next_text_update_at = 0.0
         self._keep_last_valid_texture = True
+        self._cache_cleanup_pending = False
         self._closed = False
         self._worker_rasterizer = GeneratorRasterizer()
         self._worker_thread = threading.Thread(
@@ -278,8 +279,16 @@ class GeneratorRasterService(QObject):
 
     def _worker_loop(self) -> None:
         while True:
+            cache_layer_ids: set[str] | None = None
             with self._condition:
                 while not self._closed:
+                    if self._cache_cleanup_pending:
+                        # The rasterizer cache is worker-owned. Snapshot the
+                        # surviving layer IDs here so eviction happens on the
+                        # same thread that reads/writes its pixel arrays.
+                        cache_layer_ids = set(self._latest_snapshots)
+                        self._cache_cleanup_pending = False
+                        break
                     now = time.monotonic()
                     selected_layer = None
                     for candidate_id, candidate_job in self._pending_requests.items():
@@ -293,13 +302,21 @@ class GeneratorRasterService(QObject):
                     else:
                         self._condition.wait(max(0.001, self._next_text_update_at - now))
                 if self._closed:
+                    # Release all retained CPU pixel arrays on the owner thread.
+                    self._worker_rasterizer.clear()
                     return
-                layer_id = selected_layer
-                job = self._pending_requests.pop(layer_id)
-                revision, expected_fingerprint, generator_type, settings, width, height = job
-                self._active_requests[layer_id] = (revision, expected_fingerprint)
-                if generator_type == "text":
-                    self._next_text_update_at = time.monotonic() + 1.0 / self._max_text_update_hz
+                if cache_layer_ids is None:
+                    layer_id = selected_layer
+                    job = self._pending_requests.pop(layer_id)
+                    revision, expected_fingerprint, generator_type, settings, width, height = job
+                    self._active_requests[layer_id] = (revision, expected_fingerprint)
+                    if generator_type == "text":
+                        self._next_text_update_at = (
+                            time.monotonic() + 1.0 / self._max_text_update_hz
+                        )
+            if cache_layer_ids is not None:
+                self._worker_rasterizer.remove_missing(cache_layer_ids)
+                continue
             self.raster_started.emit(layer_id, revision)
             try:
                 fingerprint, pixels = self._worker_rasterizer.render_settings(
@@ -354,6 +371,7 @@ class GeneratorRasterService(QObject):
             self._deferred.discard(layer_id)
             self._frozen.discard(layer_id)
             self._phase.pop(layer_id, None)
+            self._cache_cleanup_pending = True
             self._condition.notify_all()
 
     def invalidate_missing(self, active_layer_ids: set[str]) -> None:
@@ -374,6 +392,8 @@ class GeneratorRasterService(QObject):
                 self._deferred.discard(layer_id)
                 self._frozen.discard(layer_id)
                 self._phase.pop(layer_id, None)
+            if known_ids - active_layer_ids:
+                self._cache_cleanup_pending = True
             self._condition.notify_all()
 
     def shutdown(self) -> None:
