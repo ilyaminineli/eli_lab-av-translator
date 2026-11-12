@@ -159,7 +159,18 @@ class PerformanceScene:
         self.label = str(self.label).strip()[:80] or self.scene_id
         if self.quantization not in {"immediate", "beat", "bar", "phrase"}:
             self.quantization = "bar"
-        self.cue = str(self.cue).strip()[:128]
+        self.cue = str(self.cue).strip()
+        if self.cue and (
+                len(self.cue) > 64
+                or any(
+                    not (character.isalnum() or character in "_.:-")
+                    for character in self.cue
+                )
+        ):
+            raise ValueError(
+                "OSC scene cue must be 1–64 characters using letters, numbers, "
+                "period, underscore, colon or hyphen."
+            )
         if not self.scene_id or not isinstance(self.snapshot, dict):
             raise ValueError("Performance scene requires an ID and snapshot object.")
 
@@ -186,9 +197,9 @@ class PerformanceScene:
         curve = str(raw_transition.get("curve", "smoothstep"))
         if curve not in {"linear", "smoothstep", "ease_in", "ease_out"}:
             curve = "smoothstep"
-        discrete = str(raw_transition.get("discrete", "cut"))
-        if discrete not in {"cut", "switch_midpoint", "fade_through_black"}:
-            discrete = "switch_midpoint"
+        # B1 implements a deterministic cut. Future milestones may add
+        # midpoint switching and fade-through-black semantics.
+        discrete = "cut"
         self.transition = {
             "duration": max(0.0, min(60.0, duration)),
             "curve": curve,
