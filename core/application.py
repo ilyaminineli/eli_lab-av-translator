@@ -105,11 +105,14 @@ class Application:
         self._midi_learn_last_event = ""
         self.performance_scenes: dict[str, PerformanceScene] = {}
         self._pending_scene_morph_seconds: dict[str, float] = {}
+        self._pending_external_scene_recall: dict[str, dict[str, float]] = {}
         self._active_scene_morph: SceneMorph | None = None
+        self._midi_scene_trigger_state: dict[str, bool] = {}
         self.midi_input = MIDIInputService(self._handle_midi_event)
         self.transport = InternalTransport()
         self._external_clock_bar_at: float | None = None
         self.scene_profiles = SceneProfileRegistry()
+        self.active_palette = palette_names()[0]
         self.modulation = ModulationMatrix()
         self.modulator_bank = ModulatorBank()
         self.modulator_bank_engine = ModulatorBankEngine()
@@ -335,7 +338,9 @@ class Application:
         self._midi_learn_last_event = ""
         self.performance_scenes.clear()
         self._pending_scene_morph_seconds.clear()
+        self._pending_external_scene_recall.clear()
         self._active_scene_morph = None
+        self._midi_scene_trigger_state.clear()
         self._clear_overlays()
         for deck in self.decks.values():
             deck.close()
@@ -360,6 +365,7 @@ class Application:
         self.modulator_bank_engine.reset()
         self.performance_modifier_engine.reset()
         self.scene_profiles = SceneProfileRegistry()
+        self.active_palette = palette_names()[0]
         self.audio_capture.stop()
         self.audio_capture.update_settings(AudioAnalysisSettings())
         self._audio_sources.clear()
