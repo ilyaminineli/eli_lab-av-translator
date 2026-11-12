@@ -163,7 +163,9 @@ class PerformanceScene:
         if self.cue and (
                 len(self.cue) > 64
                 or any(
-                    character not in "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.:-"
+                    character not in (
+                        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.:-"
+                    )
                     for character in self.cue
                 )
         ):
