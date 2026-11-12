@@ -87,16 +87,21 @@ class DeckCard(QGroupBox):
 
         controls = QHBoxLayout()
         controls.setSpacing(4)
+        self.load_button = QPushButton("LOAD")
         self.play_button = QPushButton("PLAY")
         self.pause_button = QPushButton("PAUSE")
         self.hold_button = QPushButton("HOLD")
         self.restart_button = QPushButton("RESTART")
         self.stop_button = QPushButton("STOP")
+        self.load_button.setToolTip("Choose a clip in the Media Library for this deck")
         self.play_button.setToolTip("Start or resume this deck")
         self.pause_button.setToolTip("Pause playback at the current position")
         self.hold_button.setToolTip("Freeze the currently presented frame")
         self.restart_button.setToolTip("Restart playback from the segment in-point")
         self.stop_button.setToolTip("Stop playback and clear the displayed frame")
+        self.load_button.clicked.connect(
+            lambda: self.action_requested.emit(deck_id, "load")
+        )
         self.play_button.clicked.connect(
             lambda: self.action_requested.emit(deck_id, "play")
         )
@@ -111,6 +116,7 @@ class DeckCard(QGroupBox):
             lambda: self.action_requested.emit(deck_id, "stop")
         )
         for button in (
+                self.load_button,
                 self.play_button,
                 self.pause_button,
                 self.hold_button,
@@ -186,6 +192,8 @@ class DeckCard(QGroupBox):
             state = f"ERROR · {error}"
         elif held:
             state = "HELD · FRAME FROZEN"
+        elif playing and not has_frame:
+            state = "LOADING"
         elif playing:
             state = "PLAYING"
         elif paused:
@@ -233,6 +241,7 @@ class DeckCard(QGroupBox):
         )
 
         loaded = bool(path)
+        self.load_button.setEnabled(True)
         self.play_button.setEnabled(loaded)
         self.pause_button.setEnabled(bool(playing))
         self.hold_button.setEnabled(bool(loaded and has_frame))
