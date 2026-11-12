@@ -9,7 +9,7 @@ APP_VERSION = "0.5.0"
 APP_AUTHOR = "Ilya Minin (Eli)"
 APP_STUDIO = "eli_lab"
 APP_COPYRIGHT = "© 2026 Ilya Minin (Eli) · eli_lab"
-APP_REPOSITORY_URL = "https://github.com/ilyaminineli/eli_lab-av-translation"
+APP_REPOSITORY_URL = "https://github.com/ilyaminineli/eli_lab-av-translator"
 
 DEFAULT_CANVAS_WIDTH = 1920
 DEFAULT_CANVAS_HEIGHT = 1080
@@ -24,11 +24,11 @@ VIDEO_DECK_IDS = ("deck_a", "deck_b", "deck_c", "deck_d")
 
 
 def _runtime_root() -> Path:
-    """Locate bundled read-only data in source, Nuitka standalone or Nuitka onefile mode.
+    """Locate bundled read-only data in source or the frozen application runtime.
 
-    Nuitka onefile extracts embedded data into a temporary runtime directory. That
-    directory is different from the directory containing the original executable.
-    User-writable settings, logs and databases must never be placed there.
+    Packaged resources are read-only and separate from the executable's original
+    directory. User-writable settings, logs and databases must never be placed in
+    the temporary one-file extraction directory.
     """
     compiled = globals().get("__compiled__")
     runtime_dir = getattr(compiled, "python_runtime_dir", None)
