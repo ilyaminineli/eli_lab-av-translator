@@ -59,6 +59,8 @@ Reset and resize clear the entire ring. Frozen history is not overwritten. Feedb
 
 - No CPU image copies or texture readbacks in the feedback loop.
 - Feedback buffers are owned and released by the corresponding `Compositor` and GL context.
+- The five-texture history ring is allocated lazily on first feedback use; when allocated, it is resized with that output and released with its GL context.
+- Raw RGBA8 history storage is approximately 39.6 MiB per 1920×1080 output or 158.2 MiB per 3840×2160 output, before driver overhead. Preview and projector each allocate their own ring only when feedback is enabled.
 - History length is fixed and resize-aware; no unbounded frame retention.
 - The displacement source is an existing compositor texture. It is never uploaded a second time for use as a map.
 - The feedback pass is bypassed when disabled or when amount is zero.
