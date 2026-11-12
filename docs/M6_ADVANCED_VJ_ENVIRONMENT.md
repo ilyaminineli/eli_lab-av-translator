@@ -1,6 +1,6 @@
 # M6 — Advanced VJ Environment
 
-**Status:** M6-A1 and M6-B1 are merged to `main`. M6-C1 is in draft PR #24 on `m6/c1-advanced-visual-transformations`; M6-D1/D2 Particle System 2.0 is in draft PR #25 stacked on C1. Quality workflow #143 passed Python compilation and Ruff on the current D1/D2 head. Target-GPU shader and visual validation remains open. The remaining A/B/C/D slices are open.  
+**Status:** M6-A1 and M6-B1 are merged to `main`. M6-C1 is in draft PR #24 on `m6/c1-advanced-visual-transformations`; M6-D1/D2 Particle System 2.0 is in draft PR #25 stacked on C1; M6-E1 typography is in draft PR #26 on `m6/e1-typographic-instrument`. E1 covers rich runs, practical vertical layouts, text paths and texture-space GPU animation. E2 glyph instancing and E3 presets/text feedback remain future slices. Target-GPU shader and visual validation for C1/D1/D2/E1 remains open. Remaining A/B/C/D work is open.  
 **First workstream:** A. A proper live mixer.  
 **Design references:** live-mixer / media-bin workflows in Resolume Arena, VDMX media bins and TouchDesigner performance interfaces. These are interaction references, not a requirement to clone another product's UI.
 
