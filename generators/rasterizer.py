@@ -91,34 +91,36 @@ class GeneratorRasterizer:
         if cached and cached[0] == fingerprint:
             return cached
 
-        previous_size = (self.width, self.height)
-        self.width, self.height = target_width, target_height
+        settings = normalize_settings(generator_type, raw_settings)
+        image = QImage(
+            target_width,
+            target_height,
+            QImage.Format.Format_RGBA8888,
+        )
+        image.fill(QColor(0, 0, 0, 0))
+        painter = QPainter(image)
         try:
-            settings = normalize_settings(generator_type, raw_settings)
-            image = QImage(
-                self.width,
-                self.height,
-                QImage.Format.Format_RGBA8888,
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
+            painter.setRenderHint(QPainter.RenderHint.TextAntialiasing, True)
+            # Draw in the canonical 1600×900 coordinate space, then scale the
+            # painter as a whole. Font sizes, margins, strokes and collage
+            # placement therefore retain the same proportions in draft preview.
+            painter.scale(
+                target_width / self.width,
+                target_height / self.height,
             )
-            image.fill(QColor(0, 0, 0, 0))
-            painter = QPainter(image)
-            try:
-                painter.setRenderHint(QPainter.RenderHint.Antialiasing, True)
-                painter.setRenderHint(QPainter.RenderHint.TextAntialiasing, True)
-                if generator_type == "geometry":
-                    self._draw_geometry(painter, settings)
-                elif generator_type == "text":
-                    self._draw_text(painter, settings)
-                elif generator_type == "waveform":
-                    self._draw_waveform(painter, settings)
-            finally:
-                painter.end()
-            rgba = image.bits().tobytes()
-            pixels = np.frombuffer(rgba, dtype=np.uint8).reshape(
-                self.height, self.width, 4
-            ).copy()
+            if generator_type == "geometry":
+                self._draw_geometry(painter, settings)
+            elif generator_type == "text":
+                self._draw_text(painter, settings)
+            elif generator_type == "waveform":
+                self._draw_waveform(painter, settings)
         finally:
-            self.width, self.height = previous_size
+            painter.end()
+        rgba = image.bits().tobytes()
+        pixels = np.frombuffer(rgba, dtype=np.uint8).reshape(
+            target_height, target_width, 4
+        ).copy()
 
         result = (fingerprint, pixels)
         self._cache[layer_id] = result
