@@ -159,8 +159,9 @@ class PerformanceControlPanel(QWidget):
         scene_form = QFormLayout(self.performance_scene_group)
         self.performance_scene_name = QLineEdit("Scene 01")
         self.performance_scene_cue = QLineEdit()
-        self.performance_scene_cue.setPlaceholderText("Optional OSC cue name")
+        self.performance_scene_cue.setPlaceholderText("OSC cue · letters, numbers, . _ : -")
         self.performance_scene_cue.setToolTip(
+            "Use 1–64 letters, numbers, period, underscore, colon or hyphen. "
             "A matching /eli_lab/v1/cue/trigger message recalls this VJ scene."
         )
         self.performance_scene_quantization = QComboBox()
