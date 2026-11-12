@@ -71,8 +71,13 @@ def _styles(settings: dict[str, Any]) -> list[dict[str, Any]]:
     return result or [{**base, "text": str(settings.get("text", ""))}]
 
 
+def _color(value: str, fallback: str = "#F2EEE6") -> QColor:
+    color = QColor(str(value))
+    return color if color.isValid() else QColor(fallback)
+
+
 def _pen(color: str, width: float) -> QPen:
-    pen = QPen(QColor(color))
+    pen = QPen(_color(color, "#211B2A"))
     pen.setWidthF(max(0.0, float(width)))
     pen.setCapStyle(Qt.PenCapStyle.RoundCap)
     pen.setJoinStyle(Qt.PenJoinStyle.RoundJoin)
@@ -86,7 +91,7 @@ def _draw_path(
 ) -> None:
     stroke_width = max(0.0, float(style.get("stroke_width", 0.0)))
     stroke_color = str(style.get("stroke_color", "#211B2A"))
-    fill = QColor(str(style.get("color", "#F2EEE6")))
+    fill = _color(str(style.get("color", "#F2EEE6")))
     if bool(style.get("shadow", False)):
         shadow = QPainterPath(path)
         shadow.translate(5.0, 7.0)
@@ -175,8 +180,11 @@ def _draw_vertical(
     writing_mode: str,
 ) -> None:
     direction = -1.0 if writing_mode == "vertical_rl" else 1.0
-    column_step = max(18.0, float(settings.get("font_size", 148)) * 1.35)
-    cell_step = max(18.0, float(settings.get("font_size", 148)) * 1.08)
+    maximum_size = max(
+        _font(style, settings).pixelSize() for style in styles
+    )
+    column_step = max(18.0, float(maximum_size) * 1.35)
+    cell_step = max(18.0, float(maximum_size) * 1.08)
     column = 0
     x_origin = width - 96.0 if direction < 0 else 96.0
     x = x_origin
