@@ -1,6 +1,6 @@
 # M6 — Advanced Performance Controls
 
-**Status:** Initial Performance Macro System implementation is on `m6/performance-macros`. It is not merged to `main` yet. The normal Windows Quality workflow checks Python compilation and Ruff; keyboard, MIDI, OSC, audio-device and live GPU behaviour still require target-machine validation.
+**Status:** Performance Macro System implementation is merged to `main` in [PR #30](https://github.com/ilyaminineli/eli_lab-av-translator/pull/30). The normal Windows Quality workflow checks Python compilation and Ruff; keyboard, MIDI, OSC, audio-device and live GPU behaviour still require target-machine validation. The [Live Performance Timeline](M6_LIVE_PERFORMANCE_TIMELINE.md) is now merged as PR #31 and uses these macros for scheduled modulation events.
 
 ## A. Performance Macro System
 
