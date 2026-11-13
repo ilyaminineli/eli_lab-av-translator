@@ -146,7 +146,11 @@ PERFORMANCE_MODIFIER_TARGETS: dict[str, ModifierTargetSpec] = {
         "generator.particle_force_strength", "Particle force strength", 0.0, 4.0, "generator"
     ),
     "generator.particle_reform_strength": ModifierTargetSpec(
-        "generator.particle_reform_strength", "Particle source reform strength", 0.0, 4.0, "generator"
+        "generator.particle_reform_strength",
+        "Particle source reform strength",
+        0.0,
+        4.0,
+        "generator",
     ),
     "overlay.playback_speed": ModifierTargetSpec(
         "overlay.playback_speed", "Overlay playback speed", 0.1, 4.0, "overlay"
