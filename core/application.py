@@ -179,6 +179,7 @@ class Application:
         self.performance_manager = PerformanceManager()
         self.automation = AutomationDirector()
         self.automation.generator_settings_changed = self._request_generator_raster
+        self.automation.palette_changed = self._set_automation_palette
         self.effects = EffectSettings()
         self.decks: dict[str, VideoDeck] = {
             deck_id: VideoDeck(deck_id) for deck_id in VIDEO_DECK_IDS
@@ -195,6 +196,18 @@ class Application:
         install_default_performance_macro_modifiers(self.composition.layers)
         self.current_project_path: Path | None = None
         self.window: Any | None = None
+
+    def _set_automation_palette(self, palette_name: str) -> None:
+        """Keep the scene palette in sync with the constrained automation director."""
+        selected = str(palette_name)
+        if selected not in palette_names():
+            return
+        self.active_palette = selected
+        self.events.publish(
+            "performance.palette.changed",
+            palette=selected,
+            source="automation",
+        )
 
     def _request_generator_raster(self, layer: Layer) -> None:
         """Advance the shared render revision after a live generator mutation."""
@@ -836,6 +849,7 @@ class Application:
             cutoff=cutoff,
             intensity=float(self.performance_control.intensity),
             bar_index=int(self.performance_control.bar_index),
+            macro_values=self.performance_macro_values(),
         )
 
         if mode_active and event.kind in {"transport.start", "clock.bar"}:
@@ -3361,6 +3375,7 @@ class Application:
         self.generator_raster_service.invalidate_missing(set())
         self.composition = composition
         self.layer_manager = LayerManager(self.composition, self.events)
+        self.automation.update_layers(self.composition.layers)
         install_default_performance_macro_modifiers(self.composition.layers)
         for layer in self.composition.layers:
             if layer.source_type == "overlay":
