@@ -302,7 +302,8 @@ class PerformanceTimeline:
         return list(self.events)
 
     def _sort_events(self) -> None:
-        self.events.sort(key=lambda item: (item.bar, item.beat, item.event_id))
+        # Python's sort is stable: events at the same beat retain insertion order.
+        self.events.sort(key=lambda item: (item.bar, item.beat))
 
     def add_event(
             self,
@@ -388,6 +389,24 @@ class PerformanceTimeline:
         self.last_error = ""
         self.state_revision += 1
 
+    def synchronize_position(
+            self,
+            bar: int,
+            beat: int,
+            beats_per_bar: int = 4,
+    ) -> None:
+        """Prime a running show at a received clock position without replaying earlier bars."""
+        bar_value = max(1, min(MAX_TIMELINE_BAR, int(bar)))
+        beat_value = max(1, min(max(1, min(16, int(beats_per_bar))), int(beat)))
+        position = (bar_value, beat_value)
+        self._fired_ids = {
+            event.event_id for event in self.events
+            if event.position < position
+        }
+        self._last_position = position
+        self.current_bar, self.current_beat = position
+        self.state_revision += 1
+
     def disarm(self, reset_cursor: bool = False) -> None:
         changed = self.armed
         self.armed = False
@@ -451,7 +470,7 @@ class PerformanceTimeline:
             item for item in self.events
             if item.enabled
             and item.event_id not in self._fired_ids
-            and item.position == current
+            and self._last_position < item.position <= current
             and item.beat <= max(1, min(16, int(beats_per_bar)))
         ]
         for item in due:
