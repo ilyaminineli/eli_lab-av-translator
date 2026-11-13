@@ -4,6 +4,7 @@ import math
 import unicodedata
 from bisect import bisect_right
 from typing import Any
+
 from PySide6.QtCore import QPointF, QRectF, Qt
 from PySide6.QtGui import QColor, QFont, QFontMetricsF, QPainter, QPainterPath, QPen
 
