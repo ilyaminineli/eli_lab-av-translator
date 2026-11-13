@@ -399,7 +399,6 @@ class Application:
         self.composition = Composition()
         self.layer_manager = LayerManager(self.composition, self.events)
         self._create_default_layers()
-        self.performance_macro_engine.reset()
         install_default_performance_macro_modifiers(self.composition.layers)
         self.effects.reset()
         self.control_events.clear()
@@ -3032,7 +3031,10 @@ class Application:
         self.modulator_bank_engine.reset()
         self.performance_modifier_engine.reset()
         self._modulation_base_values.clear()
+        self.performance_macro_engine.reset()
         performance_settings = app_state.get("performance_settings", {})
+        if not isinstance(performance_settings, dict):
+            performance_settings = {}
         self.performance_mode.plan = PerformanceModePlan()
         if isinstance(performance_settings, dict):
             if isinstance(performance_settings.get("performance_mode_plan"), dict):
