@@ -340,15 +340,75 @@ class AutomationDirector:
         self.last_action = f"No readable footage found for {deck_id.upper()}"
         return False
 
-    def _randomize_layout(self) -> None:
-        # Auto Mode randomizes video layouts without disturbing authored generator
-        # typography and procedural graphics.
+    def update_layers(self, layers: list[Layer]) -> None:
+        """Rebind after scene recall replaces the Composition object."""
+        self._layers = layers
+        valid_ids = {layer.id for layer in layers}
+        if self._director.anchor_layer_id not in valid_ids:
+            self._director.reset(self.settings.palette_memory_phrases)
+        self._peak_particle_base = {
+            layer_id: state
+            for layer_id, state in self._peak_particle_base.items()
+            if layer_id in valid_ids
+        }
+        self._layout_morphs = {
+            layer_id: state
+            for layer_id, state in self._layout_morphs.items()
+            if layer_id in valid_ids
+        }
+
+    @property
+    def _uses_constrained_generative_rules(self) -> bool:
+        return (
+            self.settings.performance_style == "generative"
+            and self.settings.constrained_generative
+        )
+
+    def _select_variation_layers(
+            self,
+            prefer_particles: bool = False,
+    ) -> tuple[str, ...] | None:
+        if not self._uses_constrained_generative_rules:
+            return None
+        return self._director.select_layers(
+            self._layers,
+            self.settings.max_layers_per_variation,
+            self.rng,
+            keep_anchor=self.settings.keep_visual_anchor,
+            prefer_particles=prefer_particles,
+        )
+
+    def _choose_palette(self) -> str | None:
+        selected = self._director.choose_palette(palette_names(), self.rng)
+        if selected and callable(self.palette_changed):
+            self.palette_changed(selected)
+        return selected
+
+    def _randomize_layout(
+            self,
+            layer_ids: Iterable[str] | None = None,
+            now: float | None = None,
+    ) -> int:
+        # Only selected video layers move in constrained mode. The director's
+        # protected anchor remains untouched, including its background source.
+        allowed = set(layer_ids) if layer_ids is not None else None
+        constrained = self._uses_constrained_generative_rules
+        if constrained and allowed is None:
+            allowed = set(self._select_variation_layers() or ())
+        anchor_id = self._director.choose_anchor(
+            self._layers,
+            enabled=constrained and self.settings.keep_visual_anchor,
+        )
         active = [
             layer for layer in self._layers
-            if layer.source_type == "video" and not layer.locked
+            if layer.source_type == "video"
+            and not layer.locked
+            and layer.visible
+            and (allowed is None or layer.id in allowed)
+            and (not constrained or layer.id != anchor_id)
         ]
         if not active:
-            return
+            return 0
         patterns = [
             [(0.25, 0.25, 0.5), (0.75, 0.25, 0.5), (0.25, 0.75, 0.5), (0.75, 0.75, 0.5)],
             [(0.5, 0.5, 1.0), (0.78, 0.22, 0.28), (0.78, 0.78, 0.28), (0.22, 0.78, 0.28)],
@@ -358,20 +418,160 @@ class AutomationDirector:
             [(0.5, 0.5, 0.82), (0.5, 0.5, 0.62), (0.5, 0.5, 0.40), (0.5, 0.5, 0.22)],
         ]
         pattern = self.rng.choice(patterns)
+        stamp = time.monotonic() if now is None else float(now)
+        depth = self._macro_values.get("depth", 0.0)
+        duration = self._director.transition_duration(
+            self._performance_section,
+            self.rng,
+            slow_breakdowns=self.settings.slow_breakdown_transitions,
+            normal_min=self.settings.layout_transition_min_seconds,
+            normal_max=self.settings.layout_transition_max_seconds,
+            breakdown_min=self.settings.breakdown_transition_min_seconds,
+            breakdown_max=self.settings.breakdown_transition_max_seconds,
+            depth=depth,
+        ) if constrained else 0.0
+        chaos = self._macro_values.get("chaos", 0.0)
         for index, layer in enumerate(active):
             x, y, size = pattern[index % len(pattern)]
-            jitter = 0.035
-            layer.position = (
+            jitter = 0.035 + 0.055 * chaos
+            target_position = (
                 max(0.0, min(1.0, x + self.rng.uniform(-jitter, jitter))),
                 max(0.0, min(1.0, y + self.rng.uniform(-jitter, jitter))),
             )
-            scale = max(0.12, size * self.rng.uniform(0.88, 1.12))
-            layer.scale = (scale, scale)
-            layer.rotation = self.rng.uniform(-5.0, 5.0)
-            layer.opacity = self.rng.uniform(0.78, 1.0)
-            layer.blend_mode = self.rng.choice(
+            target_scale = max(0.12, size * self.rng.uniform(0.88, 1.12))
+            target_rotation = self.rng.uniform(-5.0, 5.0) * (1.0 + chaos * 2.0)
+            target_opacity = self.rng.uniform(0.78, 1.0)
+            target_blend = self.rng.choice(
                 ("normal", "normal", "screen", "add", "multiply", "difference")
             )
+            if constrained:
+                self._layout_morphs[layer.id] = {
+                    "started_at": stamp,
+                    "duration": duration,
+                    "start_position": tuple(layer.position),
+                    "end_position": target_position,
+                    "start_scale": float(layer.scale[0]),
+                    "end_scale": target_scale,
+                    "start_rotation": float(layer.rotation),
+                    "end_rotation": target_rotation,
+                    "start_opacity": float(layer.opacity),
+                    "end_opacity": target_opacity,
+                    "end_blend_mode": target_blend,
+                }
+            else:
+                layer.position = target_position
+                layer.scale = (target_scale, target_scale)
+                layer.rotation = target_rotation
+                layer.opacity = target_opacity
+                layer.blend_mode = target_blend
+        if constrained:
+            self._director.mark_transition()
+        return len(active)
+
+    def _tick_layout_transitions(self, now: float) -> bool:
+        changed = False
+        for layer_id, morph in tuple(self._layout_morphs.items()):
+            layer = next(
+                (item for item in self._layers if item.id == layer_id),
+                None,
+            )
+            if layer is None:
+                self._layout_morphs.pop(layer_id, None)
+                continue
+            duration = max(0.001, float(morph["duration"]))
+            fraction = max(
+                0.0,
+                min(1.0, (float(now) - float(morph["started_at"])) / duration),
+            )
+            eased = fraction * fraction * (3.0 - 2.0 * fraction)
+            start_x, start_y = morph["start_position"]
+            end_x, end_y = morph["end_position"]
+            layer.position = (
+                float(start_x) + (float(end_x) - float(start_x)) * eased,
+                float(start_y) + (float(end_y) - float(start_y)) * eased,
+            )
+            scale = float(morph["start_scale"]) + (
+                float(morph["end_scale"]) - float(morph["start_scale"])
+            ) * eased
+            layer.scale = (scale, scale)
+            layer.rotation = float(morph["start_rotation"]) + (
+                float(morph["end_rotation"]) - float(morph["start_rotation"])
+            ) * eased
+            layer.opacity = float(morph["start_opacity"]) + (
+                float(morph["end_opacity"]) - float(morph["start_opacity"])
+            ) * eased
+            if fraction >= 1.0:
+                layer.blend_mode = str(morph["end_blend_mode"])
+                self._layout_morphs.pop(layer_id, None)
+            changed = True
+        return changed
+
+    def _apply_peak_particle_density(
+            self,
+            layer_ids: Iterable[str] | None,
+    ) -> bool:
+        allowed = set(layer_ids) if layer_ids is not None else set()
+        constrained = self._uses_constrained_generative_rules
+        if not constrained or not allowed:
+            allowed = set()
+        factor = self._director.particle_peak_factor(
+            self._performance_section,
+            self._performance_energy,
+            self._performance_intensity,
+            self._macro_values.get("density", 0.0),
+            self.settings.peak_particle_boost,
+        ) if constrained else 1.0
+        changed = False
+        for layer in self._layers:
+            stored = self._peak_particle_base.get(layer.id)
+            if stored is not None and (
+                    layer.id not in allowed
+                    or layer.locked
+                    or layer.generator_type not in {"particles", "particle_system_2"}
+                    or factor <= 1.0
+            ):
+                field, base_value = stored
+                values = normalize_settings(
+                    str(layer.generator_type),
+                    layer.generator_settings,
+                )
+                values[field] = base_value
+                layer.generator_settings = normalize_settings(
+                    str(layer.generator_type),
+                    values,
+                )
+                if self.generator_settings_changed is not None:
+                    self.generator_settings_changed(layer)
+                self._peak_particle_base.pop(layer.id, None)
+                changed = True
+            if (
+                    layer.id not in allowed
+                    or layer.locked
+                    or layer.source_type != "generator"
+                    or layer.generator_type not in {"particles", "particle_system_2"}
+                    or factor <= 1.0
+            ):
+                continue
+            kind = str(layer.generator_type)
+            field = "density" if kind == "particles" else "emission_rate"
+            values = normalize_settings(kind, layer.generator_settings)
+            if layer.id not in self._peak_particle_base:
+                self._peak_particle_base[layer.id] = (field, float(values[field]))
+            base_field, base_value = self._peak_particle_base[layer.id]
+            values[base_field] = base_value * factor
+            layer.generator_settings = normalize_settings(kind, values)
+            if self.generator_settings_changed is not None:
+                self.generator_settings_changed(layer)
+            changed = True
+        return changed
+
+    def _randomize_effects(self) -> None:
+        if self._effects is None:
+            return
+        names = [name for name in PRESETS if name != "Clean"]
+        self._effects.apply_preset(self.rng.choice(names))
+        if self._uses_constrained_generative_rules:
+            self._director.mark_effect_applied()
 
     def _randomize_effects(self) -> None:
         if self._effects is None:
@@ -379,19 +579,48 @@ class AutomationDirector:
         names = [name for name in PRESETS if name != "Clean"]
         self._effects.apply_preset(self.rng.choice(names))
 
-    def _randomize_generators(self) -> int:
+    def _randomize_generators(
+            self,
+            layer_ids: Iterable[str] | None = None,
+            *,
+            allow_effect_change: bool = True,
+    ) -> int:
         changed = 0
+        allowed = set(layer_ids) if layer_ids is not None else None
+        if self._uses_constrained_generative_rules and allowed is None:
+            allowed = set(self._select_variation_layers() or ())
+        constrained = self._uses_constrained_generative_rules
+        chaos = self._macro_values.get("chaos", 0.0)
+        density_macro = self._macro_values.get("density", 0.0)
+        decay = self._macro_values.get("decay", 0.0)
+        fragment = self._macro_values.get("fragment", 0.0)
+        palette_name = None
+        palette_values = None
+        if self.settings.randomize_palette:
+            if constrained:
+                palette_name = self._choose_palette()
+            else:
+                palette_name = self.rng.choice(palette_names())
+            if palette_name:
+                palette_values = palette_look(palette_name)
+
         for layer in self._layers:
-            if layer.locked or not layer.visible:
+            if (
+                    layer.locked
+                    or not layer.visible
+                    or (allowed is not None and layer.id not in allowed)
+            ):
                 continue
 
             if layer.source_type == "generator" and layer.generator_type in GENERATOR_TYPES:
                 kind = layer.generator_type
                 values = normalize_settings(kind, layer.generator_settings)
                 updated = False
-                if self.settings.randomize_palette:
-                    from generators.palettes import random_palette_look
-                    values.update(random_palette_look(self.rng))
+                if palette_values is not None:
+                    values.update({
+                        key: palette_values[key]
+                        for key in ("primary_color", "secondary_color", "background_color")
+                    })
                     updated = True
 
                 if (
@@ -412,31 +641,51 @@ class AutomationDirector:
                             "collage_seed": self.rng.randrange(0, 2 ** 31 - 1),
                             "text_color_mode": self.rng.choice(("single", "alternate")),
                         })
-                    # Motion can vary even when the phrase itself is held.
+                    text_modes = (
+                        "type_on", "word_reveal", "line_wave", "jitter", "crawl", "glitch",
+                        "reverse_typewriter", "dissolve", "flicker", "character_displacement",
+                        "vertical_reveal", "scattered_glyphs", "word_collisions", "mechanical_scroll",
+                    )
+                    if fragment >= 0.55:
+                        text_modes = (
+                            "jitter", "glitch", "character_displacement",
+                            "scattered_glyphs", "word_collisions", "dissolve",
+                        )
                     values.update({
-                        "text_animation": self.rng.choice(
-                            ("type_on", "word_reveal", "line_wave", "jitter", "crawl", "glitch")
+                        "text_animation": self.rng.choice(text_modes),
+                        "text_animation_speed": self.rng.uniform(
+                            0.35, 2.8 + chaos * 2.0
                         ),
-                        "text_animation_speed": self.rng.uniform(0.35, 2.8),
-                        "text_animation_amount": self.rng.uniform(0.015, 0.12),
+                        "text_animation_amount": self.rng.uniform(
+                            0.015, min(0.18, 0.12 + fragment * 0.06)
+                        ),
                     })
+                    if constrained and self.rng.random() < 0.25:
+                        values["text_writing_mode"] = self.rng.choice(
+                            ("horizontal", "vertical_rl", "vertical_lr")
+                        )
+                    if constrained and self.rng.random() < 0.25:
+                        values["text_path_mode"] = self.rng.choice(
+                            ("none", "circle", "arc", "custom")
+                        )
                     updated = True
                 elif self.settings.randomize_generators and kind == "geometry":
                     motion = self.rng.choice(("rotate", "pulse", "drift", "warp"))
                     motion_ranges = {
-                        "rotate": (20.0, 100.0),
-                        "pulse": (0.04, 0.22),
-                        "drift": (0.015, 0.07),
-                        "warp": (0.08, 0.42),
+                        "rotate": (20.0, 100.0 + 100.0 * chaos),
+                        "pulse": (0.04, 0.22 + 0.12 * chaos),
+                        "drift": (0.015, 0.07 + 0.08 * chaos),
+                        "warp": (0.08, 0.42 + 0.18 * chaos),
                     }
+                    density_high = min(80, 34 + int(density_macro * 30))
                     values.update({
                         "pattern": self.rng.choice(
                             ("rings", "grid", "radial", "crosshatch", "spiral", "moire", "hexgrid")
                         ),
-                        "density": self.rng.randint(6, 34),
-                        "rotation": self.rng.uniform(-35, 35),
+                        "density": self.rng.randint(6, max(6, density_high)),
+                        "rotation": self.rng.uniform(-35.0, 35.0) * (1.0 + chaos),
                         "animation": motion,
-                        "animation_speed": self.rng.uniform(0.08, 1.8),
+                        "animation_speed": self.rng.uniform(0.08, 1.8 + chaos * 2.0),
                         "animation_amount": self.rng.uniform(*motion_ranges[motion]),
                     })
                     updated = True
@@ -447,23 +696,51 @@ class AutomationDirector:
                         ),
                         "density": self.rng.randint(2, 9),
                         "amplitude": self.rng.uniform(0.08, 0.38),
-                        "frequency": self.rng.uniform(0.8, 8.0),
+                        "frequency": self.rng.uniform(0.8, 8.0 + chaos * 5.0),
                         "phase_offset": self.rng.uniform(0.0, 6.283),
                     })
                     updated = True
                 elif self.settings.randomize_generators and kind == "particles":
                     values.update({
                         "density": self.rng.randint(16, 100),
-                        "speed": self.rng.uniform(0.05, 0.8),
+                        "speed": self.rng.uniform(0.05, 0.8 + chaos * 0.55),
                         "size": self.rng.uniform(0.06, 0.36),
                         "spread": self.rng.uniform(0.15, 0.9),
-                        "trail": self.rng.uniform(0.05, 0.65),
+                        "trail": self.rng.uniform(0.05, min(1.0, 0.65 + decay * 0.3)),
                         "mode": self.rng.choice(("drift", "rise", "fall", "orbit")),
+                    })
+                    updated = True
+                elif self.settings.randomize_generators and kind == "particle_system_2":
+                    values.update({
+                        "emission_rate": self.rng.uniform(240.0, 1200.0),
+                        "population_count": self.rng.choice((1, 2, 2, 3, 4)),
+                        "emitter_type": self.rng.choice(("point", "circle", "rectangle", "path")),
+                        "direction": self.rng.choice(
+                            ("radial", "random", "up", "down", "left", "right", "tangent")
+                        ),
+                        "lifetime": self.rng.uniform(2.5, 12.0 + decay * 18.0),
+                        "speed": self.rng.uniform(0.06, 0.72 + chaos * 0.65),
+                        "spread": self.rng.uniform(0.12, 1.5),
+                        "turbulence": self.rng.uniform(0.02, 0.8 + chaos * 0.7),
+                        "force_type": self.rng.choice(("none", "attract", "repel", "orbit")),
+                        "force_strength": self.rng.uniform(0.0, 2.2 + chaos * 1.2),
+                        "drag": self.rng.uniform(0.02, 0.65 + decay * 0.8),
+                        "trail": self.rng.uniform(0.2, min(1.0, 0.76 + decay * 0.24)),
+                        "particle_size": self.rng.uniform(2.0, 16.0),
+                        "size_curve": self.rng.choice(("constant", "grow", "shrink", "pulse")),
+                        "reform_strength": self.rng.uniform(0.0, 0.8),
                     })
                     updated = True
 
                 if updated:
                     layer.generator_settings = normalize_settings(kind, values)
+                    if kind in {"particles", "particle_system_2"}:
+                        field = "density" if kind == "particles" else "emission_rate"
+                        if layer.id in self._peak_particle_base:
+                            self._peak_particle_base[layer.id] = (
+                                field,
+                                float(layer.generator_settings[field]),
+                            )
                     if self.generator_settings_changed is not None:
                         self.generator_settings_changed(layer)
                     changed += 1
@@ -484,6 +761,7 @@ class AutomationDirector:
 
             if (
                     self.settings.randomize_layer_effects
+                    and allow_effect_change
                     and time.time() >= float(getattr(layer, "fx_manual_override_until", 0.0))
                     and layer.source_type in {"video", "generator", "overlay"}
             ):
