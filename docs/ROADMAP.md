@@ -1,13 +1,13 @@
 # eli_lab AV Translator — Product Roadmap
 
-**Roadmap snapshot:** 12 November 2026  
-**Current priority:** M6 — Advanced VJ Environment. The initial M6-A1 live-deck surface is merged to main. M6-B0 is documented and M6-B1 full-scene capture/recall is underway on `m6/b1-vj-scene-bank`. M0–M5 software foundations are merged to main. M5 target-machine validation and the independent Video Mixer release gate remain open and continue in parallel; master-output recording/audio muxing is a separate deferred deliverable.
+**Roadmap snapshot:** 13 November 2026  
+**Current priority:** M6 — Advanced VJ Environment and performance controls. M6-A1, B1, C1, D1/D2, E1, the Performance Macro System (PR #30) and the Live Performance Timeline (PR #31) are merged to `main`. Remaining M6-A2/A3, B2+, later C–E slices and target-Windows live/projector validation remain open. M5 target-machine validation and the independent Video Mixer release gate continue in parallel; master-output recording/audio muxing is a separate deferred deliverable.
 
 ## Product goal
 
 Build a dependable Windows-first audiovisual performance instrument: import a large personal footage library, compose four independent video decks into a live GPU canvas, create expressive visual treatments, run semi-random or fully unattended performances, and route the result to a second display or projector.
 
-The roadmap is deliberately staged. M0–M2 establish the visual instrument. M3 adds audio analysis and the normalized transport/scene/macro control foundation. M4 adds Sonic Pi as a timed, semantic OSC source for that same control layer. M5 adds autonomous performance orchestration, Modulator Bank/per-layer control and an asynchronous generator-raster pipeline. M6 focuses on the operator-facing live VJ mixer.
+The roadmap is deliberately staged. M0–M2 establish the visual instrument. M3 adds audio analysis and the normalized transport/scene/macro control foundation. M4 adds Sonic Pi as a timed, semantic OSC source for that same control layer. M5 adds autonomous performance orchestration, Modulator Bank/per-layer control and an asynchronous generator-raster pipeline. M6 expands the operator-facing live VJ environment with scene banks, GPU transformations, particle simulation, typography, Performance Macros and a bar/beat Live Performance Timeline.
 
 **Development rule:** the Video Mixer Completion Gate remains an independent release criterion and is not marked passed. Later milestones may proceed in parallel, but do not describe the mixer as hardware/release-ready until its Windows reliability, projector and sustained-session checks have been completed.
 
@@ -23,6 +23,7 @@ The roadmap is deliberately staged. M0–M2 establish the visual instrument. M3 
 | M3 — Audio-Reactive Engine & Control Foundation | Software implementation complete; Windows hardware sign-off pending | Internal transport and quantization, SoundCard input/loopback capture, FFT/onset/tempo analysis, scene profiles, editable modulation matrix, lock/manual-override precedence and persistence are implemented. Physical device/reconnect and sustained-session checks remain on the performance PC. The repository unit-test suite was removed at the user's request; current CI performs static checks only. |
 | M4 — Sonic Pi Integration | Software complete; live rehearsal pending | Versioned `/eli_lab/v1` receiver, test sender, diagnostics, bounded validation, M3 clock/modulation bridge and optional SONATA sender are implemented. Verify the complete 384-bar performance on the target machine. |
 | M5 — Performance Environment | Software implementation merged; target-machine acceptance pending | Performance Mode, AUTO PERFORMANCE, Modulator Bank, per-layer modifiers, MIDI/performance-set foundations, asynchronous generator rasterization and text-raster controls are on main. Quality #116 passed compile/Ruff. SONATA, audio-device, four-deck and projector checks remain manual; recording/muxing is deferred separately. |
+| M6 — Advanced VJ Environment and performance controls | Initial A1, B1, C1, D1/D2, E1, macros and timeline merged; remaining slices and hardware acceptance open | PR #30 adds normalized Performance Macros; PR #31 adds the saved bar/beat Live Performance Timeline. M6-A2/A3, B2+, later C–E work and Windows live/projector acceptance remain planned. |
 
 ### Observed machine test
 
@@ -448,7 +449,7 @@ See [M6 Live Performance and Workspace Integration](M6_LIVE_PERFORMANCE_WORKSPAC
 
 ## M6 — Advanced performance controls
 
-### B. Performance Macro System
+### A. Performance Macro System
 
 **Merged to `main` in PR #30.** Six normalized 0–1 controls — CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT — sit above the existing modulation matrix and per-layer modifier engine. Each macro fans out to compatible master and per-layer targets. Macros can take a continuous source from audio analysis, transport/rhythm, Sonic Pi energy/cutoff or Modulator Bank outputs, while manual sliders, keyboard toggles, MIDI CC/note learn and the versioned OSC `/eli_lab/v1/macro/set` route provide direct control. Macro values, source assignments and keyboard shortcuts are persisted with projects and performance sets.
 
@@ -456,7 +457,7 @@ See [M6 Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md).
 
 ### C. Live Performance Timeline
 
-**Draft implementation on `m6/live-performance-timeline`; not yet merged.** The timeline is a saved bar/beat event plan that runs beside InternalTransport or Sonic Pi. It adds scene and phrase markers, scene recalls, deck/clip triggers, master effect changes, Text Art regeneration, palette changes, Performance Macro modulation and transition cues.
+**Merged to `main` in [PR #31](https://github.com/ilyaminineli/eli_lab-av-translator/pull/31).** The timeline is a saved bar/beat event plan that runs beside InternalTransport or Sonic Pi. It adds scene and phrase markers, scene recalls, deck/clip triggers, master effect changes, Text Art regeneration, palette changes, Performance Macro modulation and transition cues.
 
 The timeline is musical rather than frame-based: each event is positioned at a 1-based bar and beat, events at the same position retain authored order, and the one-shot cursor can be armed, disarmed and rewound. The existing OSC protocol reports a bar clock with BPM, so the application interpolates beats locally between fresh bar packets. It does not claim frame-accurate external clock. Timeline definitions are saved in project/performance-set payloads, but playback never auto-arms on project open.
 
@@ -464,7 +465,7 @@ The dedicated **LIVE PERFORMANCE TIMELINE** dock edits event positions, labels, 
 
 Current boundaries: no SMPTE/frame timeline, conditional branches or nested sequences; phrase markers are authored markers rather than inferred phrases; scene transitions retain the existing numeric-morph / discrete-cut behaviour. The target-Windows live rehearsal and musical timing acceptance remain open.
 
-See [M6-C — Live Performance Timeline](M6_LIVE_PERFORMANCE_TIMELINE.md).
+See [M6 Advanced Performance Controls — C: Live Performance Timeline](M6_LIVE_PERFORMANCE_TIMELINE.md).
 
 ## Engineering principles across all milestones
 
