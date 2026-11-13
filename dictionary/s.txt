@@ -10,7 +10,6 @@ s.d.	sine die 無期限に
 S.D.,SD,S.Dak.	South Dakota
 S.L.	salvage loss
 s.o.	seller's option / strikeout
-S.O.B., s.o.b.	son of a bitch
 S.P.C.A.	Society for the Prevention of Cruelty to Animals 動物虐待防止 / 協会
 S.P.C.C.	Society for the Prevention of Cruelty to Children 児童虐待防止協会
 S,s	英語アルファベットの第19字 / S字形[のもの]
@@ -1729,10 +1728,6 @@ shirtsleeve	上着を着ていない,ワイシャツ姿の / 略式の,打ち解
 shirttail	ワイシャツのすそ(腰より下の部分)
 shirtwaist	カラーとカフスのついたワイシャツ型の婦人用ブラウス(ワンピース)
 shirty	きげんの悪い,いらいらした
-shishkebab	=kebab = shish-kebab　シシカバブ　串焼き肉　ギリシアや中近東の料理で、味付けした羊肉やタマネギ、赤ピーマンなどの野菜を串に刺して焼く
-shit	くそをする,大便をする / …‘を'大便をして汚す / くそ,大便;《しばしばa ~》くそをすること / たわごと / (怒り・嫌悪などを表して)ちぇっ,くそっ
-shitkicker	田舎者
-shitty	下劣な,いやな,くだらない,ばかげた
 Shiva	シバ(ヒンズー教の神;Brhama,Vishnuに次ぐ第三番目の神)
 shiver	(寒さ・恐れなどで)『震える』,おののく《+『with』(『from』)+『名』》 / 〈C〉 / 〈C〉『震え』,身震い / 《the shivers》寒け,悪寒(おかん)
 shiver	…‘を'粉みじんに砕く / 粉みじんに砕ける / 破片,かけら
@@ -2601,8 +2596,6 @@ slurry	(水と粘土・石灰あるいは石膏などの混合した)懸年液
 slush	解けかかった雪(氷);ぬかるみ / くだらない感傷的な文(映画など)
 slush fund	(政治目的の)買収資金,贈賄資金
 slushy	雪解けの,ぬかるみの / くだらない;感傷的な
-slut	不潔な女 / ふしだらな女
-sluttish	(女が)だらしのない / (女が)身持ちの悪い
 sly	『ずるい』,陰険な / 茶目っ気のある,いたずらっぽい
 Sm	samariumの化学記号
 smack	(…の)味,風味《+『of』+『名』》 / (…)らしいところ《+『of』+『名』(do『ing』)》 / 《『smack of』+『名』》(…の)味(香り)がする;(…の)気味がある
@@ -3045,7 +3038,6 @@ somnolence	眠いこと
 somnolent	眠い;眠けをさそう
 son	『息子』・《複数形で》(男子の)子孫・《文》《比喩(ひゆ)的に》(場所・主義などの)子,後継者・《年長者が年少者に呼び掛けて》・お前さん・《the S-》イエスキリスト
 son et lumiere	(史跡などを会場として利用した)光と音のショー,照明と音響による野外劇
-son of a bitch	いけ好かないやつ,げす,下郎 / 《いらだち・ののしりを表して》ちくしょう,くそっ,野郎
 son of a gun	悪党,ならず者 / 《仲間言葉として》おい,おまえ / 《いらだち・ろうばいを表して》ちくしょう,この野郎
 son-in-law	『娘の夫』,娘婿(むすめむこ)
 sonar	音波水中探知機[sound navigation ranging の頭字語]

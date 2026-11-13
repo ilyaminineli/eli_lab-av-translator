@@ -1399,7 +1399,6 @@ anaesthesia	=anesthesia
 anaesthetic	=anesthetic
 anaesthetist	=anesthetist
 anagram	〈C〉文字のつづりかえ(lived→devilのように文字を置き換えて新しい語句を作る) / 《複数形で》《単数扱い》文字のつづりかえ遊び
-anal	肛門(こうもん)(anus)の
 analgesia	無痛覚[症]
 analgesic	鎮痛の / 鎮痛剤
 analogize	類推する / (…と)類似している《+『with』(『to』)+『名』》 / …'を'類推する
@@ -2186,7 +2185,6 @@ arrogate	(自分の物に)〈権力・特権など〉'を'不当に帰する(占
 arrow	『矢』 / (用途・形などが)矢に似た物;(記号の)矢印(→)
 arrowhead	矢じり
 arrowroot	クズウコン(病人食として用いられた熱帯アメリカ産の植物)
-arse	=ass
 arsenal	兵器庫;兵器工場 / 《集合的に》兵器の蓄え / (一般に)蓄え,集積
 arsenate	ヒ酸塩
 arsenic	ヒ素(化学記号は『As』);《俗に》亜ヒ酸 / ヒ素の,ヒ素を含む
@@ -2303,8 +2301,6 @@ aspirate	帯気音(破裂音や破擦音の発音で,口腔を閉鎖して呼気
 aspiration	大望,熱望 / 呼気,呼吸 / 気音を伴って発音すること(例:penの[p],killの[k])
 aspire	『大望を抱く』,あこがれる,切望する
 aspirin	〈U〉アスピリン(鎮痛・解熱剤) / 〈C〉アスピリン錠
-ass	ロバ / ばか者
-ass	《米俗》しり,けつ(《英俗》arse)
 assail	(暴力・武力などで)〈人・物〉'を'激しく攻撃する《+『名』+『with』+『名』》 / 〈仕事・むずかしい事〉‘に'敢然として取り組む
 assailant	攻撃者
 assassin	暗殺者,刺客(金で雇われたり,狂信的な理由で殺人をする者)
