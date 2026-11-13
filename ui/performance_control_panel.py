@@ -423,9 +423,13 @@ class PerformanceControlPanel(QWidget):
             "transport.beat_pulse": "Rhythm · Beat pulse",
             "transport.downbeat_pulse": "Rhythm · Downbeat pulse",
             "transport.phrase_pulse": "Rhythm · Phrase pulse",
-            "macro.energy": "Macro · Energy",
-            "macro.cutoff": "Macro · Cutoff",
+            "macro.energy": "Sonic Pi · Energy",
+            "macro.cutoff": "Sonic Pi · Cutoff",
         }
+        for macro in self.application.performance_macro_engine.list_macros():
+            self.source_labels[f"performance_macro.{macro.macro_id}"] = (
+                f"Performance Macro · {macro.name}"
+            )
         for source_id, label in self.source_labels.items():
             self.source_combo.addItem(label, source_id)
         self.target_combo = QComboBox()
@@ -717,6 +721,8 @@ class PerformanceControlPanel(QWidget):
             ("AUTO PERFORMANCE · Effect interval", "automation.effect_interval"),
             ("AUTO PERFORMANCE · Generator interval", "automation.generator_interval"),
         ]
+        for macro in self.application.performance_macro_engine.list_macros():
+            fixed.append((f"Performance Macro · {macro.name}", f"performance_macro.{macro.macro_id}"))
         for label, target in fixed:
             self.midi_target_combo.addItem(label, target)
         for scene in self.application.performance_scenes.values():
@@ -1295,8 +1301,88 @@ class PerformanceControlPanel(QWidget):
             self.application.events.publish("performance.modulation.updated")
             self.application.apply_modulation()
 
+    def _performance_macro_value_changed(self, macro_id: str, value: int) -> None:
+        normalized = max(0.0, min(1.0, float(value) / 1000.0))
+        try:
+            self.application.set_performance_macro_value(
+                macro_id, normalized, hold_seconds=1.5
+            )
+            self.macro_value_labels[macro_id].setText(f"{normalized:.2f}")
+            self.application.apply_modulation()
+        except (KeyError, TypeError, ValueError) as exc:
+            self.macro_status_label.setText(f"Macro update failed · {exc}")
+
+    def _performance_macro_source_changed(self, macro_id: str) -> None:
+        current = self.application.performance_macro_engine.get(macro_id)
+        combo = self.macro_source_combos[macro_id]
+        if current is None:
+            return
+        try:
+            updated = type(current).from_dict(current.to_dict())
+            updated.input_source = str(combo.currentData() or "")
+            self.application.update_performance_macro(updated)
+            self.application.apply_modulation()
+            self.macro_status_label.setText(
+                f"{current.name} input · "
+                f"{self.source_labels.get(updated.input_source, 'Manual control')}"
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            self.macro_status_label.setText(f"Macro source not applied · {exc}")
+            self.sync_performance_macros()
+        self.macros_changed.emit()
+
+    def _performance_macro_shortcut_changed(
+            self,
+            macro_id: str,
+            sequence: QKeySequence,
+    ) -> None:
+        current = self.application.performance_macro_engine.get(macro_id)
+        if current is None:
+            return
+        try:
+            updated = type(current).from_dict(current.to_dict())
+            updated.keyboard_shortcut = sequence.toString(
+                QKeySequence.SequenceFormat.PortableText
+            )
+            self.application.update_performance_macro(updated)
+            self.macro_status_label.setText(
+                f"{updated.name} keyboard toggle · "
+                f"{updated.keyboard_shortcut or 'unassigned'}"
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            self.macro_status_label.setText(f"Shortcut not applied · {exc}")
+            self.sync_performance_macros()
+        self.macros_changed.emit()
+
+    def sync_performance_macros(self) -> None:
+        """Reflect live macro values without disturbing controls being edited."""
+        definitions = self.application.performance_macro_engine
+        values = self.application.performance_macro_values()
+        for macro_id, slider in self.macro_sliders.items():
+            macro = definitions.get(macro_id)
+            if macro is None:
+                continue
+            value = max(0.0, min(1.0, float(values.get(macro_id, macro.value))))
+            if not slider.isSliderDown():
+                slider.blockSignals(True)
+                slider.setValue(round(value * 1000))
+                slider.blockSignals(False)
+            self.macro_value_labels[macro_id].setText(f"{value:.2f}")
+            combo = self.macro_source_combos[macro_id]
+            if not combo.hasFocus():
+                combo.blockSignals(True)
+                combo.setCurrentIndex(max(0, combo.findData(macro.input_source)))
+                combo.blockSignals(False)
+            key_edit = self.macro_key_edits[macro_id]
+            if not key_edit.hasFocus():
+                current_key = key_edit.keySequence().toString(
+                    QKeySequence.SequenceFormat.PortableText
+                )
+                if current_key != macro.keyboard_shortcut:
+                    key_edit.setKeySequence(QKeySequence(macro.keyboard_shortcut))
+
     def sync_modulator_sources(self) -> None:
-        """Expose active reusable bank outputs as global matrix sources."""
+        """Expose Modulator Bank outputs as both matrix and macro input sources."""
         current = self.source_combo.currentData()
         labels = {
             source_id: label
@@ -1317,6 +1403,29 @@ class PerformanceControlPanel(QWidget):
         self.source_combo.setCurrentIndex(index)
         self.source_combo.blockSignals(False)
         self.source_labels = labels
+
+        input_sources = [
+            (source_id, label)
+            for source_id, label in labels.items()
+            if source_id in SOURCE_RANGES or source_id.startswith("modulator.")
+        ]
+        bank_sources = [
+            (f"modulator.{definition.modulator_id}", f"Bank · {definition.name}")
+            for definition in self.application.modulator_bank.list_modulators()
+        ]
+        for macro_id, combo in self.macro_source_combos.items():
+            macro = self.application.performance_macro_engine.get(macro_id)
+            if macro is None:
+                continue
+            selected = macro.input_source
+            combo.blockSignals(True)
+            combo.clear()
+            combo.addItem("Manual · MIDI / OSC / key", "")
+            for source_id, label in input_sources:
+                combo.addItem(label, source_id)
+            combo.setCurrentIndex(max(0, combo.findData(selected)))
+            combo.blockSignals(False)
+        self.sync_performance_macros()
 
     def refresh_routes(self) -> None:
         self.route_list.blockSignals(True)
@@ -1438,6 +1547,7 @@ class PerformanceControlPanel(QWidget):
         self.refresh_osc_status()
         self.refresh_performance_scenes()
         self.refresh_midi_mappings()
+        self.sync_performance_macros()
         learn = getattr(self.application, "_midi_learn_request", None)
         learned = getattr(self.application, "_midi_learn_last_event", "")
         if learn is not None:
