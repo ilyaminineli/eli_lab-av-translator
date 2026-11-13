@@ -536,6 +536,21 @@ def install_default_layer_modifiers(
             _modifier(
                 "energy saturation", energy, "layer_fx.saturation", 0.08,
             ),
+            _modifier(
+                "phrase monochrome", swell, "layer_fx.monochrome", 0.10,
+            ),
+            _modifier(
+                "onset threshold", onset, "layer_fx.threshold", 0.08,
+            ),
+            _modifier(
+                "bass layer contrast", "audio.low", "layer_fx.contrast", 0.10,
+            ),
+            _modifier(
+                "cutoff brightness", cutoff, "layer_fx.brightness", 0.07,
+            ),
+            _modifier(
+                "energy FX blend", energy, "layer_fx.mix", 0.06,
+            ),
         ))
 
         for item in candidates:
