@@ -637,6 +637,7 @@ class MainWindow(QMainWindow):
         self.performance_control_panel.sync_modulator_sources()
         self.performance_control_panel.refresh_routes()
         self.modulator_bank_panel.refresh()
+        self.performance_timeline_panel.refresh(force=True)
         self.statusBar().showMessage(f"Performance set loaded · {Path(path).name}", 5000)
 
     def _populate_projector_menu(self, menu) -> None:
