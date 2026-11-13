@@ -3,7 +3,8 @@ from __future__ import annotations
 import time
 from uuid import uuid4
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -13,6 +14,7 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
+    QKeySequenceEdit,
     QLabel,
     QLineEdit,
     QListWidget,
@@ -20,6 +22,7 @@ from PySide6.QtWidgets import (
     QProgressBar,
     QPushButton,
     QScrollArea,
+    QSlider,
     QSpinBox,
     QVBoxLayout,
     QWidget,
@@ -29,6 +32,7 @@ from core.application import Application
 from core.audio_analysis import AudioAnalysisSettings
 from core.audio_capture import AudioCaptureState
 from core.modulation import (
+    SOURCE_RANGES,
     TARGET_SPECS,
     ModulationRoute,
 )
@@ -37,7 +41,9 @@ from generators.palettes import palette_names
 
 
 class PerformanceControlPanel(QWidget):
-    """Internal transport, audio-analysis monitor, scene profiles and modulation UI."""
+    """Internal transport, audio-analysis monitor, scenes, macros and modulation UI."""
+
+    macros_changed = Signal()
 
     def __init__(self, application: Application, parent=None) -> None:
         super().__init__(parent)
@@ -154,6 +160,65 @@ class PerformanceControlPanel(QWidget):
         self.midi_status_label.setWordWrap(True)
         midi_form.addRow("STATUS", self.midi_status_label)
         root.addWidget(self.midi_group)
+
+        self.performance_macro_group = QGroupBox("PERFORMANCE MACROS · NORMALIZED 0–1")
+        macro_layout = QVBoxLayout(self.performance_macro_group)
+        macro_hint = QLabel(
+            "One control can move several parameters across compatible layers and master effects. "
+            "Assign an input source, a keyboard toggle, MIDI CC/note or OSC."
+        )
+        macro_hint.setWordWrap(True)
+        macro_hint.setObjectName("mutedLabel")
+        macro_layout.addWidget(macro_hint)
+        self.macro_sliders: dict[str, QSlider] = {}
+        self.macro_value_labels: dict[str, QLabel] = {}
+        self.macro_source_combos: dict[str, QComboBox] = {}
+        self.macro_key_edits: dict[str, QKeySequenceEdit] = {}
+        for macro in self.application.performance_macro_engine.list_macros():
+            row = QGridLayout()
+            name_label = QLabel(macro.name)
+            name_label.setMinimumWidth(74)
+            name_label.setToolTip(macro.description)
+            slider = QSlider(Qt.Orientation.Horizontal)
+            slider.setRange(0, 1000)
+            slider.setSingleStep(5)
+            value_label = QLabel("0.00")
+            value_label.setMinimumWidth(38)
+            value_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            source_combo = QComboBox()
+            source_combo.setMinimumWidth(150)
+            key_edit = QKeySequenceEdit(QKeySequence(macro.keyboard_shortcut))
+            key_edit.setMaximumWidth(138)
+            row.addWidget(name_label, 0, 0)
+            row.addWidget(slider, 0, 1)
+            row.addWidget(value_label, 0, 2)
+            row.addWidget(source_combo, 0, 3)
+            row.addWidget(key_edit, 0, 4)
+            macro_layout.addLayout(row)
+            self.macro_sliders[macro.macro_id] = slider
+            self.macro_value_labels[macro.macro_id] = value_label
+            self.macro_source_combos[macro.macro_id] = source_combo
+            self.macro_key_edits[macro.macro_id] = key_edit
+            slider.valueChanged.connect(
+                lambda value, macro_id=macro.macro_id:
+                    self._performance_macro_value_changed(macro_id, value)
+            )
+            source_combo.currentIndexChanged.connect(
+                lambda _index, macro_id=macro.macro_id:
+                    self._performance_macro_source_changed(macro_id)
+            )
+            key_edit.keySequenceChanged.connect(
+                lambda sequence, macro_id=macro.macro_id:
+                    self._performance_macro_shortcut_changed(macro_id, sequence)
+            )
+        self.macro_status_label = QLabel(
+            "Keyboard shortcuts toggle a macro between 0 and 1. "
+            "A mapped input source resumes after a short manual takeover."
+        )
+        self.macro_status_label.setWordWrap(True)
+        self.macro_status_label.setObjectName("mutedLabel")
+        macro_layout.addWidget(self.macro_status_label)
+        root.addWidget(self.performance_macro_group)
 
         self.performance_scene_group = QGroupBox("VJ SCENE BANK · COMPOSITIONS")
         scene_form = QFormLayout(self.performance_scene_group)
@@ -358,9 +423,13 @@ class PerformanceControlPanel(QWidget):
             "transport.beat_pulse": "Rhythm · Beat pulse",
             "transport.downbeat_pulse": "Rhythm · Downbeat pulse",
             "transport.phrase_pulse": "Rhythm · Phrase pulse",
-            "macro.energy": "Macro · Energy",
-            "macro.cutoff": "Macro · Cutoff",
+            "macro.energy": "Sonic Pi · Energy",
+            "macro.cutoff": "Sonic Pi · Cutoff",
         }
+        for macro in self.application.performance_macro_engine.list_macros():
+            self.source_labels[f"performance_macro.{macro.macro_id}"] = (
+                f"Performance Macro · {macro.name}"
+            )
         for source_id, label in self.source_labels.items():
             self.source_combo.addItem(label, source_id)
         self.target_combo = QComboBox()
@@ -464,6 +533,7 @@ class PerformanceControlPanel(QWidget):
         self.route_list.currentItemChanged.connect(self._load_route_editor)
 
         self._load_scene_profile()
+        self.sync_performance_macros()
         self.refresh_midi_devices()
         self._refresh_midi_target_choices()
         self.refresh_midi_mappings(force=True)
@@ -651,6 +721,11 @@ class PerformanceControlPanel(QWidget):
             ("AUTO PERFORMANCE · Effect interval", "automation.effect_interval"),
             ("AUTO PERFORMANCE · Generator interval", "automation.generator_interval"),
         ]
+        for macro in self.application.performance_macro_engine.list_macros():
+            fixed.append((
+                f"Performance Macro · {macro.name}",
+                f"performance_macro.{macro.macro_id}",
+            ))
         for label, target in fixed:
             self.midi_target_combo.addItem(label, target)
         for scene in self.application.performance_scenes.values():
@@ -1229,8 +1304,91 @@ class PerformanceControlPanel(QWidget):
             self.application.events.publish("performance.modulation.updated")
             self.application.apply_modulation()
 
+    def _performance_macro_value_changed(self, macro_id: str, value: int) -> None:
+        normalized = max(0.0, min(1.0, float(value) / 1000.0))
+        try:
+            self.application.set_performance_macro_value(
+                macro_id, normalized, hold_seconds=1.5
+            )
+            self.macro_value_labels[macro_id].setText(f"{normalized:.2f}")
+            self.application.apply_modulation()
+        except (KeyError, TypeError, ValueError) as exc:
+            self.macro_status_label.setText(f"Macro update failed · {exc}")
+
+    def _performance_macro_source_changed(self, macro_id: str) -> None:
+        current = self.application.performance_macro_engine.get(macro_id)
+        combo = self.macro_source_combos[macro_id]
+        if current is None:
+            return
+        try:
+            updated = type(current).from_dict(current.to_dict())
+            updated.input_source = str(combo.currentData() or "")
+            self.application.update_performance_macro(updated)
+            self.application.apply_modulation()
+            self.macro_status_label.setText(
+                f"{current.name} input · "
+                f"{self.source_labels.get(updated.input_source, 'Manual control')}"
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            self.macro_status_label.setText(f"Macro source not applied · {exc}")
+            self.sync_performance_macros()
+        self.macros_changed.emit()
+
+    def _performance_macro_shortcut_changed(
+            self,
+            macro_id: str,
+            sequence: QKeySequence,
+    ) -> None:
+        current = self.application.performance_macro_engine.get(macro_id)
+        if current is None:
+            return
+        try:
+            updated = type(current).from_dict(current.to_dict())
+            updated.keyboard_shortcut = sequence.toString(
+                QKeySequence.SequenceFormat.PortableText
+            )
+            self.application.update_performance_macro(updated)
+            self.macro_status_label.setText(
+                f"{updated.name} keyboard toggle · "
+                f"{updated.keyboard_shortcut or 'unassigned'}"
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            self.macro_status_label.setText(f"Shortcut not applied · {exc}")
+            key_edit = self.macro_key_edits[macro_id]
+            key_edit.blockSignals(True)
+            key_edit.setKeySequence(QKeySequence(current.keyboard_shortcut))
+            key_edit.blockSignals(False)
+        self.macros_changed.emit()
+
+    def sync_performance_macros(self) -> None:
+        """Reflect live macro values without disturbing controls being edited."""
+        definitions = self.application.performance_macro_engine
+        values = self.application.performance_macro_values()
+        for macro_id, slider in self.macro_sliders.items():
+            macro = definitions.get(macro_id)
+            if macro is None:
+                continue
+            value = max(0.0, min(1.0, float(values.get(macro_id, macro.value))))
+            if not slider.isSliderDown():
+                slider.blockSignals(True)
+                slider.setValue(round(value * 1000))
+                slider.blockSignals(False)
+            self.macro_value_labels[macro_id].setText(f"{value:.2f}")
+            combo = self.macro_source_combos[macro_id]
+            if not combo.hasFocus():
+                combo.blockSignals(True)
+                combo.setCurrentIndex(max(0, combo.findData(macro.input_source)))
+                combo.blockSignals(False)
+            key_edit = self.macro_key_edits[macro_id]
+            if not key_edit.hasFocus():
+                current_key = key_edit.keySequence().toString(
+                    QKeySequence.SequenceFormat.PortableText
+                )
+                if current_key != macro.keyboard_shortcut:
+                    key_edit.setKeySequence(QKeySequence(macro.keyboard_shortcut))
+
     def sync_modulator_sources(self) -> None:
-        """Expose active reusable bank outputs as global matrix sources."""
+        """Expose Modulator Bank outputs as both matrix and macro input sources."""
         current = self.source_combo.currentData()
         labels = {
             source_id: label
@@ -1251,6 +1409,25 @@ class PerformanceControlPanel(QWidget):
         self.source_combo.setCurrentIndex(index)
         self.source_combo.blockSignals(False)
         self.source_labels = labels
+
+        input_sources = [
+            (source_id, label)
+            for source_id, label in labels.items()
+            if source_id in SOURCE_RANGES or source_id.startswith("modulator.")
+        ]
+        for macro_id, combo in self.macro_source_combos.items():
+            macro = self.application.performance_macro_engine.get(macro_id)
+            if macro is None:
+                continue
+            selected = macro.input_source
+            combo.blockSignals(True)
+            combo.clear()
+            combo.addItem("Manual · MIDI / OSC / key", "")
+            for source_id, label in input_sources:
+                combo.addItem(label, source_id)
+            combo.setCurrentIndex(max(0, combo.findData(selected)))
+            combo.blockSignals(False)
+        self.sync_performance_macros()
 
     def refresh_routes(self) -> None:
         self.route_list.blockSignals(True)
@@ -1372,6 +1549,7 @@ class PerformanceControlPanel(QWidget):
         self.refresh_osc_status()
         self.refresh_performance_scenes()
         self.refresh_midi_mappings()
+        self.sync_performance_macros()
         learn = getattr(self.application, "_midi_learn_request", None)
         learned = getattr(self.application, "_midi_learn_last_event", "")
         if learn is not None:

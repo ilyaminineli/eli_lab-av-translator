@@ -76,6 +76,8 @@ M3 introduced the normalized transport/audio/control model. M4 adds the versione
 4. Registered targets update existing layer, generator, effect or automation settings subject to range, lock, manual-override and ownership rules.
 5. Performance Mode installs only missing defaults, tracks which services it started and releases only resources it owns when stopped.
 6. Project files persist user-facing configuration and stable IDs, not live device handles, worker threads, active GL resources or transient signal buffers.
+7. The Performance Macro engine evaluates one normalized source per built-in macro after Modulator Bank outputs are available. Its `performance_macro.*` sources fan into the same global target and per-layer modifier engines; no parallel effect/target engine is introduced.
+8. Keyboard, MIDI and OSC macro updates are applied on the application thread. Continuous input is smoothed, manual input briefly takes priority, and OSC macro freshness follows the bounded musical-clock window.
 
 Sonic Pi macros are normalized musical controls, not raw audio. System loopback is needed for local RMS/FFT/onset analysis of the sound output.
 
@@ -97,8 +99,8 @@ The GitHub Windows Onefile Build workflow is manual-dispatch only. The normal Qu
 
 ## Project data
 
-`.eliav` projects persist composition/layers, deck assignments, effects and performance configuration. `.eliset` performance sets persist a reusable performance setup, including deck state, automation/performance settings, scenes and MIDI mappings. Media files are referenced by path and are not embedded. Runtime handles, GPU objects and transient frame/audio queues are recreated when a project/set is loaded.
+`.eliav` projects persist composition/layers, deck assignments, effects, Performance Macro definitions/source assignments/shortcuts and performance configuration. VJ Scene snapshots include macro configuration and values. `.eliset` performance sets reuse project serialization and persist a reusable performance setup, including deck state, automation/performance settings, scenes and MIDI mappings. Media files are referenced by path and are not embedded. Runtime handles, GPU objects and transient frame/audio queues are recreated when a project/set is loaded.
 
 ## M6 direction
 
-M6 — Advanced VJ Environment — is planned. Its first defined workstream is a live-mixer interaction model with media-bin clip triggering, including simultaneous triggers. The current four video decks remain the playback foundation; M6 should build a dedicated operator surface without moving decode, composition or GPU ownership into the UI. See [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md).
+M6 — Advanced VJ Environment — is in active development. The current four video decks remain the playback foundation; M6 builds operator controls on the existing decode, composition and GPU ownership boundaries. The Performance Macro follow-up adds a shared 0–1 control layer above modulation and per-layer targets. See [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md) and [M6 Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md).

@@ -75,11 +75,11 @@ Namespace: `/eli_lab/v1`. Every event begins with a string session ID and positi
 | `/clock/bar` | 1-based bar (int), BPM (float), beats/bar (int) | `clock.bar` |
 | `/scene/select` | scene ID (string), intensity (float 0..1), bar (int; `0` only for the initial pre-clock scene marker, otherwise 1-based) | `scene.select` |
 | `/scene/intensity` | intensity (float 0..1) | `scene.intensity` |
-| `/macro/set` | name (`energy` or `cutoff`), value (float 0..1) | `macro.set` |
+| `/macro/set` | name (`energy`, `cutoff`, `chaos`, `density`, `depth`, `decay`, `pressure` or `fragment`), value (float 0..1) | `macro.set` |
 | `/cue/trigger` | cue name (identifier) | `cue.trigger` |
 | `/source/heartbeat` | none | `source.heartbeat` |
 
-The initial `in` scene is announced before the first clock tick and therefore carries `bar_index=0` as a pre-clock marker; the first `/clock/bar` is bar 1. Every subsequent scene event is emitted after the preceding scene's bar-counted form block and carries the current 1-based bar index. The cutoff normalization is `clamp((sx_m_c - 48.0) / 70.0, 0.0, 1.0)`. Energy is already normalized in the patch. Macro messages are sent once per bar; a phrase cue is sent on four-bar boundaries. Bar messages are emitted once per bar, and a separate heartbeat is sent every four bars. The application treats SONATA as clock authority, disables its internal test clock on `transport/start` or, as a packet-loss fallback, the first accepted `clock/bar`, and derives the M3 `transport.phase` modulation source from the most recent bar clock. Macro values feed the existing M3 modulation matrix and the generated M5 routes/modulators, including smoothing, hold, lock, manual-override and intensity-ceiling behaviour.
+The initial `in` scene is announced before the first clock tick and therefore carries `bar_index=0` as a pre-clock marker; the first `/clock/bar` is bar 1. Every subsequent scene event is emitted after the preceding scene's bar-counted form block and carries the current 1-based bar index. The cutoff normalization is `clamp((sx_m_c - 48.0) / 70.0, 0.0, 1.0)`. Energy is already normalized in the patch. Macro messages are sent once per bar; a phrase cue is sent on four-bar boundaries. The M6 Performance Macro receiver also accepts the six built-in names `chaos`, `density`, `depth`, `decay`, `pressure` and `fragment` on this same route. Each updates its normalized 0–1 macro value and can drive multiple master/per-layer targets. The existing SONATA patch continues to use `energy` and `cutoff`; no change to its 93 loops or its existing sender is required. Bar messages are emitted once per bar, and a separate heartbeat is sent every four bars. The application treats SONATA as clock authority, disables its internal test clock on `transport/start` or, as a packet-loss fallback, the first accepted `clock/bar`, and derives the M3 `transport.phase` modulation source from the most recent bar clock. Macro values feed the existing M3 modulation matrix and the generated M5 routes/modulators, including smoothing, hold, lock, manual-override and intensity-ceiling behaviour.
 
 ### M5 Modulator Bank connection
 
@@ -92,6 +92,8 @@ M5 consumes the same M4 signals without changing the OSC protocol or the SONATA 
 - A macro source is considered stale after a bounded window (at least five seconds or two current bars, whichever is longer). Stale values are omitted, so follower assignments release to their baselines instead of holding the last received cutoff/energy value.
 
 The 93 SONATA audio loops remain untouched. OSC still carries only the transport, scene, macro and cue intent described above.
+
+For example, an additional live patch can set CHAOS to 0.75 with `/eli_lab/v1/macro/set` followed by its normal session ID, next sequence number, the string `chaos` and a float value `0.75`. The same route accepts the other five built-in macro names. Values outside 0–1 and unregistered names are rejected; OSC macro values remain live for at least five seconds or two bars, whichever is longer.
 
 ## Receiver safety and application threading
 
