@@ -226,6 +226,18 @@ See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md), [
 
 ## F. Advanced performance controls
 
-M6 also adds a normalized Performance Macro layer above the existing modulation architecture. Six built-in macros — CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT — fan one 0–1 control value out to multiple master and compatible per-layer targets. They can be driven manually, by keyboard toggle, MIDI CC/note, OSC, audio/transport sources or Modulator Bank outputs. The macro definitions and assignments are persisted with projects and VJ scenes.
+**The Performance Macro System is merged to `main` in PR #30.** Six built-in macros — CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT — fan one 0–1 control value out to multiple master and compatible per-layer targets. They can be driven manually, by keyboard toggle, MIDI CC/note, OSC, audio/transport sources or Modulator Bank outputs. The macro definitions and assignments are persisted with projects and performance sets.
 
 See [M6 — Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md) for the full source, routing, persistence and validation boundaries.
+
+## G. Live Performance Timeline
+
+**The initial timeline implementation is on `m6/live-performance-timeline`; it is not yet merged.** The timeline is a project-persisted bar/beat show plan that runs beside the internal or Sonic Pi transport.
+
+Supported event types are scene markers, phrase markers, saved-scene recall, deck/clip triggers, master effect changes, Text Art regeneration, palette changes, Performance Macro modulation and transition cues. Each event has an authored bar/beat, label, enabled state and validated JSON payload. Same-beat events run in insertion order.
+
+The LIVE PERFORMANCE TIMELINE dock exposes the event list, editor, arm/disarm, rewind and the eight-section example structure. Event actions use existing app services and are processed on the application/UI tick. AUTO PERFORMANCE and Modulator Bank modulation can continue generating variation inside the timeline structure.
+
+Sonic Pi currently reports one clock event per bar. The timeline interpolates beat positions locally from that packet's BPM and timestamp; this is not a per-beat OSC clock or frame-accurate sync. Scene transitions retain the current numeric morph and discrete cut behaviour. Project loading restores timeline definitions but does not automatically arm playback.
+
+See [M6-C — Live Performance Timeline](M6_LIVE_PERFORMANCE_TIMELINE.md) for event payloads, clock handling, persistence, limits and acceptance checks.

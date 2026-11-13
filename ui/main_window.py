@@ -38,6 +38,7 @@ from ui.media_browser import MediaBrowser
 from ui.modulator_bank_panel import ModulatorBankPanel
 from ui.output_window import OutputWindowManager
 from ui.performance_control_panel import PerformanceControlPanel
+from ui.performance_timeline_panel import PerformanceTimelinePanel
 from ui.performance_view import PerformanceView
 from ui.transport_bar import TransportBar
 
@@ -138,6 +139,18 @@ class MainWindow(QMainWindow):
         self.modulator_bank_dock.setMinimumWidth(320)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.modulator_bank_dock)
         self.tabifyDockWidget(self.performance_control_dock, self.modulator_bank_dock)
+
+        self.performance_timeline_panel = PerformanceTimelinePanel(application, self)
+        self.performance_timeline_dock = self._make_dock(
+            "LIVE PERFORMANCE TIMELINE",
+            self.performance_timeline_panel,
+        )
+        self.performance_timeline_dock.setMinimumWidth(320)
+        self.addDockWidget(
+            Qt.DockWidgetArea.RightDockWidgetArea,
+            self.performance_timeline_dock,
+        )
+        self.tabifyDockWidget(self.modulator_bank_dock, self.performance_timeline_dock)
         self.layer_dock.raise_()
         self.setCentralWidget(self._build_workspace())
 
@@ -160,6 +173,9 @@ class MainWindow(QMainWindow):
             self.application.performance_control.status_text()
         )
         self._last_control_revision = self.application.performance_control.revision
+        self._last_timeline_state_revision = int(
+            self.application.performance_timeline.snapshot()["state_revision"]
+        )
         self.control_status_label.setToolTip(
             "M3 control state · normalized transport, scene and macro events"
         )
@@ -255,6 +271,7 @@ class MainWindow(QMainWindow):
         self._status_timer.setInterval(500)
         self._status_timer.timeout.connect(self._refresh_automation_status)
         self._status_timer.timeout.connect(self.performance_control_panel.refresh_monitor)
+        self._status_timer.timeout.connect(self.performance_timeline_panel.refresh)
         self._status_timer.start()
 
         # Rhythm pulses are shorter than the status refresh interval. Keep
@@ -320,6 +337,7 @@ class MainWindow(QMainWindow):
             self.preview_dock,
             self.performance_control_dock,
             self.modulator_bank_dock,
+            self.performance_timeline_dock,
         ):
             dock.setMinimumWidth(right_minimum)
         self.deck_dock.setMinimumHeight(100 if compact else 120)
@@ -374,6 +392,7 @@ class MainWindow(QMainWindow):
                 self.preview_dock,
                 self.performance_control_dock,
                 self.modulator_bank_dock,
+                self.performance_timeline_dock,
         ):
             dock.show()
         self.layer_dock.raise_()
@@ -490,6 +509,7 @@ class MainWindow(QMainWindow):
                 self.automation_dock,
                 self.preview_dock,
                 self.performance_control_dock,
+                self.performance_timeline_dock,
         ):
             view_menu.addAction(dock.toggleViewAction())
 
@@ -617,6 +637,7 @@ class MainWindow(QMainWindow):
         self.performance_control_panel.sync_modulator_sources()
         self.performance_control_panel.refresh_routes()
         self.modulator_bank_panel.refresh()
+        self.performance_timeline_panel.refresh(force=True)
         self.statusBar().showMessage(f"Performance set loaded · {Path(path).name}", 5000)
 
     def _populate_projector_menu(self, menu) -> None:
@@ -861,6 +882,31 @@ class MainWindow(QMainWindow):
         previous_auto_action = self.application.automation.last_action
         previous_scene = self.application.performance_control.scene_id
         self.application.tick_performance_control()
+        timeline_snapshot = self.application.performance_timeline.snapshot()
+        timeline_revision = int(timeline_snapshot["state_revision"])
+        if timeline_revision != self._last_timeline_state_revision:
+            self._last_timeline_state_revision = timeline_revision
+            self.performance_timeline_panel.refresh(force=True)
+            event_type = str(timeline_snapshot["last_event_type"])
+            if event_type in {"scene_recall", "transition_cue"}:
+                self.deck_panel.refresh()
+                self.layer_panel.refresh()
+                self.modulator_bank_panel.refresh()
+                self.effects_panel.sync_from_settings()
+                self.generators_panel.refresh()
+            elif event_type == "clip_trigger":
+                self.deck_panel.refresh()
+            elif event_type == "effect_change":
+                self.effects_panel.sync_from_settings()
+            elif event_type in {"text_regenerate", "palette_change"}:
+                self.generators_panel.refresh()
+            elif event_type == "modulation":
+                self.performance_control_panel.sync_performance_macros()
+            if timeline_snapshot["last_event_result"]:
+                self.statusBar().showMessage(
+                    str(timeline_snapshot["last_event_result"]),
+                    2600,
+                )
         control_revision = self.application.performance_control.revision
         if control_revision != self._last_control_revision:
             self.control_status_label.setText(
@@ -950,6 +996,7 @@ class MainWindow(QMainWindow):
         self.performance_control_panel.sync_modulator_sources()
         self.performance_control_panel.refresh_routes()
         self.performance_control_panel.sync_from_application()
+        self.performance_timeline_panel.refresh(force=True)
         self.effects_panel.sync_from_settings()
         self.generators_panel.refresh()
         self.automation_panel.set_running(False, "Ready · import footage to begin.")
@@ -976,6 +1023,7 @@ class MainWindow(QMainWindow):
             self.performance_control_panel.sync_modulator_sources()
             self.performance_control_panel.refresh_routes()
             self.performance_control_panel.sync_from_application()
+            self.performance_timeline_panel.refresh(force=True)
             self.effects_panel.sync_from_settings()
             self.generators_panel.refresh()
             self.statusBar().showMessage(f"Opened {Path(path).name}", 4000)
