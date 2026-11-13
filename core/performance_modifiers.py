@@ -37,6 +37,12 @@ PERFORMANCE_MODIFIER_SOURCES: dict[str, str] = {
     "audio.beat_confidence": "Audio · Beat confidence",
     "macro.energy": "Sonic Pi · Energy",
     "macro.cutoff": "Sonic Pi · Cutoff",
+    "performance_macro.chaos": "Performance Macro · CHAOS",
+    "performance_macro.density": "Performance Macro · DENSITY",
+    "performance_macro.depth": "Performance Macro · DEPTH",
+    "performance_macro.decay": "Performance Macro · DECAY",
+    "performance_macro.pressure": "Performance Macro · PRESSURE",
+    "performance_macro.fragment": "Performance Macro · FRAGMENT",
 }
 
 PERFORMANCE_MODIFIER_TARGETS: dict[str, ModifierTargetSpec] = {
@@ -176,9 +182,15 @@ class LayerPerformanceModifier:
 
     def normalize(self) -> None:
         is_modulator_source = self.source_id.startswith("modulator.")
+        is_performance_macro = self.source_id.startswith("performance_macro.")
         if is_modulator_source:
             if not self.source_id.removeprefix("modulator.").strip():
                 raise ValueError("A modulator source must include a modulator ID.")
+        elif is_performance_macro:
+            if self.source_id.removeprefix("performance_macro.") not in {
+                "chaos", "density", "depth", "decay", "pressure", "fragment"
+            }:
+                raise ValueError(f"Unknown performance macro source: {self.source_id}")
         else:
             if self.source_id not in SOURCE_RANGES:
                 raise ValueError(f"Unknown performance modifier source: {self.source_id}")
@@ -278,7 +290,7 @@ class LayerPerformanceModifierEngine:
             except (TypeError, ValueError, KeyError):
                 continue
             source_requires_presence = modifier.source_id.startswith(
-                ("modulator.", "macro.")
+                ("modulator.", "macro.", "performance_macro.")
             )
             source_available = (
                     available_sources is None
