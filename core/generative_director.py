@@ -10,7 +10,8 @@ class GenerativeVariationDirector:
 
     def __init__(self, palette_memory_phrases: int = 4) -> None:
         self.palette_memory_phrases = max(0, min(16, int(palette_memory_phrases)))
-        self._palette_history: deque[str] = deque()
+        self._palette_history: deque[tuple[int, str]] = deque()
+        self._phrase_index = 0
         self._anchor_layer_id: str | None = None
         self._transition_revision = 0
         self._effect_transition_revision = 0
@@ -27,6 +28,7 @@ class GenerativeVariationDirector:
                 0, min(16, int(palette_memory_phrases))
             )
         self._palette_history.clear()
+        self._phrase_index = 0
         self._anchor_layer_id = None
         self._transition_revision = 0
         self._effect_transition_revision = 0
@@ -127,17 +129,30 @@ class GenerativeVariationDirector:
             if str(getattr(layer, "id", ""))
         )
 
+    def advance_phrase(self) -> int:
+        """Advance phrase memory; palette reuse is measured in phrases, not changes."""
+        self._phrase_index += 1
+        cutoff = self._phrase_index - self.palette_memory_phrases
+        while self._palette_history and self._palette_history[0][0] < cutoff:
+            self._palette_history.popleft()
+        return self._phrase_index
+
     def choose_palette(self, palette_names: Iterable[str], rng: random.Random) -> str | None:
         names = tuple(str(name) for name in palette_names if str(name))
         if not names:
             return None
-        recent = set(self._palette_history)
+        recent = {
+            palette
+            for phrase, palette in self._palette_history
+            if self._phrase_index - phrase < self.palette_memory_phrases
+        }
         available = [name for name in names if name not in recent]
         selected = rng.choice(available or list(names))
         if self.palette_memory_phrases > 0:
-            self._palette_history.append(selected)
-            while len(self._palette_history) > self.palette_memory_phrases:
-                self._palette_history.popleft()
+            if self._palette_history and self._palette_history[-1][0] == self._phrase_index:
+                self._palette_history[-1] = (self._phrase_index, selected)
+            else:
+                self._palette_history.append((self._phrase_index, selected))
         return selected
 
     def mark_transition(self) -> int:
@@ -161,11 +176,13 @@ class GenerativeVariationDirector:
             boost: float = 0.35,
     ) -> float:
         """Return a bounded multiplier for particle density/emission at peaks."""
-        if section != "peak" and max(float(energy), float(intensity)) < 0.78:
+        drive = max(float(energy), float(intensity), float(density_macro))
+        if section != "peak" and drive < 0.78:
             return 1.0
         peak = max(
+            0.78 if section == "peak" else 0.0,
             0.0,
-            min(1.0, max(float(energy), float(intensity), float(density_macro))),
+            min(1.0, drive),
         )
         return 1.0 + max(0.0, min(1.0, float(boost))) * peak
 
