@@ -312,6 +312,7 @@ class GeneratorsPanel(QWidget):
                 ("Signal / 信号", "signal"),
                 ("Ritual / 儀式", "ritual"),
                 ("Identity / 自己", "identity"),
+                ("Queer / クィア", "queer"),
         ):
             self.random_theme_combo.addItem(label, value)
         random_form.addRow("THEME", self.random_theme_combo)
@@ -396,6 +397,9 @@ class GeneratorsPanel(QWidget):
         system_form = QFormLayout(self.particle_system_group)
         self.particle_system_count_slider, self.particle_system_count_value = self._slider(
             system_form, "PARTICLES · HARD CAP 8192", 128, 8192, 4096
+        )
+        self.particle_emission_rate_slider, self.particle_emission_rate_value = self._slider(
+            system_form, "CONTINUOUS EMISSION · PARTICLES / SEC", 0, 3000, 600
         )
         self.particle_population_slider, self.particle_population_value = self._slider(
             system_form, "INDEPENDENT POPULATIONS", 1, 4, 2
@@ -763,6 +767,7 @@ class GeneratorsPanel(QWidget):
                 self.particle_spread_slider,
                 self.particle_trail_slider,
                 self.particle_system_count_slider,
+                self.particle_emission_rate_slider,
                 self.particle_population_slider,
                 self.particle_emitter_radius_slider,
                 self.particle_emitter_threshold_slider,
@@ -936,7 +941,9 @@ class GeneratorsPanel(QWidget):
         # The compositor reads these fields as per-frame uniforms. No
         # GeneratorRasterService request is made by this path. Only pause
         # automation on shader parameters that actually changed.
-        for key in ("text_animation_speed", "text_animation_amount"):
+        for key in (
+            "text_animation_speed", "text_animation_amount", "text_animation_columns"
+        ):
             if settings.get(key) != normalized.get(key):
                 self.manual_target_changed.emit(f"generator.{key}")
         self.composition_changed.emit()
@@ -1427,6 +1434,9 @@ class GeneratorsPanel(QWidget):
             self.particle_mode_combo.setCurrentText(str(values["mode"]))
         elif generator_type == "particle_system_2":
             self.particle_system_count_slider.setValue(int(values["particle_count"]))
+            self.particle_emission_rate_slider.setValue(
+                round(float(values["emission_rate"]))
+            )
             self.particle_population_slider.setValue(int(values["population_count"]))
             self.particle_emitter_combo.setCurrentText(str(values["emitter_type"]))
             self._sync_particle_emitter_sources(
@@ -1516,6 +1526,7 @@ class GeneratorsPanel(QWidget):
             self.overlay_frame_hold_spin,
             self.text_animation_speed_slider,
             self.text_animation_amount_slider,
+            self.text_animation_columns_slider,
             self.text_size_slider,
             self.tracking_slider,
             self.geometry_density_slider,
@@ -1523,6 +1534,17 @@ class GeneratorsPanel(QWidget):
             self.frequency_slider,
             self.waveform_density_slider,
             self.particle_density_slider,
+            self.particle_system_count_slider,
+            self.particle_emission_rate_slider,
+            self.particle_population_slider,
+            self.particle_lifetime_slider,
+            self.particle_system_speed_slider,
+            self.particle_system_spread_slider,
+            self.particle_turbulence_slider,
+            self.particle_force_strength_slider,
+            self.particle_reform_slider,
+            self.particle_system_trail_slider,
+            self.particle_system_size_slider,
             self.particle_speed_slider,
             self.particle_size_slider,
             self.particle_spread_slider,
@@ -1566,6 +1588,11 @@ class GeneratorsPanel(QWidget):
                     self.text_animation_amount_slider,
                     self.text_animation_amount_value,
                     round(values["text_animation_amount"] * 1000),
+                ),
+                (
+                    self.text_animation_columns_slider,
+                    self.text_animation_columns_value,
+                    int(values["text_animation_columns"]),
                 ),
                 (self.text_size_slider, self.text_size_value, int(values["font_size"])),
                 (self.tracking_slider, self.tracking_value, round(values["letter_spacing"])),
@@ -1611,6 +1638,54 @@ class GeneratorsPanel(QWidget):
                 (
                     self.particle_trail_slider,
                     self.particle_trail_value,
+                    round(values["trail"] * 100),
+                ),
+            ))
+        elif layer.generator_type == "particle_system_2":
+            updates.extend((
+                (
+                    self.particle_emission_rate_slider,
+                    self.particle_emission_rate_value,
+                    round(values["emission_rate"]),
+                ),
+                (
+                    self.particle_system_size_slider,
+                    self.particle_system_size_value,
+                    round(values["particle_size"]),
+                ),
+                (
+                    self.particle_system_speed_slider,
+                    self.particle_system_speed_value,
+                    round(values["speed"] * 100),
+                ),
+                (
+                    self.particle_system_spread_slider,
+                    self.particle_system_spread_value,
+                    round(values["spread"] * 100),
+                ),
+                (
+                    self.particle_lifetime_slider,
+                    self.particle_lifetime_value,
+                    round(values["lifetime"] * 100),
+                ),
+                (
+                    self.particle_turbulence_slider,
+                    self.particle_turbulence_value,
+                    round(values["turbulence"] * 100),
+                ),
+                (
+                    self.particle_force_strength_slider,
+                    self.particle_force_strength_value,
+                    round(values["force_strength"] * 100),
+                ),
+                (
+                    self.particle_reform_slider,
+                    self.particle_reform_value,
+                    round(values["reform_strength"] * 100),
+                ),
+                (
+                    self.particle_system_trail_slider,
+                    self.particle_system_trail_value,
                     round(values["trail"] * 100),
                 ),
             ))
@@ -1872,6 +1947,7 @@ class GeneratorsPanel(QWidget):
         elif generator_type == "particle_system_2":
             settings.update({
                 "particle_count": self.particle_system_count_slider.value(),
+                "emission_rate": float(self.particle_emission_rate_slider.value()),
                 "population_count": self.particle_population_slider.value(),
                 "emitter_type": self.particle_emitter_combo.currentText(),
                 "emitter_source_id": str(
