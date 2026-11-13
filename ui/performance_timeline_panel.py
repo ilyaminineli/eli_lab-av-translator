@@ -33,7 +33,7 @@ _PAYLOAD_TEMPLATES = {
     "scene_marker": "{}",
     "phrase_marker": "{}",
     "scene_recall": '{"scene_id": "scene-id", "morph_seconds": 0.0}',
-    "clip_trigger": '{"deck_id": "deck_a", "action": "play", "asset_id": "optional-media-asset-id"}',
+    "clip_trigger": '{"deck_id": "deck_a", "action": "play"}',
     "effect_change": '{"preset_name": "Digital Damage", "settings": {"feedback_enabled": true}}',
     "text_regenerate": '{"layer_id": "optional-text-layer-id", "seed": 20261113}',
     "palette_change": '{"palette": "Fuji · 藤"}',
