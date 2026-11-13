@@ -944,6 +944,323 @@ class Application:
     def performance_mode_snapshot(self) -> dict[str, Any]:
         return self.performance_mode.snapshot()
 
+    def add_performance_timeline_event(
+            self,
+            event: PerformanceTimelineEvent | dict[str, object],
+    ) -> str:
+        event_id = self.performance_timeline.add_event(event)
+        self.events.publish(
+            "performance.timeline.updated",
+            action="added",
+            event_id=event_id,
+        )
+        return event_id
+
+    def update_performance_timeline_event(
+            self,
+            event_id: str,
+            changes: PerformanceTimelineEvent | dict[str, object],
+    ) -> None:
+        self.performance_timeline.update_event(event_id, changes)
+        self.events.publish(
+            "performance.timeline.updated",
+            action="updated",
+            event_id=event_id,
+        )
+
+    def remove_performance_timeline_event(self, event_id: str) -> bool:
+        removed = self.performance_timeline.remove_event(event_id)
+        if removed:
+            self.events.publish(
+                "performance.timeline.updated",
+                action="removed",
+                event_id=event_id,
+            )
+        return removed
+
+    def arm_performance_timeline(self) -> None:
+        external_running = (
+            self.performance_control.source_id == "sonic_pi"
+            and self.performance_control.transport_running
+            and not self.performance_control.transport_paused
+        )
+        internal_running = self.transport.running and not self.transport.paused
+        running = external_running or internal_running
+        if external_running and self._external_clock_bar_at is not None:
+            bar, beat = self._external_timeline_position()
+        elif internal_running:
+            bar, beat = self.transport.bar_index, self.transport.beat_index + 1
+        else:
+            bar, beat = 1, 1
+        self.performance_timeline.arm(
+            current_bar=bar,
+            current_beat=beat,
+            transport_running=running,
+        )
+        self.events.publish(
+            "performance.timeline.armed",
+            bar=bar,
+            beat=beat,
+            waiting_for_transport=not running,
+        )
+
+    def disarm_performance_timeline(self) -> None:
+        self.performance_timeline.disarm()
+        self.events.publish("performance.timeline.disarmed")
+
+    def reset_performance_timeline_playback(self) -> None:
+        self.performance_timeline.reset_playback()
+        self.events.publish("performance.timeline.rewound")
+
+    def _tick_performance_timeline(
+            self,
+            bar: int,
+            beat: int,
+            beats_per_bar: int,
+    ) -> None:
+        due = self.performance_timeline.tick(bar, beat, beats_per_bar)
+        for event in due:
+            try:
+                success, message = self._execute_performance_timeline_event(event)
+            except (OSError, TypeError, ValueError, KeyError, RuntimeError) as exc:
+                _LOG.warning(
+                    "Timeline event %s (%s) failed: %s",
+                    event.event_id,
+                    event.event_type,
+                    exc,
+                )
+                success, message = False, str(exc)
+            self.performance_timeline.record_result(event, success, message)
+            self.events.publish(
+                "performance.timeline.event",
+                event=event.to_dict(),
+                success=success,
+                message=message,
+                bar=bar,
+                beat=beat,
+            )
+
+    def _external_timeline_position(self, now: float | None = None) -> tuple[int, int]:
+        stamp = time.monotonic() if now is None else float(now)
+        beats_per_bar = max(1, min(16, int(self.performance_control.beats_per_bar)))
+        bpm = max(20.0, min(300.0, float(self.performance_control.bpm)))
+        beat_duration = 60.0 / bpm
+        elapsed = max(0.0, stamp - float(self._external_clock_bar_at or stamp))
+        beat_offset = int(elapsed / beat_duration)
+        bar = self._timeline_external_anchor_bar + beat_offset // beats_per_bar
+        beat = beat_offset % beats_per_bar + 1
+        return max(1, bar), beat
+
+    def _tick_external_performance_timeline(self, now: float | None = None) -> None:
+        if not self.performance_timeline.armed:
+            return
+        control = self.performance_control
+        if (
+                control.source_id != "sonic_pi"
+                or not control.transport_running
+                or control.transport_paused
+                or self._external_clock_bar_at is None
+        ):
+            return
+        stamp = time.monotonic() if now is None else float(now)
+        beats_per_bar = max(1, min(16, int(control.beats_per_bar)))
+        bpm = max(20.0, min(300.0, float(control.bpm)))
+        bar_seconds = (60.0 / bpm) * beats_per_bar
+        if stamp - self._external_clock_bar_at > max(1.0, bar_seconds * 1.5):
+            return
+        bar, beat = self._external_timeline_position(stamp)
+        self._tick_performance_timeline(bar, beat, beats_per_bar)
+
+    def _apply_performance_timeline_palette(self, palette_name: str) -> bool:
+        palette = palette_look(palette_name)
+        self.active_palette = palette_name
+        for layer in self.composition.layers:
+            if (
+                    layer.locked
+                    or layer.source_type != "generator"
+                    or not layer.generator_type
+            ):
+                continue
+            values = dict(layer.generator_settings)
+            for key in ("primary_color", "secondary_color", "background_color"):
+                if key in values and key in palette:
+                    values[key] = palette[key]
+            layer.generator_settings = normalize_settings(layer.generator_type, values)
+            self._request_generator_raster(layer)
+        self.events.publish(
+            "performance.palette.changed",
+            palette=palette_name,
+        )
+        return True
+
+    def _execute_performance_timeline_event(
+            self,
+            event: PerformanceTimelineEvent,
+    ) -> tuple[bool, str]:
+        payload = event.payload
+        if event.event_type == "scene_marker":
+            self.events.publish(
+                "performance.timeline.scene_marker",
+                label=event.label,
+                bar=event.bar,
+                beat=event.beat,
+            )
+            return True, f"SCENE · {event.label}"
+        if event.event_type == "phrase_marker":
+            self.events.publish(
+                "performance.timeline.phrase_marker",
+                label=event.label,
+                bar=event.bar,
+                beat=event.beat,
+            )
+            return True, f"PHRASE · {event.label}"
+
+        if event.event_type in {"scene_recall", "transition_cue"}:
+            scene_id = str(payload["scene_id"])
+            duration = float(payload.get("morph_seconds", 0.0))
+            if not self.recall_performance_scene(scene_id, morph_seconds=duration):
+                return False, f"Scene not found or could not be recalled: {scene_id}"
+            return True, (
+                f"TRANSITION · {scene_id} · {duration:.1f}s"
+                if event.event_type == "transition_cue"
+                else f"SCENE · {scene_id}"
+            )
+
+        if event.event_type == "clip_trigger":
+            deck_id = str(payload["deck_id"])
+            deck = self.decks.get(deck_id)
+            if deck is None:
+                return False, f"Unknown video deck: {deck_id}"
+            if deck.locked:
+                return False, f"{deck_id.upper()} is locked"
+            action = str(payload.get("action", "play"))
+            asset_id = str(payload.get("asset_id", "")).strip()
+            if asset_id:
+                asset = self.media_library.get_asset(asset_id)
+                if asset is None or not asset.exists:
+                    return False, f"Media asset is missing: {asset_id}"
+                deck.load(
+                    asset.path,
+                    asset_id=asset.id,
+                    collection_id=asset.collection_id,
+                    segment_start=float(payload.get("segment_start", 0.0)),
+                    segment_end=payload.get("segment_end"),
+                    loop=bool(payload.get("loop", True)),
+                )
+                self._frame_snapshots.pop(deck_id, None)
+                self.events.publish(
+                    "performance.timeline.clip_loaded",
+                    deck_id=deck_id,
+                    asset_id=asset_id,
+                    path=asset.path,
+                )
+            elif action == "load":
+                return False, "Clip load event needs a media asset ID"
+            if action == "load":
+                return True, f"LOADED · {deck_id.upper()}"
+            if action == "play":
+                if not deck.path:
+                    return False, f"No clip is loaded in {deck_id.upper()}"
+                deck.play()
+            elif action == "pause":
+                deck.pause()
+            elif action == "hold":
+                if not deck.hold():
+                    return False, f"{deck_id.upper()} has no presented frame to hold"
+            elif action == "release":
+                deck.release_hold()
+            elif action == "restart":
+                if not deck.path:
+                    return False, f"No clip is loaded in {deck_id.upper()}"
+                deck.restart()
+            elif action == "stop":
+                deck.stop()
+                self._frame_snapshots.pop(deck_id, None)
+            elif action == "seek":
+                if not deck.path:
+                    return False, f"No clip is loaded in {deck_id.upper()}"
+                deck.seek(float(payload["seconds"]))
+            return True, f"CLIP · {deck_id.upper()} · {action.upper()}"
+
+        if event.event_type == "effect_change":
+            preset = str(payload.get("preset_name", "")).strip()
+            if preset:
+                self.effects.apply_preset(preset)
+            for field, value in dict(payload.get("settings", {})).items():
+                setattr(self.effects, field, value)
+            self.effects.clamp()
+            self.events.publish(
+                "performance.timeline.effects_changed",
+                preset=preset or self.effects.preset_name,
+            )
+            return True, f"EFFECT · {preset or 'PARAMETERS'}"
+
+        if event.event_type == "text_regenerate":
+            layer_id = str(payload.get("layer_id", "")).strip()
+            layer = self.composition.get_layer(layer_id) if layer_id else next(
+                (
+                    item for item in self.composition.layers
+                    if (
+                        not item.locked
+                        and item.source_type == "generator"
+                        and item.generator_type == "text"
+                    )
+                ),
+                None,
+            )
+            if (
+                    layer is None
+                    or layer.locked
+                    or layer.source_type != "generator"
+                    or layer.generator_type != "text"
+            ):
+                return False, "No unlocked Text Art layer is available"
+            from generators.text_pools import random_text_sample
+            values = normalize_settings("text", layer.generator_settings)
+            seed = int(payload.get("seed", random.randrange(0, 2_147_483_648)))
+            values["text"] = random_text_sample(
+                str(values.get("text_pool_language", "bilingual")),
+                str(values.get("text_pool_theme", "random")),
+                int(values.get("text_pool_count", 16)),
+                seed=seed,
+                use_dictionary=bool(values.get("text_pool_dictionary", True)),
+            )
+            values["collage_seed"] = seed
+            layer.generator_settings = normalize_settings("text", values)
+            self._request_generator_raster(layer)
+            self.events.publish(
+                "performance.timeline.text_regenerated",
+                layer_id=layer.id,
+                seed=seed,
+            )
+            return True, f"TEXT · {layer.name} · SEED {seed}"
+
+        if event.event_type == "palette_change":
+            palette = str(payload["palette"])
+            self._apply_performance_timeline_palette(palette)
+            return True, f"PALETTE · {palette}"
+
+        if event.event_type == "modulation":
+            macro_id = str(payload["macro_id"])
+            duration_bars = int(payload.get("duration_bars", 4))
+            hold_seconds = (
+                duration_bars
+                * max(1, int(self.performance_control.beats_per_bar))
+                * 60.0
+                / max(20.0, float(self.performance_control.bpm))
+            )
+            self.set_performance_macro_value(
+                macro_id,
+                float(payload["value"]),
+                hold_seconds=hold_seconds,
+            )
+            return True, (
+                f"MODULATION · {macro_id.upper()} · "
+                f"{float(payload['value']):.2f} · {duration_bars} bars"
+            )
+
+        return False, f"Unsupported event type: {event.event_type}"
+
     def submit_control_event(self, event: ControlEvent) -> bool:
         """Submit a normalized event from an internal or future external source."""
         return self.control_events.submit(event)
