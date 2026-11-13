@@ -14,9 +14,9 @@ from PySide6.QtWidgets import (
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
+    QKeySequenceEdit,
     QLabel,
     QLineEdit,
-    QKeySequenceEdit,
     QListWidget,
     QListWidgetItem,
     QProgressBar,
@@ -722,7 +722,10 @@ class PerformanceControlPanel(QWidget):
             ("AUTO PERFORMANCE · Generator interval", "automation.generator_interval"),
         ]
         for macro in self.application.performance_macro_engine.list_macros():
-            fixed.append((f"Performance Macro · {macro.name}", f"performance_macro.{macro.macro_id}"))
+            fixed.append((
+                f"Performance Macro · {macro.name}",
+                f"performance_macro.{macro.macro_id}",
+            ))
         for label, target in fixed:
             self.midi_target_combo.addItem(label, target)
         for scene in self.application.performance_scenes.values():
