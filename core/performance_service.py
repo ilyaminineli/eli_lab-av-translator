@@ -183,10 +183,10 @@ DEFAULT_MATRIX_ROUTES: tuple[tuple[str, str, float, float, bool, float], ...] = 
     ("performance_macro.fragment", "master.pixelate", 0.0, 0.88, False, 0.66),
     ("macro.cutoff", "master.halftone", 0.0, 0.20, False, 0.30),
     ("audio.onset", "master.solarize", 0.0, 0.12, False, 0.28),
-    ("performance_macro.density", "master.transform_mix", 0.0, 0.88, False, 0.70),
+    ("performance_macro.depth", "master.transform_mix", 0.18, 0.78, False, 0.70),
     ("transport.beat_pulse", "master.kaleidoscope_rotation", -8.0, 8.0, False, 0.5),
     ("audio.low", "master.kaleidoscope_zoom", 0.92, 1.18, False, 0.48),
-    ("macro.energy", "master.kaleidoscope_slices", 4.0, 16.0, False, 0.45),
+    ("performance_macro.density", "master.kaleidoscope_slices", 4.0, 16.0, False, 0.52),
     ("performance_macro.density", "master.mosaic_tiles", 4.0, 180.0, False, 0.64),
     ("performance_macro.fragment", "master.pixel_sort_amount", 0.0, 0.78, False, 0.62),
     ("audio.high", "master.pixel_sort_threshold", 0.55, 0.82, False, 0.42),
@@ -656,7 +656,6 @@ def install_default_layer_modifiers(
             macro_generator_targets = {
                 "geometry": (
                     ("chaos", "motion amount", "generator.animation_amount", 0.12),
-                    ("density", "geometry density", "generator.density", 0.10),
                     ("depth", "motion speed", "generator.animation_speed", 0.10),
                     ("fragment", "fragmented motion", "generator.animation_amount", 0.10),
                 ),
@@ -669,7 +668,6 @@ def install_default_layer_modifiers(
                 ),
                 "waveform": (
                     ("chaos", "waveform movement", "generator.animation_amount", 0.10),
-                    ("density", "waveform density", "generator.density", 0.10),
                     ("depth", "waveform motion speed", "generator.animation_speed", 0.08),
                     ("pressure", "waveform amplitude", "generator.waveform_amplitude", 0.12),
                 ),
