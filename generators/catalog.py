@@ -83,6 +83,7 @@ _DEFAULTS: dict[str, dict[str, Any]] = {
         "primary_color": "#E8E4DA",
         "secondary_color": "#C35C75",
         "particle_count": 4096,
+        "emission_rate": 600.0,
         "population_count": 2,
         "emitter_type": "point",
         "emitter_center": [0.5, 0.5],
@@ -150,7 +151,7 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
             result["text_pool_language"] = "bilingual"
         result["text_pool_theme"] = result.get("text_pool_theme", "random")
         if result["text_pool_theme"] not in {
-            "random", "memory", "body", "signal", "ritual", "identity"
+            "random", "memory", "body", "signal", "ritual", "identity", "queer"
         }:
             result["text_pool_theme"] = "random"
         result["text_pool_count"] = max(1, min(60, int(result.get("text_pool_count", 16))))
@@ -275,6 +276,9 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
             result["mode"] = "drift"
     elif generator_type == "particle_system_2":
         result["particle_count"] = max(128, min(8192, int(result["particle_count"])))
+        result["emission_rate"] = max(
+            0.0, min(3000.0, float(result["emission_rate"]))
+        )
         result["population_count"] = max(1, min(4, int(result["population_count"])))
         if result["emitter_type"] not in {
             "point", "circle", "rectangle", "path", "video_luminance",
