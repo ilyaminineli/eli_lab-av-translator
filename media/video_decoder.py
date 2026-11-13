@@ -47,6 +47,7 @@ class VideoDecoder:
         self._paused_at: float | None = None
         self._timeline_shift = 0.0
         self._last_error: str | None = None
+        self.seek_fallbacks = 0
         self.decoded_frames = 0
         self.published_frames = 0
         self.skipped_output_frames = 0
@@ -207,11 +208,26 @@ class VideoDecoder:
                         if stream is None:
                             raise ValueError("No video stream was found.")
                         if seek_to > 0 and stream.time_base:
-                            container.seek(
-                                int(seek_to / float(stream.time_base)),
-                                stream=stream,
-                                backward=True,
-                            )
+                            try:
+                                container.seek(
+                                    int(seek_to / float(stream.time_base)),
+                                    stream=stream,
+                                    backward=True,
+                                )
+                            except av.error.PermissionError as exc:
+                                # Some Windows filesystems / media demuxers allow
+                                # sequential reads but reject random-access seeking.
+                                # Keep the requested timestamp filter below and scan
+                                # from the beginning rather than killing the deck.
+                                self.seek_fallbacks += 1
+                                if self.seek_fallbacks == 1:
+                                    _LOG.warning(
+                                        "Random seek is unavailable for %s; "
+                                        "falling back to sequential decode and frame "
+                                        "discard (further failures: %s)",
+                                        self.path,
+                                        exc,
+                                    )
 
                         average_rate = float(stream.average_rate) if stream.average_rate else 30.0
                         first_timestamp: float | None = None
