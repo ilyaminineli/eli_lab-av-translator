@@ -363,6 +363,10 @@ def install_default_layer_modifiers(
                         "onset tracking", onset, "layer.rotation",
                         0.035, "exponential", 5.0, 240.0,
                     ),
+                    _modifier(
+                        "phrase reveal density", swell,
+                        "generator.text_animation_columns", 0.08,
+                    ),
                 ))
             elif kind == "waveform":
                 candidates.extend((
@@ -397,6 +401,51 @@ def install_default_layer_modifiers(
                         "phrase spread", swell, "generator.particle_spread", 0.10
                     ),
                 ))
+            elif kind == "particle_system_2":
+                # Fixed-step simulation exposes these as uniforms; automation
+                # changes live behaviour without recreating GPU populations.
+                candidates.extend((
+                    _modifier(
+                        "energy emission rate", energy,
+                        "generator.particle_emission_rate", 0.12,
+                    ),
+                    _modifier(
+                        "beat emission pulse", beat,
+                        "generator.particle_emission_rate",
+                        0.18, "exponential", 4.0, 170.0,
+                    ),
+                    _modifier(
+                        "onset particle speed", onset,
+                        "generator.particle_speed", 0.10,
+                        "exponential", 4.0, 150.0,
+                    ),
+                    _modifier(
+                        "bass force field", "audio.low",
+                        "generator.particle_force_strength", 0.12,
+                    ),
+                    _modifier(
+                        "cutoff turbulence", cutoff,
+                        "generator.particle_turbulence", 0.14,
+                    ),
+                    _modifier(
+                        "phrase particle trails", swell,
+                        "generator.particle_trail", 0.12,
+                    ),
+                    _modifier(
+                        "source reform", energy,
+                        "generator.particle_reform_strength", 0.08,
+                    ),
+                    _modifier(
+                        "downbeat particle radius", beat,
+                        "generator.particle_system_size",
+                        0.08, "exponential", 5.0, 180.0,
+                    ),
+                    _modifier(
+                        "onset force accent", onset,
+                        "generator.particle_force_strength",
+                        0.08, "exponential", 4.0, 150.0,
+                    ),
+                ))
             else:
                 settings = {}
 
@@ -405,10 +454,17 @@ def install_default_layer_modifiers(
                 "generator.animation_amount": "animation_amount",
                 "generator.text_animation_speed": "text_animation_speed",
                 "generator.text_animation_amount": "text_animation_amount",
+                "generator.text_animation_columns": "text_animation_columns",
                 "generator.particle_speed": "speed",
                 "generator.particle_size": "size",
                 "generator.particle_spread": "spread",
                 "generator.particle_trail": "trail",
+                "generator.particle_emission_rate": "emission_rate",
+                "generator.particle_system_size": "particle_size",
+                "generator.particle_lifetime": "lifetime",
+                "generator.particle_turbulence": "turbulence",
+                "generator.particle_force_strength": "force_strength",
+                "generator.particle_reform_strength": "reform_strength",
             }
             candidates = [
                 item for item in candidates
@@ -425,6 +481,32 @@ def install_default_layer_modifiers(
                     0.22, "exponential", 5.0, 180.0,
                 ),
             ))
+
+        # Layer FX are GPU-evaluated on every composition type.
+        candidates.extend((
+            _modifier(
+                "high-band chromatic", "audio.high",
+                "layer_fx.chromatic", 0.14,
+                "exponential", 5.0, 180.0,
+            ),
+            _modifier(
+                "beat scanlines", beat, "layer_fx.scanlines",
+                0.12, "exponential", 4.0, 160.0,
+            ),
+            _modifier(
+                "phrase posterize", swell, "layer_fx.posterize", 0.10,
+            ),
+            _modifier(
+                "onset invert accent", onset, "layer_fx.invert",
+                0.08, "exponential", 4.0, 160.0,
+            ),
+            _modifier(
+                "energy hue shift", energy, "layer_fx.hue", 0.06,
+            ),
+            _modifier(
+                "energy saturation", energy, "layer_fx.saturation", 0.08,
+            ),
+        ))
 
         for item in candidates:
             item.normalize()
