@@ -418,6 +418,7 @@ class Application:
         self.layer_manager = LayerManager(self.composition, self.events)
         self._create_default_layers()
         install_default_performance_macro_modifiers(self.composition.layers)
+        self.automation.update_layers(self.composition.layers)
         self.effects.reset()
         self.control_events.clear()
         self.performance_control.reset()
@@ -567,6 +568,11 @@ class Application:
                 "section": self.automation._performance_section,
                 "energy": self.automation._performance_energy,
                 "cutoff": self.automation._performance_cutoff,
+                "director_anchor": self.automation._director.anchor_layer_id,
+                "active_variation_layers": len(
+                    self.automation._active_variation_layer_ids
+                ),
+                "palette_history": list(self.automation._director.palette_history),
             },
             "video": self.performance_snapshot(),
         }
@@ -628,7 +634,12 @@ class Application:
         )
         self._automation_collection_id = collection_id
         self._frame_snapshots.clear()
-        self.events.publish("automation.started", decks=loaded)
+        self.events.publish(
+            "automation.started",
+            decks=loaded,
+            style=self.automation.settings.performance_style,
+            constrained=self.automation.settings.constrained_generative,
+        )
         return loaded
 
     def refresh_automation_media_pool(self) -> bool:
@@ -3025,6 +3036,7 @@ class Application:
 
         self.composition = candidate
         self.layer_manager = LayerManager(self.composition, self.events)
+        self.automation.update_layers(self.composition.layers)
         install_default_performance_macro_modifiers(self.composition.layers)
         self.performance_modifier_engine.reset()
         self._restore_scene_decks(scene.snapshot.get("decks"))
