@@ -446,6 +446,12 @@ Text Art includes an explicit **Queer / クィア** pool with the word **QUEER**
 
 See [M6 Live Performance and Workspace Integration](M6_LIVE_PERFORMANCE_WORKSPACE.md) for implementation details and acceptance checks.
 
+## M6 — Advanced performance controls
+
+The Performance Macro System is being implemented as a live-performance follow-up. Six normalized 0–1 controls — CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT — sit above the existing modulation matrix and per-layer modifier engine. Each macro fans out to compatible master/layer targets and can be assigned one continuous source from audio analysis, transport/rhythm, Sonic Pi energy/cutoff or the Modulator Bank. Manual sliders, configurable keyboard toggles, MIDI CC/note learn and the versioned OSC `/eli_lab/v1/macro/set` route are the direct control paths. Macro definitions, assignments and shortcuts are included in project and scene persistence.
+
+The implementation is on `m6/performance-macros` and is not merged yet. See [M6 Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md) for current behaviour and target-machine verification.
+
 ## Engineering principles across all milestones
 
 1. **Rendering must stay isolated.** Decoder, audio and OSC workers publish data; only the relevant render context owns and changes its GPU resources.
