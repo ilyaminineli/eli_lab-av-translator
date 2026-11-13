@@ -2,13 +2,13 @@
 
 **Windows-first audiovisual performance environment for live video collage, procedural visuals, typography, audio reactivity and Sonic Pi-controlled shows.**
 
-## Project status — 12 November 2026
+## Project status — 13 November 2026
 
 M0–M5 implementation is on `main`. M5's asynchronous generator rasterization and text-performance controls were merged in [PR #19](https://github.com/ilyaminineli/eli_lab-av-translator/pull/19). The latest `main` snapshot is `358dc597`; **Quality workflow #116 passed** Python compilation and Ruff on that commit ([run #116](https://github.com/ilyaminineli/eli_lab-av-translator/actions/runs/43132442896)).
 
 A green quality workflow is a static-code check, not a hardware sign-off. Full SONATA rehearsal, audio-device reconnect, four-deck stress and projector acceptance still need to be performed on the target Windows computer. The former pytest/unit-test suite is not present in this repository.
 
-The next development milestone is **M6 — Advanced VJ Environment**. Its first defined workstream is a more operator-focused live mixer. M6 is planned; those features are not yet implemented.
+M6 — Advanced VJ Environment — is in active development. The current follow-up on `m6/performance-macros` implements the six-macro control layer; it is not merged to `main` yet. M6 implementation status and remaining hardware acceptance gates are tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
 
 ## Current capabilities
 
@@ -20,6 +20,7 @@ The next development milestone is **M6 — Advanced VJ Environment**. Its first 
 - **M5 — Performance environment:** one-button Performance Mode, phrase-aware AUTO PERFORMANCE, Modulator Bank, per-layer performance modifiers, MIDI mapping/scene tools and shared performance diagnostics.
 - **M5 — Asynchronous generator rendering:** one application-owned background raster worker, latest-revision-wins snapshots, per-layer pending-job coalescing, static CPU raster / animated GPU-shader separation, preview/projector-local uploads and lifecycle invalidation.
 - **M5 — Text raster controls:** live preview, Apply Immediately, commit-on-pause, 25/50/75/100% preview quality, optional 1600×900 final raster, 1–20 Hz text-job rate limit, freeze, last-valid-texture fallback and pipeline status.
+- **M6 follow-up — Performance Macros (branch in progress):** six normalized 0–1 controls (CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT) with multi-target master/layer routing, audio/Sonic Pi/Modulator Bank source assignments, keyboard toggles, MIDI CC/note learn, OSC and project/scene persistence.
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for milestone state and remaining acceptance gates. Implementation detail is in the [M5 Autonomous Performance guide](docs/M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance Environment](docs/M5_PERFORMANCE_ENVIRONMENT.md), [Architecture](docs/ARCHITECTURE.md) and [M5 Completion Handoff](docs/M5_COMPLETION_HANDOFF.md).
 
@@ -58,7 +59,7 @@ The GitHub **Windows Onefile Build** workflow is manual-dispatch only. It does n
 6. Open **View → PROJECTOR OUTPUT** and select the external display.
 7. Stop SONATA to end the current automation pass. Press **STOP PERFORMANCE MODE** to release resources started by the mode and restore generated defaults.
 
-For same-computer Sonic Pi use, the default receiver destination is `127.0.0.1:57121`. Sonic Pi's own incoming OSC port is not the destination for these outbound messages. See [SONATA integration notes](docs/SONIC_PI_SONATA_INTEGRATION.md).
+For same-computer Sonic Pi use, the default receiver destination is `127.0.0.1:57121`. Sonic Pi's own incoming OSC port is not the destination for these outbound messages. See [SONATA integration notes](docs/SONIC_PI_SONATA_INTEGRATION.md). The Performance Macro panel is in AUDIO / CONTROL; the six macros can be fed by audio, transport, Sonic Pi `energy/cutoff` or Modulator Bank outputs, then routed to multiple targets.
 
 ## Generator and text rendering
 
@@ -101,4 +102,4 @@ Writable application data, the SQLite media index, thumbnails and logs live unde
 
 ## M6 — Advanced VJ Environment
 
-M6 is the next planned development phase. The first workstream is **A. A proper live mixer**: evolve the current four-deck foundation into an operator-first VJ surface. The M6 brief emphasizes triggering multiple clips together from media bins, with a clear live-performance interaction model. The detailed initial scope and acceptance criteria are tracked in [docs/M6_ADVANCED_VJ_ENVIRONMENT.md](docs/M6_ADVANCED_VJ_ENVIRONMENT.md).
+M6 is in active development across the live-deck, scene-bank, visual-transformation, particle, typography and performance-control workstreams. The current Performance Macro follow-up is documented in [docs/M6_ADVANCED_PERFORMANCE_CONTROLS.md](docs/M6_ADVANCED_PERFORMANCE_CONTROLS.md); the wider VJ scope and acceptance criteria are tracked in [docs/M6_ADVANCED_VJ_ENVIRONMENT.md](docs/M6_ADVANCED_VJ_ENVIRONMENT.md).
