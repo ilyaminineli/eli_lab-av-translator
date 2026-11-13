@@ -50,8 +50,18 @@ class MainWindow(QMainWindow):
         self.application = application
         self.output_manager = OutputWindowManager(application, self)
         self.setWindowTitle(f"eli_lab AV Translator {APP_VERSION}")
-        self.resize(1600, 980)
-        self.setMinimumSize(980, 640)
+        screen = QGuiApplication.primaryScreen()
+        available = screen.availableGeometry() if screen is not None else None
+        if available is not None:
+            initial_width = min(1600, max(860, round(available.width() * 0.95)))
+            initial_height = min(980, max(600, round(available.height() * 0.92)))
+            self.resize(initial_width, initial_height)
+        else:
+            self.resize(1600, 980)
+        # Leave enough room for a compact 4:3 workspace on older projectors.
+        self.setMinimumSize(860, 600)
+        self._responsive_layout_managed = True
+        self._responsive_compact: bool | None = None
         self.setDockOptions(
             QMainWindow.DockOption.AnimatedDocks
             | QMainWindow.DockOption.AllowTabbedDocks
@@ -213,6 +223,8 @@ class MainWindow(QMainWindow):
                     self.restoreGeometry(saved_geometry)
                     and self.restoreState(saved_state, 4)
             )
+        self._responsive_layout_managed = not restored
+        self._sync_responsive_dock_constraints()
         if not restored:
             QTimer.singleShot(0, self._apply_default_dock_sizes)
 
@@ -271,14 +283,64 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.generators_panel, 1)
         return workspace
 
+    def _is_compact_workspace(self) -> bool:
+        width = max(1, self.width())
+        height = max(1, self.height())
+        return width < 1280 or width / height < 1.50
+
+    def _sync_responsive_dock_constraints(self) -> None:
+        """Relax dock minimums for 4:3 and compact projector workspaces."""
+        if not hasattr(self, "media_dock"):
+            return
+        compact = self._is_compact_workspace()
+        if compact == self._responsive_compact:
+            return
+        self._responsive_compact = compact
+        side_minimum = 150 if compact else 220
+        right_minimum = 170 if compact else 250
+        for dock in (self.media_dock, self.asset_library_dock):
+            dock.setMinimumWidth(side_minimum)
+        for dock in (
+            self.layer_dock,
+            self.effects_dock,
+            self.automation_dock,
+            self.preview_dock,
+            self.performance_control_dock,
+            self.modulator_bank_dock,
+        ):
+            dock.setMinimumWidth(right_minimum)
+        self.deck_dock.setMinimumHeight(100 if compact else 120)
+        self.preview_dock.setMinimumSize(
+            190 if compact else 260,
+            130 if compact else 180,
+        )
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        was_compact = self._responsive_compact
+        self._sync_responsive_dock_constraints()
+        if (
+                was_compact is not None
+                and was_compact != self._responsive_compact
+                and self._responsive_layout_managed
+        ):
+            QTimer.singleShot(0, self._apply_default_dock_sizes)
+
     def _apply_default_dock_sizes(self) -> None:
-        # Scale side docks with the available window width so the central editor
-        # keeps a useful minimum working area on smaller displays.
+        # Rebalance dock widths against the available editor area. Portrait-ish
+        # 4:3 displays use narrower side docks and retain a usable center canvas.
+        compact = self._is_compact_workspace()
+        self._sync_responsive_dock_constraints()
         width = max(self.width(), self.minimumWidth())
-        side_space = max(500, width - 390)
-        left_width = max(240, min(340, int(side_space * 0.44)))
-        right_width = max(280, min(400, side_space - left_width))
-        deck_height = max(125, min(190, int(self.height() * 0.20)))
+        height = max(self.height(), self.minimumHeight())
+        if compact:
+            left_width = max(150, min(220, round(width * 0.17)))
+            right_width = max(170, min(250, round(width * 0.20)))
+            deck_height = max(100, min(170, round(height * 0.18)))
+        else:
+            left_width = max(220, min(340, round(width * 0.19)))
+            right_width = max(250, min(400, round(width * 0.23)))
+            deck_height = max(120, min(190, round(height * 0.20)))
         self.resizeDocks([self.media_dock], [left_width], Qt.Orientation.Horizontal)
         self.resizeDocks([self.layer_dock], [right_width], Qt.Orientation.Horizontal)
         self.resizeDocks([self.deck_dock], [deck_height], Qt.Orientation.Vertical)
@@ -300,6 +362,7 @@ class MainWindow(QMainWindow):
         ):
             dock.show()
         self.layer_dock.raise_()
+        self._responsive_layout_managed = True
         QTimer.singleShot(0, self._apply_default_dock_sizes)
         self._ui_settings.setValue("ui/main_window_state_v5", self._default_dock_state)
         self._ui_settings.sync()
