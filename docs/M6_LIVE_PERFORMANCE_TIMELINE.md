@@ -1,4 +1,6 @@
-# M6-C — Live Performance Timeline
+# M6 — Live Performance Timeline
+
+This is subsection C of the separate **M6 — Advanced Performance Controls** workstream. It is distinct from M6-C Advanced Visual Transformations in the broader Advanced VJ Environment roadmap.
 
 **Implementation status:** Merged to `main` in [PR #31](https://github.com/ilyaminineli/eli_lab-av-translator/pull/31), merge commit `c9b9f884`. The Performance Macro System is merged in [PR #30](https://github.com/ilyaminineli/eli_lab-av-translator/pull/30) and is used by the timeline's modulation events. Target-Windows musical rehearsal and projector acceptance remain open.
 
