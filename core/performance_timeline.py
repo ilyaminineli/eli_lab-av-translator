@@ -405,10 +405,10 @@ class PerformanceTimeline:
         }
         # Mark bars before the received clock as elapsed, but leave the exact
         # received position eligible so a marker on this bar/beat can still fire.
-        self._fired_ids.update(
+        self._fired_ids = {
             event.event_id for event in self.events
             if event.position < position
-        )
+        }
         self._last_position = (
             (bar_value, beat_value - 1)
             if beat_value > 1
