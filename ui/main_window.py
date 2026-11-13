@@ -4,7 +4,7 @@ import logging
 from pathlib import Path
 
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QAction, QGuiApplication, QKeySequence
+from PySide6.QtGui import QAction, QGuiApplication, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QDockWidget,
     QFileDialog,
@@ -118,6 +118,10 @@ class MainWindow(QMainWindow):
         self.tabifyDockWidget(self.automation_dock, self.preview_dock)
 
         self.performance_control_panel = PerformanceControlPanel(application, self)
+        self._performance_macro_shortcuts: list[QShortcut] = []
+        self.performance_control_panel.macros_changed.connect(
+            self._sync_performance_macro_shortcuts
+        )
         self.performance_control_dock = self._make_dock(
             "AUDIO / CONTROL",
             self.performance_control_panel,
@@ -217,6 +221,7 @@ class MainWindow(QMainWindow):
         self.asset_library_panel.composition_changed.connect(self.generators_panel.refresh)
 
         self._create_actions()
+        self._sync_performance_macro_shortcuts()
         # Keep a pristine Qt dock-state snapshot for the View → Restore Default Layout action.
         self._default_dock_state = self.saveState(4)
         saved_geometry = self._ui_settings.value("ui/main_window_geometry_v2")
@@ -392,6 +397,39 @@ class MainWindow(QMainWindow):
             | Qt.DockWidgetArea.BottomDockWidgetArea
         )
         return dock
+
+    def _sync_performance_macro_shortcuts(self) -> None:
+        for shortcut in self._performance_macro_shortcuts:
+            shortcut.setEnabled(False)
+            shortcut.deleteLater()
+        self._performance_macro_shortcuts.clear()
+        for macro in self.application.performance_macro_engine.list_macros():
+            if not macro.keyboard_shortcut:
+                continue
+            shortcut = QShortcut(QKeySequence(macro.keyboard_shortcut), self)
+            shortcut.setContext(Qt.ShortcutContext.ApplicationShortcut)
+            shortcut.activated.connect(
+                lambda macro_id=macro.macro_id: self._toggle_performance_macro(macro_id)
+            )
+            self._performance_macro_shortcuts.append(shortcut)
+
+    def _toggle_performance_macro(self, macro_id: str) -> None:
+        current = self.application.performance_macro_values().get(macro_id, 0.0)
+        value = 0.0 if current >= 0.5 else 1.0
+        try:
+            self.application.set_performance_macro_value(
+                macro_id,
+                value,
+                hold_seconds=1.5,
+            )
+            self.application.apply_modulation()
+            self.performance_control_panel.sync_performance_macros()
+            self.statusBar().showMessage(
+                f"{macro_id.upper()} · {value:.2f}",
+                1400,
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            _LOG.warning("Could not toggle Performance Macro %s: %s", macro_id, exc)
 
     def _create_actions(self) -> None:
         file_menu = self.menuBar().addMenu("&File")
