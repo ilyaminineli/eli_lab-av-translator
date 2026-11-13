@@ -29,7 +29,7 @@ Worker threads publish immutable or copied CPU-side data. They do not update Qt 
 9. When enabled, a renderer-local feedback engine samples its own bounded GPU history ring and writes the next history frame; no history texture is read back to the CPU or shared between output contexts.
 10. The final framebuffer is drawn into that output window's Qt framebuffer.
 
-The two outputs share application/composition state and CPU frame snapshots. They do **not** share GL texture objects or GL contexts. Feedback history is also per-renderer: preview and projector maintain independent GPU rings that are resized, reset and released with their own GL context. Project files persist feedback settings and reset generation, never frame history or GL handles.
+The two outputs share application/composition state and CPU frame snapshots. They do **not** share GL texture objects or GL contexts. The main Qt workspace also adapts its default dock constraints and sizing to compact/4:3 window shapes; saved user layouts are retained. Output rendering independently fits the project's configured composition canvas to the target aspect ratio without stretching (letterbox fit). Feedback history is also per-renderer: preview and projector maintain independent GPU rings that are resized, reset and released with their own GL context. Project files persist feedback settings and reset generation, never frame history or GL handles.
 
 ## GPU particle simulation lifecycle
 
@@ -37,6 +37,8 @@ The legacy `particles` generator remains a procedural shader field in the layer 
 
 - Each particle-system layer owns ping-pong RGBA32F state, metadata and source-target textures with framebuffer pairs. Position, velocity, age, lifetime, respawn cycle, size variation and optional reformation targets remain on the GPU.
 - Simulation advances at a fixed 60 Hz step with at most four substeps per render. Spawn randomness is derived from the configured seed, particle index and respawn cycle; no CPU particle arrays are updated per frame.
+- A deterministic per-substep birth gate spreads particles over time according to the configured emission rate. The requested particles/second is divided across populations; AUTO PERFORMANCE may modulate rate, speed, size, lifetime, turbulence, force, trail persistence and source reformation from live beat/onset/energy signals.
+- Systems remain resident for up to six seconds after a layer becomes temporarily inactive, preserving simulation/trail continuity across brief cuts. Removed, failed or expired systems are released; output teardown releases all renderer-local resources.
 - Point/circle/rectangle/path emitters are evaluated in the simulation shader. Video-luminance, image alpha/luma silhouette and contour emitters sample an existing layer texture with a bounded deterministic candidate search on respawn; sampled local coordinates are mapped through the source layer's transform.
 - When reformation is active, particle target coordinates are periodically refreshed from the current source frame. A GPU spring force returns particles toward those source positions, allowing footage to break apart and re-form without CPU particle updates.
 - A system contains one to four independently seeded populations. They share physics settings in D1/D2 but have stable emitter offsets and visual variation.
