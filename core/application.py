@@ -997,7 +997,12 @@ class Application:
                             self.set_performance_macro_value(
                                 macro_id,
                                 float(event.payload.get("value", 0.0)),
-                                hold_seconds=1.5,
+                                hold_seconds=max(
+                                    5.0,
+                                    (60.0 / max(20.0, float(self.performance_control.bpm)))
+                                    * max(1, int(self.performance_control.beats_per_bar))
+                                    * 2.0,
+                                ),
                                 now=event.received_at,
                             )
                     if event.kind in {"clock.beat", "clock.bar"}:
