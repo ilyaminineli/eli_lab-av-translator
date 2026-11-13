@@ -51,6 +51,21 @@ PERFORMANCE_MODIFIER_TARGETS: dict[str, ModifierTargetSpec] = {
     "layer.position_y": ModifierTargetSpec(
         "layer.position_y", "Layer Y position", 0.0, 1.0, "layer"
     ),
+    "layer_fx.mix": ModifierTargetSpec(
+        "layer_fx.mix", "Layer FX mix", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.monochrome": ModifierTargetSpec(
+        "layer_fx.monochrome", "Layer FX monochrome", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.threshold": ModifierTargetSpec(
+        "layer_fx.threshold", "Layer FX threshold", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.contrast": ModifierTargetSpec(
+        "layer_fx.contrast", "Layer FX contrast", 0.0, 2.5, "layer"
+    ),
+    "layer_fx.brightness": ModifierTargetSpec(
+        "layer_fx.brightness", "Layer FX brightness", -0.5, 0.5, "layer"
+    ),
     "layer_fx.chromatic": ModifierTargetSpec(
         "layer_fx.chromatic", "Layer FX chromatic aberration", 0.0, 1.0, "layer"
     ),
@@ -69,6 +84,7 @@ PERFORMANCE_MODIFIER_TARGETS: dict[str, ModifierTargetSpec] = {
     "layer_fx.saturation": ModifierTargetSpec(
         "layer_fx.saturation", "Layer FX saturation", 0.0, 2.5, "layer"
     ),
+
     "generator.animation_speed": ModifierTargetSpec(
         "generator.animation_speed", "Generator animation speed", 0.0, 8.0, "generator"
     ),
