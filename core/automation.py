@@ -161,6 +161,7 @@ class AutomationDirector:
         self._peak_particle_base: dict[str, tuple[str, float, str]] = {}
         self._active_variation_layer_ids: tuple[str, ...] = ()
         self._last_layer_fx_variation = False
+        self._last_peak_context = False
         self._director = GenerativeVariationDirector()
         self.generator_settings_changed = None
         self.palette_changed = None
@@ -203,6 +204,7 @@ class AutomationDirector:
         self._peak_particle_base.clear()
         self._active_variation_layer_ids = ()
         self._last_layer_fx_variation = False
+        self._last_peak_context = False
         self._macro_values.clear()
         self._last_scene_id = ""
         self._director.reset(self.settings.palette_memory_phrases)
@@ -225,6 +227,12 @@ class AutomationDirector:
 
         if self.settings.randomize_layout:
             self._randomize_layout(now=started)
+        if (
+                self._uses_constrained_generative_rules
+                and self.settings.randomize_effects
+                and self.settings.effect_after_transition
+        ):
+            self._director.mark_effect_applied()
         if self.settings.randomize_effects and not (
                 self.settings.performance_style == "generative"
                 and self.settings.constrained_generative
@@ -1204,11 +1212,15 @@ class AutomationDirector:
             and self._generators_due is not None
             and current >= self._generators_due
         )
-        new_variation_due = bool(due_deck_ids or layout_due or generators_due)
+        peak_context_changed = peak_context != self._last_peak_context
+        new_variation_due = bool(
+            due_deck_ids or layout_due or generators_due or peak_context_changed
+        )
         if new_variation_due:
             self._active_variation_layer_ids = self._select_variation_layers(
                 prefer_particles=peak_context
             ) or ()
+        self._last_peak_context = peak_context
         layer_ids = self._active_variation_layer_ids
         allowed = set(layer_ids)
         changed = False
