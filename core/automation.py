@@ -11,7 +11,9 @@ from core.composition import Layer
 from effects.layer_settings import LAYER_EFFECT_PRESETS, apply_layer_effect_preset
 from effects.settings import PRESETS, EffectSettings
 from generators.catalog import GENERATOR_TYPES, normalize_settings
+from generators.palettes import palette_look, palette_names
 from generators.text_pools import random_text_sample
+from core.generative_director import GenerativeVariationDirector
 from media.models import MediaAsset
 
 _LOG = logging.getLogger(__name__)
@@ -45,6 +47,18 @@ class AutomationSettings:
     text_fragments: int = 16
     performance_style: str = "random"
     musical_sync: str = "time"
+    constrained_generative: bool = True
+    max_layers_per_variation: int = 2
+    preserve_background_source: bool = True
+    keep_visual_anchor: bool = True
+    effect_after_transition: bool = True
+    palette_memory_phrases: int = 4
+    peak_particle_boost: float = 0.35
+    slow_breakdown_transitions: bool = True
+    breakdown_transition_min_seconds: float = 5.0
+    breakdown_transition_max_seconds: float = 9.0
+    layout_transition_min_seconds: float = 0.65
+    layout_transition_max_seconds: float = 1.8
 
     def normalize(self) -> None:
         self.min_segment_seconds = max(0.5, float(self.min_segment_seconds))
@@ -70,6 +84,28 @@ class AutomationSettings:
             self.performance_style = "random"
         if self.musical_sync not in {"time", "bar", "phrase", "hybrid"}:
             self.musical_sync = "time"
+        self.constrained_generative = bool(self.constrained_generative)
+        self.max_layers_per_variation = max(1, min(2, int(self.max_layers_per_variation)))
+        self.preserve_background_source = bool(self.preserve_background_source)
+        self.keep_visual_anchor = bool(self.keep_visual_anchor)
+        self.effect_after_transition = bool(self.effect_after_transition)
+        self.palette_memory_phrases = max(0, min(16, int(self.palette_memory_phrases)))
+        self.peak_particle_boost = max(0.0, min(1.0, float(self.peak_particle_boost)))
+        self.slow_breakdown_transitions = bool(self.slow_breakdown_transitions)
+        self.layout_transition_min_seconds = max(
+            0.1, min(8.0, float(self.layout_transition_min_seconds))
+        )
+        self.layout_transition_max_seconds = max(
+            self.layout_transition_min_seconds,
+            min(12.0, float(self.layout_transition_max_seconds)),
+        )
+        self.breakdown_transition_min_seconds = max(
+            2.0, min(20.0, float(self.breakdown_transition_min_seconds))
+        )
+        self.breakdown_transition_max_seconds = max(
+            self.breakdown_transition_min_seconds,
+            min(30.0, float(self.breakdown_transition_max_seconds)),
+        )
 
     def to_dict(self) -> dict[str, object]:
         return asdict(self)
@@ -119,7 +155,13 @@ class AutomationDirector:
         self._performance_bar_index = 0
         self._performance_section = "idle"
         self._last_musical_event_at = 0.0
+        self._macro_values: dict[str, float] = {}
+        self._last_scene_id = ""
+        self._layout_morphs: dict[str, dict[str, object]] = {}
+        self._peak_particle_base: dict[str, tuple[str, float]] = {}
+        self._director = GenerativeVariationDirector()
         self.generator_settings_changed = None
+        self.palette_changed = None
 
     @staticmethod
     def _interval(rng: random.Random, low: float, high: float) -> float:
@@ -155,6 +197,11 @@ class AutomationDirector:
             if duration_seconds is not None else None
         )
         self._deck_due.clear()
+        self._layout_morphs.clear()
+        self._peak_particle_base.clear()
+        self._macro_values.clear()
+        self._last_scene_id = ""
+        self._director.reset(self.settings.palette_memory_phrases)
         self.running = True
         loaded = 0
 
@@ -173,8 +220,12 @@ class AutomationDirector:
             )
 
         if self.settings.randomize_layout:
-            self._randomize_layout()
-        if self.settings.randomize_effects:
+            self._randomize_layout(now=started)
+        if self.settings.randomize_effects and not (
+                self.settings.performance_style == "generative"
+                and self.settings.constrained_generative
+                and self.settings.effect_after_transition
+        ):
             self._randomize_effects()
         self._layout_due = started + self._interval(
             self.rng, self.settings.min_layout_interval, self.settings.max_layout_interval
