@@ -57,6 +57,11 @@ uniform vec2 u_emitter_source_position;
 uniform vec2 u_emitter_source_scale;
 uniform float u_emitter_source_rotation;
 
+// Keep the fullscreen quad UV attribute active in this program. The shared
+// VBO/VAO binds both in_position and in_uv; using v_uv here prevents the GLSL
+// linker from optimizing in_uv out before ModernGL creates the simulation VAO.
+in vec2 v_uv;
+
 layout(location = 0) out vec4 out_state;
 layout(location = 1) out vec4 out_metadata;
 layout(location = 2) out vec4 out_target;
@@ -190,7 +195,9 @@ void main() {
         return;
     }
 
-    vec2 uv = (vec2(pixel) + vec2(0.5)) / u_state_size;
+    // The fullscreen quad interpolates texel-centre UVs over this state target.
+    // gl_FragCoord remains the integer particle index; v_uv is for texture reads.
+    vec2 uv = v_uv;
     vec4 state = texture(u_state, uv);
     vec4 metadata = texture(u_metadata, uv);
     vec4 target_data = texture(u_target, uv);
