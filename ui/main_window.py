@@ -53,14 +53,18 @@ class MainWindow(QMainWindow):
         screen = QGuiApplication.primaryScreen()
         available = screen.availableGeometry() if screen is not None else None
         if available is not None:
-            initial_width = min(1600, max(860, round(available.width() * 0.95)))
-            initial_height = min(980, max(600, round(available.height() * 0.92)))
+            initial_width = min(1600, max(720, round(available.width() * 0.95)))
+            initial_height = min(980, max(480, round(available.height() * 0.92)))
             self.resize(initial_width, initial_height)
+            minimum_width = min(860, max(720, available.width() - 32))
+            minimum_height = min(600, max(480, available.height() - 32))
+            self.setMinimumSize(minimum_width, minimum_height)
         else:
             self.resize(1600, 980)
+            self.setMinimumSize(860, 600)
         # Leave enough room for a compact 4:3 workspace on older projectors.
-        self.setMinimumSize(860, 600)
-        self._responsive_layout_managed = True
+        self._responsive_layout_managed = False
+        self._responsive_layout_ready = False
         self._responsive_compact: bool | None = None
         self.setDockOptions(
             QMainWindow.DockOption.AnimatedDocks
@@ -224,6 +228,7 @@ class MainWindow(QMainWindow):
                     and self.restoreState(saved_state, 4)
             )
         self._responsive_layout_managed = not restored
+        self._responsive_layout_ready = True
         self._sync_responsive_dock_constraints()
         if not restored:
             QTimer.singleShot(0, self._apply_default_dock_sizes)
@@ -290,7 +295,10 @@ class MainWindow(QMainWindow):
 
     def _sync_responsive_dock_constraints(self) -> None:
         """Relax dock minimums for 4:3 and compact projector workspaces."""
-        if not hasattr(self, "media_dock"):
+        if (
+                not getattr(self, "_responsive_layout_ready", False)
+                or not hasattr(self, "media_dock")
+        ):
             return
         compact = self._is_compact_workspace()
         if compact == self._responsive_compact:
@@ -317,6 +325,8 @@ class MainWindow(QMainWindow):
 
     def resizeEvent(self, event) -> None:
         super().resizeEvent(event)
+        if not getattr(self, "_responsive_layout_ready", False):
+            return
         was_compact = self._responsive_compact
         self._sync_responsive_dock_constraints()
         if (
