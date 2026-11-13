@@ -1427,7 +1427,12 @@ class Application:
                 else float(value)
             )
             layer.generator_settings = normalize_settings(layer.generator_type, settings)
-            self._request_generator_raster(layer)
+            if setting_key not in {
+                "animation_speed", "animation_amount",
+                "text_animation_speed", "text_animation_amount",
+                "text_animation_columns",
+            }:
+                self._request_generator_raster(layer)
             return True
         if target_id.startswith("overlay."):
             player = self._overlay_images.get(layer.id)
@@ -1542,11 +1547,57 @@ class Application:
                     modulator_removed=modulator_id,
                 )
         self.modulator_bank_engine.reset_modulator(modulator_id)
+        for macro in self.performance_macro_engine.list_macros():
+            if macro.input_source == source_id:
+                updated = PerformanceMacro.from_dict(macro.to_dict())
+                updated.input_source = ""
+                self.performance_macro_engine.update_macro(updated)
         self.events.publish(
             "performance.modulator_bank.updated",
             modulator_id=modulator_id,
         )
         return True
+
+    def set_performance_macro_value(
+            self,
+            macro_id: str,
+            value: float,
+            hold_seconds: float = 1.5,
+            now: float | None = None,
+    ) -> float:
+        """Set one normalized macro from a manual, MIDI, OSC or keyboard source."""
+        result = self.performance_macro_engine.set_value(
+            macro_id,
+            value,
+            hold_seconds=hold_seconds,
+            now=now,
+        )
+        self.events.publish(
+            "performance.macros.updated",
+            macro_id=str(macro_id),
+            value=result,
+            source="manual",
+        )
+        return result
+
+    def update_performance_macro(
+            self,
+            macro: PerformanceMacro | dict[str, object],
+    ) -> None:
+        item = (
+            macro if isinstance(macro, PerformanceMacro)
+            else PerformanceMacro.from_dict(macro)
+        )
+        self.performance_macro_engine.update_macro(item)
+        self.events.publish(
+            "performance.macros.updated",
+            macro_id=item.macro_id,
+            value=self.performance_macro_engine.values().get(item.macro_id, item.value),
+            source="configuration",
+        )
+
+    def performance_macro_values(self) -> dict[str, float]:
+        return self.performance_macro_engine.values()
 
     def duplicate_modulator(self, modulator_id: str) -> str:
         definition = self.modulator_bank.duplicate(modulator_id)
@@ -1610,6 +1661,7 @@ class Application:
                 now=now,
             )
         )
+        sources.update(self.performance_macro_engine.evaluate(sources, now=now))
         return self.performance_modifier_engine.evaluate(
             self.composition.layers,
             sources,
@@ -1902,6 +1954,7 @@ class Application:
                 now=now,
             )
         )
+        sources.update(self.performance_macro_engine.evaluate(sources, now=now))
         selected = self.composition.get_layer(self._selected_layer_id or "")
         claimed = {
             target_id
@@ -1962,11 +2015,14 @@ class Application:
         return outputs
 
     def _validate_modulation_bank_source(self, source_id: str) -> None:
-        if not source_id.startswith("modulator."):
-            return
-        modulator_id = source_id.removeprefix("modulator.")
-        if self.modulator_bank.get(modulator_id) is None:
-            raise ValueError(f"Unknown Modulator Bank source: {source_id}")
+        if source_id.startswith("modulator."):
+            modulator_id = source_id.removeprefix("modulator.")
+            if self.modulator_bank.get(modulator_id) is None:
+                raise ValueError(f"Unknown Modulator Bank source: {source_id}")
+        elif source_id.startswith("performance_macro."):
+            macro_id = source_id.removeprefix("performance_macro.")
+            if self.performance_macro_engine.get(macro_id) is None:
+                raise ValueError(f"Unknown Performance Macro source: {source_id}")
 
     def add_modulation_route(self, route) -> None:
         self._validate_modulation_bank_source(str(route.source_id))
@@ -2130,6 +2186,8 @@ class Application:
             current = self._get_modulation_target(target)
             if current is not None:
                 values[target] = current
+        for macro_id, value in self.performance_macro_values().items():
+            values[f"performance_macro.{macro_id}"] = float(value)
         values["scene.intensity"] = float(self.performance_control.intensity)
         values["transport.tempo"] = float(self.transport.bpm)
         settings = self.automation.settings
@@ -2184,6 +2242,12 @@ class Application:
             if active and not was_active:
                 return self.schedule_performance_scene(scene_id)
             return False
+        if target.startswith("performance_macro."):
+            macro_id = target.removeprefix("performance_macro.")
+            if macro_id not in PERFORMANCE_MACRO_IDS:
+                return False
+            self.set_performance_macro_value(macro_id, value, hold_seconds=1.5)
+            return True
         if target.startswith("macro."):
             name = target.removeprefix("macro.")
             if not name or not name.replace("_", "").isalnum():
