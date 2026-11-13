@@ -24,6 +24,11 @@ from core.modulator_bank import (
 )
 from core.osc_protocol import OSCReceiver
 from core.performance_control import ControlEvent, ControlEventQueue, PerformanceControlState
+from core.performance_macros import (
+    PERFORMANCE_MACRO_IDS,
+    PerformanceMacro,
+    PerformanceMacroEngine,
+)
 from core.performance_environment import (
     MIDIInputService,
     MIDIMapping,
@@ -148,6 +153,7 @@ class Application:
         self.scene_profiles = SceneProfileRegistry()
         self.active_palette = palette_names()[0]
         self.modulation = ModulationMatrix()
+        self.performance_macro_engine = PerformanceMacroEngine()
         self.modulator_bank = ModulatorBank()
         self.modulator_bank_engine = ModulatorBankEngine()
         self.performance_modifier_engine = LayerPerformanceModifierEngine()
