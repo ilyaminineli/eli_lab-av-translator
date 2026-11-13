@@ -13,7 +13,9 @@ from core.performance_control import ControlEvent
 _LOG = logging.getLogger(__name__)
 _NAMESPACE = "/eli_lab/v1"
 _IDENTIFIER = re.compile(r"^[A-Za-z0-9_.:-]{1,64}$")
-_MACROS = frozenset({"energy", "cutoff"})
+_MACROS = frozenset({
+    "energy", "cutoff", "chaos", "density", "depth", "decay", "pressure", "fragment"
+})
 _SCENES = frozenset({
     "in", "exp", "tm_a", "trns", "dev", "fr", "ssp", "rtrns",
     "rc", "rc_w", "peak", "intd", "s_s", "rls", "c", "end",
