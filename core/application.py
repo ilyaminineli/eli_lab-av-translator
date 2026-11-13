@@ -88,6 +88,11 @@ _SELECTED_LAYER_MODULATION_TARGETS = (
     "generator.particle_turbulence",
     "generator.particle_force_strength",
     "generator.particle_reform_strength",
+    "layer_fx.mix",
+    "layer_fx.monochrome",
+    "layer_fx.threshold",
+    "layer_fx.contrast",
+    "layer_fx.brightness",
     "layer_fx.chromatic",
     "layer_fx.scanlines",
     "layer_fx.posterize",
@@ -2092,8 +2097,10 @@ class Application:
                     "generator.particle_emission_rate", "generator.particle_system_size",
                     "generator.particle_lifetime", "generator.particle_turbulence",
                     "generator.particle_force_strength", "generator.particle_reform_strength",
-                    "layer_fx.chromatic", "layer_fx.scanlines", "layer_fx.posterize",
-                    "layer_fx.invert", "layer_fx.hue", "layer_fx.saturation",
+                    "layer_fx.mix", "layer_fx.monochrome", "layer_fx.threshold",
+                    "layer_fx.contrast", "layer_fx.brightness", "layer_fx.chromatic",
+                    "layer_fx.scanlines", "layer_fx.posterize", "layer_fx.invert",
+                    "layer_fx.hue", "layer_fx.saturation",
             ):
                 current = self._get_layer_modifier_target(layer.id, target)
                 if current is not None:
