@@ -242,6 +242,7 @@ void main() {
 
     vec2 sample_local = local;
     float text_mask = 1.0;
+    float text_sample_inside = 1.0;
     // Warp deforms the geometry texture itself, not just its layer transform.
     if (u_generator_type == 3 && u_animation == 5) {
         float warp_phase = u_time * u_animation_speed;
@@ -268,7 +269,10 @@ void main() {
             float jitter = hash21(seed + floor(text_phase * 8.0)) - 0.5;
             sample_local += vec2(jitter, -jitter) * u_text_animation_amount;
         } else if (u_text_animation == 5) {
-            sample_local.y = fract(local.y + text_phase * 0.045);
+            // Scroll the source through the layer viewport without wrapping the
+            // last row back to the first row. The empty edge is intentional.
+            float scroll_offset = mod(text_phase * 0.045 + 1.0, 2.0) - 1.0;
+            sample_local.y = local.y + scroll_offset;
         } else if (u_text_animation == 6) {
             float line = floor(local.y * 45.0);
             float gate = step(0.86, hash21(vec2(line, floor(text_phase * 12.0))));
@@ -330,10 +334,22 @@ void main() {
             sample_local.x += collision * direction * u_text_animation_amount * 0.22;
             sample_local.y += abs(collision) * u_text_animation_amount * 0.06;
         } else if (u_text_animation == 14) {
+            // Mechanical scroll uses stepped rows but obeys the same viewport
+            // bounds rather than wrapping glyph fragments across opposite edges.
             float rows = max(8.0, u_text_animation_columns);
-            float offset = text_phase * 0.9;
-            sample_local.y = fract(floor((local.y + offset) * rows) / rows);
+            float offset = mod(text_phase * 0.9 + 1.0, 2.0) - 1.0;
+            float shifted_y = local.y + offset;
+            sample_local.y = floor(shifted_y * rows) / rows;
         }
+    }
+
+    if (u_generator_type == 2) {
+        // Displacements sample only the texture's valid region. Previously UVs
+        // were clamped at the edges, stretching edge glyphs into visible streaks.
+        text_sample_inside = (
+            step(0.0, sample_local.x) * step(sample_local.x, 1.0)
+            * step(0.0, sample_local.y) * step(sample_local.y, 1.0)
+        );
     }
 
     vec4 source;
@@ -357,7 +373,7 @@ void main() {
             ).b;
         }
         if (u_generator_type == 2) {
-            source.a *= text_mask;
+            source.a *= text_mask * text_sample_inside;
         }
         if (u_mask_enabled == 1) {
             vec4 matte = texture(u_mask, uv_safe);
