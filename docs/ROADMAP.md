@@ -448,9 +448,23 @@ See [M6 Live Performance and Workspace Integration](M6_LIVE_PERFORMANCE_WORKSPAC
 
 ## M6 — Advanced performance controls
 
-The Performance Macro System is being implemented as a live-performance follow-up. Six normalized 0–1 controls — CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT — sit above the existing modulation matrix and per-layer modifier engine. Each macro fans out to compatible master/layer targets and can be assigned one continuous source from audio analysis, transport/rhythm, Sonic Pi energy/cutoff or the Modulator Bank. Manual sliders, configurable keyboard toggles, MIDI CC/note learn and the versioned OSC `/eli_lab/v1/macro/set` route are the direct control paths. Macro definitions, assignments and shortcuts are included in project and scene persistence.
+### B. Performance Macro System
 
-The implementation is on `m6/performance-macros` and is not merged yet. See [M6 Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md) for current behaviour and target-machine verification.
+**Merged to `main` in PR #30.** Six normalized 0–1 controls — CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT — sit above the existing modulation matrix and per-layer modifier engine. Each macro fans out to compatible master and per-layer targets. Macros can take a continuous source from audio analysis, transport/rhythm, Sonic Pi energy/cutoff or Modulator Bank outputs, while manual sliders, keyboard toggles, MIDI CC/note learn and the versioned OSC `/eli_lab/v1/macro/set` route provide direct control. Macro values, source assignments and keyboard shortcuts are persisted with projects and performance sets.
+
+See [M6 Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md).
+
+### C. Live Performance Timeline
+
+**Draft implementation on `m6/live-performance-timeline`; not yet merged.** The timeline is a saved bar/beat event plan that runs beside InternalTransport or Sonic Pi. It adds scene and phrase markers, scene recalls, deck/clip triggers, master effect changes, Text Art regeneration, palette changes, Performance Macro modulation and transition cues.
+
+The timeline is musical rather than frame-based: each event is positioned at a 1-based bar and beat, events at the same position retain authored order, and the one-shot cursor can be armed, disarmed and rewound. The existing OSC protocol reports a bar clock with BPM, so the application interpolates beats locally between fresh bar packets. It does not claim frame-accurate external clock. Timeline definitions are saved in project/performance-set payloads, but playback never auto-arms on project open.
+
+The dedicated **LIVE PERFORMANCE TIMELINE** dock edits event positions, labels, enabled state and validated JSON payloads, and can insert the example section markers at bars 1, 17, 33, 49, 65, 81, 97 and 113. Event actions execute on the application/UI tick and reuse the existing scene, deck, EffectSettings, generator, palette and macro APIs. AUTO PERFORMANCE can continue generating variation inside the timeline's structural sections.
+
+Current boundaries: no SMPTE/frame timeline, conditional branches or nested sequences; phrase markers are authored markers rather than inferred phrases; scene transitions retain the existing numeric-morph / discrete-cut behaviour. The target-Windows live rehearsal and musical timing acceptance remain open.
+
+See [M6-C — Live Performance Timeline](M6_LIVE_PERFORMANCE_TIMELINE.md).
 
 ## Engineering principles across all milestones
 
