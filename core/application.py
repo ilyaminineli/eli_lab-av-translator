@@ -48,6 +48,7 @@ from core.performance_service import (
     install_default_layer_modifiers,
     install_default_matrix_routes,
     install_default_modulators,
+    install_default_performance_macro_modifiers,
     set_default_routing_enabled,
 )
 from core.performance_transport import InternalTransport, Quantization
@@ -186,6 +187,7 @@ class Application:
         self.composition = Composition()
         self.layer_manager = LayerManager(self.composition, self.events)
         self._create_default_layers()
+        install_default_performance_macro_modifiers(self.composition.layers)
         self.current_project_path: Path | None = None
         self.window: Any | None = None
 
@@ -259,6 +261,7 @@ class Application:
             ) + 1,
         )
         layer.source_id = f"generator:{layer.id}"
+        install_default_performance_macro_modifiers([layer])
         self.events.publish("generator.added", layer=layer)
         return layer
 
@@ -307,6 +310,7 @@ class Application:
         except Exception:
             self.layer_manager.remove_layer(layer.id)
             raise
+        install_default_performance_macro_modifiers([layer])
         self.events.publish("overlay.added", layer=layer)
         return layer
 
@@ -393,9 +397,12 @@ class Application:
         self.composition = Composition()
         self.layer_manager = LayerManager(self.composition, self.events)
         self._create_default_layers()
+        self.performance_macro_engine.reset()
+        install_default_performance_macro_modifiers(self.composition.layers)
         self.effects.reset()
         self.control_events.clear()
         self.performance_control.reset()
+        self.performance_macro_engine.reset()
         self.transport.stop()
         self.transport.load_settings({
             "bpm": 120.0,
@@ -981,6 +988,15 @@ class Application:
                             self._activate_scene_profile(scene_id)
                     elif event.kind == "cue.trigger":
                         self.trigger_performance_scene_cue(str(event.payload.get("name", "")))
+                    elif event.kind == "macro.set":
+                        macro_id = str(event.payload.get("name", ""))
+                        if macro_id in PERFORMANCE_MACRO_IDS:
+                            self.set_performance_macro_value(
+                                macro_id,
+                                float(event.payload.get("value", 0.0)),
+                                hold_seconds=1.5,
+                                now=event.received_at,
+                            )
                     if event.kind in {"clock.beat", "clock.bar"}:
                         self._fire_due_external_scene_recall()
                     self._handle_performance_mode_event(event)
@@ -2326,6 +2342,7 @@ class Application:
             },
             "modulation_routes": self.modulation.to_dict(),
             "modulator_bank": self.modulator_bank.to_dict(),
+            "performance_macros": self.performance_macro_engine.to_dict(),
             "palette": self.active_palette,
         }
         scene = PerformanceScene(
@@ -2554,6 +2571,10 @@ class Application:
         if isinstance(bank_state, dict):
             self.modulator_bank.load_dict(bank_state)
             self.modulator_bank_engine.reset()
+        macro_state = snapshot.get("performance_macros")
+        if isinstance(macro_state, list):
+            self.performance_macro_engine.load_dict(macro_state)
+            self._sanitize_performance_macro_sources()
         routes = snapshot.get("modulation_routes")
         if isinstance(routes, list):
             self.modulation.load_dict(routes)
@@ -2601,6 +2622,7 @@ class Application:
 
         self.composition = candidate
         self.layer_manager = LayerManager(self.composition, self.events)
+        install_default_performance_macro_modifiers(self.composition.layers)
         self.performance_modifier_engine.reset()
         self._restore_scene_decks(scene.snapshot.get("decks"))
         self._clear_overlays()
@@ -2770,6 +2792,7 @@ class Application:
                 "scene_profiles": self.scene_profiles.to_dict(),
                 "active_palette": self.active_palette,
                 "modulator_bank": self.modulator_bank.to_dict(),
+                "performance_macros": self.performance_macro_engine.to_dict(),
                 "midi_mappings": getattr(
                     getattr(self, "midi_mapping_engine", None), "to_dict", lambda: []
                 )(),
@@ -2812,6 +2835,12 @@ class Application:
                     layer.position = (float(base_value), layer.position[1])
                 elif field == "position_y":
                     layer.position = (layer.position[0], float(base_value))
+            elif target_id.startswith("layer_fx."):
+                field = target_id.split(".", 1)[1]
+                fx_settings = normalize_layer_effects(layer.layer_effects)
+                if field in fx_settings and field not in {"enabled", "stages"}:
+                    fx_settings[field] = float(base_value)
+                    layer.layer_effects = normalize_layer_effects(fx_settings)
             elif target_id.startswith("generator.") and layer.generator_type:
                 setting_key = self._generator_modifier_setting_key(
                     target_id.split(".", 1)[1]
@@ -2942,6 +2971,7 @@ class Application:
         self.generator_raster_service.invalidate_missing(set())
         self.composition = composition
         self.layer_manager = LayerManager(self.composition, self.events)
+        install_default_performance_macro_modifiers(self.composition.layers)
         for layer in self.composition.layers:
             if layer.source_type == "overlay":
                 try:
@@ -3008,6 +3038,10 @@ class Application:
             self.modulator_bank.load_dict(
                 performance_settings.get("modulator_bank", {})
             )
+            self.performance_macro_engine.load_dict(
+                performance_settings.get("performance_macros", [])
+            )
+            self._sanitize_performance_macro_sources()
             known_modulator_sources = {
                 f"modulator.{definition.modulator_id}"
                 for definition in self.modulator_bank.list_modulators()
