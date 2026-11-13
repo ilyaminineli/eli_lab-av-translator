@@ -1574,6 +1574,20 @@ class Application:
         )
         return True
 
+    def _sanitize_performance_macro_sources(self) -> None:
+        """Drop Modulator Bank references that are missing from a loaded project."""
+        for macro in self.performance_macro_engine.list_macros():
+            source_id = macro.input_source
+            if (
+                    source_id.startswith("modulator.")
+                    and self.modulator_bank.get(
+                        source_id.removeprefix("modulator.")
+                    ) is None
+            ):
+                updated = PerformanceMacro.from_dict(macro.to_dict())
+                updated.input_source = ""
+                self.performance_macro_engine.update_macro(updated)
+
     def set_performance_macro_value(
             self,
             macro_id: str,
@@ -1604,6 +1618,7 @@ class Application:
             macro if isinstance(macro, PerformanceMacro)
             else PerformanceMacro.from_dict(macro)
         )
+        self._validate_modulation_bank_source(item.input_source)
         self.performance_macro_engine.update_macro(item)
         self.events.publish(
             "performance.macros.updated",
