@@ -98,6 +98,20 @@ _SELECTED_LAYER_MODULATION_TARGETS = (
     "overlay.frame_hold",
 )
 
+_MASTER_MODULATION_FIELDS = frozenset({
+    "brightness", "exposure", "contrast", "saturation", "gamma",
+    "temperature", "tint", "hue", "vignette", "grain", "scanlines",
+    "chromatic", "glitch", "pixelate", "posterize", "invert", "halftone",
+    "solarize", "transform_mix", "kaleidoscope_slices",
+    "kaleidoscope_rotation", "kaleidoscope_zoom", "mosaic_tiles",
+    "pixel_sort_amount", "pixel_sort_threshold", "edge_amount", "dither",
+    "displacement_amount", "displacement_scale", "feedback_amount",
+    "feedback_decay", "feedback_zoom", "feedback_rotation",
+    "feedback_translate_x", "feedback_translate_y", "feedback_color_shift",
+    "feedback_distortion", "feedback_motion_warp", "feedback_datamosh",
+    "feedback_delay_frames",
+})
+
 
 class Application:
     """Coordinates application services without depending on Qt widgets."""
@@ -1596,11 +1610,9 @@ class Application:
     def _get_modulation_target(self, target_id: str) -> float | None:
         if target_id.startswith("master."):
             field = target_id.split(".", 1)[1]
-            if field in {
-                "brightness", "exposure", "contrast", "saturation",
-                "grain", "glitch", "vignette",
-            }:
-                return float(getattr(self.effects, field))
+            if field in _MASTER_MODULATION_FIELDS:
+                value = getattr(self.effects, field)
+                return float(value) if isinstance(value, (int, float)) else None
             return None
 
         if target_id.startswith("selected_layer."):
@@ -1676,14 +1688,16 @@ class Application:
     def _set_modulation_target(self, target_id: str, value: float) -> bool:
         if target_id.startswith("master."):
             field = target_id.split(".", 1)[1]
-            if field in {
-                "brightness", "exposure", "contrast", "saturation",
-                "grain", "glitch", "vignette",
-            }:
+            if field not in _MASTER_MODULATION_FIELDS:
+                return False
+            current = getattr(self.effects, field)
+            if isinstance(current, int) and not isinstance(current, bool):
+                setattr(self.effects, field, int(round(value)))
+            else:
                 setattr(self.effects, field, float(value))
-                self.effects.preset_name = "Custom"
-                return True
-            return False
+            self.effects.clamp()
+            self.effects.preset_name = "Custom"
+            return True
 
         if target_id.startswith("selected_layer."):
             layer = self.composition.get_layer(self._selected_layer_id or "")
@@ -2087,6 +2101,18 @@ class Application:
         for target in (
                 "master.brightness", "master.exposure", "master.contrast",
                 "master.saturation", "master.grain", "master.glitch", "master.vignette",
+                "master.hue", "master.chromatic", "master.scanlines", "master.pixelate",
+                "master.posterize", "master.invert", "master.halftone", "master.solarize",
+                "master.transform_mix", "master.kaleidoscope_slices",
+                "master.kaleidoscope_rotation", "master.kaleidoscope_zoom",
+                "master.mosaic_tiles", "master.pixel_sort_amount",
+                "master.pixel_sort_threshold", "master.edge_amount", "master.dither",
+                "master.displacement_amount", "master.displacement_scale",
+                "master.feedback_amount", "master.feedback_decay", "master.feedback_zoom",
+                "master.feedback_rotation", "master.feedback_translate_x",
+                "master.feedback_translate_y", "master.feedback_color_shift",
+                "master.feedback_distortion", "master.feedback_motion_warp",
+                "master.feedback_datamosh", "master.feedback_delay_frames",
         ):
             current = self._get_modulation_target(target)
             if current is not None:
