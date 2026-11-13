@@ -634,6 +634,7 @@ class Compositor:
 
     MAX_PARTICLE_SYSTEMS = 4
     MAX_TOTAL_PARTICLES = 16384
+    PARTICLE_RETENTION_SECONDS = 6.0
 
     def __init__(self, context: moderngl.Context) -> None:
         self.ctx = context
@@ -691,6 +692,7 @@ class Compositor:
         self.post_framebuffer: moderngl.Framebuffer | None = None
         self.feedback_engine = FeedbackEngine(context, self.vertex_buffer)
         self.particle_systems: dict[str, ParticleSystem2] = {}
+        self.particle_system_last_active: dict[str, float] = {}
         self.size = (0, 0)
 
     @staticmethod
@@ -915,16 +917,36 @@ class Compositor:
                 _LOG.exception("Particle System 2.0 render failed for %s", particle_layer.name)
                 system.release()
                 self.particle_systems.pop(particle_layer.id, None)
+                self.particle_system_last_active.pop(particle_layer.id, None)
                 continue
             if texture is not None:
                 particle_outputs[particle_layer.id] = texture
                 active_particle_ids.add(particle_layer.id)
+                self.particle_system_last_active[particle_layer.id] = float(time_seconds)
                 particle_budget -= requested
                 active_particle_systems += 1
 
+        live_particle_ids = {
+            layer.id
+            for layer in ordered_layers
+            if layer.source_type == "generator"
+            and layer.generator_type == "particle_system_2"
+        }
         for layer_id in tuple(self.particle_systems):
-            if layer_id not in active_particle_ids:
+            last_active = self.particle_system_last_active.get(layer_id)
+            inactive_for = (
+                float("inf")
+                if last_active is None
+                else max(0.0, float(time_seconds) - last_active)
+            )
+            removed = layer_id not in live_particle_ids
+            expired = (
+                layer_id not in active_particle_ids
+                and inactive_for > self.PARTICLE_RETENTION_SECONDS
+            )
+            if removed or expired:
                 self.particle_systems.pop(layer_id).release()
+                self.particle_system_last_active.pop(layer_id, None)
 
         current = 0
         for layer in ordered_layers:
@@ -1107,6 +1129,7 @@ class Compositor:
         for system in self.particle_systems.values():
             system.release()
         self.particle_systems.clear()
+        self.particle_system_last_active.clear()
         for texture in self.source_textures.values():
             texture.release()
         self.source_textures.clear()

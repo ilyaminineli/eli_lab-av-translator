@@ -372,7 +372,7 @@ See [M5 Autonomous Performance](M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance E
 
 ## Status
 
-**In progress — M6-A1, M6-B1, M6-C1 and M6-D1/D2 foundations.** A1 and B1 are merged to `main`. C1 is in draft PR #24; D1/D2 Particle System 2.0 is in draft PR #25 stacked on C1. Quality workflow #143 passed on the D1/D2 head; GPU visual validation remains open. D1/D2 preserve the legacy field and add bounded GPU physics, path/video/image/contour emitters and source reformation. Media bins, synchronized multi-trigger, scene transitions, later advanced transforms and D3 particle authoring remain open.
+**Merged foundations — M6-A1, M6-B1, M6-C1, M6-D1/D2 and M6-E1 are on `main`.** C1 adds GPU transforms and feedback; D1/D2 add the bounded GPU particle system and source/path emitters; E1 adds rich typography, vertical layouts, paths and shader motion. The current live-performance follow-up connects these new targets to AUTO PERFORMANCE, adds rate-based particle emission and retains state across short layer cuts. Adaptive compact/4:3 workspace sizing and the Queer text pool are included. Target-Windows GPU/projector acceptance remains open; media bins, synchronized multi-trigger, scene transitions and D3 particle authoring remain future work.
 
 ## A. A proper live mixer
 
@@ -405,7 +405,7 @@ The detailed initial scope and staged acceptance checklist are in [M6 Advanced V
 
 ## M6-B — VJ Scene and Composition Banks
 
-**In progress — M6-B1 full-scene capture/recall.** The existing Performance Scene Bank is being promoted into a first-class VJ Scene Bank without creating a parallel persistence system. B1 captures deck assignments, composition/layers, master and layer effects, palette, automation/transport, modulation routes and Modulator Bank definitions. It adds cue-based OSC and MIDI scene triggering, internal/external clock quantization and compatible random selection.
+**M6-B1 full-scene capture/recall is merged to `main`.** The existing Performance Scene Bank is promoted into a first-class VJ Scene Bank without creating a parallel persistence system. B1 captures deck assignments, composition/layers, master and layer effects, palette, automation/transport, modulation routes and Modulator Bank definitions. It adds cue-based OSC and MIDI scene triggering, internal/external clock quantization and compatible random selection.
 
 **Transition boundary:** current numeric-compatible parameters morph; discrete media/text/generator changes still use a cut. Dual-scene crossfade, midpoint switching, sequences and per-parameter locks remain planned.
 
@@ -413,27 +413,38 @@ See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md) fo
 
 ## M6-C — Advanced Visual Transformations
 
-**C1 implementation in progress.** Extend the ModernGL compositor with GPU-only image geometry and temporal processing. The first slice includes kaleidoscope, polar remapping, mosaic/tile, directional scan displacement, selectable layer-driven displacement maps, edge extraction, ordered dithering and a dedicated feedback engine with bounded per-renderer GPU history. Feedback exposes amount, decay, zoom, rotation, translation, colour shift, distortion, motion-driven warp, datamosh blocks, blend mode, short frame delay, freeze and reset.
+**C1 is merged to `main`.** The ModernGL compositor now has GPU-only image geometry and temporal processing. The first slice includes kaleidoscope, polar remapping, mosaic/tile, directional scan displacement, selectable layer-driven displacement maps, edge extraction, ordered dithering and a dedicated feedback engine with bounded per-renderer GPU history. Feedback exposes amount, decay, zoom, rotation, translation, colour shift, distortion, motion-driven warp, datamosh blocks, blend mode, short frame delay, freeze and reset.
 
 Directional scan sorting is a controlled shader approximation, not a full image-region sorting algorithm. Motion-driven warp is temporal-difference/gradient driven, not a dense optical-flow solver. These limitations and later C2/C3 work are documented in [M6-C — Advanced Visual Transformations](M6_C_ADVANCED_VISUAL_TRANSFORMATIONS.md).
 
 ## M6-D — Advanced Particle Simulation
 
-**D1 + D2 implementation in progress on `m6/d1-particle-system-2`.** Particle System 2.0 is separate from the legacy procedural `particles` field. D1 adds point/circle/rectangle emitters, deterministic seeded populations, fixed-step GPU lifetime/velocity/acceleration simulation, turbulence, attract/repel/orbit fields, size curves and trails. D2 adds editable path emitters, video-luminance, image alpha/luma silhouette and contour emitters, plus GPU source-target reformation with periodic target resampling. Resource ceilings remain 8192 particles per system, four systems and 16384 particles per output renderer. Simulation and source sampling are owned by each Compositor/GL context and bypass the CPU raster service.
+**D1 + D2 are merged to `main`.** Particle System 2.0 remains separate from the legacy procedural `particles` field. D1 adds point/circle/rectangle emitters, deterministic seeded populations, fixed-step GPU lifetime/velocity/acceleration simulation, turbulence, attract/repel/orbit fields, size curves and trails. D2 adds editable path emitters, video-luminance, image alpha/luma silhouette and contour emitters, plus GPU source-target reformation with periodic target resampling. The live-event follow-up adds a bounded 0–3000 particles/second emission rate (distributed across populations), event-driven AUTO PERFORMANCE mappings and six-second state retention across brief inactive cuts. Resource ceilings remain 8192 particles per system, four systems and 16384 particles per output renderer. Simulation and source sampling are owned by each Compositor/GL context and bypass the CPU raster service.
 
 Per-population overrides and advanced vector/collision fields remain D3 work. See [M6-D — Advanced Particle Simulation](M6_D_ADVANCED_PARTICLE_SIMULATION.md).
 
 ## M6-E — Typography as an independent visual instrument
 
-E1 is under implementation on `m6/e1-typographic-instrument`. It extends Text Art without moving layout or raster work into the frame loop:
+E1 is merged to `main`. It extends Text Art without moving layout or raster work into the frame loop:
 
 - Styled rich-text runs with per-run typeface, size, weight, colour, tracking, outline and shadow.
 - Horizontal mixed-language layout, vertical right-to-left / left-to-right columns, and text on circular, arc and custom paths.
 - GPU texture-space animation controls for reverse typewriter reveal, dissolve, flicker, character-cell displacement, vertical reveal, scattered glyph motion, segmented collision-style movement and mechanical scrolling.
+- AUTO PERFORMANCE now has a live target for text reveal-step/column density, in addition to text motion speed and amount.
 
 The next E2 slice should introduce a bounded glyph atlas/instance representation for truly independent per-character transforms, deterministic replacement, and word/character timing. E3 can address reusable typographic presets and a dedicated text-feedback route. E1's vertical layout and shader modes require visual validation on the Windows target GPU; they are not yet a per-glyph engine.
 
 See [M6-E — Typography as an Independent Visual Instrument](M6_E_TYPOGRAPHY.md).
+
+## M6 live-performance integration follow-up
+
+The new text, layer-FX and Particle System 2.0 controls are registered as per-layer performance targets and in the manual modulation/MIDI target registry. AUTO PERFORMANCE includes energy/beat/onset routes for particle emission and physics, phrase/energy routes for trails and source reformation, reveal-step motion for typography, and modulation of all numeric per-layer FX parameters. C1 master transforms, displacement and temporal-feedback parameters are also registered in the global Modulation Matrix and receive default energy/beat/onset routes. Effect modes, feedback enable/freeze/reset and source selection remain operator decisions. GPU-only changes remain uniform updates; they do not require per-frame CPU rasterization.
+
+The workspace adapts dock constraints and default sizing for compact and 4:3 windows while preserving user-saved layouts. The compositor already fits the existing composition canvas to output aspect without distortion; it letterboxes rather than stretching content. This UI adaptation does not silently change a project's stored canvas resolution.
+
+Text Art includes an explicit **Queer / クィア** pool with the word **QUEER**, identity and pronoun vocabulary, and short self-definition / chosen-family phrases in English and Japanese. Offensive English dictionary headwords are filtered during dictionary ingestion as an additional safeguard; local dictionary files remain user-editable and should continue to be curated.
+
+See [M6 Live Performance and Workspace Integration](M6_LIVE_PERFORMANCE_WORKSPACE.md) for implementation details and acceptance checks.
 
 ## Engineering principles across all milestones
 

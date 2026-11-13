@@ -2,7 +2,7 @@
 
 **Implementation branch:** `m6/e1-typographic-instrument`  
 **Current slice:** E1 — rich runs, vertical layout, text paths and GPU texture-space motion  
-**Status:** Software implementation in review; target-Windows visual and GPU validation remains open.
+**Status:** E1 is merged to `main`. Rich runs, vertical layouts, text paths and texture-space shader modes are implemented. Target-Windows visual and GPU validation remains open.
 
 ## Goal
 
@@ -143,6 +143,7 @@ E2 should retain a baked-text fallback for text with unsupported shaping/feature
 - [ ] Fullscreen projector, resize, preview/projector independence and sustained animation.
 - [ ] Rich Japanese/English, vertical writing and custom paths at High/Maximum raster quality.
 - [ ] 4-deck composition with multiple text layers, other generators, layer FX and master feedback.
+- [ ] AUTO PERFORMANCE / Modulation Matrix changes text motion speed, amount and reveal-step density without requesting a CPU raster every frame.
 - [ ] Record FPS, render time, upload time, raster duration and dropped frames.
 
 Static compilation/lint CI does not satisfy the target-GPU checklist. Until that rehearsal is performed, E1 should be treated as implementation-ready for review rather than hardware-validated.

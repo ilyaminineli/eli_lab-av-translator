@@ -2,7 +2,7 @@
 
 ## Status
 
-**D1 + D2 software implementation is on `m6/d1-particle-system-2`, stacked on the C1 branch.** Quality workflow #143 passed Python compilation and Ruff on the current D1/D2 head. Target-GPU shader and visual validation remains open. The original `particles` procedural field remains unchanged.
+**D1 + D2 are merged to `main`.** This follow-up adds continuous rate-based emission, Auto Performance routing, and short hidden-layer state retention. Static CI can validate Python and lint; target-GPU shader, continuous-emission and projector acceptance still require Windows testing. The original `particles` procedural field remains unchanged.
 
 ## Objective
 
@@ -45,6 +45,14 @@ A fixed 60 Hz simulation step integrates acceleration, drag, turbulence and the 
 
 The spawn sequence uses the configured system seed together with stable particle index, population seed and respawn cycle. Changing the seed, total count or population count rebuilds the initial GPU state. Ordinary continuous control changes update shader uniforms without moving per-particle state through the CPU.
 
+### Live-event emission
+
+Particle System 2.0 now has a continuous emission-rate control (0–3000 particles/second; default 600). A deterministic per-particle/per-fixed-step probability gate spreads births over time instead of launching the entire initial population as one synchronized burst. The rate is divided across independent populations, so population count does not multiply the requested overall rate. The hard particle cap remains in force: emission selects available/dead particles and never allocates unbounded state.
+
+The emission rate is exposed to AUTO PERFORMANCE and can respond to energy and beat pulses. Existing speed, particle radius, lifetime, turbulence, force strength, trail persistence and source-reform strength are also modifier targets. This makes the system respond continuously to event signals while retaining the existing fixed-step GPU simulation and bounded resource model.
+
+The compositor retains a particle system for up to six seconds after its layer becomes temporarily inactive, allowing brief cuts and automation changes without immediately discarding simulation/trail state. Layer removal, render failure, output-context teardown or expiry still releases resources.
+
 Each system may contain one to four populations. D1 populations share emitter and physics settings but have separate state textures and seeds, stable small emitter offsets, and distinct speed/size/colour variation. This provides layered motion without duplicating all controls in the first UI.
 
 ### Resource ceilings
@@ -76,6 +84,9 @@ The legacy `particles` field continues to use its existing fragment-shader path 
 - `particle_system_2` settings normalize and clamp count, population count, emitter, physics, force and visual ranges.
 - New layers save/reopen through existing composition serialization.
 - The CPU generator raster service is not asked to rasterize Particle System 2.0.
+- Emission-rate changes produce continuous, distributed births over multiple lifetimes; the configured rate remains consistent across 1–4 populations.
+- AUTO PERFORMANCE can modulate emission rate, speed, radius, lifetime, turbulence, force, trail persistence and source reformation.
+- Brief hide/show or cut intervals shorter than the retention window do not recreate the GPU simulation; removed layers and expired inactive systems are released.
 - The compositor caps active systems and total particles and releases resources when layers are removed.
 
 ### Manual GPU checks

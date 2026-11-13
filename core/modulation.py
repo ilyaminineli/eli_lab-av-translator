@@ -58,6 +58,96 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
     "master.vignette": ModulationTargetSpec(
         "master.vignette", "Master vignette", 0.0, 1.0, "master"
     ),
+    "master.hue": ModulationTargetSpec(
+        "master.hue", "Master hue rotation", -180.0, 180.0, "master"
+    ),
+    "master.chromatic": ModulationTargetSpec(
+        "master.chromatic", "Master chromatic aberration", 0.0, 1.0, "master"
+    ),
+    "master.scanlines": ModulationTargetSpec(
+        "master.scanlines", "Master scanlines", 0.0, 1.0, "master"
+    ),
+    "master.pixelate": ModulationTargetSpec(
+        "master.pixelate", "Master pixelation", 0.0, 1.0, "master"
+    ),
+    "master.posterize": ModulationTargetSpec(
+        "master.posterize", "Master posterize", 0.0, 1.0, "master"
+    ),
+    "master.invert": ModulationTargetSpec(
+        "master.invert", "Master invert", 0.0, 1.0, "master"
+    ),
+    "master.halftone": ModulationTargetSpec(
+        "master.halftone", "Master halftone", 0.0, 1.0, "master"
+    ),
+    "master.solarize": ModulationTargetSpec(
+        "master.solarize", "Master solarize", 0.0, 1.0, "master"
+    ),
+    "master.transform_mix": ModulationTargetSpec(
+        "master.transform_mix", "Master transform mix", 0.0, 1.0, "master"
+    ),
+    "master.kaleidoscope_slices": ModulationTargetSpec(
+        "master.kaleidoscope_slices", "Kaleidoscope slices", 2.0, 64.0, "master"
+    ),
+    "master.kaleidoscope_rotation": ModulationTargetSpec(
+        "master.kaleidoscope_rotation", "Kaleidoscope rotation", -180.0, 180.0, "master"
+    ),
+    "master.kaleidoscope_zoom": ModulationTargetSpec(
+        "master.kaleidoscope_zoom", "Kaleidoscope zoom", 0.1, 4.0, "master"
+    ),
+    "master.mosaic_tiles": ModulationTargetSpec(
+        "master.mosaic_tiles", "Mosaic tile count", 4.0, 512.0, "master"
+    ),
+    "master.pixel_sort_amount": ModulationTargetSpec(
+        "master.pixel_sort_amount", "Pixel-sort displacement", 0.0, 1.0, "master"
+    ),
+    "master.pixel_sort_threshold": ModulationTargetSpec(
+        "master.pixel_sort_threshold", "Pixel-sort threshold", 0.0, 1.0, "master"
+    ),
+    "master.edge_amount": ModulationTargetSpec(
+        "master.edge_amount", "Edge extraction", 0.0, 1.0, "master"
+    ),
+    "master.dither": ModulationTargetSpec(
+        "master.dither", "Ordered dithering", 0.0, 1.0, "master"
+    ),
+    "master.displacement_amount": ModulationTargetSpec(
+        "master.displacement_amount", "Layer-map displacement", -1.0, 1.0, "master"
+    ),
+    "master.displacement_scale": ModulationTargetSpec(
+        "master.displacement_scale", "Displacement scale", 0.1, 8.0, "master"
+    ),
+    "master.feedback_amount": ModulationTargetSpec(
+        "master.feedback_amount", "Feedback amount", 0.0, 1.0, "master"
+    ),
+    "master.feedback_decay": ModulationTargetSpec(
+        "master.feedback_decay", "Feedback decay", 0.0, 1.0, "master"
+    ),
+    "master.feedback_zoom": ModulationTargetSpec(
+        "master.feedback_zoom", "Feedback zoom", 0.5, 2.0, "master"
+    ),
+    "master.feedback_rotation": ModulationTargetSpec(
+        "master.feedback_rotation", "Feedback rotation", -180.0, 180.0, "master"
+    ),
+    "master.feedback_translate_x": ModulationTargetSpec(
+        "master.feedback_translate_x", "Feedback horizontal translation", -0.25, 0.25, "master"
+    ),
+    "master.feedback_translate_y": ModulationTargetSpec(
+        "master.feedback_translate_y", "Feedback vertical translation", -0.25, 0.25, "master"
+    ),
+    "master.feedback_color_shift": ModulationTargetSpec(
+        "master.feedback_color_shift", "Feedback colour shift", 0.0, 1.0, "master"
+    ),
+    "master.feedback_distortion": ModulationTargetSpec(
+        "master.feedback_distortion", "Feedback distortion", 0.0, 1.0, "master"
+    ),
+    "master.feedback_motion_warp": ModulationTargetSpec(
+        "master.feedback_motion_warp", "Feedback motion warp", 0.0, 1.0, "master"
+    ),
+    "master.feedback_datamosh": ModulationTargetSpec(
+        "master.feedback_datamosh", "Feedback datamosh blocks", 0.0, 1.0, "master"
+    ),
+    "master.feedback_delay_frames": ModulationTargetSpec(
+        "master.feedback_delay_frames", "Feedback delay", 0.0, 3.0, "master"
+    ),
     "selected_layer.opacity": ModulationTargetSpec(
         "selected_layer.opacity", "Selected layer opacity", 0.0, 1.0, "layer"
     ),
@@ -73,6 +163,40 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
     "selected_layer.position_y": ModulationTargetSpec(
         "selected_layer.position_y", "Selected layer Y position", 0.0, 1.0, "layer"
     ),
+    "layer_fx.mix": ModulationTargetSpec(
+        "layer_fx.mix", "Layer FX mix", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.monochrome": ModulationTargetSpec(
+        "layer_fx.monochrome", "Layer FX monochrome", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.threshold": ModulationTargetSpec(
+        "layer_fx.threshold", "Layer FX threshold", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.contrast": ModulationTargetSpec(
+        "layer_fx.contrast", "Layer FX contrast", 0.0, 2.5, "layer"
+    ),
+    "layer_fx.brightness": ModulationTargetSpec(
+        "layer_fx.brightness", "Layer FX brightness", -0.5, 0.5, "layer"
+    ),
+    "layer_fx.chromatic": ModulationTargetSpec(
+        "layer_fx.chromatic", "Layer FX chromatic aberration", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.scanlines": ModulationTargetSpec(
+        "layer_fx.scanlines", "Layer FX scanlines", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.posterize": ModulationTargetSpec(
+        "layer_fx.posterize", "Layer FX posterize", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.invert": ModulationTargetSpec(
+        "layer_fx.invert", "Layer FX invert", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.hue": ModulationTargetSpec(
+        "layer_fx.hue", "Layer FX hue rotation", -180.0, 180.0, "layer"
+    ),
+    "layer_fx.saturation": ModulationTargetSpec(
+        "layer_fx.saturation", "Layer FX saturation", 0.0, 2.5, "layer"
+    ),
+
     "generator.animation_speed": ModulationTargetSpec(
         "generator.animation_speed", "Generator animation speed", 0.0, 8.0, "generator"
     ),
@@ -90,6 +214,9 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
     ),
     "generator.text_animation_amount": ModulationTargetSpec(
         "generator.text_animation_amount", "Text animation amount", 0.0, 0.18, "generator"
+    ),
+    "generator.text_animation_columns": ModulationTargetSpec(
+        "generator.text_animation_columns", "Text animation reveal steps", 2.0, 80.0, "generator"
     ),
     "generator.font_size": ModulationTargetSpec(
         "generator.font_size", "Text font size", 12.0, 420.0, "generator"
@@ -114,6 +241,28 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
     ),
     "generator.particle_trail": ModulationTargetSpec(
         "generator.particle_trail", "Particle trail", 0.0, 1.0, "generator"
+    ),
+    "generator.particle_emission_rate": ModulationTargetSpec(
+        "generator.particle_emission_rate", "Particle emission rate", 0.0, 3000.0, "generator"
+    ),
+    "generator.particle_system_size": ModulationTargetSpec(
+        "generator.particle_system_size", "Particle System 2.0 size", 1.0, 48.0, "generator"
+    ),
+    "generator.particle_lifetime": ModulationTargetSpec(
+        "generator.particle_lifetime", "Particle lifetime", 0.25, 60.0, "generator"
+    ),
+    "generator.particle_turbulence": ModulationTargetSpec(
+        "generator.particle_turbulence", "Particle turbulence", 0.0, 1.5, "generator"
+    ),
+    "generator.particle_force_strength": ModulationTargetSpec(
+        "generator.particle_force_strength", "Particle force strength", 0.0, 4.0, "generator"
+    ),
+    "generator.particle_reform_strength": ModulationTargetSpec(
+        "generator.particle_reform_strength",
+        "Particle source reform strength",
+        0.0,
+        4.0,
+        "generator",
     ),
     "overlay.playback_speed": ModulationTargetSpec(
         "overlay.playback_speed", "Animated overlay playback speed", 0.1, 4.0, "overlay"
