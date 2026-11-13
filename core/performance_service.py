@@ -183,7 +183,7 @@ DEFAULT_MATRIX_ROUTES: tuple[tuple[str, str, float, float, bool, float], ...] = 
     ("performance_macro.fragment", "master.pixelate", 0.0, 0.88, False, 0.66),
     ("macro.cutoff", "master.halftone", 0.0, 0.20, False, 0.30),
     ("audio.onset", "master.solarize", 0.0, 0.12, False, 0.28),
-    ("macro.energy", "master.transform_mix", 0.18, 0.78, False, 0.56),
+    ("performance_macro.density", "master.transform_mix", 0.0, 0.88, False, 0.70),
     ("transport.beat_pulse", "master.kaleidoscope_rotation", -8.0, 8.0, False, 0.5),
     ("audio.low", "master.kaleidoscope_zoom", 0.92, 1.18, False, 0.48),
     ("macro.energy", "master.kaleidoscope_slices", 4.0, 16.0, False, 0.45),
@@ -232,6 +232,51 @@ DEFAULT_MODULATORS: tuple[tuple[str, str], ...] = (
     ("env-audio-onset", "AUTO · Audio onset"),
     ("lfo-sine-swell", "AUTO · Phrase swell"),
 )
+
+
+def install_default_performance_macro_routes(matrix: ModulationMatrix) -> int:
+    """Install standalone master routes for the six normalized macro outputs."""
+    existing_targets = {route.target_id for route in matrix.routes}
+    added = 0
+    for source, target, low, high, inverted, ceiling in DEFAULT_MATRIX_ROUTES:
+        if not source.startswith("performance_macro."):
+            continue
+        if target in existing_targets:
+            existing = next(
+                (route for route in matrix.routes if route.target_id == target),
+                None,
+            )
+            if existing is not None and existing.route_id.startswith("auto-performance-"):
+                changes = {
+                    "source_id": source,
+                    "output_min": low,
+                    "output_max": high,
+                    "inverted": inverted,
+                    "intensity_ceiling": ceiling,
+                }
+                if any(getattr(existing, key) != value for key, value in changes.items()):
+                    matrix.update_route(existing.route_id, changes)
+            continue
+        matrix.add_route(ModulationRoute(
+            route_id=f"performance-macro-{target.replace('.', '-')}",
+            source_id=source,
+            target_id=target,
+            input_min=0.0,
+            input_max=1.0,
+            output_min=low,
+            output_max=high,
+            curve="smoothstep",
+            inverted=inverted,
+            smoothing_ms=80.0,
+            attack_ms=35.0,
+            release_ms=260.0,
+            hold_ms=0.0,
+            intensity_ceiling=ceiling,
+            enabled=True,
+        ))
+        existing_targets.add(target)
+        added += 1
+    return added
 
 
 def install_default_matrix_routes(matrix: ModulationMatrix) -> int:
