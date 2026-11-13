@@ -551,7 +551,7 @@ def install_default_layer_modifiers(
             ),
             _modifier(
                 "energy FX blend", energy, "layer_fx.mix", 0.06,
-                polarity="negative",
+                polarity="bipolar",
             ),
         ))
 
