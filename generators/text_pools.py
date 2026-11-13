@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 import re
+import unicodedata
 from functools import lru_cache
 from pathlib import Path
 
@@ -62,6 +63,27 @@ TEXT_POOLS: dict[str, dict[str, tuple[str, ...]]] = {
             "変容", "未定義", "もう一つの名",
         ),
     },
+    "queer": {
+        "en": (
+            "QUEER", "NONBINARY", "GENDERQUEER", "GENDERFLUID", "ANDROGYNY",
+            "ANDROGYNOUS", "AGENDER", "BIGENDER", "TRANSGENDER", "INTERSEX",
+            "ASEXUAL", "AROMANTIC", "BISEXUAL", "PANSEXUAL", "SAPPHIC",
+            "ACHILLEAN", "DEMISEXUAL", "PRONOUNS", "THEY / THEM",
+            "SHE / THEY", "HE / THEY", "NEOPRONOUNS", "CHOSEN FAMILY",
+            "CHOSEN NAME", "GENDER EUPHORIA", "SELF-DEFINITION",
+            "NO FIXED FORM", "BEYOND THE BINARY", "FEMME", "BUTCH",
+            "FLUIDITY", "I NAME MYSELF", "MY NAME IS MINE",
+            "NOT A CATEGORY", "ROOM TO BECOME", "JOY WITHOUT PERMISSION",
+            "MORE THAN ONE TRUTH", "NO EXPLANATION OWED",
+        ),
+        "ja": (
+            "クィア", "クイア", "ノンバイナリー", "Xジェンダー",
+            "ジェンダーフルイド", "アンドロジナス", "中性", "両性", "無性",
+            "性自認", "ジェンダー表現", "代名詞", "選んだ名前",
+            "自分らしさ", "ジェンダーのよろこび", "選んだ家族",
+            "流動性", "ありのまま", "境界の外", "名前を選ぶ",
+        ),
+    },
     "random": {
         "en": (
             "LOVE", "RESET", "GHOST", "ANGEL", "BLIND", "EMPTY", "CURSE",
@@ -84,7 +106,28 @@ _THEME_HINTS = {
     ),
     "ritual": ("ritual", "sacred", "offering", "altar", "curse", "儀式", "供物", "呪い", "神"),
     "identity": ("identity", "self", "person", "name", "mirror", "自己", "名前", "鏡", "他者"),
+    "queer": (
+        "queer", "nonbinary", "non-binary", "genderqueer", "genderfluid",
+        "gender-fluid", "pronouns", "chosen name", "androgyny", "sapphic",
+        "achillean", "gender euphoria", "クィア", "クイア", "ノンバイナリー",
+        "Xジェンダー", "性自認", "代名詞", "ジェンダー表現",
+    ),
 }
+
+# Dictionary files are user-editable, so filter offensive English headwords at
+# ingestion time as a second layer of protection. Reclaimed "queer" is allowed.
+_BLOCKED_ENGLISH_TERMS = frozenset({
+    "fuck", "fucking", "shit", "bullshit", "bitch", "bastard", "asshole",
+    "arsehole", "cunt", "dick", "piss", "motherfucker", "faggot", "fag",
+    "dyke", "tranny", "shemale", "retard", "nigger", "nigga", "kike",
+    "spic", "chink", "gook", "wetback", "beaner", "coon",
+})
+
+
+def _is_blocked_english_term(term: str) -> bool:
+    normalized = unicodedata.normalize("NFKC", term).casefold()
+    compact = re.sub(r"[^a-z]", "", normalized)
+    return compact in _BLOCKED_ENGLISH_TERMS
 
 
 def _dictionary_candidates(root: Path, language: str, theme: str) -> list[str]:
@@ -158,6 +201,8 @@ def _cached_dictionary_candidates(
                             "",
                         )
                     if not term or len(term) > 24:
+                        continue
+                    if language == "english" and _is_blocked_english_term(term):
                         continue
                     if hints and not any(hint in line.casefold() for hint in hints):
                         continue
