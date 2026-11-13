@@ -946,7 +946,7 @@ class Compositor:
             layer.id
             for layer in ordered_layers
             if layer.source_type == "generator"
-            and layer.generator_type == "particle_system_2"
+               and layer.generator_type == "particle_system_2"
         }
         for layer_id in tuple(self.particle_systems):
             last_active = self.particle_system_last_active.get(layer_id)
@@ -957,8 +957,8 @@ class Compositor:
             )
             removed = layer_id not in live_particle_ids
             expired = (
-                layer_id not in active_particle_ids
-                and inactive_for > self.PARTICLE_RETENTION_SECONDS
+                    layer_id not in active_particle_ids
+                    and inactive_for > self.PARTICLE_RETENTION_SECONDS
             )
             if removed or expired:
                 self.particle_systems.pop(layer_id).release()

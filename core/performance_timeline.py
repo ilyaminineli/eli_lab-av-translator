@@ -3,7 +3,6 @@ from __future__ import annotations
 import math
 import re
 from dataclasses import asdict, dataclass, field
-from typing import Any
 from uuid import uuid4
 
 from config import VIDEO_DECK_IDS
@@ -468,12 +467,12 @@ class PerformanceTimeline:
             self._fired_ids = {
                 event_id for event_id in self._fired_ids
                 if (
-                    (item := next(
-                        (candidate for candidate in self.events
-                         if candidate.event_id == event_id),
-                        None,
-                    )) is not None
-                    and item.position < current
+                        (item := next(
+                            (candidate for candidate in self.events
+                             if candidate.event_id == event_id),
+                            None,
+                        )) is not None
+                        and item.position < current
                 )
             }
             previous = (current[0], current[1] - 1) if current[1] > 1 else (
@@ -484,9 +483,9 @@ class PerformanceTimeline:
         due = [
             item for item in self.events
             if item.enabled
-            and item.event_id not in self._fired_ids
-            and self._last_position < item.position <= current
-            and item.beat <= max(1, min(16, int(beats_per_bar)))
+               and item.event_id not in self._fired_ids
+               and self._last_position < item.position <= current
+               and item.beat <= max(1, min(16, int(beats_per_bar)))
         ]
         for item in due:
             self._fired_ids.add(item.event_id)

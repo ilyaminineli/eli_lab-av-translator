@@ -201,15 +201,15 @@ class PerformanceControlPanel(QWidget):
             self.macro_key_edits[macro.macro_id] = key_edit
             slider.valueChanged.connect(
                 lambda value, macro_id=macro.macro_id:
-                    self._performance_macro_value_changed(macro_id, value)
+                self._performance_macro_value_changed(macro_id, value)
             )
             source_combo.currentIndexChanged.connect(
                 lambda _index, macro_id=macro.macro_id:
-                    self._performance_macro_source_changed(macro_id)
+                self._performance_macro_source_changed(macro_id)
             )
             key_edit.keySequenceChanged.connect(
                 lambda sequence, macro_id=macro.macro_id:
-                    self._performance_macro_shortcut_changed(macro_id, sequence)
+                self._performance_macro_shortcut_changed(macro_id, sequence)
             )
         self.macro_status_label = QLabel(
             "Keyboard shortcuts toggle a macro between 0 and 1. "

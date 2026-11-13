@@ -1005,14 +1005,14 @@ class Application:
 
     def arm_performance_timeline(self) -> None:
         external_running = (
-            self.performance_control.source_id == "sonic_pi"
-            and self.performance_control.transport_running
-            and not self.performance_control.transport_paused
+                self.performance_control.source_id == "sonic_pi"
+                and self.performance_control.transport_running
+                and not self.performance_control.transport_paused
         )
         internal_running = self.transport.running and not self.transport.paused
         position_known = (
-            internal_running
-            or (external_running and self._external_clock_bar_at is not None)
+                internal_running
+                or (external_running and self._external_clock_bar_at is not None)
         )
         if external_running and self._external_clock_bar_at is not None:
             bar, beat = self._external_timeline_position()
@@ -1232,7 +1232,7 @@ class Application:
                         not item.locked
                         and item.source_type == "generator"
                         and item.generator_type == "text"
-                    )
+                )
                 ),
                 None,
             )
@@ -1272,10 +1272,10 @@ class Application:
             macro_id = str(payload["macro_id"])
             duration_bars = int(payload.get("duration_bars", 4))
             hold_seconds = (
-                duration_bars
-                * max(1, int(self.performance_control.beats_per_bar))
-                * 60.0
-                / max(20.0, float(self.performance_control.bpm))
+                    duration_bars
+                    * max(1, int(self.performance_control.beats_per_bar))
+                    * 60.0
+                    / max(20.0, float(self.performance_control.bpm))
             )
             self.set_performance_macro_value(
                 macro_id,
@@ -1323,9 +1323,9 @@ class Application:
                     clock_meter = int(event.payload["beats_per_bar"])
                     bar_seconds = (60.0 / max(20.0, clock_bpm)) * max(1, clock_meter)
                     first_external_bar = (
-                        self._external_clock_bar_at is None
-                        or event.received_at - self._external_clock_bar_at
-                        > max(1.0, bar_seconds * 1.5)
+                            self._external_clock_bar_at is None
+                            or event.received_at - self._external_clock_bar_at
+                            > max(1.0, bar_seconds * 1.5)
                     )
                     self.transport.stop()
                     self.transport.set_tempo(clock_bpm)
@@ -1978,8 +1978,8 @@ class Application:
             if (
                     source_id.startswith("modulator.")
                     and self.modulator_bank.get(
-                        source_id.removeprefix("modulator.")
-                    ) is None
+                source_id.removeprefix("modulator.")
+            ) is None
             ):
                 updated = PerformanceMacro.from_dict(macro.to_dict())
                 updated.input_source = ""

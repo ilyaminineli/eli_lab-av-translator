@@ -110,9 +110,9 @@ class GenerativeVariationDirector:
             particle_layers = [
                 layer for layer in candidates
                 if (
-                    getattr(layer, "source_type", "") == "generator"
-                    and getattr(layer, "generator_type", "")
-                    in {"particles", "particle_system_2"}
+                        getattr(layer, "source_type", "") == "generator"
+                        and getattr(layer, "generator_type", "")
+                        in {"particles", "particle_system_2"}
                 )
             ]
             particle_ids = {
@@ -161,7 +161,7 @@ class GenerativeVariationDirector:
 
     def effect_ready(self, enabled: bool = True) -> bool:
         return bool(enabled) and (
-            self._transition_revision > self._effect_transition_revision
+                self._transition_revision > self._effect_transition_revision
         )
 
     def mark_effect_applied(self) -> None:

@@ -774,7 +774,7 @@ class ParticleSystem2:
             }.get(str(settings["direction"]), 0),
             "u_lifetime": float(settings["lifetime"]),
             "u_emission_rate": (
-                float(settings["emission_rate"]) / max(1, len(self.populations))
+                    float(settings["emission_rate"]) / max(1, len(self.populations))
             ),
             "u_speed": float(settings["speed"]) * (0.78 + population_index * 0.16),
             "u_spread": float(settings["spread"]),

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import random
 import re
-import unicodedata
 from functools import lru_cache
 from pathlib import Path
+
+import unicodedata
 
 from config import PROJECT_ROOT
 

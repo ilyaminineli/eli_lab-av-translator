@@ -943,7 +943,7 @@ class GeneratorsPanel(QWidget):
         # GeneratorRasterService request is made by this path. Only pause
         # automation on shader parameters that actually changed.
         for key in (
-            "text_animation_speed", "text_animation_amount", "text_animation_columns"
+                "text_animation_speed", "text_animation_amount", "text_animation_columns"
         ):
             if settings.get(key) != normalized.get(key):
                 self.manual_target_changed.emit(f"generator.{key}")

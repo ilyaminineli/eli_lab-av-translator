@@ -331,13 +331,13 @@ class MainWindow(QMainWindow):
         for dock in (self.media_dock, self.asset_library_dock):
             dock.setMinimumWidth(side_minimum)
         for dock in (
-            self.layer_dock,
-            self.effects_dock,
-            self.automation_dock,
-            self.preview_dock,
-            self.performance_control_dock,
-            self.modulator_bank_dock,
-            self.performance_timeline_dock,
+                self.layer_dock,
+                self.effects_dock,
+                self.automation_dock,
+                self.preview_dock,
+                self.performance_control_dock,
+                self.modulator_bank_dock,
+                self.performance_timeline_dock,
         ):
             dock.setMinimumWidth(right_minimum)
         self.deck_dock.setMinimumHeight(100 if compact else 120)

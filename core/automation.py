@@ -8,12 +8,12 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 
 from core.composition import Layer
+from core.generative_director import GenerativeVariationDirector
 from effects.layer_settings import LAYER_EFFECT_PRESETS, apply_layer_effect_preset
 from effects.settings import PRESETS, EffectSettings
 from generators.catalog import GENERATOR_TYPES, normalize_settings
 from generators.palettes import palette_look, palette_names
 from generators.text_pools import random_text_sample
-from core.generative_director import GenerativeVariationDirector
 from media.models import MediaAsset
 
 _LOG = logging.getLogger(__name__)
@@ -373,8 +373,8 @@ class AutomationDirector:
 
     def _uses_constrained_generative_rules(self) -> bool:
         return (
-            self.settings.performance_style == "generative"
-            and self.settings.constrained_generative
+                self.settings.performance_style == "generative"
+                and self.settings.constrained_generative
         )
 
     def _select_variation_layers(
@@ -388,8 +388,8 @@ class AutomationDirector:
             self.settings.max_layers_per_variation,
             self.rng,
             keep_anchor=(
-                self.settings.keep_visual_anchor
-                or self.settings.preserve_background_source
+                    self.settings.keep_visual_anchor
+                    or self.settings.preserve_background_source
             ),
             prefer_particles=prefer_particles,
         )
@@ -420,10 +420,10 @@ class AutomationDirector:
         active = [
             layer for layer in self._layers
             if layer.source_type == "video"
-            and not layer.locked
-            and layer.visible
-            and (allowed is None or layer.id in allowed)
-            and (not constrained or layer.id != anchor_id)
+               and not layer.locked
+               and layer.visible
+               and (allowed is None or layer.id in allowed)
+               and (not constrained or layer.id != anchor_id)
         ]
         if not active:
             return 0
@@ -507,14 +507,14 @@ class AutomationDirector:
                 float(start_y) + (float(end_y) - float(start_y)) * eased,
             )
             scale = float(morph["start_scale"]) + (
-                float(morph["end_scale"]) - float(morph["start_scale"])
+                    float(morph["end_scale"]) - float(morph["start_scale"])
             ) * eased
             layer.scale = (scale, scale)
             layer.rotation = float(morph["start_rotation"]) + (
-                float(morph["end_rotation"]) - float(morph["start_rotation"])
+                    float(morph["end_rotation"]) - float(morph["start_rotation"])
             ) * eased
             layer.opacity = float(morph["start_opacity"]) + (
-                float(morph["end_opacity"]) - float(morph["start_opacity"])
+                    float(morph["end_opacity"]) - float(morph["start_opacity"])
             ) * eased
             if fraction >= 1.0:
                 layer.blend_mode = str(morph["end_blend_mode"])
@@ -903,9 +903,9 @@ class AutomationDirector:
 
         constrained = self._uses_constrained_generative_rules
         peak_context = (
-            self._performance_section == "peak"
-            or energy >= 0.78
-            or intensity >= 0.82
+                self._performance_section == "peak"
+                or energy >= 0.78
+                or intensity >= 0.82
         )
         variation_layer_ids = self._select_variation_layers(
             prefer_particles=peak_context
@@ -913,13 +913,13 @@ class AutomationDirector:
         if constrained:
             self._active_variation_layer_ids = tuple(variation_layer_ids or ())
         allow_effect_change = (
-            not constrained
-            or not self.settings.effect_after_transition
-            or self._director.effect_ready()
+                not constrained
+                or not self.settings.effect_after_transition
+                or self._director.effect_ready()
         )
         changed = False
         allow_variations = event in {"scene", "phrase"} or (
-            event == "bar" and self.settings.performance_style == "generative"
+                event == "bar" and self.settings.performance_style == "generative"
         )
         if allow_variations:
             if (
@@ -959,8 +959,8 @@ class AutomationDirector:
                     )
                     and (self._generators_due is None or stamp >= self._generators_due)
                     and self.rng.random() < min(
-                        0.98, strength * (0.75 + 0.25 * cutoff + density * 0.12)
-                    )
+                0.98, strength * (0.75 + 0.25 * cutoff + density * 0.12)
+            )
             ):
                 count = self._randomize_generators(
                     variation_layer_ids,
@@ -1037,7 +1037,7 @@ class AutomationDirector:
         anchor_id = self._director.choose_anchor(
             self._layers,
             enabled=self._uses_constrained_generative_rules
-            and self.settings.keep_visual_anchor,
+                    and self.settings.keep_visual_anchor,
         )
         changed = False
         for deck_id, deck in self._decks.items():
@@ -1085,8 +1085,8 @@ class AutomationDirector:
             else:
                 selected = self._select_variation_layer_ids(
                     prefer_particles=(
-                        self._performance_section == "peak"
-                        or self._performance_energy >= 0.78
+                            self._performance_section == "peak"
+                            or self._performance_energy >= 0.78
                     )
                 )
                 changed = self._apply_peak_particle_density(selected) or changed
@@ -1145,11 +1145,11 @@ class AutomationDirector:
         if (
                 run_time_events
                 and (
-                    self.settings.randomize_generators
-                    or self.settings.randomize_palette
-                    or self.settings.randomize_layer_effects
-                    or self.settings.randomize_overlays
-                )
+                self.settings.randomize_generators
+                or self.settings.randomize_palette
+                or self.settings.randomize_layer_effects
+                or self.settings.randomize_overlays
+        )
                 and self._generators_due is not None
                 and current >= self._generators_due
         ):
@@ -1166,10 +1166,10 @@ class AutomationDirector:
 
     def _tick_constrained_generative(self, current: float) -> bool:
         peak_context = (
-            self._performance_section == "peak"
-            or self._performance_energy >= 0.78
-            or self._performance_intensity >= 0.82
-            or self._macro_values.get("density", 0.0) >= 0.78
+                self._performance_section == "peak"
+                or self._performance_energy >= 0.78
+                or self._performance_intensity >= 0.82
+                or self._macro_values.get("density", 0.0) >= 0.78
         )
         video_layers = {
             layer.source_id: layer
@@ -1179,38 +1179,38 @@ class AutomationDirector:
         anchor_id = self._director.choose_anchor(
             self._layers,
             enabled=(
-                self.settings.keep_visual_anchor
-                or self.settings.preserve_background_source
+                    self.settings.keep_visual_anchor
+                    or self.settings.preserve_background_source
             ),
         )
         due_deck_ids = {
             deck_id
             for deck_id, deck in self._decks.items()
             if (
-                not getattr(deck, "locked", False)
-                and self._deck_due.get(deck_id) is not None
-                and current >= self._deck_due[deck_id]
-                and (
-                    not self.settings.preserve_background_source
-                    or video_layers.get(deck_id) is None
-                    or video_layers[deck_id].id != anchor_id
-                )
+                    not getattr(deck, "locked", False)
+                    and self._deck_due.get(deck_id) is not None
+                    and current >= self._deck_due[deck_id]
+                    and (
+                            not self.settings.preserve_background_source
+                            or video_layers.get(deck_id) is None
+                            or video_layers[deck_id].id != anchor_id
+                    )
             )
         }
         layout_due = (
-            self.settings.randomize_layout
-            and self._layout_due is not None
-            and current >= self._layout_due
+                self.settings.randomize_layout
+                and self._layout_due is not None
+                and current >= self._layout_due
         )
         generators_due = (
-            (
-                self.settings.randomize_generators
-                or self.settings.randomize_palette
-                or self.settings.randomize_layer_effects
-                or self.settings.randomize_overlays
-            )
-            and self._generators_due is not None
-            and current >= self._generators_due
+                (
+                        self.settings.randomize_generators
+                        or self.settings.randomize_palette
+                        or self.settings.randomize_layer_effects
+                        or self.settings.randomize_overlays
+                )
+                and self._generators_due is not None
+                and current >= self._generators_due
         )
         peak_context_changed = peak_context != self._last_peak_context
         new_variation_due = bool(
@@ -1232,9 +1232,9 @@ class AutomationDirector:
             if layer is None or layer.id not in allowed:
                 continue
             if self._load_random_segment(
-                deck,
-                getattr(deck, "asset_id", None),
-                current,
+                    deck,
+                    getattr(deck, "asset_id", None),
+                    current,
             ):
                 self._director.mark_transition()
                 transition_happened = True
@@ -1251,8 +1251,8 @@ class AutomationDirector:
             )
 
         effect_ready = (
-            not self.settings.effect_after_transition
-            or self._director.effect_ready()
+                not self.settings.effect_after_transition
+                or self._director.effect_ready()
         )
         if (
                 self.settings.randomize_effects

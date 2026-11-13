@@ -52,8 +52,8 @@ class PerformanceMacro:
         self.input_source = str(self.input_source).strip()[:128]
         if self.input_source:
             is_modulator = (
-                self.input_source.startswith("modulator.")
-                and bool(self.input_source.removeprefix("modulator.").strip())
+                    self.input_source.startswith("modulator.")
+                    and bool(self.input_source.removeprefix("modulator.").strip())
             )
             if self.input_source not in SOURCE_RANGES and not is_modulator:
                 raise ValueError(f"Unknown performance macro input: {self.input_source}")
@@ -168,7 +168,7 @@ class PerformanceMacroEngine:
                 (
                     other for other in self.macros.values()
                     if other.macro_id != item.macro_id
-                    and other.keyboard_shortcut.casefold() == item.keyboard_shortcut.casefold()
+                       and other.keyboard_shortcut.casefold() == item.keyboard_shortcut.casefold()
                 ),
                 None,
             )
@@ -229,8 +229,8 @@ class PerformanceMacroEngine:
                 raw = sources.get(item.input_source)
                 if raw is not None and math.isfinite(float(raw)):
                     target = (
-                        float(raw) - item.input_min
-                    ) / max(1e-9, item.input_max - item.input_min)
+                                     float(raw) - item.input_min
+                             ) / max(1e-9, item.input_max - item.input_min)
                     target = self._curve(max(0.0, min(1.0, target)), item.input_curve)
                     if item.input_invert:
                         target = 1.0 - target
@@ -267,7 +267,7 @@ class PerformanceMacroEngine:
             item.macro_id: (
                 self._runtime[item.macro_id].current
                 if item.macro_id in self._runtime
-                and self._runtime[item.macro_id].current is not None
+                   and self._runtime[item.macro_id].current is not None
                 else item.value
             )
             for item in self.list_macros()
