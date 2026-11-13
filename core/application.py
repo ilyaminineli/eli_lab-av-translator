@@ -48,6 +48,7 @@ from core.performance_service import (
     install_default_layer_modifiers,
     install_default_matrix_routes,
     install_default_modulators,
+    install_default_performance_macro_routes,
     install_default_performance_macro_modifiers,
     set_default_routing_enabled,
 )
@@ -155,6 +156,7 @@ class Application:
         self.active_palette = palette_names()[0]
         self.modulation = ModulationMatrix()
         self.performance_macro_engine = PerformanceMacroEngine()
+        install_default_performance_macro_routes(self.modulation)
         self.modulator_bank = ModulatorBank()
         self.modulator_bank_engine = ModulatorBankEngine()
         self.performance_modifier_engine = LayerPerformanceModifierEngine()
@@ -410,6 +412,7 @@ class Application:
             "phrase_bars": 4,
         })
         self.modulation.load_dict([])
+        install_default_performance_macro_routes(self.modulation)
         self.modulator_bank = ModulatorBank()
         self.modulator_bank_engine.reset()
         self.performance_modifier_engine.reset()
@@ -2605,6 +2608,7 @@ class Application:
                 )
             ]
             self.modulation.reset_runtime()
+        install_default_performance_macro_routes(self.modulation)
 
     def recall_performance_scene(
             self,
@@ -3044,6 +3048,7 @@ class Application:
                 }
                 self.update_audio_analysis_settings(AudioAnalysisSettings(**audio_values))
             self.modulation.load_dict(performance_settings.get("modulation_routes", []))
+            install_default_performance_macro_routes(self.modulation)
             self.scene_profiles.load_dict(performance_settings.get("scene_profiles", []))
             active_palette = str(
                 performance_settings.get("active_palette", self.active_palette)
