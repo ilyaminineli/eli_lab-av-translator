@@ -451,7 +451,7 @@ class PerformanceTimeline:
             item for item in self.events
             if item.enabled
             and item.event_id not in self._fired_ids
-            and self._last_position < item.position <= current
+            and item.position == current
             and item.beat <= max(1, min(16, int(beats_per_bar)))
         ]
         for item in due:
