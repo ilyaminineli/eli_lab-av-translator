@@ -35,6 +35,7 @@ uniform float u_emitter_radius;
 uniform vec2 u_emitter_size;
 uniform int u_direction;
 uniform float u_lifetime;
+uniform float u_emission_rate;
 uniform float u_speed;
 uniform float u_spread;
 uniform vec2 u_acceleration;
@@ -210,6 +211,22 @@ void main() {
     float size_variation = metadata.w;
 
     if (age >= lifetime || lifetime <= 0.0) {
+        // Births are distributed over time instead of starting as one synchronized
+        // burst. The rate is global to the system and divided across populations.
+        uint emission_tick = uint(floor(u_time * 60.0 + 0.5));
+        uint emission_key = uint(particle_index) * 0x9e3779b9u
+            ^ emission_tick * 0x85ebca6bu ^ uint(u_seed);
+        float spawn_probability = clamp(
+            u_emission_rate * u_delta / max(float(u_particle_count), 1.0),
+            0.0, 1.0
+        );
+        if (random_value(emission_key) >= spawn_probability) {
+            age = max(age, lifetime);
+            out_state = state;
+            out_metadata = vec4(age, lifetime, cycle, size_variation);
+            out_target = vec4(target_position, target_strength, sample_phase);
+            return;
+        }
         cycle += 1.0;
         uint key = uint(particle_index) * 0x9e3779b9u
             ^ uint(cycle) * 0x85ebca6bu ^ uint(u_seed);
@@ -756,6 +773,9 @@ class ParticleSystem2:
                 "tangent": 6,
             }.get(str(settings["direction"]), 0),
             "u_lifetime": float(settings["lifetime"]),
+            "u_emission_rate": (
+                float(settings["emission_rate"]) / max(1, len(self.populations))
+            ),
             "u_speed": float(settings["speed"]) * (0.78 + population_index * 0.16),
             "u_spread": float(settings["spread"]),
             "u_acceleration": tuple(float(value) for value in settings["acceleration"]),
