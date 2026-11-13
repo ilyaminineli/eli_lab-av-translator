@@ -52,6 +52,7 @@ from core.performance_service import (
     install_default_performance_macro_routes,
     set_default_routing_enabled,
 )
+from core.performance_timeline import PerformanceTimeline, PerformanceTimelineEvent
 from core.performance_transport import InternalTransport, Quantization
 from core.project_manager import ProjectManager
 from core.scene_profiles import SceneProfile, SceneProfileRegistry
@@ -151,7 +152,9 @@ class Application:
         self._midi_scene_trigger_state: dict[str, bool] = {}
         self.midi_input = MIDIInputService(self._handle_midi_event)
         self.transport = InternalTransport()
+        self.performance_timeline = PerformanceTimeline()
         self._external_clock_bar_at: float | None = None
+        self._timeline_external_anchor_bar = 1
         self.scene_profiles = SceneProfileRegistry()
         self.active_palette = palette_names()[0]
         self.modulation = ModulationMatrix()
@@ -385,6 +388,8 @@ class Application:
         self._midi_learn_request = None
         self._midi_learn_last_event = ""
         self.performance_scenes.clear()
+        self.performance_timeline.load_dict({})
+        self._timeline_external_anchor_bar = 1
         self._pending_scene_morph_seconds.clear()
         self._pending_external_scene_recall.clear()
         self._active_scene_morph = None
@@ -2824,6 +2829,7 @@ class Application:
                     for scene in getattr(self, "performance_scenes", {}).values()
                 ],
                 "performance_mode_plan": self.performance_mode.plan.to_dict(),
+                "performance_timeline": self.performance_timeline.to_dict(),
             },
         }
         composition_snapshot = Composition.from_dict(self.composition.to_dict())
@@ -3069,6 +3075,10 @@ class Application:
                 performance_settings.get("performance_macros", [])
             )
             self._sanitize_performance_macro_sources()
+            self.performance_timeline.load_dict(
+                performance_settings.get("performance_timeline", {})
+            )
+            self._timeline_external_anchor_bar = 1
             known_modulator_sources = {
                 f"modulator.{definition.modulator_id}"
                 for definition in self.modulator_bank.list_modulators()
