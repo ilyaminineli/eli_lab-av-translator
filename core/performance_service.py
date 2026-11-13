@@ -164,9 +164,10 @@ class PerformanceModeService:
 # The global matrix handles master-output and AUTO PERFORMANCE parameters. Layer
 # domains use the same LayerPerformanceModifier engine used by authored modifiers.
 DEFAULT_MATRIX_ROUTES: tuple[tuple[str, str, float, float, bool, float], ...] = (
-    ("macro.energy", "master.glitch", 0.0, 0.58, False, 0.62),
+    ("performance_macro.chaos", "master.glitch", 0.0, 0.82, False, 0.78),
+    ("performance_macro.pressure", "master.edge_amount", 0.0, 0.72, False, 0.56),
     ("macro.cutoff", "master.saturation", 0.55, 1.65, False, 0.82),
-    ("audio.low", "master.contrast", 0.78, 1.32, False, 0.7),
+    ("performance_macro.pressure", "master.contrast", 1.0, 1.75, False, 0.72),
     ("audio.high", "master.grain", 0.0, 0.48, False, 0.55),
     ("macro.energy", "automation.clip_switch_probability", 0.12, 0.82, False, 0.78),
     ("macro.cutoff", "automation.cut_interval", 24.0, 3.0, False, 0.72),
@@ -174,34 +175,34 @@ DEFAULT_MATRIX_ROUTES: tuple[tuple[str, str, float, float, bool, float], ...] = 
     ("macro.energy", "automation.generator_interval", 36.0, 9.0, False, 0.62),
     ("macro.cutoff", "automation.effect_interval", 30.0, 8.0, False, 0.58),
     ("audio.onset", "automation.min_segment_seconds", 18.0, 3.0, False, 0.55),
-    ("audio.high", "master.chromatic", 0.0, 0.28, False, 0.48),
+    ("performance_macro.chaos", "master.chromatic", 0.0, 0.72, False, 0.58),
     ("transport.beat_pulse", "master.scanlines", 0.02, 0.36, False, 0.45),
     ("macro.cutoff", "master.posterize", 0.0, 0.24, False, 0.38),
     ("audio.onset", "master.invert", 0.0, 0.10, False, 0.32),
     ("macro.energy", "master.hue", -12.0, 12.0, False, 0.4),
-    ("audio.high", "master.pixelate", 0.0, 0.18, False, 0.32),
+    ("performance_macro.fragment", "master.pixelate", 0.0, 0.88, False, 0.66),
     ("macro.cutoff", "master.halftone", 0.0, 0.20, False, 0.30),
     ("audio.onset", "master.solarize", 0.0, 0.12, False, 0.28),
     ("macro.energy", "master.transform_mix", 0.18, 0.78, False, 0.56),
     ("transport.beat_pulse", "master.kaleidoscope_rotation", -8.0, 8.0, False, 0.5),
     ("audio.low", "master.kaleidoscope_zoom", 0.92, 1.18, False, 0.48),
     ("macro.energy", "master.kaleidoscope_slices", 4.0, 16.0, False, 0.45),
-    ("transport.phrase_pulse", "master.mosaic_tiles", 24.0, 96.0, False, 0.4),
-    ("audio.high", "master.pixel_sort_amount", 0.0, 0.42, False, 0.45),
+    ("performance_macro.density", "master.mosaic_tiles", 4.0, 180.0, False, 0.64),
+    ("performance_macro.fragment", "master.pixel_sort_amount", 0.0, 0.78, False, 0.62),
     ("audio.high", "master.pixel_sort_threshold", 0.55, 0.82, False, 0.42),
     ("audio.high", "master.edge_amount", 0.0, 0.48, False, 0.42),
     ("transport.beat_pulse", "master.dither", 0.0, 0.24, False, 0.35),
-    ("audio.low", "master.displacement_amount", -0.16, 0.16, False, 0.48),
-    ("macro.cutoff", "master.displacement_scale", 0.85, 1.45, False, 0.38),
-    ("macro.energy", "master.feedback_amount", 0.0, 0.72, False, 0.62),
-    ("macro.cutoff", "master.feedback_decay", 0.82, 0.99, False, 0.52),
-    ("audio.low", "master.feedback_zoom", 0.92, 1.12, False, 0.45),
-    ("transport.beat_pulse", "master.feedback_rotation", -5.0, 5.0, False, 0.42),
+    ("performance_macro.chaos", "master.displacement_amount", 0.0, 0.88, False, 0.62),
+    ("performance_macro.fragment", "master.displacement_scale", 1.0, 4.0, False, 0.58),
+    ("performance_macro.depth", "master.feedback_amount", 0.0, 0.78, False, 0.7),
+    ("performance_macro.decay", "master.feedback_decay", 0.82, 0.995, False, 0.64),
+    ("performance_macro.depth", "master.feedback_zoom", 1.0, 1.55, False, 0.58),
+    ("performance_macro.chaos", "master.feedback_rotation", 0.0, 14.0, False, 0.5),
     ("transport.beat_pulse", "master.feedback_translate_x", -0.025, 0.025, False, 0.38),
     ("transport.phrase_pulse", "master.feedback_translate_y", -0.025, 0.025, False, 0.38),
     ("audio.high", "master.feedback_color_shift", 0.0, 0.22, False, 0.35),
-    ("audio.onset", "master.feedback_distortion", 0.0, 0.24, False, 0.42),
-    ("macro.energy", "master.feedback_motion_warp", 0.0, 0.42, False, 0.48),
+    ("performance_macro.pressure", "master.feedback_distortion", 0.0, 0.78, False, 0.58),
+    ("performance_macro.chaos", "master.feedback_motion_warp", 0.0, 0.62, False, 0.55),
     ("audio.onset", "master.feedback_datamosh", 0.0, 0.18, False, 0.38),
     ("transport.beat_pulse", "master.feedback_delay_frames", 0.0, 2.0, False, 0.3),
 )
@@ -243,7 +244,16 @@ def install_default_matrix_routes(matrix: ModulationMatrix) -> int:
                 (route for route in matrix.routes if route.target_id == target), None
             )
             if existing is not None and existing.route_id.startswith("auto-performance-"):
-                existing.enabled = True
+                changes = {
+                    "source_id": source,
+                    "output_min": low,
+                    "output_max": high,
+                    "inverted": inverted,
+                    "intensity_ceiling": ceiling,
+                    "enabled": True,
+                }
+                if any(getattr(existing, key) != value for key, value in changes.items()):
+                    matrix.update_route(existing.route_id, changes)
             continue
         route = ModulationRoute(
             route_id=f"auto-performance-{target.replace('.', '-')}",
