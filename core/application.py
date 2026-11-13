@@ -1294,10 +1294,17 @@ class Application:
                     # A start datagram can be lost while a later bar still arrives.
                     # Treat the first bar as an authority hand-off too, so the
                     # internal test clock can never run alongside Sonic Pi.
-                    first_external_bar = self._external_clock_bar_at is None
+                    clock_bpm = float(event.payload["bpm"])
+                    clock_meter = int(event.payload["beats_per_bar"])
+                    bar_seconds = (60.0 / max(20.0, clock_bpm)) * max(1, clock_meter)
+                    first_external_bar = (
+                        self._external_clock_bar_at is None
+                        or event.received_at - self._external_clock_bar_at
+                        > max(1.0, bar_seconds * 1.5)
+                    )
                     self.transport.stop()
-                    self.transport.set_tempo(float(event.payload["bpm"]))
-                    self.transport.set_meter(int(event.payload["beats_per_bar"]))
+                    self.transport.set_tempo(clock_bpm)
+                    self.transport.set_meter(clock_meter)
                     self._external_clock_bar_at = event.received_at
                 elif event.source == "sonic_pi" and event.kind == "transport.stop":
                     self.transport.stop()
