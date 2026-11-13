@@ -73,6 +73,24 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
     "selected_layer.position_y": ModulationTargetSpec(
         "selected_layer.position_y", "Selected layer Y position", 0.0, 1.0, "layer"
     ),
+    "layer_fx.chromatic": ModulationTargetSpec(
+        "layer_fx.chromatic", "Layer FX chromatic aberration", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.scanlines": ModulationTargetSpec(
+        "layer_fx.scanlines", "Layer FX scanlines", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.posterize": ModulationTargetSpec(
+        "layer_fx.posterize", "Layer FX posterize", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.invert": ModulationTargetSpec(
+        "layer_fx.invert", "Layer FX invert", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.hue": ModulationTargetSpec(
+        "layer_fx.hue", "Layer FX hue rotation", -180.0, 180.0, "layer"
+    ),
+    "layer_fx.saturation": ModulationTargetSpec(
+        "layer_fx.saturation", "Layer FX saturation", 0.0, 2.5, "layer"
+    ),
     "generator.animation_speed": ModulationTargetSpec(
         "generator.animation_speed", "Generator animation speed", 0.0, 8.0, "generator"
     ),
@@ -90,6 +108,9 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
     ),
     "generator.text_animation_amount": ModulationTargetSpec(
         "generator.text_animation_amount", "Text animation amount", 0.0, 0.18, "generator"
+    ),
+    "generator.text_animation_columns": ModulationTargetSpec(
+        "generator.text_animation_columns", "Text animation reveal steps", 2.0, 80.0, "generator"
     ),
     "generator.font_size": ModulationTargetSpec(
         "generator.font_size", "Text font size", 12.0, 420.0, "generator"
@@ -114,6 +135,24 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
     ),
     "generator.particle_trail": ModulationTargetSpec(
         "generator.particle_trail", "Particle trail", 0.0, 1.0, "generator"
+    ),
+    "generator.particle_emission_rate": ModulationTargetSpec(
+        "generator.particle_emission_rate", "Particle emission rate", 0.0, 3000.0, "generator"
+    ),
+    "generator.particle_system_size": ModulationTargetSpec(
+        "generator.particle_system_size", "Particle System 2.0 size", 1.0, 48.0, "generator"
+    ),
+    "generator.particle_lifetime": ModulationTargetSpec(
+        "generator.particle_lifetime", "Particle lifetime", 0.25, 60.0, "generator"
+    ),
+    "generator.particle_turbulence": ModulationTargetSpec(
+        "generator.particle_turbulence", "Particle turbulence", 0.0, 1.5, "generator"
+    ),
+    "generator.particle_force_strength": ModulationTargetSpec(
+        "generator.particle_force_strength", "Particle force strength", 0.0, 4.0, "generator"
+    ),
+    "generator.particle_reform_strength": ModulationTargetSpec(
+        "generator.particle_reform_strength", "Particle source reform strength", 0.0, 4.0, "generator"
     ),
     "overlay.playback_speed": ModulationTargetSpec(
         "overlay.playback_speed", "Animated overlay playback speed", 0.1, 4.0, "overlay"
