@@ -1351,7 +1351,10 @@ class PerformanceControlPanel(QWidget):
             )
         except (KeyError, TypeError, ValueError) as exc:
             self.macro_status_label.setText(f"Shortcut not applied · {exc}")
-            self.sync_performance_macros()
+            key_edit = self.macro_key_edits[macro_id]
+            key_edit.blockSignals(True)
+            key_edit.setKeySequence(QKeySequence(current.keyboard_shortcut))
+            key_edit.blockSignals(False)
         self.macros_changed.emit()
 
     def sync_performance_macros(self) -> None:
@@ -1408,10 +1411,6 @@ class PerformanceControlPanel(QWidget):
             (source_id, label)
             for source_id, label in labels.items()
             if source_id in SOURCE_RANGES or source_id.startswith("modulator.")
-        ]
-        bank_sources = [
-            (f"modulator.{definition.modulator_id}", f"Bank · {definition.name}")
-            for definition in self.application.modulator_bank.list_modulators()
         ]
         for macro_id, combo in self.macro_source_combos.items():
             macro = self.application.performance_macro_engine.get(macro_id)
