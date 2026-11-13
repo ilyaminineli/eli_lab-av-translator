@@ -48,6 +48,7 @@ from core.performance_service import (
 from core.performance_transport import InternalTransport, Quantization
 from core.project_manager import ProjectManager
 from core.scene_profiles import SceneProfile, SceneProfileRegistry
+from effects.layer_settings import normalize_layer_effects
 from effects.settings import EffectSettings
 from generators.catalog import GENERATOR_TYPES, default_generator_settings, normalize_settings
 from generators.palettes import palette_look, palette_names
@@ -72,6 +73,7 @@ _SELECTED_LAYER_MODULATION_TARGETS = (
     "generator.rotation",
     "generator.text_animation_speed",
     "generator.text_animation_amount",
+    "generator.text_animation_columns",
     "generator.font_size",
     "generator.letter_spacing",
     "generator.waveform_amplitude",
@@ -80,6 +82,18 @@ _SELECTED_LAYER_MODULATION_TARGETS = (
     "generator.particle_size",
     "generator.particle_spread",
     "generator.particle_trail",
+    "generator.particle_emission_rate",
+    "generator.particle_system_size",
+    "generator.particle_lifetime",
+    "generator.particle_turbulence",
+    "generator.particle_force_strength",
+    "generator.particle_reform_strength",
+    "layer_fx.chromatic",
+    "layer_fx.scanlines",
+    "layer_fx.posterize",
+    "layer_fx.invert",
+    "layer_fx.hue",
+    "layer_fx.saturation",
     "overlay.playback_speed",
     "overlay.frame_hold",
 )
@@ -1285,6 +1299,13 @@ class Application:
             "particle_size": "size",
             "particle_spread": "spread",
             "particle_trail": "trail",
+            "text_animation_columns": "text_animation_columns",
+            "particle_emission_rate": "emission_rate",
+            "particle_system_size": "particle_size",
+            "particle_lifetime": "lifetime",
+            "particle_turbulence": "turbulence",
+            "particle_force_strength": "force_strength",
+            "particle_reform_strength": "reform_strength",
         }.get(field)
 
     def _get_layer_modifier_target(
@@ -1306,6 +1327,11 @@ class Application:
             if field == "position_y":
                 return float(layer.position[1])
             return None
+        if target_id.startswith("layer_fx."):
+            field = target_id.split(".", 1)[1]
+            settings = normalize_layer_effects(layer.layer_effects)
+            value = settings.get(field)
+            return float(value) if isinstance(value, (int, float)) else None
         if target_id.startswith("generator."):
             if layer.source_type != "generator" or not layer.generator_type:
                 return None
@@ -1351,6 +1377,14 @@ class Application:
                 layer.position = (layer.position[0], max(0.0, min(1.0, float(value))))
             else:
                 return False
+            return True
+        if target_id.startswith("layer_fx."):
+            field = target_id.split(".", 1)[1]
+            settings = normalize_layer_effects(layer.layer_effects)
+            if field not in settings or field in {"enabled", "stages"}:
+                return False
+            settings[field] = float(value)
+            layer.layer_effects = normalize_layer_effects(settings)
             return True
         if target_id.startswith("generator."):
             if layer.source_type != "generator" or not layer.generator_type:
@@ -1584,6 +1618,15 @@ class Application:
                 return float(layer.scale[0])
             return None
 
+        if target_id.startswith("layer_fx."):
+            layer = self.composition.get_layer(self._selected_layer_id or "")
+            if layer is None or layer.locked:
+                return None
+            field = target_id.split(".", 1)[1]
+            settings = normalize_layer_effects(layer.layer_effects)
+            value = settings.get(field)
+            return float(value) if isinstance(value, (int, float)) else None
+
         if target_id.startswith("generator."):
             layer = self.composition.get_layer(self._selected_layer_id or "")
             if layer is None or layer.locked or layer.source_type != "generator":
@@ -1593,22 +1636,7 @@ class Application:
                 layer.generator_type or "geometry",
                 layer.generator_settings,
             )
-            setting_key = {
-                "animation_speed": "animation_speed",
-                "animation_amount": "animation_amount",
-                "density": "density",
-                "rotation": "rotation",
-                "text_animation_speed": "text_animation_speed",
-                "text_animation_amount": "text_animation_amount",
-                "font_size": "font_size",
-                "letter_spacing": "letter_spacing",
-                "waveform_amplitude": "amplitude",
-                "waveform_frequency": "frequency",
-                "particle_speed": "speed",
-                "particle_size": "size",
-                "particle_spread": "spread",
-                "particle_trail": "trail",
-            }.get(field)
+            setting_key = self._generator_modifier_setting_key(field)
             value = settings.get(setting_key) if setting_key else None
             return float(value) if isinstance(value, (int, float)) else None
 
@@ -1676,27 +1704,25 @@ class Application:
             self.events.publish("layer.modulated", layer_id=layer.id, target=target_id)
             return True
 
+        if target_id.startswith("layer_fx."):
+            layer = self.composition.get_layer(self._selected_layer_id or "")
+            if layer is None or layer.locked:
+                return False
+            field = target_id.split(".", 1)[1]
+            settings = normalize_layer_effects(layer.layer_effects)
+            if field not in settings or field in {"enabled", "stages"}:
+                return False
+            settings[field] = float(value)
+            layer.layer_effects = normalize_layer_effects(settings)
+            self.events.publish("layer.modulated", layer_id=layer.id, target=target_id)
+            return True
+
         if target_id.startswith("generator."):
             layer = self.composition.get_layer(self._selected_layer_id or "")
             if layer is None or layer.locked or layer.source_type != "generator":
                 return False
             field = target_id.split(".", 1)[1]
-            setting_key = {
-                "animation_speed": "animation_speed",
-                "animation_amount": "animation_amount",
-                "density": "density",
-                "rotation": "rotation",
-                "text_animation_speed": "text_animation_speed",
-                "text_animation_amount": "text_animation_amount",
-                "font_size": "font_size",
-                "letter_spacing": "letter_spacing",
-                "waveform_amplitude": "amplitude",
-                "waveform_frequency": "frequency",
-                "particle_speed": "speed",
-                "particle_size": "size",
-                "particle_spread": "spread",
-                "particle_trail": "trail",
-            }.get(field)
+            setting_key = self._generator_modifier_setting_key(field)
             if not setting_key or not layer.generator_type:
                 return False
             settings = normalize_settings(layer.generator_type, layer.generator_settings)
@@ -2044,10 +2070,16 @@ class Application:
                     "generator.animation_speed", "generator.animation_amount",
                     "generator.density", "generator.rotation",
                     "generator.text_animation_speed", "generator.text_animation_amount",
+                    "generator.text_animation_columns",
                     "generator.font_size", "generator.letter_spacing",
                     "generator.waveform_amplitude", "generator.waveform_frequency",
                     "generator.particle_speed", "generator.particle_size",
                     "generator.particle_spread", "generator.particle_trail",
+                    "generator.particle_emission_rate", "generator.particle_system_size",
+                    "generator.particle_lifetime", "generator.particle_turbulence",
+                    "generator.particle_force_strength", "generator.particle_reform_strength",
+                    "layer_fx.chromatic", "layer_fx.scanlines", "layer_fx.posterize",
+                    "layer_fx.invert", "layer_fx.hue", "layer_fx.saturation",
             ):
                 current = self._get_layer_modifier_target(layer.id, target)
                 if current is not None:
