@@ -294,6 +294,7 @@ def _modifier(
         curve: str = "smoothstep",
         attack_ms: float = 35.0,
         release_ms: float = 300.0,
+        polarity: str = "positive",
 ) -> LayerPerformanceModifier:
     return LayerPerformanceModifier(
         modifier_id=(
@@ -304,7 +305,7 @@ def _modifier(
         source_id=source_id,
         target_id=target_id,
         depth=depth,
-        polarity="positive",
+        polarity=polarity,
         curve=curve,
         attack_ms=attack_ms,
         release_ms=release_ms,
@@ -550,6 +551,7 @@ def install_default_layer_modifiers(
             ),
             _modifier(
                 "energy FX blend", energy, "layer_fx.mix", 0.06,
+                polarity="negative",
             ),
         ))
 
