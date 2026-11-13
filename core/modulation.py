@@ -163,6 +163,21 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
     "selected_layer.position_y": ModulationTargetSpec(
         "selected_layer.position_y", "Selected layer Y position", 0.0, 1.0, "layer"
     ),
+    "layer_fx.mix": ModulationTargetSpec(
+        "layer_fx.mix", "Layer FX mix", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.monochrome": ModulationTargetSpec(
+        "layer_fx.monochrome", "Layer FX monochrome", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.threshold": ModulationTargetSpec(
+        "layer_fx.threshold", "Layer FX threshold", 0.0, 1.0, "layer"
+    ),
+    "layer_fx.contrast": ModulationTargetSpec(
+        "layer_fx.contrast", "Layer FX contrast", 0.0, 2.5, "layer"
+    ),
+    "layer_fx.brightness": ModulationTargetSpec(
+        "layer_fx.brightness", "Layer FX brightness", -0.5, 0.5, "layer"
+    ),
     "layer_fx.chromatic": ModulationTargetSpec(
         "layer_fx.chromatic", "Layer FX chromatic aberration", 0.0, 1.0, "layer"
     ),
@@ -181,6 +196,7 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
     "layer_fx.saturation": ModulationTargetSpec(
         "layer_fx.saturation", "Layer FX saturation", 0.0, 2.5, "layer"
     ),
+
     "generator.animation_speed": ModulationTargetSpec(
         "generator.animation_speed", "Generator animation speed", 0.0, 8.0, "generator"
     ),
