@@ -158,7 +158,9 @@ class AutomationDirector:
         self._macro_values: dict[str, float] = {}
         self._last_scene_id = ""
         self._layout_morphs: dict[str, dict[str, object]] = {}
-        self._peak_particle_base: dict[str, tuple[str, float]] = {}
+        self._peak_particle_base: dict[str, tuple[str, float, str]] = {}
+        self._active_variation_layer_ids: tuple[str, ...] = ()
+        self._last_layer_fx_variation = False
         self._director = GenerativeVariationDirector()
         self.generator_settings_changed = None
         self.palette_changed = None
@@ -199,6 +201,8 @@ class AutomationDirector:
         self._deck_due.clear()
         self._layout_morphs.clear()
         self._peak_particle_base.clear()
+        self._active_variation_layer_ids = ()
+        self._last_layer_fx_variation = False
         self._macro_values.clear()
         self._last_scene_id = ""
         self._director.reset(self.settings.palette_memory_phrases)
@@ -341,23 +345,24 @@ class AutomationDirector:
         return False
 
     def update_layers(self, layers: list[Layer]) -> None:
-        """Rebind after scene recall replaces the Composition object."""
+        """Rebind after scene/project restore replaces the Composition object."""
         self._layers = layers
         valid_ids = {layer.id for layer in layers}
-        if self._director.anchor_layer_id not in valid_ids:
-            self._director.reset(self.settings.palette_memory_phrases)
-        self._peak_particle_base = {
-            layer_id: state
-            for layer_id, state in self._peak_particle_base.items()
-            if layer_id in valid_ids
-        }
         self._layout_morphs = {
             layer_id: state
             for layer_id, state in self._layout_morphs.items()
             if layer_id in valid_ids
         }
+        self._peak_particle_base = {
+            layer_id: state
+            for layer_id, state in self._peak_particle_base.items()
+            if layer_id in valid_ids
+        }
+        self._active_variation_layer_ids = tuple(
+            layer_id for layer_id in self._active_variation_layer_ids
+            if layer_id in valid_ids
+        )
 
-    @property
     def _uses_constrained_generative_rules(self) -> bool:
         return (
             self.settings.performance_style == "generative"
@@ -374,7 +379,10 @@ class AutomationDirector:
             self._layers,
             self.settings.max_layers_per_variation,
             self.rng,
-            keep_anchor=self.settings.keep_visual_anchor,
+            keep_anchor=(
+                self.settings.keep_visual_anchor
+                or self.settings.preserve_background_source
+            ),
             prefer_particles=prefer_particles,
         )
 
@@ -395,6 +403,8 @@ class AutomationDirector:
         constrained = self._uses_constrained_generative_rules
         if constrained and allowed is None:
             allowed = set(self._select_variation_layers() or ())
+        if constrained and allowed is not None:
+            self._active_variation_layer_ids = tuple(allowed)
         anchor_id = self._director.choose_anchor(
             self._layers,
             enabled=constrained and self.settings.keep_visual_anchor,
@@ -512,7 +522,7 @@ class AutomationDirector:
     ) -> bool:
         allowed = set(layer_ids) if layer_ids is not None else set()
         constrained = self._uses_constrained_generative_rules
-        if not constrained or not allowed:
+        if not constrained:
             allowed = set()
         factor = self._director.particle_peak_factor(
             self._performance_section,
@@ -524,41 +534,45 @@ class AutomationDirector:
         changed = False
         for layer in self._layers:
             stored = self._peak_particle_base.get(layer.id)
+            kind = str(layer.generator_type or "")
             if stored is not None and (
                     layer.id not in allowed
                     or layer.locked
-                    or layer.generator_type not in {"particles", "particle_system_2"}
+                    or layer.source_type != "generator"
+                    or kind not in {"particles", "particle_system_2"}
                     or factor <= 1.0
+                    or stored[2] != kind
             ):
-                field, base_value = stored
-                values = normalize_settings(
-                    str(layer.generator_type),
-                    layer.generator_settings,
-                )
-                values[field] = base_value
-                layer.generator_settings = normalize_settings(
-                    str(layer.generator_type),
-                    values,
-                )
-                if self.generator_settings_changed is not None:
-                    self.generator_settings_changed(layer)
+                field, base_value, stored_kind = stored
+                if layer.source_type == "generator" and kind == stored_kind:
+                    values = normalize_settings(kind, layer.generator_settings)
+                    values[field] = base_value
+                    layer.generator_settings = normalize_settings(kind, values)
+                    if self.generator_settings_changed is not None:
+                        self.generator_settings_changed(layer)
                 self._peak_particle_base.pop(layer.id, None)
                 changed = True
             if (
                     layer.id not in allowed
                     or layer.locked
                     or layer.source_type != "generator"
-                    or layer.generator_type not in {"particles", "particle_system_2"}
+                    or kind not in {"particles", "particle_system_2"}
                     or factor <= 1.0
             ):
                 continue
-            kind = str(layer.generator_type)
             field = "density" if kind == "particles" else "emission_rate"
             values = normalize_settings(kind, layer.generator_settings)
             if layer.id not in self._peak_particle_base:
-                self._peak_particle_base[layer.id] = (field, float(values[field]))
-            base_field, base_value = self._peak_particle_base[layer.id]
-            values[base_field] = base_value * factor
+                self._peak_particle_base[layer.id] = (
+                    field,
+                    float(values[field]),
+                    kind,
+                )
+            base_field, base_value, _stored_kind = self._peak_particle_base[layer.id]
+            desired = base_value * factor
+            if abs(float(values[base_field]) - desired) < 1e-4:
+                continue
+            values[base_field] = desired
             layer.generator_settings = normalize_settings(kind, values)
             if self.generator_settings_changed is not None:
                 self.generator_settings_changed(layer)
@@ -580,6 +594,7 @@ class AutomationDirector:
             allow_effect_change: bool = True,
     ) -> int:
         changed = 0
+        self._last_layer_fx_variation = False
         allowed = set(layer_ids) if layer_ids is not None else None
         if self._uses_constrained_generative_rules and allowed is None:
             allowed = set(self._select_variation_layers() or ())
@@ -765,6 +780,7 @@ class AutomationDirector:
                     layer.layer_effects = apply_layer_effect_preset(
                         self.rng.choice(preset_names)
                     )
+                    self._last_layer_fx_variation = True
                     changed += 1
         return changed
 
@@ -830,6 +846,9 @@ class AutomationDirector:
                 macro_values,
             )
 
+        if event == "phrase":
+            self._director.advance_phrase()
+
         if event == "scene":
             next_section = self._scene_section(scene_id)
             if scene_id and scene_id != self._last_scene_id:
@@ -883,6 +902,8 @@ class AutomationDirector:
         variation_layer_ids = self._select_variation_layers(
             prefer_particles=peak_context
         ) if constrained else None
+        if constrained:
+            self._active_variation_layer_ids = tuple(variation_layer_ids or ())
         allow_effect_change = (
             not constrained
             or not self.settings.effect_after_transition
@@ -1140,9 +1161,8 @@ class AutomationDirector:
             self._performance_section == "peak"
             or self._performance_energy >= 0.78
             or self._performance_intensity >= 0.82
+            or self._macro_values.get("density", 0.0) >= 0.78
         )
-        layer_ids = self._select_variation_layer_ids(prefer_particles=peak_context)
-        allowed = set(layer_ids or ())
         video_layers = {
             layer.source_id: layer
             for layer in self._layers
@@ -1150,28 +1170,54 @@ class AutomationDirector:
         }
         anchor_id = self._director.choose_anchor(
             self._layers,
-            enabled=self.settings.keep_visual_anchor,
+            enabled=(
+                self.settings.keep_visual_anchor
+                or self.settings.preserve_background_source
+            ),
         )
+        due_deck_ids = {
+            deck_id
+            for deck_id, deck in self._decks.items()
+            if (
+                not getattr(deck, "locked", False)
+                and self._deck_due.get(deck_id) is not None
+                and current >= self._deck_due[deck_id]
+                and (
+                    not self.settings.preserve_background_source
+                    or video_layers.get(deck_id) is None
+                    or video_layers[deck_id].id != anchor_id
+                )
+            )
+        }
+        layout_due = (
+            self.settings.randomize_layout
+            and self._layout_due is not None
+            and current >= self._layout_due
+        )
+        generators_due = (
+            (
+                self.settings.randomize_generators
+                or self.settings.randomize_palette
+                or self.settings.randomize_layer_effects
+                or self.settings.randomize_overlays
+            )
+            and self._generators_due is not None
+            and current >= self._generators_due
+        )
+        new_variation_due = bool(due_deck_ids or layout_due or generators_due)
+        if new_variation_due:
+            self._active_variation_layer_ids = self._select_variation_layers(
+                prefer_particles=peak_context
+            ) or ()
+        layer_ids = self._active_variation_layer_ids
+        allowed = set(layer_ids)
         changed = False
         transition_happened = False
 
-        for deck_id, deck in self._decks.items():
-            if getattr(deck, "locked", False):
-                continue
+        for deck_id in due_deck_ids:
+            deck = self._decks[deck_id]
             layer = video_layers.get(deck_id)
             if layer is None or layer.id not in allowed:
-                continue
-            if self.settings.preserve_background_source and layer.id == anchor_id:
-                continue
-            due = self._deck_due.get(deck_id)
-            if due is None:
-                self._deck_due[deck_id] = current + self._interval(
-                    self.rng,
-                    self.settings.min_cut_interval,
-                    self.settings.max_cut_interval,
-                )
-                continue
-            if current < due:
                 continue
             if self._load_random_segment(
                 deck,
@@ -1182,11 +1228,7 @@ class AutomationDirector:
                 transition_happened = True
                 changed = True
 
-        if (
-                self.settings.randomize_layout
-                and self._layout_due is not None
-                and current >= self._layout_due
-        ):
+        if layout_due:
             layout_count = self._randomize_layout(layer_ids, now=current)
             changed = bool(layout_count) or changed
             transition_happened = transition_happened or bool(layout_count)
@@ -1214,21 +1256,12 @@ class AutomationDirector:
             )
             changed = True
 
-        if (
-                (
-                    self.settings.randomize_generators
-                    or self.settings.randomize_palette
-                    or self.settings.randomize_layer_effects
-                    or self.settings.randomize_overlays
-                )
-                and self._generators_due is not None
-                and current >= self._generators_due
-        ):
+        if generators_due:
             count = self._randomize_generators(
                 layer_ids,
                 allow_effect_change=effect_ready,
             )
-            if effect_ready and getattr(self, "_last_layer_fx_variation", False):
+            if effect_ready and self._last_layer_fx_variation:
                 self._director.mark_effect_applied()
             self._generators_due = current + self._interval(
                 self.rng,
@@ -1241,11 +1274,43 @@ class AutomationDirector:
         if transition_happened:
             self.last_action = (
                 f"transition · {self._performance_section} · "
-                f"{len(layer_ids or ())} varied layer(s)"
+                f"{len(layer_ids)} varied layer(s)"
             )
         return changed
 
     def stop(self) -> None:
+        """Finish active morphs and restore temporary peak-only particle boosts."""
+        for layer_id, morph in tuple(self._layout_morphs.items()):
+            layer = next(
+                (item for item in self._layers if item.id == layer_id),
+                None,
+            )
+            if layer is None:
+                continue
+            end_x, end_y = morph["end_position"]
+            layer.position = (float(end_x), float(end_y))
+            scale = float(morph["end_scale"])
+            layer.scale = (scale, scale)
+            layer.rotation = float(morph["end_rotation"])
+            layer.opacity = float(morph["end_opacity"])
+            layer.blend_mode = str(morph["end_blend_mode"])
+        self._layout_morphs.clear()
+        for layer_id, (field, base_value, kind) in tuple(
+                self._peak_particle_base.items()
+        ):
+            layer = next(
+                (item for item in self._layers if item.id == layer_id),
+                None,
+            )
+            if layer is None or layer.source_type != "generator" or layer.generator_type != kind:
+                continue
+            values = normalize_settings(kind, layer.generator_settings)
+            values[field] = base_value
+            layer.generator_settings = normalize_settings(kind, values)
+            if self.generator_settings_changed is not None:
+                self.generator_settings_changed(layer)
+        self._peak_particle_base.clear()
+        self._active_variation_layer_ids = ()
         self.running = False
         self.last_action = "Automation stopped"
 
