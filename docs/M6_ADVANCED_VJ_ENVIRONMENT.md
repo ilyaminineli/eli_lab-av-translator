@@ -240,4 +240,4 @@ The LIVE PERFORMANCE TIMELINE dock exposes the event list, editor, arm/disarm, r
 
 Sonic Pi currently reports one clock event per bar. The timeline interpolates beat positions locally from that packet's BPM and timestamp; this is not a per-beat OSC clock or frame-accurate sync. Scene transitions retain the current numeric morph and discrete cut behaviour. Project loading restores timeline definitions but does not automatically arm playback.
 
-See [M6-C — Live Performance Timeline](M6_LIVE_PERFORMANCE_TIMELINE.md) for event payloads, clock handling, persistence, limits and acceptance checks.
+See [M6 — Live Performance Timeline](M6_LIVE_PERFORMANCE_TIMELINE.md) for event payloads, clock handling, persistence, limits and acceptance checks.
