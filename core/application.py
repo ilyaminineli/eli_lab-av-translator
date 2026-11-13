@@ -1326,6 +1326,30 @@ class Application:
                                 ),
                                 now=event.received_at,
                             )
+                    if event.source == "sonic_pi" and event.kind == "clock.bar":
+                        self._timeline_external_anchor_bar = max(
+                            1, int(event.payload.get("bar_index", 1))
+                        )
+                        self._tick_performance_timeline(
+                            self._timeline_external_anchor_bar,
+                            1,
+                            int(self.performance_control.beats_per_bar),
+                        )
+                    elif event.source != "sonic_pi" and event.kind == "transport.start":
+                        self._tick_performance_timeline(
+                            self.transport.bar_index,
+                            self.transport.beat_index + 1,
+                            self.transport.beats_per_bar,
+                        )
+                    elif (
+                            event.source != "sonic_pi"
+                            and event.kind in {"clock.beat", "clock.bar"}
+                    ):
+                        self._tick_performance_timeline(
+                            int(event.payload.get("bar_index", self.transport.bar_index)),
+                            int(event.payload.get("beat_index", 0)) + 1,
+                            int(event.payload.get("beats_per_bar", self.transport.beats_per_bar)),
+                        )
                     if event.kind in {"clock.beat", "clock.bar"}:
                         self._fire_due_external_scene_recall()
                     self._handle_performance_mode_event(event)
@@ -2428,6 +2452,7 @@ class Application:
         for event in clock_events:
             self.submit_control_event(event)
         processed_events = self.process_control_events()
+        self._tick_external_performance_timeline()
         processed_audio = self.process_audio_frames()
         self._tick_scene_morph()
         sources = self._modulation_sources()
