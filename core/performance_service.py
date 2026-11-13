@@ -323,6 +323,124 @@ def _modifier(
     )
 
 
+def _performance_macro_modifier(
+        macro_id: str,
+        name: str,
+        target_id: str,
+        depth: float,
+) -> LayerPerformanceModifier:
+    source_id = f"performance_macro.{macro_id}"
+    item = _modifier(name, source_id, target_id, depth)
+    item.modifier_id = f"macro-{macro_id}-{target_id.replace('.', '-')}"[:40]
+    item.name = f"MACRO · {macro_id.upper()} · {name}"[:48]
+    return item
+
+
+def install_default_performance_macro_modifiers(layers: list[object]) -> int:
+    """Install reusable macro-to-layer mappings without requiring AUTO PERFORMANCE."""
+    universal = {
+        "chaos": (
+            ("rotation accent", "layer.rotation", 0.08),
+            ("chromatic aberration", "layer_fx.chromatic", 0.14),
+            ("invert accent", "layer_fx.invert", 0.08),
+            ("scanline intensity", "layer_fx.scanlines", 0.10),
+        ),
+        "density": (
+            ("layer scale density", "layer.scale", 0.06),
+            ("threshold density", "layer_fx.threshold", 0.06),
+        ),
+        "depth": (
+            ("layer scale depth", "layer.scale", 0.12),
+            ("horizontal depth", "layer.position_x", 0.05),
+            ("vertical depth", "layer.position_y", 0.05),
+        ),
+        "decay": (("effect persistence", "layer_fx.mix", 0.10),),
+        "pressure": (
+            ("contrast pressure", "layer_fx.contrast", 0.12),
+            ("threshold pressure", "layer_fx.threshold", 0.10),
+            ("brightness pressure", "layer_fx.brightness", 0.06),
+        ),
+        "fragment": (
+            ("posterize fragments", "layer_fx.posterize", 0.12),
+            ("chromatic fragments", "layer_fx.chromatic", 0.10),
+        ),
+    }
+    generator = {
+        "geometry": (
+            ("chaos", "motion amount", "generator.animation_amount", 0.12),
+            ("density", "geometry density", "generator.density", 0.10),
+            ("depth", "motion speed", "generator.animation_speed", 0.10),
+            ("fragment", "fragmented motion", "generator.animation_amount", 0.10),
+        ),
+        "text": (
+            ("chaos", "glyph motion", "generator.text_animation_amount", 0.18),
+            ("density", "reveal density", "generator.text_animation_columns", 0.12),
+            ("decay", "scroll speed", "generator.text_animation_speed", 0.08),
+            ("pressure", "text distortion", "generator.text_animation_amount", 0.10),
+            ("fragment", "glyph fragmentation", "generator.text_animation_amount", 0.18),
+        ),
+        "waveform": (
+            ("chaos", "waveform movement", "generator.animation_amount", 0.10),
+            ("density", "waveform density", "generator.density", 0.10),
+            ("depth", "waveform motion speed", "generator.animation_speed", 0.08),
+            ("pressure", "waveform amplitude", "generator.waveform_amplitude", 0.12),
+        ),
+        "particles": (
+            ("chaos", "particle speed", "generator.particle_speed", 0.14),
+            ("density", "particle density", "generator.density", 0.10),
+            ("depth", "particle trails", "generator.particle_trail", 0.12),
+            ("decay", "particle trail persistence", "generator.particle_trail", 0.18),
+            ("pressure", "particle size", "generator.particle_size", 0.08),
+            ("fragment", "particle spread", "generator.particle_spread", 0.12),
+        ),
+        "particle_system_2": (
+            ("chaos", "particle speed", "generator.particle_speed", 0.12),
+            ("chaos", "particle turbulence", "generator.particle_turbulence", 0.12),
+            ("density", "continuous emission", "generator.particle_emission_rate", 0.16),
+            ("density", "particle radius", "generator.particle_system_size", 0.10),
+            ("depth", "particle trails", "generator.particle_trail", 0.14),
+            ("depth", "source reformation", "generator.particle_reform_strength", 0.10),
+            ("decay", "particle lifetime", "generator.particle_lifetime", 0.14),
+            ("decay", "particle persistence", "generator.particle_trail", 0.18),
+            ("pressure", "particle force", "generator.particle_force_strength", 0.12),
+            ("pressure", "particle turbulence", "generator.particle_turbulence", 0.10),
+            ("fragment", "particle spread", "generator.particle_spread", 0.14),
+        ),
+    }
+    count = 0
+    for layer in layers:
+        if getattr(layer, "locked", False):
+            continue
+        configured = getattr(layer, "performance_modifiers", None)
+        if not isinstance(configured, list):
+            configured = []
+            layer.performance_modifiers = configured
+        existing = {
+            (str(raw.get("source_id", "")), str(raw.get("target_id", "")))
+            for raw in configured if isinstance(raw, dict)
+        }
+        candidates = [
+            _performance_macro_modifier(macro_id, name, target, depth)
+            for macro_id, mappings in universal.items()
+            for name, target, depth in mappings
+        ]
+        if getattr(layer, "source_type", "") == "generator":
+            kind = str(getattr(layer, "generator_type", "") or "")
+            candidates.extend(
+                _performance_macro_modifier(macro_id, name, target, depth)
+                for macro_id, name, target, depth in generator.get(kind, ())
+            )
+        for item in candidates:
+            item.normalize()
+            key = (item.source_id, item.target_id)
+            if key in existing:
+                continue
+            configured.append(item.to_dict())
+            existing.add(key)
+            count += 1
+    return count
+
+
 def install_default_layer_modifiers(
         layers: list[object],
         modulator_ids: dict[str, str],
