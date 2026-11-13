@@ -438,7 +438,7 @@ See [M6-E — Typography as an Independent Visual Instrument](M6_E_TYPOGRAPHY.md
 
 ## M6 live-performance integration follow-up
 
-The new text, layer-FX and Particle System 2.0 controls are registered as per-layer performance targets and in the manual modulation/MIDI target registry. AUTO PERFORMANCE includes energy/beat/onset routes for particle emission and physics, phrase/energy routes for trails and source reformation, reveal-step motion for typography, and modulation of GPU layer-FX parameters. GPU-only changes remain uniform updates; they do not require per-frame CPU rasterization.
+The new text, layer-FX and Particle System 2.0 controls are registered as per-layer performance targets and in the manual modulation/MIDI target registry. AUTO PERFORMANCE includes energy/beat/onset routes for particle emission and physics, phrase/energy routes for trails and source reformation, reveal-step motion for typography, and modulation of all numeric per-layer FX parameters. C1 master transforms, displacement and temporal-feedback parameters are also registered in the global Modulation Matrix and receive default energy/beat/onset routes. Effect modes, feedback enable/freeze/reset and source selection remain operator decisions. GPU-only changes remain uniform updates; they do not require per-frame CPU rasterization.
 
 The workspace adapts dock constraints and default sizing for compact and 4:3 windows while preserving user-saved layouts. The compositor already fits the existing composition canvas to output aspect without distortion; it letterboxes rather than stretching content. This UI adaptation does not silently change a project's stored canvas resolution.
 
