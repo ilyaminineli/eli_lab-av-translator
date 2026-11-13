@@ -3,7 +3,8 @@ from __future__ import annotations
 import time
 from uuid import uuid4
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, Signal
+from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -15,11 +16,13 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QKeySequenceEdit,
     QListWidget,
     QListWidgetItem,
     QProgressBar,
     QPushButton,
     QScrollArea,
+    QSlider,
     QSpinBox,
     QVBoxLayout,
     QWidget,
@@ -29,6 +32,7 @@ from core.application import Application
 from core.audio_analysis import AudioAnalysisSettings
 from core.audio_capture import AudioCaptureState
 from core.modulation import (
+    SOURCE_RANGES,
     TARGET_SPECS,
     ModulationRoute,
 )
@@ -37,7 +41,9 @@ from generators.palettes import palette_names
 
 
 class PerformanceControlPanel(QWidget):
-    """Internal transport, audio-analysis monitor, scene profiles and modulation UI."""
+    """Internal transport, audio-analysis monitor, scenes, macros and modulation UI."""
+
+    macros_changed = Signal()
 
     def __init__(self, application: Application, parent=None) -> None:
         super().__init__(parent)
@@ -154,6 +160,65 @@ class PerformanceControlPanel(QWidget):
         self.midi_status_label.setWordWrap(True)
         midi_form.addRow("STATUS", self.midi_status_label)
         root.addWidget(self.midi_group)
+
+        self.performance_macro_group = QGroupBox("PERFORMANCE MACROS · NORMALIZED 0–1")
+        macro_layout = QVBoxLayout(self.performance_macro_group)
+        macro_hint = QLabel(
+            "One control can move several parameters across compatible layers and master effects. "
+            "Assign an input source, a keyboard toggle, MIDI CC/note or OSC."
+        )
+        macro_hint.setWordWrap(True)
+        macro_hint.setObjectName("mutedLabel")
+        macro_layout.addWidget(macro_hint)
+        self.macro_sliders: dict[str, QSlider] = {}
+        self.macro_value_labels: dict[str, QLabel] = {}
+        self.macro_source_combos: dict[str, QComboBox] = {}
+        self.macro_key_edits: dict[str, QKeySequenceEdit] = {}
+        for macro in self.application.performance_macro_engine.list_macros():
+            row = QGridLayout()
+            name_label = QLabel(macro.name)
+            name_label.setMinimumWidth(74)
+            name_label.setToolTip(macro.description)
+            slider = QSlider(Qt.Orientation.Horizontal)
+            slider.setRange(0, 1000)
+            slider.setSingleStep(5)
+            value_label = QLabel("0.00")
+            value_label.setMinimumWidth(38)
+            value_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            source_combo = QComboBox()
+            source_combo.setMinimumWidth(150)
+            key_edit = QKeySequenceEdit(QKeySequence(macro.keyboard_shortcut))
+            key_edit.setMaximumWidth(138)
+            row.addWidget(name_label, 0, 0)
+            row.addWidget(slider, 0, 1)
+            row.addWidget(value_label, 0, 2)
+            row.addWidget(source_combo, 0, 3)
+            row.addWidget(key_edit, 0, 4)
+            macro_layout.addLayout(row)
+            self.macro_sliders[macro.macro_id] = slider
+            self.macro_value_labels[macro.macro_id] = value_label
+            self.macro_source_combos[macro.macro_id] = source_combo
+            self.macro_key_edits[macro.macro_id] = key_edit
+            slider.valueChanged.connect(
+                lambda value, macro_id=macro.macro_id:
+                    self._performance_macro_value_changed(macro_id, value)
+            )
+            source_combo.currentIndexChanged.connect(
+                lambda _index, macro_id=macro.macro_id:
+                    self._performance_macro_source_changed(macro_id)
+            )
+            key_edit.keySequenceChanged.connect(
+                lambda sequence, macro_id=macro.macro_id:
+                    self._performance_macro_shortcut_changed(macro_id, sequence)
+            )
+        self.macro_status_label = QLabel(
+            "Keyboard shortcuts toggle a macro between 0 and 1. "
+            "A mapped input source resumes after a short manual takeover."
+        )
+        self.macro_status_label.setWordWrap(True)
+        self.macro_status_label.setObjectName("mutedLabel")
+        macro_layout.addWidget(self.macro_status_label)
+        root.addWidget(self.performance_macro_group)
 
         self.performance_scene_group = QGroupBox("VJ SCENE BANK · COMPOSITIONS")
         scene_form = QFormLayout(self.performance_scene_group)
@@ -464,6 +529,7 @@ class PerformanceControlPanel(QWidget):
         self.route_list.currentItemChanged.connect(self._load_route_editor)
 
         self._load_scene_profile()
+        self.sync_performance_macros()
         self.refresh_midi_devices()
         self._refresh_midi_target_choices()
         self.refresh_midi_mappings(force=True)
