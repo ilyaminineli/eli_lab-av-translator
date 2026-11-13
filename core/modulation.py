@@ -258,7 +258,11 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
         "generator.particle_force_strength", "Particle force strength", 0.0, 4.0, "generator"
     ),
     "generator.particle_reform_strength": ModulationTargetSpec(
-        "generator.particle_reform_strength", "Particle source reform strength", 0.0, 4.0, "generator"
+        "generator.particle_reform_strength",
+        "Particle source reform strength",
+        0.0,
+        4.0,
+        "generator",
     ),
     "overlay.playback_speed": ModulationTargetSpec(
         "overlay.playback_speed", "Animated overlay playback speed", 0.1, 4.0, "overlay"
