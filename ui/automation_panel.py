@@ -6,9 +6,12 @@ from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
+    QDoubleSpinBox,
     QFormLayout,
+    QGroupBox,
     QLabel,
     QPushButton,
+    QSpinBox,
     QScrollArea,
     QVBoxLayout,
     QWidget,
@@ -107,6 +110,62 @@ class AutomationPanel(QWidget):
         layout.addWidget(self.layer_fx_check)
         layout.addWidget(self.overlay_check)
         layout.addWidget(self.palette_check)
+
+        self.director_group = QGroupBox("RULE-BASED GENERATIVE DIRECTOR")
+        director_form = QFormLayout(self.director_group)
+        self.constrained_generative_check = QCheckBox(
+            "Enable constrained generative rules"
+        )
+        self.constrained_generative_check.setChecked(True)
+        self.max_variation_layers_spin = QSpinBox()
+        self.max_variation_layers_spin.setRange(1, 2)
+        self.max_variation_layers_spin.setValue(2)
+        self.keep_anchor_check = QCheckBox("Keep one recognizable visual anchor")
+        self.keep_anchor_check.setChecked(True)
+        self.preserve_background_check = QCheckBox(
+            "Keep background source stable during text variation"
+        )
+        self.preserve_background_check.setChecked(True)
+        self.effect_after_transition_check = QCheckBox(
+            "Introduce master / layer FX only after a transition"
+        )
+        self.effect_after_transition_check.setChecked(True)
+        self.palette_memory_spin = QSpinBox()
+        self.palette_memory_spin.setRange(0, 16)
+        self.palette_memory_spin.setValue(4)
+        self.peak_particle_boost_spin = QDoubleSpinBox()
+        self.peak_particle_boost_spin.setRange(0.0, 1.0)
+        self.peak_particle_boost_spin.setDecimals(2)
+        self.peak_particle_boost_spin.setSingleStep(0.05)
+        self.peak_particle_boost_spin.setValue(0.35)
+        self.slow_breakdown_check = QCheckBox(
+            "Use slower layout transitions during breakdowns"
+        )
+        self.slow_breakdown_check.setChecked(True)
+        self.breakdown_min_spin = QDoubleSpinBox()
+        self.breakdown_min_spin.setRange(2.0, 20.0)
+        self.breakdown_min_spin.setSingleStep(0.5)
+        self.breakdown_min_spin.setDecimals(1)
+        self.breakdown_min_spin.setSuffix(" s")
+        self.breakdown_min_spin.setValue(5.0)
+        self.breakdown_max_spin = QDoubleSpinBox()
+        self.breakdown_max_spin.setRange(2.0, 30.0)
+        self.breakdown_max_spin.setSingleStep(0.5)
+        self.breakdown_max_spin.setDecimals(1)
+        self.breakdown_max_spin.setSuffix(" s")
+        self.breakdown_max_spin.setValue(9.0)
+        director_form.addRow(self.constrained_generative_check)
+        director_form.addRow("MAX LAYERS PER VARIATION", self.max_variation_layers_spin)
+        director_form.addRow(self.keep_anchor_check)
+        director_form.addRow(self.preserve_background_check)
+        director_form.addRow(self.effect_after_transition_check)
+        director_form.addRow("PALETTE MEMORY · PHRASES", self.palette_memory_spin)
+        director_form.addRow("PEAK PARTICLE BOOST · 0–1", self.peak_particle_boost_spin)
+        director_form.addRow(self.slow_breakdown_check)
+        director_form.addRow("BREAKDOWN TRANSITION MIN", self.breakdown_min_spin)
+        director_form.addRow("BREAKDOWN TRANSITION MAX", self.breakdown_max_spin)
+        layout.addWidget(self.director_group)
+
         reactive_hint = QLabel(
             "Performance Mode installs shared audio/Sonic Pi routes and per-layer curves "
             "automatically. Run SONATA after arming; phrase/scene events drive AUTO "
@@ -203,6 +262,16 @@ class AutomationPanel(QWidget):
             max_generator_interval=max(24.0, cut_max * 2.0),
             performance_style=str(self.performance_style_combo.currentData()),
             musical_sync=str(self.musical_sync_combo.currentData()),
+            constrained_generative=self.constrained_generative_check.isChecked(),
+            max_layers_per_variation=self.max_variation_layers_spin.value(),
+            keep_visual_anchor=self.keep_anchor_check.isChecked(),
+            preserve_background_source=self.preserve_background_check.isChecked(),
+            effect_after_transition=self.effect_after_transition_check.isChecked(),
+            palette_memory_phrases=self.palette_memory_spin.value(),
+            peak_particle_boost=self.peak_particle_boost_spin.value(),
+            slow_breakdown_transitions=self.slow_breakdown_check.isChecked(),
+            breakdown_transition_min_seconds=self.breakdown_min_spin.value(),
+            breakdown_transition_max_seconds=self.breakdown_max_spin.value(),
         )
 
     def sync_performance_plan(self, plan) -> None:
@@ -226,9 +295,23 @@ class AutomationPanel(QWidget):
                 (self.layer_fx_check, "randomize_layer_effects"),
                 (self.overlay_check, "randomize_overlays"),
                 (self.palette_check, "randomize_palette"),
+                (self.constrained_generative_check, "constrained_generative"),
+                (self.keep_anchor_check, "keep_visual_anchor"),
+                (self.preserve_background_check, "preserve_background_source"),
+                (self.effect_after_transition_check, "effect_after_transition"),
+                (self.slow_breakdown_check, "slow_breakdown_transitions"),
         ):
             if key in settings:
                 control.setChecked(bool(settings[key]))
+        for control, key in (
+                (self.max_variation_layers_spin, "max_layers_per_variation"),
+                (self.palette_memory_spin, "palette_memory_phrases"),
+                (self.peak_particle_boost_spin, "peak_particle_boost"),
+                (self.breakdown_min_spin, "breakdown_transition_min_seconds"),
+                (self.breakdown_max_spin, "breakdown_transition_max_seconds"),
+        ):
+            if key in settings:
+                control.setValue(settings[key])
 
     def _start(self) -> None:
         self.start_requested.emit(

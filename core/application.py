@@ -179,6 +179,7 @@ class Application:
         self.performance_manager = PerformanceManager()
         self.automation = AutomationDirector()
         self.automation.generator_settings_changed = self._request_generator_raster
+        self.automation.palette_changed = self._set_automation_palette
         self.effects = EffectSettings()
         self.decks: dict[str, VideoDeck] = {
             deck_id: VideoDeck(deck_id) for deck_id in VIDEO_DECK_IDS
@@ -195,6 +196,18 @@ class Application:
         install_default_performance_macro_modifiers(self.composition.layers)
         self.current_project_path: Path | None = None
         self.window: Any | None = None
+
+    def _set_automation_palette(self, palette_name: str) -> None:
+        """Keep the scene palette in sync with the constrained automation director."""
+        selected = str(palette_name)
+        if selected not in palette_names():
+            return
+        self.active_palette = selected
+        self.events.publish(
+            "performance.palette.changed",
+            palette=selected,
+            source="automation",
+        )
 
     def _request_generator_raster(self, layer: Layer) -> None:
         """Advance the shared render revision after a live generator mutation."""
@@ -405,6 +418,7 @@ class Application:
         self.layer_manager = LayerManager(self.composition, self.events)
         self._create_default_layers()
         install_default_performance_macro_modifiers(self.composition.layers)
+        self.automation.update_layers(self.composition.layers)
         self.effects.reset()
         self.control_events.clear()
         self.performance_control.reset()
@@ -554,6 +568,11 @@ class Application:
                 "section": self.automation._performance_section,
                 "energy": self.automation._performance_energy,
                 "cutoff": self.automation._performance_cutoff,
+                "director_anchor": self.automation._director.anchor_layer_id,
+                "active_variation_layers": len(
+                    self.automation._active_variation_layer_ids
+                ),
+                "palette_history": list(self.automation._director.palette_history),
             },
             "video": self.performance_snapshot(),
         }
@@ -615,7 +634,12 @@ class Application:
         )
         self._automation_collection_id = collection_id
         self._frame_snapshots.clear()
-        self.events.publish("automation.started", decks=loaded)
+        self.events.publish(
+            "automation.started",
+            decks=loaded,
+            style=self.automation.settings.performance_style,
+            constrained=self.automation.settings.constrained_generative,
+        )
         return loaded
 
     def refresh_automation_media_pool(self) -> bool:
@@ -836,6 +860,7 @@ class Application:
             cutoff=cutoff,
             intensity=float(self.performance_control.intensity),
             bar_index=int(self.performance_control.bar_index),
+            macro_values=self.performance_macro_values(),
         )
 
         if mode_active and event.kind in {"transport.start", "clock.bar"}:
@@ -3011,6 +3036,7 @@ class Application:
 
         self.composition = candidate
         self.layer_manager = LayerManager(self.composition, self.events)
+        self.automation.update_layers(self.composition.layers)
         install_default_performance_macro_modifiers(self.composition.layers)
         self.performance_modifier_engine.reset()
         self._restore_scene_decks(scene.snapshot.get("decks"))
@@ -3361,6 +3387,7 @@ class Application:
         self.generator_raster_service.invalidate_missing(set())
         self.composition = composition
         self.layer_manager = LayerManager(self.composition, self.events)
+        self.automation.update_layers(self.composition.layers)
         install_default_performance_macro_modifiers(self.composition.layers)
         for layer in self.composition.layers:
             if layer.source_type == "overlay":
