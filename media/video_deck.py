@@ -204,6 +204,7 @@ class VideoDeck:
             "decoded_frames": decoder.decoded_frames if decoder else 0,
             "published_frames": decoder.published_frames if decoder else 0,
             "skipped_output_frames": decoder.skipped_output_frames if decoder else 0,
+            "seek_fallbacks": decoder.seek_fallbacks if decoder else 0,
             "decode_time_ms": decoder.decode_time_ms if decoder else 0.0,
             "conversion_time_ms": decoder.conversion_time_ms if decoder else 0.0,
             "retired_workers": sum(item.worker_alive for item in self._retired_decoders),

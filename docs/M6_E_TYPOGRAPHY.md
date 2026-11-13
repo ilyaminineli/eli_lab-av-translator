@@ -70,7 +70,7 @@ E1 adds:
 - Segmented collision-style movement.
 - Mechanical scrolling.
 
-These modes use existing compositor uniforms and the text texture. Motion-only edits do not invalidate the static text raster or enqueue a CPU raster job. The modes are deterministic functions of texture coordinates and the renderer's animation clock.
+These modes use existing compositor uniforms and the text texture. Motion-only edits do not invalidate the static text raster or enqueue a CPU raster job. The modes are deterministic functions of texture coordinates and the renderer's animation clock. Text scrolling and mechanical scrolling shift the source through the layer viewport without wrapping the opposite texture edge into view; displaced samples outside the valid texture region are alpha-clipped rather than clamped into stretched edge glyphs.
 
 **Important implementation boundary:** The new E1 animation modes are texture-space/grid treatments. They do not yet provide one GPU instance per glyph. "Character displacement", "scattered glyphs" and "word collisions" are therefore visual approximations, not independent glyph-body simulation. Likewise, reverse typewriter and vertical reveal are wipes over the text texture, not per-character event schedules.
 

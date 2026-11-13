@@ -82,6 +82,7 @@ English words read from repository dictionary files pass through an additional n
 - [ ] Enable each master transform / feedback mode and verify its AUTO PERFORMANCE values are visible and musically stable.
 - [ ] Verify per-layer FX automation when layer FX are enabled; confirm disabled FX remain bypassed.
 - [ ] Confirm text motion and reveal-step targets update without repeated CPU raster jobs.
+- [ ] Run text scrolling and mechanical scrolling through multiple loop boundaries; no wrapped edge glyphs or out-of-bounds smearing should appear.
 - [ ] Test default workspace and restored custom layouts at 16:9 and 4:3 resolutions.
 - [ ] Verify the project canvas is letterboxed, not stretched, when output aspect differs.
 - [ ] Check Queer, English, Japanese and bilingual dictionary sampling against maintained repository dictionary files.
