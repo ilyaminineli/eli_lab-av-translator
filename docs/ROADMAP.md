@@ -405,7 +405,7 @@ The detailed initial scope and staged acceptance checklist are in [M6 Advanced V
 
 ## M6-B — VJ Scene and Composition Banks
 
-**In progress — M6-B1 full-scene capture/recall.** The existing Performance Scene Bank is being promoted into a first-class VJ Scene Bank without creating a parallel persistence system. B1 captures deck assignments, composition/layers, master and layer effects, palette, automation/transport, modulation routes and Modulator Bank definitions. It adds cue-based OSC and MIDI scene triggering, internal/external clock quantization and compatible random selection.
+**M6-B1 full-scene capture/recall is merged to `main`.** The existing Performance Scene Bank is promoted into a first-class VJ Scene Bank without creating a parallel persistence system. B1 captures deck assignments, composition/layers, master and layer effects, palette, automation/transport, modulation routes and Modulator Bank definitions. It adds cue-based OSC and MIDI scene triggering, internal/external clock quantization and compatible random selection.
 
 **Transition boundary:** current numeric-compatible parameters morph; discrete media/text/generator changes still use a cut. Dual-scene crossfade, midpoint switching, sequences and per-parameter locks remain planned.
 
@@ -413,7 +413,7 @@ See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md) fo
 
 ## M6-C — Advanced Visual Transformations
 
-**C1 implementation in progress.** Extend the ModernGL compositor with GPU-only image geometry and temporal processing. The first slice includes kaleidoscope, polar remapping, mosaic/tile, directional scan displacement, selectable layer-driven displacement maps, edge extraction, ordered dithering and a dedicated feedback engine with bounded per-renderer GPU history. Feedback exposes amount, decay, zoom, rotation, translation, colour shift, distortion, motion-driven warp, datamosh blocks, blend mode, short frame delay, freeze and reset.
+**C1 is merged to `main`.** The ModernGL compositor now has GPU-only image geometry and temporal processing. The first slice includes kaleidoscope, polar remapping, mosaic/tile, directional scan displacement, selectable layer-driven displacement maps, edge extraction, ordered dithering and a dedicated feedback engine with bounded per-renderer GPU history. Feedback exposes amount, decay, zoom, rotation, translation, colour shift, distortion, motion-driven warp, datamosh blocks, blend mode, short frame delay, freeze and reset.
 
 Directional scan sorting is a controlled shader approximation, not a full image-region sorting algorithm. Motion-driven warp is temporal-difference/gradient driven, not a dense optical-flow solver. These limitations and later C2/C3 work are documented in [M6-C — Advanced Visual Transformations](M6_C_ADVANCED_VISUAL_TRANSFORMATIONS.md).
 
