@@ -517,8 +517,9 @@ class GeneratorsPanel(QWidget):
         system_form.addRow("DETERMINISTIC SEED", seed_row)
         self.particle_system_hint = QLabel(
             "GPU simulation · fixed 60 Hz steps · max 8192 per layer / 16384 per output. "
-            "Path, video luminance, image alpha and contour emitters sample existing layer "
-            "textures. Reform follows refreshed source targets at the selected cadence."
+            "Continuous rate-based emission can react to beat, onset and energy via AUTO "
+            "PERFORMANCE. Path, video luminance, image alpha and contour emitters sample "
+            "existing layer textures; source reform follows refreshed targets."
         )
         self.particle_system_hint.setWordWrap(True)
         self.particle_system_hint.setObjectName("mutedLabel")
