@@ -933,9 +933,11 @@ class Compositor:
             and layer.generator_type == "particle_system_2"
         }
         for layer_id in tuple(self.particle_systems):
+            last_active = self.particle_system_last_active.get(layer_id)
             inactive_for = (
-                float(time_seconds)
-                - self.particle_system_last_active.get(layer_id, float(time_seconds))
+                float("inf")
+                if last_active is None
+                else max(0.0, float(time_seconds) - last_active)
             )
             removed = layer_id not in live_particle_ids
             expired = (
