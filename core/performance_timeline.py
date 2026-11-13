@@ -426,7 +426,6 @@ class PerformanceTimeline:
         )
         if current != (self.current_bar, self.current_beat):
             self.current_bar, self.current_beat = current
-            self.state_revision += 1
         if not self.armed:
             return []
 
