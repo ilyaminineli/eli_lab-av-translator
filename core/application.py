@@ -24,11 +24,6 @@ from core.modulator_bank import (
 )
 from core.osc_protocol import OSCReceiver
 from core.performance_control import ControlEvent, ControlEventQueue, PerformanceControlState
-from core.performance_macros import (
-    PERFORMANCE_MACRO_IDS,
-    PerformanceMacro,
-    PerformanceMacroEngine,
-)
 from core.performance_environment import (
     MIDIInputService,
     MIDIMapping,
@@ -36,6 +31,11 @@ from core.performance_environment import (
     PerformanceScene,
     PerformanceSetStore,
     SceneMorph,
+)
+from core.performance_macros import (
+    PERFORMANCE_MACRO_IDS,
+    PerformanceMacro,
+    PerformanceMacroEngine,
 )
 from core.performance_manager import PerformanceManager
 from core.performance_modifiers import (
@@ -48,8 +48,8 @@ from core.performance_service import (
     install_default_layer_modifiers,
     install_default_matrix_routes,
     install_default_modulators,
-    install_default_performance_macro_routes,
     install_default_performance_macro_modifiers,
+    install_default_performance_macro_routes,
     set_default_routing_enabled,
 )
 from core.performance_transport import InternalTransport, Quantization
