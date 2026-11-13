@@ -49,7 +49,7 @@ The beat pulse occupies the first 22% of a beat and then decays to zero. The bar
 
 ## Targets
 
-A layer modifier can affect layer opacity, rotation, scale and X/Y position; generator animation speed/amount and type-specific density, rotation, text, waveform or particle values; or animated-image overlay playback speed and frame hold.
+A layer modifier can affect layer opacity, rotation, scale and X/Y position; generator animation speed/amount and type-specific density, rotation, text, waveform or particle values; Particle System 2.0 emission rate, particle radius, lifetime, turbulence, force and source reformation; numeric per-layer FX controls; or animated-image overlay playback speed and frame hold. Advanced master transforms and temporal feedback use the global Modulation Matrix target registry.
 
 Generator targets are filtered by selected layer type in the UI. A Text Art layer always offers font size and letter spacing; text-animation speed and amount appear only when a text motion mode is active. This means the quick PHRASE action has an immediate visible effect even when text animation is set to none. A Waveform layer offers amplitude and frequency.
 
