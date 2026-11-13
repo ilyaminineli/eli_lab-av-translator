@@ -222,3 +222,10 @@ M6-A is ready for operator rehearsal when:
 M0–M5 remain the foundation. M5 code is merged to `main`; its static quality workflow passed on `358dc597`. M5's live SONATA, audio-device and projector stress checks remain manual sign-off tasks and should be carried forward in the project validation log rather than treated as passed. M6 development can proceed in parallel with those hardware checks.
 
 See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md), [ROADMAP.md](ROADMAP.md), [ARCHITECTURE.md](ARCHITECTURE.md) and [M5 Completion Handoff](M5_COMPLETION_HANDOFF.md).
+
+
+## F. Advanced performance controls
+
+M6 also adds a normalized Performance Macro layer above the existing modulation architecture. Six built-in macros — CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT — fan one 0–1 control value out to multiple master and compatible per-layer targets. They can be driven manually, by keyboard toggle, MIDI CC/note, OSC, audio/transport sources or Modulator Bank outputs. The macro definitions and assignments are persisted with projects and VJ scenes.
+
+See [M6 — Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md) for the full source, routing, persistence and validation boundaries.
