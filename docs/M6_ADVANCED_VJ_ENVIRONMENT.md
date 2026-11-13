@@ -232,7 +232,7 @@ See [M6 — Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md) 
 
 ## G. Live Performance Timeline
 
-**The initial timeline implementation is on `m6/live-performance-timeline`; it is not yet merged.** The timeline is a project-persisted bar/beat show plan that runs beside the internal or Sonic Pi transport.
+**The initial timeline implementation is merged to `main` in [PR #31](https://github.com/ilyaminineli/eli_lab-av-translator/pull/31).** The timeline is a project-persisted bar/beat show plan that runs beside the internal or Sonic Pi transport. Target-Windows musical rehearsal and projector acceptance remain open.
 
 Supported event types are scene markers, phrase markers, saved-scene recall, deck/clip triggers, master effect changes, Text Art regeneration, palette changes, Performance Macro modulation and transition cues. Each event has an authored bar/beat, label, enabled state and validated JSON payload. Same-beat events run in insertion order.
 
