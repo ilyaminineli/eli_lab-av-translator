@@ -105,7 +105,7 @@ Reset and resize clear the entire ring. Frozen history is not overwritten. Feedb
 
 ## C4 — Scene, MIDI/OSC and automation integration
 
-The new settings are included in the existing EffectSettings model, so scenes capture and recall them with other master effects. A later control-mapping slice should expose feedback amount/decay/zoom, transform mix, kaleidoscope controls and displacement amount as bounded MIDI/OSC/modulator targets. Reset should remain an explicit operator action rather than an automatic modulation target.
+The new settings are included in the existing EffectSettings model, so scenes capture and recall them with other master effects. The live-performance integration now exposes numeric master transform, displacement and feedback parameters as bounded Modulation Matrix / AUTO PERFORMANCE / MIDI targets. Transform-specific values become visible when the corresponding transform mode is selected; feedback parameters take effect when feedback is enabled. Reset and freeze remain explicit operator actions rather than automatic modulation targets.
 
 ## Scope boundary
 
