@@ -20,7 +20,7 @@ Worker threads publish immutable or copied CPU-side data. They do not update Qt 
 
 1. Qt creates a `QOpenGLWidget` context for the local preview or projector output.
 2. `PerformanceView.initializeGL` creates that window's ModernGL wrapper and compositor.
-3. Each video decoder produces timestamped CPU frames into its bounded queue.
+3. Each video decoder produces timestamped CPU frames into its bounded queue. PyAV random-access seeks are attempted when available; if the container rejects a seek with `av.error.PermissionError`, the decoder falls back to sequential reading and discards frames until it reaches the requested timestamp. Genuine open/decode failures remain fatal and are reported normally.
 4. The application tick consumes each deck queue and updates shared latest-frame snapshots.
 5. Preview and projector renderers read the same CPU snapshots independently.
 6. Each `RenderEngine` uploads only unseen revisions into textures owned by its own GL context.
