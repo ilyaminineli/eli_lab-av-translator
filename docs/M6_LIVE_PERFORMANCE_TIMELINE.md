@@ -1,6 +1,6 @@
 # M6-C — Live Performance Timeline
 
-**Implementation status:** Draft implementation on `m6/live-performance-timeline`; not yet merged. The Performance Macro System is merged to `main` in PR #30 and is used by the timeline's modulation events.
+**Implementation status:** Merged to `main` in [PR #31](https://github.com/ilyaminineli/eli_lab-av-translator/pull/31), merge commit `c9b9f884`. The Performance Macro System is merged in [PR #30](https://github.com/ilyaminineli/eli_lab-av-translator/pull/30) and is used by the timeline's modulation events. Target-Windows musical rehearsal and projector acceptance remain open.
 
 ## Purpose
 
