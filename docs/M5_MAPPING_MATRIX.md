@@ -9,7 +9,7 @@ Transport beat/downbeat/phrase pulses, beat/bar phase and scene intensity; audio
 ## Target namespaces
 
 | Namespace | Parameters |
-|---|---|
+| --- | --- |
 | `layer.*` | opacity, rotation, scale, position_x, position_y |
 | `generator.*` | animation_speed, animation_amount, density, rotation, text_animation_speed, text_animation_amount, font_size, letter_spacing, waveform_amplitude, waveform_frequency, particle_speed, particle_size, particle_spread, particle_trail |
 | `overlay.*` | playback_speed, frame_hold |

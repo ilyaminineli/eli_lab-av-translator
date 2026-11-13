@@ -163,11 +163,11 @@ class PerformanceScene:
         if self.cue and (
                 len(self.cue) > 64
                 or any(
-                    character not in (
-                        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.:-"
-                    )
-                    for character in self.cue
-                )
+            character not in (
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.:-"
+            )
+            for character in self.cue
+        )
         ):
             raise ValueError(
                 "OSC scene cue must be 1–64 characters using letters, numbers, "

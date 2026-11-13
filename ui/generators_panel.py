@@ -1881,13 +1881,13 @@ class GeneratorsPanel(QWidget):
                     self.particle_emitter_map_combo.currentData() or "luminance"
                 ),
                 "emitter_threshold": (
-                    self.particle_emitter_threshold_slider.value() / 100.0
+                        self.particle_emitter_threshold_slider.value() / 100.0
                 ),
                 "emitter_sample_attempts": int(
                     self.particle_emitter_attempts_combo.currentData() or 12
                 ),
                 "emitter_sample_interval": (
-                    self.particle_emitter_interval_slider.value() / 10.0
+                        self.particle_emitter_interval_slider.value() / 10.0
                 ),
                 "reform_strength": self.particle_reform_slider.value() / 100.0,
                 "path_points": self._read_particle_path_points(

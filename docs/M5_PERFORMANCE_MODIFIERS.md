@@ -20,7 +20,7 @@ Modifiers are stored in the owning Layer record and travel with the composition.
 The quick buttons select a useful default target for the selected layer:
 
 | Layer type | Beat / downbeat / phrase target |
-|---|---|
+| --- | --- |
 | Geometry | Generator animation amount |
 | Text Art | Letter spacing (or text animation amount when a text motion mode is active) |
 | Waveform | Waveform amplitude |
@@ -33,7 +33,7 @@ The custom source/target controls let the user choose other compatible targets.
 ## Sources
 
 | Source | Behaviour |
-|---|---|
+| --- | --- |
 | transport.beat_pulse | Short decaying pulse on every beat |
 | transport.downbeat_pulse | Same pulse, only on beat 1 of a bar |
 | transport.phrase_pulse | Same pulse on the first bar of each four-bar phrase |

@@ -77,8 +77,6 @@ The optional runtime dependency is `soundcard>=0.4.6`. Audio backend/device erro
 - Manual changes to master effects, selected layer appearance and generator settings temporarily take precedence over a route. The prior baseline is restored when a route is bypassed or released.
 - Scene profiles and modulation routes can be created/edited in the control dock.
 
-
-
 ## M5 groundwork — expanded live targets
 
 The modulation target registry is being expanded beyond master effects and two generator parameters. The current M5 implementation branch adds safe, normalized targets for:
@@ -114,6 +112,7 @@ Generator targets act on the currently selected, unlocked, compatible generator.
 The former unit-test suite was removed at the user's request. The current Windows quality workflow performs Python compilation and Ruff checks only. It does not run the previous fake-device, FFT, transport or Qt-panel tests.
 
 Manual hardware sign-off is still required for:
+
 - Physical microphone and system-loopback device discovery.
 - Device loss, reconnect and switching while video is playing.
 - Stable sustained capture and bounded-queue behaviour during a long session.

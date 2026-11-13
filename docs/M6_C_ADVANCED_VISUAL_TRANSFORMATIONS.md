@@ -11,7 +11,7 @@ C is intentionally staged. The first implementation concentrates on the two high
 ### Geometry and image transforms
 
 | Control | C1 implementation | Behaviour |
-|---|---|---|
+| --- | --- | --- |
 | Kaleidoscope | Implemented | Radial wedge folding with slice count, rotation and zoom. |
 | Polar coordinates | Implemented | Remaps the rectangular image into angular/radial coordinates. |
 | Mosaic / tile | Implemented | Quantizes image sampling to a configurable tile grid. |
@@ -39,7 +39,7 @@ The history is a bounded five-texture ring per output context. The selected dela
 ### Feedback controls
 
 | Parameter | Meaning |
-|---|---|
+| --- | --- |
 | Enable | Enables temporal feedback. |
 | Amount | Mixes retained imagery with the current composited frame. |
 | Decay | Multiplies retained colour on each feedback pass. |

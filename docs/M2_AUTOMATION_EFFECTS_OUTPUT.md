@@ -86,7 +86,6 @@ The former unit-test suite was removed at the user's request. Current CI checks 
 
 A physical Windows multi-display test is still required to validate monitor placement, GPU driver behavior and four-stream playback on the target performance computer.
 
-
 ## M2 effect-chain completion
 
 Layer FX support ordered, up-to-eight-stage chains. The stage order is top-to-bottom and is applied in the same compositor shader used by preview and projector. Available stages: monochrome, negative, threshold, posterize, scanlines and hue shift. Chains can be saved as individual JSON files; project preset collections can be imported into composition metadata, selected from the layer preset control and exported with the project.
@@ -96,7 +95,6 @@ Overlay layers expose persisted in/out metadata, playback speed, frame hold, sce
 Auto Performance varies enabled per-layer FX independently of generator variation, and has a separate overlay-transform/blend toggle. A manual layer-FX or overlay-control edit starts a 30-second cooldown; locked layers are always excluded. The same scheduled mutation updates the shared composition model, so both output windows see the same state.
 
 Overlay in/out are layer-local elapsed seconds from attachment and gate the shared CPU frame snapshot, so preview and projector hide/show the overlay together. Scene-sync remains a persisted intent for M3's scene/timeline clock; video-overlay source trimming is not yet implemented.
-
 
 ## Follow-up usability pass (November 2026)
 

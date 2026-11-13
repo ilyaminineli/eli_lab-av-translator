@@ -69,7 +69,9 @@ def self_check() -> int:
         }
         checks["h264_decoder"] = "h264" in av.codecs_available
         if not checks["h264_decoder"]:
-            errors.append("The bundled PyAV/FFmpeg runtime does not expose an H.264 decoder.")
+            errors.append(
+                "The bundled PyAV/FFmpeg runtime does not expose an H.264 decoder."
+            )
     except Exception as exc:
         checks["ffmpeg_libraries"] = f"ERROR: {exc}"
         errors.append(f"PyAV/FFmpeg: {exc}")
@@ -80,10 +82,10 @@ def self_check() -> int:
     dictionary_files = list(DICTIONARY_DIR.glob("*.txt"))
     checks["dictionary_text_files"] = len(dictionary_files)
     for name, passed in (
-            ("icon", bool(checks["icon"])),
-            ("textures", bool(checks["textures"])),
-            ("sketches", bool(checks["sketches"])),
-            ("dictionary", len(dictionary_files) > 0),
+        ("icon", bool(checks["icon"])),
+        ("textures", bool(checks["textures"])),
+        ("sketches", bool(checks["sketches"])),
+        ("dictionary", len(dictionary_files) > 0),
     ):
         if not passed:
             errors.append(f"Bundled resource check failed: {name}")

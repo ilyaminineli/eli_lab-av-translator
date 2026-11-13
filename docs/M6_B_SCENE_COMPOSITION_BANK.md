@@ -72,7 +72,7 @@ The transition metadata is versioned and stored with each scene, but B1 does **n
 ## Remaining implementation slices
 
 | Slice | Scope |
-|---|---|
+| --- | --- |
 | M6-B0 — Interaction specification | Complete: scene payload, recall safety, compatibility rule, OSC/MIDI triggering and discrete-versus-continuous transition boundary. |
 | M6-B1 — Full scene snapshots | Implemented on `m6/b1-vj-scene-bank`: deck assignments, composition/layers, effects, palette, automation/transport, modulation routes, Modulator Bank, OSC cues, MIDI targets and compatible random selection. |
 | M6-B2 — Scene transition engine | Interpolate compatible numeric values; add explicit midpoint switching and fade-through-black for media/text/generator changes; define crossfade behaviour where two source states can coexist; expose duration, curve and switch policy. |

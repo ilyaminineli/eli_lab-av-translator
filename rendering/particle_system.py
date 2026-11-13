@@ -833,8 +833,8 @@ class ParticleSystem2:
             particle_limit: int | None = None,
             emitter_source: moderngl.Texture | None = None,
             emitter_source_transform: tuple[
-                tuple[float, float], tuple[float, float], float
-            ] | None = None,
+                                          tuple[float, float], tuple[float, float], float
+                                      ] | None = None,
     ) -> moderngl.Texture | None:
         normalized = normalize_settings("particle_system_2", settings)
         requested = int(normalized["particle_count"])
@@ -847,8 +847,8 @@ class ParticleSystem2:
         self._ensure_path_texture(normalized["path_points"])
         self._active_emitter_source = emitter_source
         self._active_emitter_source_transform = (
-            emitter_source_transform
-            or ((0.5, 0.5), (1.0, 1.0), 0.0)
+                emitter_source_transform
+                or ((0.5, 0.5), (1.0, 1.0), 0.0)
         )
         path_signature = self.path_signature or ()
         self._ensure_populations(

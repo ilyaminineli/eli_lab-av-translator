@@ -9,7 +9,7 @@ Press PERFORMANCE MODE, then run SONATA in Sonic Pi. The first transport/start o
 ## Unified mapping coverage
 
 | Domain | Supported target families |
-|---|---|
+| --- | --- |
 | Composition geometry | opacity, position X/Y, scale, rotation |
 | Procedural geometry | motion speed/amount, density, rotation |
 | Text Art | animation speed/amount, font size, letter spacing |
@@ -60,6 +60,7 @@ M5 provides the performance-control, generator, rendering and diagnostics founda
 The current Quality workflow performs Python compilation and Ruff checks only; the former pytest/unit-test suite is not present. It does not execute GUI/OpenGL, SONATA, audio-device or projector tests.
 
 Manual target-machine checks remain required for:
+
 - Full 384-bar SONATA timing and session restart.
 - MIDI device/fader behaviour if hardware MIDI is used.
 - Physical audio input/system-loopback reconnect and sustained capture.

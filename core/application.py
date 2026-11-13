@@ -2159,8 +2159,8 @@ class Application:
             (
                 scene for existing_id, scene in self.performance_scenes.items()
                 if existing_id != scene_id
-                and cue
-                and scene.cue.casefold() == cue.casefold()
+                   and cue
+                   and scene.cue.casefold() == cue.casefold()
             ),
             None,
         )
@@ -2236,9 +2236,9 @@ class Application:
 
         internal_clock = self.transport.running and not self.transport.paused
         external_clock = (
-            self.performance_control.source_id == "sonic_pi"
-            and self.performance_control.transport_running
-            and not self.performance_control.transport_paused
+                self.performance_control.source_id == "sonic_pi"
+                and self.performance_control.transport_running
+                and not self.performance_control.transport_paused
         )
         if internal_clock:
             self._pending_scene_morph_seconds[scene.scene_id] = duration
@@ -2261,7 +2261,7 @@ class Application:
             else:
                 phrase_bars = max(1, int(self.transport.phrase_bars))
                 due_bar = (
-                    ((current_bar - 1) // phrase_bars + 1) * phrase_bars + 1
+                        ((current_bar - 1) // phrase_bars + 1) * phrase_bars + 1
                 )
                 due_beat = 0
             self._pending_external_scene_recall[scene.scene_id] = {
@@ -2344,7 +2344,7 @@ class Application:
         return [
             scene for scene in self.performance_scenes.values()
             if scene.scene_id
-            and self._scene_compatibility_key(scene.snapshot) == key
+               and self._scene_compatibility_key(scene.snapshot) == key
         ]
 
     def random_performance_scene(self) -> PerformanceScene | None:
@@ -2429,8 +2429,8 @@ class Application:
             self.modulation.routes = [
                 route for route in self.modulation.routes
                 if (
-                    not route.source_id.startswith("modulator.")
-                    or route.source_id in known_sources
+                        not route.source_id.startswith("modulator.")
+                        or route.source_id in known_sources
                 )
             ]
             self.modulation.reset_runtime()

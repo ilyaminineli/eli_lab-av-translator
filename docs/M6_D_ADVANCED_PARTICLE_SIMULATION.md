@@ -13,7 +13,7 @@ Preserve the existing `particles` procedural field and introduce a separate `par
 ### Delivered capability
 
 | Capability | D1 state |
-|---|---|
+| --- | --- |
 | Point emitter | Implemented |
 | Circle emitter | Implemented |
 | Rectangle emitter | Implemented |

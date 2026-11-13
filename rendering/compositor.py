@@ -1057,7 +1057,7 @@ class Compositor:
         active_effects = effects or EffectSettings()
         active_effects.clamp()
         feedback_active = (
-            active_effects.feedback_enabled and active_effects.feedback_amount > 0.0001
+                active_effects.feedback_enabled and active_effects.feedback_amount > 0.0001
         )
         post_target_fbo = (
             self.post_framebuffer.glo

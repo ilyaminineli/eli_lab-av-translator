@@ -77,7 +77,7 @@ The exact A/B grouping, crossfader curve, transition duration and whether previe
 ## Delivery sequence
 
 | Slice | Intended result |
-|---|---|
+| --- | --- |
 | M6-A0 — Interaction specification | Complete in the M6 design document: deck states, bin model, multi-select target mapping, trigger semantics, quantization and transition decisions. |
 | M6-A1 — Live deck surface | Initial implementation on `m6/a1-live-deck-surface`: four deck cards, clip identity/metadata/thumbnail, position feedback, layer mapping, direct transport, frame hold, restart, loop and lock. Remaining A1 refinements and target-machine rehearsal are open. |
 | M6-A2 — Media bins | Named performance bins, clip assignment and explicit deck-targeted trigger actions. |

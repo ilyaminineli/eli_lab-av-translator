@@ -21,7 +21,7 @@ The M4 sender is installed in the live patch at the musical control points only.
 ## Stable scene IDs and intensities
 
 | Scene ID | Duration | Intensity |
-|---|---:|---:|
+| --- | ---: | ---: |
 | `in` | 16 bars | 0.12 |
 | `exp` | 24 bars | 0.28 |
 | `tm_a` | 24 bars | 0.45 |
@@ -68,7 +68,7 @@ For a remote Sonic Pi computer, bind to the AV Translator computer's reachable L
 Namespace: `/eli_lab/v1`. Every event begins with a string session ID and positive integer sequence number. Sequence numbers increase across all event types for one patch run. Restart the patch to generate a new session ID.
 
 | Address | Arguments after session ID + sequence | Event |
-|---|---|---|
+| --- | --- | --- |
 | `/transport/start` | BPM (float), beats/bar (int) | `transport.start` |
 | `/transport/stop` | none | `transport.stop` |
 | `/transport/tempo` | BPM (float) | `transport.tempo` |

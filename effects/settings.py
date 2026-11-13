@@ -249,7 +249,7 @@ class EffectSettings:
 
         self.transform_mode = str(self.transform_mode).casefold()
         if self.transform_mode not in {
-                "none", "kaleidoscope", "polar", "mosaic", "pixel_sort",
+            "none", "kaleidoscope", "polar", "mosaic", "pixel_sort",
         }:
             self.transform_mode = "none"
         self.transform_mix = max(0.0, min(1.0, float(self.transform_mix)))
@@ -281,7 +281,7 @@ class EffectSettings:
             setattr(self, name, max(0.0, min(1.0, float(getattr(self, name)))))
         self.feedback_blend_mode = str(self.feedback_blend_mode).casefold()
         if self.feedback_blend_mode not in {
-                "normal", "add", "screen", "multiply", "difference",
+            "normal", "add", "screen", "multiply", "difference",
         }:
             self.feedback_blend_mode = "normal"
         self.feedback_delay_frames = max(0, min(3, int(self.feedback_delay_frames)))

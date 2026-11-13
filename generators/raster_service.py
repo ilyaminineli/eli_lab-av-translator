@@ -312,7 +312,7 @@ class GeneratorRasterService(QObject):
                     self._active_requests[layer_id] = (revision, expected_fingerprint)
                     if generator_type == "text":
                         self._next_text_update_at = (
-                            time.monotonic() + 1.0 / self._max_text_update_hz
+                                time.monotonic() + 1.0 / self._max_text_update_hz
                         )
             if cache_layer_ids is not None:
                 self._worker_rasterizer.remove_missing(cache_layer_ids)

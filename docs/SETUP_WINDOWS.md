@@ -37,6 +37,7 @@ Sonic Pi, graphics/audio drivers, user video files and user-added asset folders 
 A `.eliav` project and an `.eliset` performance set store composition state and source paths; they do not embed the original video files.
 
 When moving a project:
+
 1. Copy the video and user asset folders to the new computer.
 2. Keep the folder structure the same where practical.
 3. Import the folders into the Media Library on the new computer.

@@ -176,7 +176,7 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
         if result.get("text_layout") not in {"single", "collage"}:
             result["text_layout"] = "single"
         if result.get("text_writing_mode") not in {
-                "horizontal", "vertical_rl", "vertical_lr",
+            "horizontal", "vertical_rl", "vertical_lr",
         }:
             result["text_writing_mode"] = "horizontal"
         if result.get("text_path_mode") not in {"none", "circle", "arc", "custom"}:
@@ -277,20 +277,21 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
         result["particle_count"] = max(128, min(8192, int(result["particle_count"])))
         result["population_count"] = max(1, min(4, int(result["population_count"])))
         if result["emitter_type"] not in {
-                "point", "circle", "rectangle", "path", "video_luminance",
-                "image_silhouette", "contour",
+            "point", "circle", "rectangle", "path", "video_luminance",
+            "image_silhouette", "contour",
         }:
             result["emitter_type"] = "point"
         if result["emitter_map_mode"] not in {"luminance", "alpha", "contour"}:
             result["emitter_map_mode"] = "luminance"
         if result["direction"] not in {
-                "radial", "random", "up", "down", "left", "right", "tangent",
+            "radial", "random", "up", "down", "left", "right", "tangent",
         }:
             result["direction"] = "radial"
         if result["force_type"] not in {"none", "attract", "repel", "orbit"}:
             result["force_type"] = "none"
         if result["size_curve"] not in {"constant", "grow", "shrink", "pulse"}:
             result["size_curve"] = "shrink"
+
         def pair(value, fallback, low, high):
             try:
                 values = list(value)
@@ -302,6 +303,7 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
                 ]
             except (TypeError, ValueError, OverflowError):
                 return list(fallback)
+
         result["emitter_center"] = pair(
             result["emitter_center"], (0.5, 0.5), 0.0, 1.0
         )

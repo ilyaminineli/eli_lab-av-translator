@@ -5,7 +5,7 @@ This file records the direct runtime components collected by the current Windows
 ## Direct runtime dependencies
 
 | Component | Pinned release profile | Upstream licence / notice |
-|---|---:|---|
+| --- | ---: | --- |
 | Qt for Python / PySide6 | 6.12.0 | LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only; commercial licensing is also available. Qt contains additional third-party components and some modules are GPL-only. See [Qt Licensing](https://doc.qt.io/qt-6.12/licensing.html). |
 | ModernGL | 5.13.0 | MIT. See [ModernGL on PyPI](https://pypi.org/project/moderngl/5.13.0/). |
 | glcontext | dependency of ModernGL | MIT. See [glcontext licence](https://github.com/moderngl/glcontext/blob/main/LICENSE). |

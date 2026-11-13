@@ -16,7 +16,7 @@ The roadmap is deliberately staged. M0–M2 establish the visual instrument. M3 
 ## Current implementation snapshot
 
 | Milestone | Current state | Notes |
-|---|---|---|
+| --- | --- | --- |
 | M0 — Rendering Core | Core implemented; hardware hardening remains | PySide6 shell, OpenGL/ModernGL render contexts, canvas/layers, project persistence and fullscreen external output are present. |
 | M1 — Video Collage | Core implemented; hardware/release gate open | Folder indexing, four decoder decks, transforms, blending, library cleanup, bounded import workers, decoder retirement and preview output limits are implemented on main. Manual deck, projector and long-run acceptance remains. |
 | M2 — Generative Visuals | Core generator and overlay workflow implemented; advanced extensions remain | Geometry, Text Art, waveform and GPU particle fields are available. Still/animated-image/video overlays, layer effects, shader animation and project persistence are implemented. Vector paths, shape groups and a full particle simulation with lifetime/velocity/acceleration remain future extensions. |
@@ -367,7 +367,6 @@ See [SONATA Expanded integration notes](SONIC_PI_SONATA_INTEGRATION.md).
 **M5 implementation exit is met and merged.** M5 live-performance acceptance remains open until the target-machine checks above are run and recorded. Recording/audio muxing is explicitly deferred as a separate deliverable. See [M5 Completion & Live Validation Handoff](M5_COMPLETION_HANDOFF.md).
 
 See [M5 Autonomous Performance](M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance Environment](M5_PERFORMANCE_ENVIRONMENT.md), [M5 Unified Mapping Matrix](M5_MAPPING_MATRIX.md), [M5 Performance Modifiers](M5_PERFORMANCE_MODIFIERS.md) and [M5 Modulator Bank](M5_MODULATOR_BANK.md).
-
 
 # M6 — Advanced VJ Environment
 

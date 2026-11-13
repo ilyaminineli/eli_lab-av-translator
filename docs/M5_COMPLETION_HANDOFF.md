@@ -32,7 +32,7 @@ The Quality workflow on that current commit passed Python compilation and Ruff. 
 Use loopback. No LAN address is required.
 
 | Setting | Value |
-|---|---|
+| --- | --- |
 | AV Translator OSC bind address | `127.0.0.1` |
 | AV Translator OSC UDP port | `57121` |
 | SONATA `$sp_av_enabled` | `true` |
@@ -99,7 +99,7 @@ Record input responsiveness, text raster duration/start rate, preview and projec
 ## Remaining validation and deferred work
 
 | Gate | State on 12 November 2026 |
-|---|---|
+| --- | --- |
 | M4 versioned OSC receiver, validation, session/replay protection and diagnostics | Implemented |
 | M5 Performance Mode orchestration and AUTO PERFORMANCE integration | Implemented; live rehearsal pending |
 | Modulator Bank and generated per-layer performance modifiers | Implemented; live response rehearsal pending |

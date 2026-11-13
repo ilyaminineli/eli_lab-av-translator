@@ -25,7 +25,7 @@ The Text Art layer has two layouts:
 Text animation is applied in the GPU compositor after the static text texture has been cached. Available behaviours:
 
 | Motion | Behaviour |
-|---|---|
+| --- | --- |
 | Type-on | Horizontal reveal sweep |
 | Word / column reveal | Reveal in successive horizontal cells |
 | Line wave | Displace text sampling by a wave |
