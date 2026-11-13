@@ -482,8 +482,6 @@ class AutomationDirector:
                 layer.rotation = target_rotation
                 layer.opacity = target_opacity
                 layer.blend_mode = target_blend
-        if constrained:
-            self._director.mark_transition()
         return len(active)
 
     def _tick_layout_transitions(self, now: float) -> bool:
@@ -521,6 +519,8 @@ class AutomationDirector:
             if fraction >= 1.0:
                 layer.blend_mode = str(morph["end_blend_mode"])
                 self._layout_morphs.pop(layer_id, None)
+                if self._uses_constrained_generative_rules:
+                    self._director.mark_transition()
             changed = True
         return changed
 
