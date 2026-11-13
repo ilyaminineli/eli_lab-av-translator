@@ -132,7 +132,8 @@ class PerformanceTimelineEvent:
         if self.event_type not in TIMELINE_EVENT_TYPES:
             raise ValueError(f"Unknown timeline event type: {self.event_type}")
         self.label = str(self.label).strip()[:80]
-        self.enabled = bool(self.enabled)
+        if not isinstance(self.enabled, bool):
+            raise ValueError("Timeline event enabled state must be true or false.")
         clean = _sanitize_json_value(
             self.payload if isinstance(self.payload, dict) else {}
         )
@@ -190,7 +191,10 @@ class PerformanceTimelineEvent:
                     <= float(self.payload.get("segment_start", 0.0))
             ):
                 raise ValueError("Clip segment end must be later than its start.")
-            self.payload["loop"] = bool(self.payload.get("loop", True))
+            loop_value = self.payload.get("loop", True)
+            if not isinstance(loop_value, bool):
+                raise ValueError("Clip loop state must be true or false.")
+            self.payload["loop"] = loop_value
 
         elif self.event_type == "effect_change":
             preset = str(self.payload.get("preset_name", "")).strip()
@@ -365,6 +369,7 @@ class PerformanceTimeline:
             return
         self.events.clear()
         self._fired_ids.clear()
+        self.current_marker = ""
         self.definition_revision += 1
         self.state_revision += 1
 
