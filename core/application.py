@@ -985,7 +985,10 @@ class Application:
             and not self.performance_control.transport_paused
         )
         internal_running = self.transport.running and not self.transport.paused
-        running = external_running or internal_running
+        position_known = (
+            internal_running
+            or (external_running and self._external_clock_bar_at is not None)
+        )
         if external_running and self._external_clock_bar_at is not None:
             bar, beat = self._external_timeline_position()
         elif internal_running:
@@ -995,7 +998,7 @@ class Application:
         self.performance_timeline.arm(
             current_bar=bar,
             current_beat=beat,
-            transport_running=running,
+            transport_running=position_known,
         )
         self.events.publish(
             "performance.timeline.armed",
@@ -1270,6 +1273,7 @@ class Application:
         processed = 0
         for event in self.control_events.drain(max_events):
             try:
+                first_external_bar = False
                 if event.source == "sonic_pi" and event.kind == "transport.start":
                     # Sonic Pi is the clock authority while its session is active.
                     self.transport.stop()
@@ -1290,6 +1294,7 @@ class Application:
                     # A start datagram can be lost while a later bar still arrives.
                     # Treat the first bar as an authority hand-off too, so the
                     # internal test clock can never run alongside Sonic Pi.
+                    first_external_bar = self._external_clock_bar_at is None
                     self.transport.stop()
                     self.transport.set_tempo(float(event.payload["bpm"]))
                     self.transport.set_meter(int(event.payload["beats_per_bar"]))
@@ -1330,10 +1335,17 @@ class Application:
                         self._timeline_external_anchor_bar = max(
                             1, int(event.payload.get("bar_index", 1))
                         )
+                        beats_per_bar = int(self.performance_control.beats_per_bar)
+                        if first_external_bar and self.performance_timeline.armed:
+                            self.performance_timeline.synchronize_position(
+                                self._timeline_external_anchor_bar,
+                                1,
+                                beats_per_bar,
+                            )
                         self._tick_performance_timeline(
                             self._timeline_external_anchor_bar,
                             1,
-                            int(self.performance_control.beats_per_bar),
+                            beats_per_bar,
                         )
                     elif event.source != "sonic_pi" and event.kind == "transport.start":
                         self._tick_performance_timeline(
