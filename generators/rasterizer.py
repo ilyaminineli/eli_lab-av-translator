@@ -35,6 +35,15 @@ _GPU_UNIFORM_SETTINGS = (
 )
 
 
+def raster_content_snapshot(raw_settings: dict[str, Any]) -> dict[str, Any]:
+    """Return a shallow cache key without copying GPU-only animation controls."""
+    return {
+        key: value
+        for key, value in raw_settings.items()
+        if key not in _GPU_UNIFORM_SETTINGS
+    }
+
+
 def raster_content_settings(
         generator_type: str,
         raw_settings: dict[str, Any],
