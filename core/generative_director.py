@@ -94,15 +94,14 @@ class VisualActivity:
                     min(first[3], second[3]) - max(first[1], second[1]),
                 )
                 intersection = intersection_width * intersection_height
-                if intersection > 0.0:
-                    smaller_area = max(0.001, min(first[4], second[4]))
-                    overlap_ratio = max(
-                        0.0,
-                        min(1.0, intersection / smaller_area),
-                    )
-                    if math.isclose(overlap_ratio, 1.0, abs_tol=1e-9):
-                        overlap_ratio = 1.0
-                    overlap_values.append(overlap_ratio)
+                smaller_area = max(0.001, min(first[4], second[4]))
+                overlap_ratio = max(
+                    0.0,
+                    min(1.0, intersection / smaller_area),
+                )
+                if math.isclose(overlap_ratio, 1.0, abs_tol=1e-9):
+                    overlap_ratio = 1.0
+                overlap_values.append(overlap_ratio)
 
         overlap = sum(overlap_values) / len(overlap_values) if overlap_values else 0.0
         transform = sum(transform_values) / len(transform_values)
