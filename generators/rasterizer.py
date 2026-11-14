@@ -486,7 +486,9 @@ class GeneratorRasterizer:
         path.addText(QPointF(x, y), font, headline)
 
         painter.save()
-        painter.rotate(rng.uniform(-2.5, 2.5), self.width / 2.0, self.height / 2.0)
+        painter.translate(self.width / 2.0, self.height / 2.0)
+        painter.rotate(rng.uniform(-2.5, 2.5))
+        painter.translate(-self.width / 2.0, -self.height / 2.0)
         if bool(settings.get("shadow", False)):
             shadow = QPainterPath(path)
             shadow.translate(5.0, 7.0)
