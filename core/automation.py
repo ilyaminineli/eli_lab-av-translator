@@ -91,10 +91,10 @@ class AutomationSettings:
             self.performance_style = "random"
         if self.musical_sync not in {"time", "bar", "phrase", "hybrid"}:
             self.musical_sync = "time"
-        # Old plans can still contain these fields. They no longer disable the
-        # director or cap the variation scope at two layers.
+        # Legacy serialized flags remain readable, but can no longer disable
+        # the director or restore the historical two-layer ceiling.
         self.constrained_generative = True
-        self.max_layers_per_variation = max(0, int(self.max_layers_per_variation))
+        self.max_layers_per_variation = 0
         self.preserve_background_source = bool(self.preserve_background_source)
         self.keep_visual_anchor = bool(self.keep_visual_anchor)
         self.anchor_persistence = max(0.0, min(1.0, float(self.anchor_persistence)))
@@ -478,7 +478,7 @@ class AutomationDirector:
             breakdown_min=self.settings.breakdown_transition_min_seconds,
             breakdown_max=self.settings.breakdown_transition_max_seconds,
             depth=depth,
-        ) if constrained else 0.0
+        )
         for index, layer in enumerate(active):
             if use_seed:
                 x, y, seed_size = pattern[index % len(pattern)]
@@ -874,7 +874,7 @@ class AutomationDirector:
             macro_values: dict[str, float] | None = None,
             now: float | None = None,
     ) -> bool:
-        """Make rule-constrained decisions on musical section/bar/phrase boundaries."""
+        """Apply a musical cue through the unified visual director."""
         if not self.running:
             return False
         stamp = time.monotonic() if now is None else float(now)
@@ -960,9 +960,9 @@ class AutomationDirector:
             or self._director.effect_ready()
         )
         changed = False
-        allow_variations = event in {"scene", "phrase"} or (
-                event == "bar" and self.settings.performance_style == "generative"
-        )
+        # Every director character participates at phrase/bar/scene boundaries.
+        # The style only biases the probability and intensity, never bypasses the director.
+        allow_variations = event in {"scene", "phrase", "bar"}
         if allow_variations:
             if (
                     self.settings.randomize_layout
@@ -1035,7 +1035,7 @@ class AutomationDirector:
                 cut_probability,
                 variation_layer_ids,
             ) or changed
-        elif event == "bar" and self.settings.performance_style == "generative":
+        elif event == "bar":
             changed = self._trigger_phrase_cuts(
                 stamp,
                 min(0.35, strength * self.settings.clip_switch_probability * 0.22),
