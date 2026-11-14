@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 from collections import deque
-from typing import Iterable
+from collections.abc import Iterable
 
 
 class GenerativeVariationDirector:
