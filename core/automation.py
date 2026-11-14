@@ -798,6 +798,7 @@ class AutomationDirector:
                             self._peak_particle_base[layer.id] = (
                                 field,
                                 float(layer.generator_settings[field]),
+                                kind,
                             )
                     if self.generator_settings_changed is not None:
                         self.generator_settings_changed(layer)
