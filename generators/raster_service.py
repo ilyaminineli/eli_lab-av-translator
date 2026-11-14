@@ -23,9 +23,9 @@ _RasterJob = tuple[int, str, str, dict[str, Any], int, int]
 class GeneratorRasterService(QObject):
     """Single-worker, latest-request-wins CPU raster service shared by outputs.
 
-    Pending work is coalesced by layer. Text jobs are rate-limited separately
-    from other generators. The worker creates CPU pixels only; each renderer
-    uploads completed snapshots while its own OpenGL context is current.
+    Pending work is coalesced by layer and rate-limited before rasterization.
+    The worker creates CPU pixels only; each renderer uploads completed
+    snapshots while its own OpenGL context is current.
     """
 
     raster_started = Signal(str, int)
