@@ -198,9 +198,10 @@ class AssetLibraryPanel(QWidget):
         )
         self.add_button.setEnabled(asset is not None)
         if asset is not None:
-            self.detail_label.setText(
+            set_ui_text(
+                self.detail_label,
                 f"{asset.path}\nTags: {', '.join(asset.tags)}\n"
-                f"Purposes: {', '.join(asset.purposes)}"
+                f"Purposes: {', '.join(asset.purposes)}",
             )
 
     def add_selected(self) -> None:
