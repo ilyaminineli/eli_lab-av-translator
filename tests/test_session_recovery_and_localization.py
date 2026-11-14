@@ -131,7 +131,7 @@ def test_timeline_payload_explanation_is_japanese_hover_help_only() -> None:
         panel = PerformanceTimelinePanel(application)
         assert not hasattr(panel, "payload_hint")
         assert panel.payload_edit.toolTip() == (
-            "音楽フレーズの説明用マーカーです。トランスポートと同じ小節／ビート位置を使用します。"
+            "INTRO／PEAK／BREAKDOWNなどの区間名を記録します。シーンの呼び出しは行いません。"
         )
     finally:
         if panel is not None:
