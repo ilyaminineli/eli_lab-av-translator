@@ -7,6 +7,7 @@ on:
       - implementation/**
       - feature/**
       - m5-**
+      - m7/**
   pull_request:
   workflow_dispatch:
 
@@ -30,3 +31,5 @@ jobs:
         run: python -m compileall -q .
       - name: Check formatting and lint
         run: python -m ruff check .
+      - name: Run unit and regression tests
+        run: python -m pytest -q
