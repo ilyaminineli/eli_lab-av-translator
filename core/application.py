@@ -2887,7 +2887,10 @@ class Application:
                 [*self.midi_mapping_engine.mappings, learned]
             )
             self._midi_learn_request = None
-            self._midi_learn_last_event = f"{device_id} · ch {channel + 1} · {message.upper()} {number} → {learned.target}"
+            self._midi_learn_last_event = (
+                f"{device_id} · ch {channel + 1} · {message.upper()} {number} "
+                f"→ {learned.target}"
+            )
             self.events.publish(
                 "performance.midi.learned",
                 mapping=learned.to_dict(),
