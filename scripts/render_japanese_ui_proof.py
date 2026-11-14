@@ -59,7 +59,11 @@ def render_preview(destination: Path) -> None:
     application.setFont(proof_font)
     font_metrics = QFontMetrics(proof_font)
     sample = "映像を、演奏する。日本語タイポグラフィ"
-    missing_glyphs = [character for character in sample if not font_metrics.inFontUcs4(ord(character))]
+    missing_glyphs = [
+        character
+        for character in sample
+        if not font_metrics.inFontUcs4(ord(character))
+    ]
     if missing_glyphs:
         raise RuntimeError(
             f"Japanese proof font {font_family!r} is missing glyphs: "
