@@ -116,17 +116,8 @@ class AutomationPanel(QWidget):
 
         self.director_group = QGroupBox("UNIFIED MUSICAL / GENERATIVE DIRECTOR")
         director_form = QFormLayout(self.director_group)
-        self.director_active_label = QLabel(
-            "UNIFIED DIRECTOR ACTIVE · CHAOTIC / GENERATIVE / STRUCTURED"
-        )
-        self.director_active_label.setWordWrap(True)
-        self.director_active_label.setObjectName("mutedLabel")
-        self.variation_scope_label = QLabel(
-            "Adaptive scope · the director can select every visible, unlocked layer. "
-            "Musical energy and CHAOS / DENSITY / FRAGMENT expand or focus each variation."
-        )
-        self.variation_scope_label.setWordWrap(True)
-        self.variation_scope_label.setObjectName("mutedLabel")
+        self.director_active_label = QLabel("ACTIVE")
+        self.variation_scope_label = QLabel("")
         self.keep_anchor_check = QCheckBox("Prefer a recognizable visual anchor")
         self.keep_anchor_check.setChecked(False)
         self.preserve_background_check = QCheckBox(
@@ -180,14 +171,6 @@ class AutomationPanel(QWidget):
         director_form.addRow("BREAKDOWN TRANSITION MAX", self.breakdown_max_spin)
         layout.addWidget(self.director_group)
 
-        reactive_hint = QLabel(
-            "Performance Mode installs shared audio/Sonic Pi routes and per-layer curves "
-            "automatically. Run SONATA after arming; phrase/scene events drive AUTO "
-            "PERF while energy, cutoff and optional loopback audio drive the visuals."
-        )
-        reactive_hint.setWordWrap(True)
-        reactive_hint.setObjectName("mutedLabel")
-        layout.addWidget(reactive_hint)
 
         self.start_button = QPushButton("START AUTOMATIC SESSION")
         self.stop_button = QPushButton("STOP AUTOMATION")
