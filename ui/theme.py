@@ -6,7 +6,6 @@ from qt_material import apply_stylesheet
 
 from config import RESOURCE_DIR
 from ui.hints import ToolTipFilter
-from ui.hints import ToolTipFilter
 
 # Neutral Material base; all application accents are overridden to grayscale below.
 DEFAULT_THEME = "dark_teal.xml"
@@ -252,7 +251,10 @@ QToolTip {
 """
 
 
-def configure_application_theme(app: QApplication) -> None:
+def configure_application_theme(
+    app: QApplication,
+    show_hints: bool = True,
+) -> None:
     """Apply a compact, high-contrast monochrome Qt Material theme."""
     apply_stylesheet(
         app,
@@ -260,9 +262,6 @@ def configure_application_theme(app: QApplication) -> None:
         extra=MATERIAL_COLORS,
     )
     app.setFont(QFont("Segoe UI", 9))
-    tooltip_filter = ToolTipFilter(show_hints, app)
-    app.installEventFilter(tooltip_filter)
-    app._eli_tooltip_filter = tooltip_filter
     tooltip_filter = ToolTipFilter(show_hints, app)
     app.installEventFilter(tooltip_filter)
     app._eli_tooltip_filter = tooltip_filter
