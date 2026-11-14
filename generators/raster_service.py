@@ -3,12 +3,18 @@ from __future__ import annotations
 import logging
 import threading
 import time
+from copy import deepcopy
 from collections import OrderedDict
 from typing import Any
 
 from PySide6.QtCore import QObject, Signal
 
-from generators.rasterizer import GENERATOR_HEIGHT, GENERATOR_WIDTH, GeneratorRasterizer
+from generators.rasterizer import (
+    GENERATOR_HEIGHT,
+    GENERATOR_WIDTH,
+    GeneratorRasterizer,
+    raster_content_settings,
+)
 
 _LOG = logging.getLogger(__name__)
 _RasterJob = tuple[int, str, str, dict[str, Any], int, int]
@@ -32,6 +38,9 @@ class GeneratorRasterService(QObject):
         self._condition = threading.Condition(self._lock)
         self._latest_revision: dict[str, int] = {}
         self._latest_fingerprint: dict[str, str] = {}
+        self._fingerprint_cache: dict[
+            str, tuple[str, dict[str, Any], int, int, str]
+        ] = {}
         self._latest_dimensions: dict[str, tuple[int, int]] = {}
         self._latest_snapshots: dict[str, tuple[str, dict[str, Any], int, int]] = {}
         self._completed: dict[str, tuple[str, Any]] = {}
@@ -43,6 +52,12 @@ class GeneratorRasterService(QObject):
         self._phase: dict[str, str] = {}
         self._live_preview_enabled = True
         self._text_preview_scale = 0.5
+        # Raster generators use a lighter draft texture in live composition.
+        # Explicit full-resolution requests still retain the canonical 1600×900 output.
+        self._raster_preview_scale = 0.75
+        self._max_raster_update_hz = 8.0
+        self._max_waveform_update_hz = 4.0
+        self._next_raster_update_at: dict[str, float] = {}
         self._max_text_update_hz = 4.0
         self._next_text_update_at = 0.0
         self._keep_last_valid_texture = True
@@ -54,21 +69,62 @@ class GeneratorRasterService(QObject):
         )
         self._worker_thread.start()
 
-    def _dimensions(self, generator_type: str, *, full_resolution: bool = False) -> tuple[int, int]:
-        if generator_type != "text":
+    def _dimensions(
+            self,
+            generator_type: str,
+            *,
+            full_resolution: bool = False,
+    ) -> tuple[int, int]:
+        if full_resolution:
             return GENERATOR_WIDTH, GENERATOR_HEIGHT
-        scale = 1.0 if full_resolution else self._text_preview_scale
-        return (max(320, round(GENERATOR_WIDTH * scale)), max(180, round(GENERATOR_HEIGHT * scale)))
+        scale = (
+            self._text_preview_scale
+            if generator_type == "text"
+            else self._raster_preview_scale
+        )
+        return (
+            max(320, round(GENERATOR_WIDTH * scale)),
+            max(180, round(GENERATOR_HEIGHT * scale)),
+        )
 
-    def fingerprint_for(self, layer_id: str, generator_type: str, settings: dict[str, Any]) -> str:
-        """Fingerprint using the resolution currently assigned to this layer."""
+    def fingerprint_for(
+            self,
+            layer_id: str,
+            generator_type: str,
+            settings: dict[str, Any],
+    ) -> str:
+        """Reuse fingerprints while only GPU-uniform settings are changing."""
         with self._lock:
             width, height = self._latest_dimensions.get(
                 layer_id, self._dimensions(generator_type)
             )
-        return GeneratorRasterizer.fingerprint_settings(
-            generator_type, settings, width=width, height=height
+            cached = self._fingerprint_cache.get(layer_id)
+
+        raster_settings = raster_content_settings(generator_type, settings)
+        if (
+                cached is not None
+                and cached[0] == generator_type
+                and cached[1] == raster_settings
+                and cached[2] == width
+                and cached[3] == height
+        ):
+            return cached[4]
+
+        fingerprint = GeneratorRasterizer.fingerprint_settings(
+            generator_type,
+            settings,
+            width=width,
+            height=height,
         )
+        with self._lock:
+            self._fingerprint_cache[layer_id] = (
+                generator_type,
+                deepcopy(raster_settings),
+                width,
+                height,
+                fingerprint,
+            )
+        return fingerprint
 
     def set_text_preview_scale(self, scale: float) -> None:
         with self._condition:
@@ -291,16 +347,21 @@ class GeneratorRasterService(QObject):
                         break
                     now = time.monotonic()
                     selected_layer = None
+                    wake_at: float | None = None
                     for candidate_id, candidate_job in self._pending_requests.items():
-                        if candidate_job[2] != "text" or now >= self._next_text_update_at:
+                        due_at = self._next_raster_update_at.get(candidate_id, 0.0)
+                        if candidate_job[2] == "text":
+                            due_at = max(due_at, self._next_text_update_at)
+                        if now >= due_at:
                             selected_layer = candidate_id
                             break
+                        wake_at = due_at if wake_at is None else min(wake_at, due_at)
                     if selected_layer is not None:
                         break
-                    if not self._pending_requests:
+                    if wake_at is None:
                         self._condition.wait()
                     else:
-                        self._condition.wait(max(0.001, self._next_text_update_at - now))
+                        self._condition.wait(max(0.001, wake_at - now))
                 if self._closed:
                     # Release all retained CPU pixel arrays on the owner thread.
                     self._worker_rasterizer.clear()
@@ -310,9 +371,16 @@ class GeneratorRasterService(QObject):
                     job = self._pending_requests.pop(layer_id)
                     revision, expected_fingerprint, generator_type, settings, width, height = job
                     self._active_requests[layer_id] = (revision, expected_fingerprint)
+                    started_at = time.monotonic()
+                    max_rate = self._max_raster_update_hz
+                    if generator_type == "waveform":
+                        max_rate = min(max_rate, self._max_waveform_update_hz)
+                    self._next_raster_update_at[layer_id] = (
+                        started_at + 1.0 / max(1.0, max_rate)
+                    )
                     if generator_type == "text":
                         self._next_text_update_at = (
-                                time.monotonic() + 1.0 / self._max_text_update_hz
+                            started_at + 1.0 / self._max_text_update_hz
                         )
             if cache_layer_ids is not None:
                 self._worker_rasterizer.remove_missing(cache_layer_ids)
@@ -363,6 +431,8 @@ class GeneratorRasterService(QObject):
         with self._condition:
             self._latest_revision[layer_id] = self._latest_revision.get(layer_id, 0) + 1
             self._latest_fingerprint.pop(layer_id, None)
+            self._fingerprint_cache.pop(layer_id, None)
+            self._next_raster_update_at.pop(layer_id, None)
             self._latest_dimensions.pop(layer_id, None)
             self._latest_snapshots.pop(layer_id, None)
             self._completed.pop(layer_id, None)
@@ -384,6 +454,8 @@ class GeneratorRasterService(QObject):
             for layer_id in known_ids - active_layer_ids:
                 self._latest_revision[layer_id] = self._latest_revision.get(layer_id, 0) + 1
                 self._latest_fingerprint.pop(layer_id, None)
+                self._fingerprint_cache.pop(layer_id, None)
+                self._next_raster_update_at.pop(layer_id, None)
                 self._latest_dimensions.pop(layer_id, None)
                 self._latest_snapshots.pop(layer_id, None)
                 self._completed.pop(layer_id, None)
@@ -402,6 +474,8 @@ class GeneratorRasterService(QObject):
                 return
             self._closed = True
             self._latest_fingerprint.clear()
+            self._fingerprint_cache.clear()
+            self._next_raster_update_at.clear()
             self._latest_dimensions.clear()
             self._latest_snapshots.clear()
             self._completed.clear()
