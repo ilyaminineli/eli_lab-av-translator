@@ -1287,7 +1287,9 @@ class MainWindow(QMainWindow):
         self._ui_settings.sync()
         gui = QGuiApplication.instance()
         if gui is not None:
-            gui.setToolTipDuration(4500 if self._show_hints else 0)
+            tooltip_filter = getattr(gui, "_eli_tooltip_filter", None)
+            if tooltip_filter is not None:
+                tooltip_filter.set_enabled(self._show_hints)
         self.statusBar().showMessage("Settings saved.", 2500)
 
     def _refresh_after_project_load(self) -> None:
