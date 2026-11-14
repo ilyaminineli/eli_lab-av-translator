@@ -94,7 +94,11 @@ class GeneratorsPanel(QWidget):
         row_three.addWidget(self.add_particle_system_button)
         row_four = QHBoxLayout()
         self.add_overlay_button = QPushButton("+ IMAGE / VIDEO OVERLAY")
-        self.remove_button = _icon_action(\n            self, QStyle.StandardPixmap.SP_TrashIcon, "Remove selected visual layer"\n        )
+        self.remove_button = _icon_action(
+            self,
+            QStyle.StandardPixmap.SP_TrashIcon,
+            "Remove selected visual layer",
+        )
         row_four.addWidget(self.add_overlay_button)
         row_four.addWidget(self.remove_button)
         add_layout.addLayout(row_one)
@@ -190,7 +194,11 @@ class GeneratorsPanel(QWidget):
             "A failed render preserves the last valid texture when recovery is enabled."
         )
         raster_form.addRow("STATUS", self.text_raster_status)
-        self.apply_text_now_button = _icon_action(\n            self, QStyle.StandardPixmap.SP_DialogApplyButton,\n            "Apply text and typography immediately",\n        )
+        self.apply_text_now_button = _icon_action(
+            self,
+            QStyle.StandardPixmap.SP_DialogApplyButton,
+            "Apply text and typography immediately",
+        )
         self.apply_text_now_button.setToolTip(
             "Commit current text and typography now, bypassing the pause debounce "
             "and using final resolution when enabled."
@@ -343,7 +351,11 @@ class GeneratorsPanel(QWidget):
         )
         self.auto_text_check.setChecked(True)
         random_form.addRow("AUTO TEXT", self.auto_text_check)
-        self.random_text_button = _icon_action(\n            self, QStyle.StandardPixmap.SP_BrowserReload, "Regenerate Text Art"\n        )
+        self.random_text_button = _icon_action(
+            self,
+            QStyle.StandardPixmap.SP_BrowserReload,
+            "Regenerate Text Art",
+        )
         random_form.addRow(self.random_text_button)
         text_form.addRow(random_group)
         root.addWidget(self.text_group)
