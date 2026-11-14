@@ -1,0 +1,58 @@
+title: eli_lab AV Translator
+description: A live audiovisual instrument for video collage, generative graphics and typographic performance.
+lang: en
+url: https://ilyaminineli.github.io
+baseurl: /eli_lab-av-translator
+
+markdown: kramdown
+highlighter: rouge
+permalink: pretty
+
+plugins:
+  - jekyll-relative-links
+  - jekyll-seo-tag
+
+relative_links:
+  enabled: true
+  collections: true
+
+defaults:
+  - scope:
+      path: "docs"
+      type: pages
+    values:
+      layout: doc
+  - scope:
+      path: "docs/ja"
+      type: pages
+    values:
+      layout: doc
+      lang: ja
+
+exclude:
+  - .venv/
+  - __pycache__/
+  - .pytest_cache/
+  - .ruff_cache/
+  - build/
+  - dist/
+  - tests/
+  - scripts/
+  - core/
+  - effects/
+  - generators/
+  - media/
+  - rendering/
+  - ui/
+  - resources/
+  - "*.py"
+  - "*.spec"
+  - requirements*.txt
+  - pyproject.toml
+  - setup.py
+  - Gemfile
+  - Gemfile.lock
+  - "*.rb"
+
+sass:
+  style: compressed
