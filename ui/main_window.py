@@ -366,7 +366,7 @@ class MainWindow(QMainWindow):
         perform_layout.setContentsMargins(10, 8, 10, 8)
         perform_layout.setSpacing(8)
         perform_header = QHBoxLayout()
-        perform_title = QLabel("LIVE PERF")
+        perform_title = QLabel(tr("workspace.live_perf", self._language))
         perform_title.setObjectName("sectionHeading")
         perform_header.addWidget(perform_title)
         perform_header.addStretch(1)
@@ -405,7 +405,7 @@ class MainWindow(QMainWindow):
         compose_title.setObjectName("sectionHeading")
         compose_header.addWidget(compose_title)
         compose_header.addStretch(1)
-        self.show_preview_button = QPushButton("OPEN PERF")
+        self.show_preview_button = QPushButton(tr("button.open_perf", self._language))
         self.show_preview_button.clicked.connect(self.show_local_preview)
         compose_header.addWidget(self.show_preview_button)
         compose_layout.addLayout(compose_header)
@@ -438,9 +438,9 @@ class MainWindow(QMainWindow):
         prepare_tabs.addTab(self.asset_library_panel, "ASSETS")
         prepare_layout.addWidget(prepare_tabs, 1)
 
-        tabs.addTab(perform_page, "01  PERF")
-        tabs.addTab(compose_page, "02  COMPOSE")
-        tabs.addTab(prepare_page, "03  PREPARE")
+        tabs.addTab(perform_page, tr("workspace.perf", self._language))
+        tabs.addTab(compose_page, tr("workspace.compose", self._language))
+        tabs.addTab(prepare_page, tr("workspace.prepare", self._language))
         saved_workspace = self._ui_settings.value(
             "ui/active_workspace_v1",
             0,
@@ -626,59 +626,59 @@ class MainWindow(QMainWindow):
             _LOG.warning("Could not toggle Performance Macro %s: %s", macro_id, exc)
 
     def _create_actions(self) -> None:
-        file_menu = self.menuBar().addMenu("&File")
-        new_action = QAction("&New Project", self)
+        file_menu = self.menuBar().addMenu(tr("menu.file", self._language))
+        new_action = QAction(tr("menu.new", self._language), self)
         new_action.setShortcut(QKeySequence.StandardKey.New)
         new_action.triggered.connect(self.new_project)
         file_menu.addAction(new_action)
 
-        open_action = QAction("&Open Project…", self)
+        open_action = QAction(tr("menu.open", self._language), self)
         open_action.setShortcut(QKeySequence.StandardKey.Open)
         open_action.triggered.connect(self.open_project)
         file_menu.addAction(open_action)
 
-        save_action = QAction("&Save Project", self)
+        save_action = QAction(tr("menu.save", self._language), self)
         save_action.setShortcut(QKeySequence.StandardKey.Save)
         save_action.triggered.connect(self.save_project)
         file_menu.addAction(save_action)
 
-        save_as_action = QAction("Save Project &As…", self)
+        save_as_action = QAction(tr("menu.save_as", self._language), self)
         save_as_action.setShortcut(QKeySequence.StandardKey.SaveAs)
         save_as_action.triggered.connect(self.save_project_as)
         file_menu.addAction(save_as_action)
 
-        set_save_action = QAction("Save Performance Set…", self)
+        set_save_action = QAction(tr("menu.save_set", self._language), self)
         set_save_action.triggered.connect(self.save_performance_set)
         file_menu.addAction(set_save_action)
-        set_load_action = QAction("Load Performance Set…", self)
+        set_load_action = QAction(tr("menu.load_set", self._language), self)
         set_load_action.triggered.connect(self.load_performance_set)
         file_menu.addAction(set_load_action)
 
         file_menu.addSeparator()
-        import_action = QAction("Add Media &Folder…", self)
+        import_action = QAction(tr("menu.add_folder", self._language), self)
         import_action.triggered.connect(self._choose_media_folder)
         file_menu.addAction(import_action)
 
-        overlay_action = QAction("Add Image / Video Overlay…", self)
+        overlay_action = QAction(tr("menu.add_overlay", self._language), self)
         overlay_action.triggered.connect(self.add_overlay_media)
         file_menu.addAction(overlay_action)
 
         file_menu.addSeparator()
-        exit_action = QAction("E&xit", self)
+        exit_action = QAction(tr("menu.exit", self._language), self)
         exit_action.setShortcut(QKeySequence.StandardKey.Quit)
         exit_action.triggered.connect(self.close)
         file_menu.addAction(exit_action)
 
-        view_menu = self.menuBar().addMenu("&View")
-        restore_layout_action = QAction("Restore Default Layout", self)
+        view_menu = self.menuBar().addMenu(tr("menu.view", self._language))
+        restore_layout_action = QAction(tr("menu.restore_layout", self._language), self)
         restore_layout_action.setShortcut(QKeySequence("Ctrl+Shift+0"))
         restore_layout_action.triggered.connect(self.restore_default_layout)
         view_menu.addAction(restore_layout_action)
-        workspace_menu = view_menu.addMenu("WORKSPACE")
+        workspace_menu = view_menu.addMenu(tr("menu.workspace", self._language))
         for index, label, shortcut in (
-            (0, "01 · PERF", "Ctrl+1"),
-            (1, "02 · COMPOSE", "Ctrl+2"),
-            (2, "03 · PREPARE", "Ctrl+3"),
+            (0, tr("workspace.perf", self._language), "Ctrl+1"),
+            (1, tr("workspace.compose", self._language), "Ctrl+2"),
+            (2, tr("workspace.prepare", self._language), "Ctrl+3"),
         ):
             action = QAction(label, self)
             action.setShortcut(QKeySequence(shortcut))
@@ -700,7 +700,7 @@ class MainWindow(QMainWindow):
         ):
             view_menu.addAction(dock.toggleViewAction())
 
-        output_menu = view_menu.addMenu("PROJECTOR OUTPUT")
+        output_menu = view_menu.addMenu(tr("menu.projector", self._language))
         output_menu.aboutToShow.connect(
             lambda menu=output_menu: self._populate_projector_menu(menu)
         )
@@ -709,8 +709,12 @@ class MainWindow(QMainWindow):
             gui_application.screenAdded.connect(self._display_configuration_changed)
             gui_application.screenRemoved.connect(self._display_configuration_changed)
 
-        help_menu = self.menuBar().addMenu("&Help")
-        about_action = QAction("&About", self)
+        settings_action = QAction(tr("menu.settings", self._language), self)
+        settings_action.triggered.connect(self.open_settings)
+        view_menu.addSeparator()
+        view_menu.addAction(settings_action)
+        help_menu = self.menuBar().addMenu(tr("menu.help", self._language))
+        about_action = QAction(tr("menu.about", self._language), self)
         about_action.triggered.connect(self.show_about)
         help_menu.addAction(about_action)
 
@@ -1343,25 +1347,14 @@ class MainWindow(QMainWindow):
     def show_about(self) -> None:
         QMessageBox.about(
             self,
-            f"About {APP_NAME}",
+            f"{APP_NAME} {APP_VER}",
             (
-                f"<h2>{APP_NAME} {APP_VER}</h2>"
-                "<p><b>A live audiovisual instrument for video collage, generative "
-                "graphics and music-driven performance.</b></p>"
-                "<p>Build layered compositions with four independent video decks, "
-                "Text Art, procedural geometry and waveforms, GPU particle systems, "
-                "image/video overlays and a real-time effects compositor.</p>"
-                "<p>Shape a performance with audio analysis, internal transport, "
-                "Sonic Pi OSC, MIDI, six Performance Macros, the live show timeline "
-                "and autonomous visual direction. Preview and fullscreen projector "
-                "output run as independent render contexts.</p>"
-                "<p><b>Technology</b><br>"
-                "Python · PySide6 / Qt · ModernGL / OpenGL 3.3 · PyAV / FFmpeg<br>"
-                "NumPy · SoundCard · python-osc · optional MIDI</p>"
-                f"<p><b>Created by</b><br>{APP_AUTHOR}<br>"
-                f"{APP_STUDIO} · 2026</p>"
-                f"<p>{APP_COPYRIGHT}<br>"
-                f'<a href="{APP_REPOSITORY_URL}">Project source</a></p>'
+                f"<h3>{APP_NAME} {APP_VER}</h3>"
+                f"<p>{tr('about.tagline', self._language)}</p>"
+                f"<p>{tr('about.created', self._language)}: "
+                f"{APP_AUTHOR} · {APP_STUDIO}</p>"
+                f'<p><a href="{APP_REPOSITORY_URL}">'
+                f'{tr("about.project", self._language)}</a></p>'
             ),
         )
 
