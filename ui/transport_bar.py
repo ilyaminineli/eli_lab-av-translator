@@ -45,8 +45,10 @@ class TransportBar(QWidget):
 
     def _lock_all_toggled(self, locked: bool) -> None:
         self.lock_all_button.setIcon(app_icon("lock" if locked else "unlock"))
-        self.lock_all_button.setToolTip(
+        action = (
             "Unlock all decks and visual layers"
             if locked else "Lock all decks and visual layers"
         )
+        self.lock_all_button.setToolTip(action)
+        self.lock_all_button.setAccessibleName(action)
         self.lock_all_requested.emit(locked)
