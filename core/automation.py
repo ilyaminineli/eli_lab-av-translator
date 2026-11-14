@@ -45,7 +45,7 @@ class AutomationSettings:
     max_generator_interval: float = 42.0
     text_language: str = "bilingual"
     text_theme: str = "random"
-    text_fragments: int = 16
+    text_fragments: int = 8
     performance_style: str = "random"
     musical_sync: str = "time"
     # Compatibility fields for existing .eliset files. The director is always
