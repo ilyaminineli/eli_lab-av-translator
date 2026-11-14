@@ -29,8 +29,8 @@ from config import (
     APP_VERSION,
 )
 from core.application import Application
-from effects.settings import PRESETS
 from core.performance_service import PerformanceModePlan
+from effects.settings import PRESETS
 from ui.asset_library_panel import AssetLibraryPanel
 from ui.automation_panel import AutomationPanel
 from ui.deck_panel import DeckPanel
