@@ -20,7 +20,7 @@ The Quality workflow performs Python compilation, Ruff and regression tests. Tho
 - **M5 — Performance environment:** one-button Performance Mode, phrase-aware AUTO PERF, Modulator Bank, per-layer performance modifiers, MIDI mapping/scene tools and shared performance diagnostics.
 - **M5 — Asynchronous generator rendering:** one application-owned background raster worker, latest-revision-wins snapshots, per-layer pending-job coalescing, static CPU raster / animated GPU-shader separation, preview/projector-local uploads and lifecycle invalidation.
 - **M5 — Text raster controls:** live preview, Apply Immediately, commit-on-pause, 25/50/75/100% preview quality, optional 1600×900 final raster, 1–20 Hz text-job rate limit, freeze, last-valid-texture fallback and pipeline status.
-- **M6 — Live performance controls:** six normalized 0–1 Performance Macros (CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT), Modulator Bank source assignments, MIDI/OSC/keyboard input, VJ scenes and a bar/beat live performance timeline.
+- **M6 — Live performance controls:** six normalized 0–1 Performance Macros (CHAOS, DENSITY (DNST), DEPTH (DPTH), DECAY (DEC), PRESSURE and FRAGMENT (FRAG)), Modulator Bank source assignments, MIDI/OSC/keyboard input, VJ scenes and a bar/beat live performance timeline.
 - **M7-A — Unified visual director:** composition-aware variation across video, generators and overlays; dynamic all-layer variation budgets, spatial relationships, optional anchors, activity feedback, per-layer cooldowns and manual-override precedence.
 - **M7-B — Operator workspace foundation:** central PERF / COMPOSE / PREPARE workspaces, a shared macro strip, compact/responsive workspace constraints and the monochrome Qt Material base theme.
 
