@@ -952,6 +952,13 @@ def set_ui_text(widget: Any, source_text: str, language: str | None = None) -> N
     widget.setText(ui_text(str(source_text), language))
 
 
+def set_ui_format(widget: Any, source_format: str, language: str | None = None) -> None:
+    """Set a translatable QProgressBar format while retaining its source copy."""
+    if hasattr(widget, "setProperty"):
+        widget.setProperty("_eli_i18n_format", str(source_format))
+    widget.setFormat(ui_text(str(source_format), language))
+
+
 def apply_widget_translations(root: Any, language: str = "en") -> None:
     """Translate static Qt widget copy while preserving user-entered text and IDs."""
     try:
@@ -964,8 +971,11 @@ def apply_widget_translations(root: Any, language: str = "en") -> None:
             QLineEdit,
             QMenu,
             QPlainTextEdit,
+            QProgressBar,
             QTabWidget,
+            QTableWidget,
             QTextEdit,
+            QTreeWidget,
             QWidget,
         )
     except ImportError:
@@ -1034,6 +1044,32 @@ def apply_widget_translations(root: Any, language: str = "en") -> None:
             for index, source in enumerate(source_tabs):
                 if index < widget.count():
                     widget.setTabText(index, ui_text(str(source), language))
+
+        header_role = int(Qt.ItemDataRole.UserRole) + 174
+        if isinstance(widget, QTableWidget):
+            for index in range(widget.columnCount()):
+                header_item = widget.horizontalHeaderItem(index)
+                if header_item is None:
+                    continue
+                source = header_item.data(header_role)
+                if source is None:
+                    source = header_item.text()
+                    header_item.setData(header_role, str(source))
+                header_item.setText(ui_text(str(source), language))
+        if isinstance(widget, QTreeWidget):
+            header_item = widget.headerItem()
+            if header_item is not None:
+                for index in range(widget.columnCount()):
+                    source = header_item.data(index, header_role)
+                    if source is None:
+                        source = header_item.text(index)
+                        header_item.setData(index, header_role, str(source))
+                    header_item.setText(index, ui_text(str(source), language))
+        if isinstance(widget, QProgressBar):
+            source_format = original(
+                widget, "_eli_i18n_format", widget.format()
+            )
+            widget.setFormat(ui_text(str(source_format), language))
 
         source_tooltip = original(
             widget, "_eli_i18n_tooltip", widget.toolTip()
