@@ -189,36 +189,49 @@ class PerformanceControlPanel(QWidget):
         self.macro_source_combos: dict[str, QComboBox] = {}
         self.macro_key_edits: dict[str, QKeySequenceEdit] = {}
         for macro in self.application.performance_macro_engine.list_macros():
-            row = QGridLayout()
-            row.setContentsMargins(0, 1, 0, 1)
-            row.setHorizontalSpacing(6)
+            macro_row = QWidget(self.performance_macro_group)
+            macro_row.setObjectName("performanceMacroRow")
+            row_layout = QVBoxLayout(macro_row)
+            row_layout.setContentsMargins(0, 5, 0, 6)
+            row_layout.setSpacing(5)
+
+            heading = QHBoxLayout()
             name_label = QLabel(macro.name)
-            name_label.setMinimumWidth(56)
-            name_label.setMaximumWidth(74)
+            name_label.setObjectName("macroName")
             name_label.setToolTip(macro.description)
-            slider = QSlider(Qt.Orientation.Horizontal)
-            slider.setRange(0, 1000)
-            slider.setSingleStep(5)
-            slider.setMinimumWidth(52)
             value_label = QLabel("0.00")
-            value_label.setMinimumWidth(32)
+            value_label.setObjectName("macroValue")
+            value_label.setMinimumWidth(42)
             value_label.setAlignment(
                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
             )
+            heading.addWidget(name_label)
+            heading.addStretch(1)
+            heading.addWidget(value_label)
+            row_layout.addLayout(heading)
+
+            slider = QSlider(Qt.Orientation.Horizontal)
+            slider.setRange(0, 1000)
+            slider.setSingleStep(5)
+            slider.setMinimumWidth(0)
+            row_layout.addWidget(slider)
+
+            routing = QHBoxLayout()
+            routing.setSpacing(7)
             source_combo = QComboBox()
             source_combo.setMinimumWidth(0)
-            source_combo.setMaximumWidth(150)
-            source_combo.setMinimumContentsLength(7)
+            source_combo.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+            )
+            source_combo.setMinimumContentsLength(5)
             key_edit = QKeySequenceEdit(QKeySequence(macro.keyboard_shortcut))
-            key_edit.setMinimumWidth(68)
-            key_edit.setMaximumWidth(112)
-            row.addWidget(name_label, 0, 0)
-            row.addWidget(slider, 0, 1)
-            row.addWidget(value_label, 0, 2)
-            row.addWidget(source_combo, 0, 3)
-            row.addWidget(key_edit, 0, 4)
-            row.setColumnStretch(1, 1)
-            macro_layout.addLayout(row)
+            key_edit.setMinimumWidth(62)
+            key_edit.setMaximumWidth(92)
+            routing.addWidget(source_combo, 1)
+            routing.addWidget(key_edit, 0)
+            row_layout.addLayout(routing)
+            macro_layout.addWidget(macro_row)
+
             self.macro_sliders[macro.macro_id] = slider
             self.macro_value_labels[macro.macro_id] = value_label
             self.macro_source_combos[macro.macro_id] = source_combo
@@ -237,6 +250,12 @@ class PerformanceControlPanel(QWidget):
                 lambda sequence, macro_id=macro.macro_id: self._performance_macro_shortcut_changed(
                     macro_id, sequence
                 )
+            )
+            macro_row.setProperty("macro_id", macro.macro_id)
+            macro_row.setStyleSheet(
+                "QWidget#performanceMacroRow { border-bottom: 1px solid #292929; }"
+                "QLabel#macroName { color: #e8e8e8; font-size: 9pt; }"
+                "QLabel#macroValue { color: #bdbdbd; font-family: 'DM Mono', Consolas, monospace; }"
             )
         self.macro_status_label = QLabel("")
         self.macro_status_label.setWordWrap(True)
