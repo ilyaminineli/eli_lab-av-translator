@@ -569,8 +569,7 @@ class AutomationDirector:
             if fraction >= 1.0:
                 layer.blend_mode = str(morph["end_blend_mode"])
                 self._layout_morphs.pop(layer_id, None)
-                if self._uses_constrained_generative_rules:
-                    self._director.mark_transition()
+                self._director.mark_transition()
             changed = True
         return changed
 
@@ -579,16 +578,13 @@ class AutomationDirector:
             layer_ids: Iterable[str] | None,
     ) -> bool:
         allowed = set(layer_ids) if layer_ids is not None else set()
-        constrained = self._uses_constrained_generative_rules
-        if not constrained:
-            allowed = set()
         factor = self._director.particle_peak_factor(
             self._performance_section,
             self._performance_energy,
             self._performance_intensity,
             self._macro_values.get("density", 0.0),
             self.settings.peak_particle_boost,
-        ) if constrained else 1.0
+        )
         changed = False
         for layer in self._layers:
             stored = self._peak_particle_base.get(layer.id)
@@ -662,10 +658,7 @@ class AutomationDirector:
         palette_name = None
         palette_values = None
         if self.settings.randomize_palette:
-            if constrained:
-                palette_name = self._choose_palette()
-            else:
-                palette_name = self.rng.choice(palette_names())
+            palette_name = self._choose_palette()
             if palette_name:
                 palette_values = palette_look(palette_name)
 
@@ -729,7 +722,7 @@ class AutomationDirector:
                         values["text_writing_mode"] = self.rng.choice(
                             ("horizontal", "vertical_rl", "vertical_lr")
                         )
-                    if constrained and self.rng.random() < 0.25:
+                    if self.rng.random() < 0.25:
                         values["text_path_mode"] = self.rng.choice(
                             ("none", "circle", "arc", "custom")
                         )
@@ -952,7 +945,6 @@ class AutomationDirector:
         strength = max(0.05, min(0.98, strength))
         cutoff_drive = 0.65 + 0.7 * cutoff + 0.12 * self._macro_values.get("fragment", 0.0)
 
-        constrained = self._uses_constrained_generative_rules
         peak_context = (
                 self._performance_section == "peak"
                 or energy >= 0.78
@@ -1017,8 +1009,7 @@ class AutomationDirector:
                     allow_effect_change=allow_effect_change,
                 )
                 if (
-                        constrained
-                        and allow_effect_change
+                        allow_effect_change
                         and getattr(self, "_last_layer_fx_variation", False)
                 ):
                     self._director.mark_effect_applied()
@@ -1029,10 +1020,9 @@ class AutomationDirector:
                     self.settings.max_generator_interval,
                 )
 
-            if constrained:
-                changed = self._apply_peak_particle_density(
-                    variation_layer_ids
-                ) or changed
+            changed = self._apply_peak_particle_density(
+                variation_layer_ids
+            ) or changed
 
         if event == "phrase":
             cut_probability = min(
@@ -1057,12 +1047,10 @@ class AutomationDirector:
             f"{self._performance_section} · "
             if self._performance_section != "idle" else ""
         )
-        action = "rule-based variation" if changed and constrained else (
-            "musical variation" if changed else "musical cue evaluated"
-        )
+        action = "generative variation" if changed else "musical cue evaluated"
         anchor = (
             f" · anchor {self._director.anchor_layer_id}"
-            if constrained and self._director.anchor_layer_id else ""
+            if self.settings.keep_visual_anchor and self._director.anchor_layer_id else ""
         )
         self.last_action = (
             f"{section}{action} · {event} · energy {energy:.2f} · "
@@ -1086,8 +1074,7 @@ class AutomationDirector:
         }
         anchor_id = self._director.choose_anchor(
             self._layers,
-            enabled=self._uses_constrained_generative_rules
-                    and self.settings.keep_visual_anchor,
+            enabled=self.settings.keep_visual_anchor or self.settings.preserve_background_source,
         )
         changed = False
         for deck_id, deck in self._decks.items():
@@ -1099,8 +1086,7 @@ class AutomationDirector:
             ):
                 continue
             if (
-                    self._uses_constrained_generative_rules
-                    and self.settings.preserve_background_source
+                    self.settings.preserve_background_source
                     and layer is not None
                     and layer.id == anchor_id
             ):
