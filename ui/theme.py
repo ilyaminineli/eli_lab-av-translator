@@ -251,9 +251,25 @@ QToolTip {
 """
 
 
+def application_font_families(language: str = "en") -> list[str]:
+    """Return readable system-first UI font stacks for the selected language."""
+    if language == "ja":
+        return [
+            "Yu Gothic UI",
+            "Meiryo UI",
+            "BIZ UDGothic",
+            "Noto Sans JP",
+            "Noto Sans CJK JP",
+            "Segoe UI",
+            "sans-serif",
+        ]
+    return ["Segoe UI", "Noto Sans", "Arial", "sans-serif"]
+
+
 def configure_application_theme(
     app: QApplication,
     show_hints: bool = True,
+    language: str = "en",
 ) -> None:
     """Apply a compact, high-contrast monochrome Qt Material theme."""
     apply_stylesheet(
@@ -261,7 +277,12 @@ def configure_application_theme(
         theme=DEFAULT_THEME,
         extra=MATERIAL_COLORS,
     )
-    app.setFont(QFont("Segoe UI", 9))
+    font = QFont()
+    font.setFamilies(application_font_families(language))
+    font.setPointSizeF(9.5)
+    font.setStyleHint(QFont.StyleHint.SansSerif)
+    app.setFont(font)
+    app.setProperty("ui_language", language)
     tooltip_filter = ToolTipFilter(show_hints, app)
     app.installEventFilter(tooltip_filter)
     app._eli_tooltip_filter = tooltip_filter
