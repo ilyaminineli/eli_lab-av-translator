@@ -1,13 +1,13 @@
 # eli_lab AV Translator — Product Roadmap
 
-**Roadmap snapshot:** 13 November 2026  
-**Current priority:** M6 — Advanced VJ Environment and performance controls. M6-A1, B1, C1, D1/D2, E1, the Performance Macro System (PR #30) and the Live Performance Timeline (PR #31) are merged to `main`. Remaining M6-A2/A3, B2+, later C–E slices and target-Windows live/projector validation remain open. M5 target-machine validation and the independent Video Mixer release gate continue in parallel; master-output recording/audio muxing is a separate deferred deliverable.
+**Roadmap snapshot:** 14 November 2026  
+**Current priority:** M7 — Unified Generative Audiovisual Instrument. The complete design brief is in [docs/M7.md](M7.md). Development is on the dedicated `m7/unified-visual-director` branch. M5/M6 hardware acceptance and the independent Video Mixer release gate remain open; master-output recording/audio muxing is a separate deferred deliverable.
 
 ## Product goal
 
 Build a dependable Windows-first audiovisual performance instrument: import a large personal footage library, compose four independent video decks into a live GPU canvas, create expressive visual treatments, run semi-random or fully unattended performances, and route the result to a second display or projector.
 
-The roadmap is deliberately staged. M0–M2 establish the visual instrument. M3 adds audio analysis and the normalized transport/scene/macro control foundation. M4 adds Sonic Pi as a timed, semantic OSC source for that same control layer. M5 adds autonomous performance orchestration, Modulator Bank/per-layer control and an asynchronous generator-raster pipeline. M6 expands the operator-facing live VJ environment with scene banks, GPU transformations, particle simulation, typography, Performance Macros and a bar/beat Live Performance Timeline.
+The roadmap is deliberately staged. M0–M2 establish the visual instrument. M3 adds audio analysis and the normalized transport/scene/macro control foundation. M4 adds Sonic Pi as a timed, semantic OSC source for that same control layer. M5 adds autonomous performance orchestration, Modulator Bank/per-layer control and an asynchronous generator-raster pipeline. M6 adds scene banks, GPU transformations, particle simulation, typography, Performance Macros and a bar/beat Live Performance Timeline. M7 unifies unrestricted collage composition, musical/generative direction and the operator UI, then extends drawing, temporal/print processing, signal visualization and a separate 3D rendering module.
 
 **Development rule:** the Video Mixer Completion Gate remains an independent release criterion and is not marked passed. Later milestones may proceed in parallel, but do not describe the mixer as hardware/release-ready until its Windows reliability, projector and sustained-session checks have been completed.
 
@@ -41,6 +41,25 @@ During the November 4, 2026 user test, the application rendered the collage smoo
 - The renderer reports rolling per-second decode and RGB-conversion cost, render CPU submission time, upload time/bandwidth, active deck count and per-second frame drops. These are diagnostic counters, not GPU timer queries.
 
 The November 4 RTX 4060 screenshot showed approximately 18.9 FPS. The new counters are intended to identify whether the remaining limit is CPU conversion, texture upload or compositor submission. CPU-side timings are not GPU timer-query measurements, so hardware profiling is still required before claiming a specific bottleneck or improvement.
+
+---
+
+
+# M7 — Unified Generative Audiovisual Instrument
+
+**Status:** In progress on `m7/unified-visual-director`. Full design brief and implementation log: [M7.md](M7.md). M7-A has dynamic uncapped variation, optional anchors, cross-source spatial mutation, relationship-aware placement and a composition-only Visual Activity estimate. M7-B has the first central Perform / Compose / Prepare workspaces, macro strip and theme foundation. The current branch passes compile, targeted Ruff and 11 regression tests at `1213cf2`; target-Windows GPU/projector acceptance remains open.
+
+| Workstream | Scope | Status |
+| --- | --- | --- |
+| M7-A — Unified Visual Director | One director blends chaotic freedom, musical/generative intelligence and compositional structure. Dynamic variation budgets, optional anchors, all visual-layer participation, adaptive transitions, first Visual Activity estimate and relationship-aware spatial placement. Feedback/particle/effect telemetry, cooldowns, manual-override precedence, broader state-awareness and regression coverage remain open. | In progress |
+| M7-B — Performance UI Redesign | Initial central Perform / Compose / Prepare workspaces, central live canvas, shared macro strip, central media/visual-asset preparation tabs, Qt Material dark-red theme and workspace shortcuts. Context-sensitive inspector, quick/advanced control separation, timeline visibility, responsive refinement and target-Windows UI acceptance remain open. | In progress |
+| M7-C — Generative Drawing Engine | GPU/vector paths, Bézier curves, animated strokes, accumulation, hatching, contours, recursive and field-driven geometry. | Planned |
+| M7-D — Temporal + Print Processing | Extend existing feedback; layer/source routing, temporal echoes/stutter, procedural printmaking and reorderable print stages. | Planned |
+| M7-E — Advanced Signal Visualizer | Phase scope, spectrogram, frequency geometry, spectral particles, signal fields and waveform deformation using existing audio/modulation sources. | Planned |
+| M7-F — 3D Rendering Foundation | Separate renderer, procedural meshes/wireframes, displacement, instancing and camera; expose output as a compositor source. | Research / planned |
+| M7-G — Integration + Release Validation | Persistence, scenes, sets, GPU ownership, preview/projector parity, sustained Windows performance, reference-scene regression and UI acceptance. | Planned |
+
+**M7 design rule:** the director should understand the composition, but it must never be afraid to destroy it. There is no separate legacy-chaos mode. CHAOTIC, GENERATIVE and STRUCTURED are continuous influences on one director, not separate engines.
 
 ---
 

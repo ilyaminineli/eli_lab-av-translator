@@ -13,6 +13,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QTabWidget,
     QToolBar,
     QVBoxLayout,
     QWidget,
@@ -181,7 +182,7 @@ class MainWindow(QMainWindow):
         )
         self.statusBar().addPermanentWidget(self.control_status_label)
         self.status_label = QLabel(
-            "LOCAL PREVIEW IDLE · open the preview tab to initialise OpenGL"
+            "LOCAL PREVIEW IDLE · select PERFORM to initialise OpenGL"
         )
         self.statusBar().addPermanentWidget(self.status_label)
         self.performance_view.render_status_changed.connect(self.status_label.setText)
@@ -251,6 +252,12 @@ class MainWindow(QMainWindow):
         self._responsive_layout_managed = not restored
         self._responsive_layout_ready = True
         self._sync_responsive_dock_constraints()
+        # Saved pre-M7 dock states may contain the old preview/media tabs.
+        # Those widgets now live in central workspaces and their placeholder docks
+        # must remain hidden after a legacy state restore.
+        self.media_dock.hide()
+        self.asset_library_dock.hide()
+        self.preview_dock.hide()
         if not restored:
             QTimer.singleShot(0, self._apply_default_dock_sizes)
 
@@ -290,25 +297,106 @@ class MainWindow(QMainWindow):
         self._modifier_feedback_timer.start()
 
     def _build_workspace(self) -> QWidget:
-        workspace = QWidget(self)
-        layout = QVBoxLayout(workspace)
-        layout.setContentsMargins(10, 8, 10, 8)
-        layout.setSpacing(8)
+        """Build the primary Perform / Compose / Prepare operator workspaces."""
+        tabs = QTabWidget(self)
+        tabs.setObjectName("primaryWorkspaceTabs")
+        tabs.setDocumentMode(True)
+        tabs.setMovable(False)
+        tabs.setUsesScrollButtons(True)
 
-        header = QHBoxLayout()
-        title = QLabel("COMPOSITION EDITOR")
-        title.setObjectName("sectionHeading")
-        header.addWidget(title)
-        header.addStretch(1)
+        perform_page = QWidget(tabs)
+        perform_layout = QVBoxLayout(perform_page)
+        perform_layout.setContentsMargins(10, 8, 10, 8)
+        perform_layout.setSpacing(8)
+        perform_header = QHBoxLayout()
+        perform_title = QLabel("LIVE PERFORMANCE")
+        perform_title.setObjectName("sectionHeading")
+        perform_header.addWidget(perform_title)
+        perform_header.addStretch(1)
         self.workspace_output_label = QLabel("OUTPUT  ·  LOCAL WORKSPACE")
         self.workspace_output_label.setObjectName("mutedLabel")
-        header.addWidget(self.workspace_output_label)
-        self.show_preview_button = QPushButton("OPEN LOCAL PREVIEW")
+        perform_header.addWidget(self.workspace_output_label)
+        perform_layout.addLayout(perform_header)
+
+        # Put the six existing Performance Macros on the operator surface. The
+        # widget is detached from the advanced control dock rather than copied,
+        # so values, source mappings and shortcuts keep a single owner.
+        self.live_macro_strip = self.performance_control_panel.take_performance_macro_group(
+            perform_page
+        )
+
+        # Reuse the existing renderer instead of creating a second OpenGL view.
+        # The projector and local preview retain their existing independent contexts.
+        self.performance_view.setParent(None)
+        self.preview_dock.setWidget(
+            QLabel("LOCAL PREVIEW is now displayed in the central PERFORM workspace.")
+        )
+        self.preview_dock.hide()
+        perform_layout.addWidget(self.performance_view, 1)
+        perform_layout.addWidget(self.live_macro_strip, 0)
+
+        compose_page = QWidget(tabs)
+        compose_layout = QVBoxLayout(compose_page)
+        compose_layout.setContentsMargins(10, 8, 10, 8)
+        compose_layout.setSpacing(8)
+        compose_header = QHBoxLayout()
+        compose_title = QLabel("COMPOSITION EDITOR")
+        compose_title.setObjectName("sectionHeading")
+        compose_header.addWidget(compose_title)
+        compose_header.addStretch(1)
+        self.show_preview_button = QPushButton("OPEN PERFORM WORKSPACE")
         self.show_preview_button.clicked.connect(self.show_local_preview)
-        header.addWidget(self.show_preview_button)
-        layout.addLayout(header)
-        layout.addWidget(self.generators_panel, 1)
-        return workspace
+        compose_header.addWidget(self.show_preview_button)
+        compose_layout.addLayout(compose_header)
+        self.generators_panel.setParent(compose_page)
+        compose_layout.addWidget(self.generators_panel, 1)
+
+        prepare_page = QWidget(tabs)
+        prepare_layout = QVBoxLayout(prepare_page)
+        prepare_layout.setContentsMargins(10, 8, 10, 8)
+        prepare_layout.setSpacing(8)
+        prepare_header = QLabel("MEDIA PREPARATION")
+        prepare_header.setObjectName("sectionHeading")
+        prepare_layout.addWidget(prepare_header)
+        prepare_tabs = QTabWidget(prepare_page)
+        prepare_tabs.setObjectName("prepareAssetTabs")
+        prepare_tabs.setDocumentMode(True)
+        self.media_browser.setParent(None)
+        self.asset_library_panel.setParent(None)
+        self.media_dock.setWidget(
+            QLabel("MEDIA LIBRARY is available in the central PREPARE workspace.")
+        )
+        self.asset_library_dock.setWidget(
+            QLabel("VISUAL ASSET LIBRARY is available in the central PREPARE workspace.")
+        )
+        self.media_dock.hide()
+        self.asset_library_dock.hide()
+        prepare_tabs.addTab(self.media_browser, "MEDIA LIBRARY")
+        prepare_tabs.addTab(self.asset_library_panel, "VISUAL ASSETS")
+        prepare_layout.addWidget(prepare_tabs, 1)
+
+        tabs.addTab(perform_page, "01  PERFORM")
+        tabs.addTab(compose_page, "02  COMPOSE")
+        tabs.addTab(prepare_page, "03  PREPARE")
+        saved_workspace = self._ui_settings.value(
+            "ui/active_workspace_v1",
+            0,
+            type=int,
+        )
+        tabs.setCurrentIndex(max(0, min(tabs.count() - 1, saved_workspace)))
+        tabs.currentChanged.connect(self._on_workspace_changed)
+        self.workspace_tabs = tabs
+        return tabs
+
+    def _on_workspace_changed(self, index: int) -> None:
+        self._ui_settings.setValue("ui/active_workspace_v1", int(index))
+        self._ui_settings.sync()
+        messages = {
+            0: "PERFORM · live composition workspace",
+            1: "COMPOSE · edit layers, generators and effects",
+            2: "PREPARE · organise footage and visual assets",
+        }
+        self.statusBar().showMessage(messages.get(index, "Workspace changed"), 1800)
 
     def _is_compact_workspace(self) -> bool:
         width = max(1, self.width())
@@ -383,18 +471,19 @@ class MainWindow(QMainWindow):
         if not self.restoreState(self._default_dock_state, 4):
             _LOG.warning("Could not restore the built-in dock-state snapshot; rebuilding sizes.")
         for dock in (
-                self.media_dock,
-                self.asset_library_dock,
                 self.deck_dock,
                 self.layer_dock,
                 self.effects_dock,
                 self.automation_dock,
-                self.preview_dock,
                 self.performance_control_dock,
                 self.modulator_bank_dock,
                 self.performance_timeline_dock,
         ):
             dock.show()
+        self.media_dock.hide()
+        self.asset_library_dock.hide()
+        self.preview_dock.hide()
+        self.workspace_tabs.setCurrentIndex(0)
         self.layer_dock.raise_()
         self._responsive_layout_managed = True
         QTimer.singleShot(0, self._apply_default_dock_sizes)
@@ -403,8 +492,8 @@ class MainWindow(QMainWindow):
         self.statusBar().showMessage("Default workspace layout restored.", 4000)
 
     def show_local_preview(self) -> None:
-        self.preview_dock.show()
-        self.preview_dock.raise_()
+        """Focus the central live canvas instead of opening a secondary preview dock."""
+        self.workspace_tabs.setCurrentIndex(0)
 
     def _make_dock(self, title: str, widget) -> QDockWidget:
         dock = QDockWidget(title, self)
@@ -481,7 +570,7 @@ class MainWindow(QMainWindow):
 
         file_menu.addSeparator()
         import_action = QAction("Add Media &Folder…", self)
-        import_action.triggered.connect(self.media_browser.choose_folder)
+        import_action.triggered.connect(self._choose_media_folder)
         file_menu.addAction(import_action)
 
         overlay_action = QAction("Add Image / Video Overlay…", self)
@@ -499,16 +588,26 @@ class MainWindow(QMainWindow):
         restore_layout_action.setShortcut(QKeySequence("Ctrl+Shift+0"))
         restore_layout_action.triggered.connect(self.restore_default_layout)
         view_menu.addAction(restore_layout_action)
+        workspace_menu = view_menu.addMenu("WORKSPACE")
+        for index, label, shortcut in (
+            (0, "01 · PERFORM", "Ctrl+1"),
+            (1, "02 · COMPOSE", "Ctrl+2"),
+            (2, "03 · PREPARE", "Ctrl+3"),
+        ):
+            action = QAction(label, self)
+            action.setShortcut(QKeySequence(shortcut))
+            action.triggered.connect(
+                lambda checked=False, target=index: self.workspace_tabs.setCurrentIndex(target)
+            )
+            workspace_menu.addAction(action)
         view_menu.addSeparator()
         for dock in (
-                self.media_dock,
-                self.asset_library_dock,
                 self.deck_dock,
                 self.layer_dock,
                 self.effects_dock,
                 self.automation_dock,
-                self.preview_dock,
                 self.performance_control_dock,
+                self.modulator_bank_dock,
                 self.performance_timeline_dock,
         ):
             view_menu.addAction(dock.toggleViewAction())
@@ -676,8 +775,11 @@ class MainWindow(QMainWindow):
         try:
             if self.output_manager.window is not None:
                 self.output_manager.close()
-            self._restore_local_preview_on_close = self.preview_dock.isVisible()
+            self._restore_local_preview_on_close = self.workspace_tabs.currentIndex() == 0
             window = self.output_manager.open_on_screen(screen)
+            if self._restore_local_preview_on_close:
+                # Release the local preview surface while the projector is active.
+                self.workspace_tabs.setCurrentIndex(1)
             window.performance_view.render_status_changed.connect(
                 self.status_label.setText
             )
@@ -692,8 +794,6 @@ class MainWindow(QMainWindow):
             else:
                 self.status_label.setText("PROJECTOR OPEN · waiting for its OpenGL context")
             window.closed.connect(self._projector_output_closed)
-            if self._restore_local_preview_on_close:
-                self.preview_dock.hide()
             self.workspace_output_label.setText(
                 f"OUTPUT  ·  PROJECTOR  ·  {screen.name()}"
             )
@@ -720,11 +820,10 @@ class MainWindow(QMainWindow):
             )
         else:
             self.status_label.setText(
-                "LOCAL PREVIEW IDLE · open the preview tab to initialise OpenGL"
+                "LOCAL PREVIEW IDLE · select PERFORM to initialise OpenGL"
             )
         if self._restore_local_preview_on_close:
-            self.preview_dock.show()
-            self.preview_dock.raise_()
+            self.workspace_tabs.setCurrentIndex(0)
         self._restore_local_preview_on_close = False
 
     def refresh_automation_media_pool(self) -> None:
@@ -752,6 +851,10 @@ class MainWindow(QMainWindow):
             _LOG.exception("Could not add overlay media")
             QMessageBox.warning(self, "Overlay load failed", str(exc))
 
+    def _choose_media_folder(self) -> None:
+        self.workspace_tabs.setCurrentIndex(2)
+        self.media_browser.choose_folder()
+
     def assign_media(self, asset: object, deck_id: str) -> None:
         try:
             self.application.assign_media_to_deck(asset, deck_id)
@@ -771,8 +874,7 @@ class MainWindow(QMainWindow):
                 deck_index = self.media_browser.deck_combo.findData(deck_id)
                 if deck_index >= 0:
                     self.media_browser.deck_combo.setCurrentIndex(deck_index)
-                self.media_dock.show()
-                self.media_dock.raise_()
+                self.workspace_tabs.setCurrentIndex(2)
                 self.media_browser.asset_list.setFocus()
                 self.statusBar().showMessage(
                     f"Choose a clip to load into {deck_id.upper()}. "
@@ -1080,6 +1182,10 @@ class MainWindow(QMainWindow):
     def closeEvent(self, event) -> None:
         self._ui_settings.setValue("ui/main_window_geometry_v2", self.saveGeometry())
         self._ui_settings.setValue("ui/main_window_state_v5", self.saveState(4))
+        self._ui_settings.setValue(
+            "ui/active_workspace_v1",
+            self.workspace_tabs.currentIndex(),
+        )
         self._runtime_timer.stop()
         self._status_timer.stop()
         self._modifier_feedback_timer.stop()

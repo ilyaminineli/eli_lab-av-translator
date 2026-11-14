@@ -1,3 +1,4 @@
-# Runtime dependencies plus static code-quality tooling. Automated tests are intentionally removed.
+# Runtime dependencies and development quality/test tooling.
 -r requirements.txt
 ruff>=0.6
+pytest>=8.0

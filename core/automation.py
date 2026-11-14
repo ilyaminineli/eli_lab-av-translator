@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import math
 import random
 import time
 from collections.abc import Iterable
@@ -47,10 +48,18 @@ class AutomationSettings:
     text_fragments: int = 16
     performance_style: str = "random"
     musical_sync: str = "time"
+    # Compatibility fields for existing .eliset files. The director is always
+    # active; this is now a soft variation preference, not an activation gate.
     constrained_generative: bool = True
-    max_layers_per_variation: int = 2
-    preserve_background_source: bool = True
-    keep_visual_anchor: bool = True
+    max_layers_per_variation: int = 0
+    preserve_background_source: bool = False
+    keep_visual_anchor: bool = False
+    anchor_persistence: float = 0.0
+    spatial_chaos: float = 0.82
+    overlap_bias: float = 0.88
+    offscreen_range: float = 0.55
+    abrupt_transition_probability: float = 0.45
+    layer_cooldown_seconds: float = 1.5
     effect_after_transition: bool = True
     palette_memory_phrases: int = 4
     peak_particle_boost: float = 0.35
@@ -84,10 +93,22 @@ class AutomationSettings:
             self.performance_style = "random"
         if self.musical_sync not in {"time", "bar", "phrase", "hybrid"}:
             self.musical_sync = "time"
-        self.constrained_generative = bool(self.constrained_generative)
-        self.max_layers_per_variation = max(1, min(2, int(self.max_layers_per_variation)))
+        # Legacy serialized flags remain readable, but can no longer disable
+        # the director or restore the historical two-layer ceiling.
+        self.constrained_generative = True
+        self.max_layers_per_variation = 0
         self.preserve_background_source = bool(self.preserve_background_source)
         self.keep_visual_anchor = bool(self.keep_visual_anchor)
+        self.anchor_persistence = max(0.0, min(1.0, float(self.anchor_persistence)))
+        self.spatial_chaos = max(0.0, min(1.0, float(self.spatial_chaos)))
+        self.overlap_bias = max(0.0, min(1.0, float(self.overlap_bias)))
+        self.offscreen_range = max(0.0, min(1.0, float(self.offscreen_range)))
+        self.abrupt_transition_probability = max(
+            0.0, min(1.0, float(self.abrupt_transition_probability))
+        )
+        self.layer_cooldown_seconds = max(
+            0.0, min(30.0, float(self.layer_cooldown_seconds))
+        )
         self.effect_after_transition = bool(self.effect_after_transition)
         self.palette_memory_phrases = max(0, min(16, int(self.palette_memory_phrases)))
         self.peak_particle_boost = max(0.0, min(1.0, float(self.peak_particle_boost)))
@@ -160,9 +181,14 @@ class AutomationDirector:
         self._layout_morphs: dict[str, dict[str, object]] = {}
         self._peak_particle_base: dict[str, tuple[str, float, str]] = {}
         self._active_variation_layer_ids: tuple[str, ...] = ()
+        self._layer_last_variation_at: dict[str, float] = {}
+        self._manual_layer_until: dict[str, float] = {}
         self._last_layer_fx_variation = False
         self._last_peak_context = False
         self._director = GenerativeVariationDirector()
+        self._last_layout_relationship = "independent"
+        self._last_visual_activity = self._director.measure_visual_activity(())
+        self._last_visual_activity_at = 0.0
         self.generator_settings_changed = None
         self.palette_changed = None
 
@@ -203,6 +229,8 @@ class AutomationDirector:
         self._layout_morphs.clear()
         self._peak_particle_base.clear()
         self._active_variation_layer_ids = ()
+        self._layer_last_variation_at.clear()
+        self._manual_layer_until.clear()
         self._last_layer_fx_variation = False
         self._last_peak_context = False
         self._macro_values.clear()
@@ -227,17 +255,9 @@ class AutomationDirector:
 
         if self.settings.randomize_layout:
             self._randomize_layout(now=started)
-        if (
-                self._uses_constrained_generative_rules
-                and self.settings.randomize_effects
-                and self.settings.effect_after_transition
-        ):
+        if self.settings.randomize_effects and self.settings.effect_after_transition:
             self._director.mark_effect_applied()
-        if self.settings.randomize_effects and not (
-                self.settings.performance_style == "generative"
-                and self.settings.constrained_generative
-                and self.settings.effect_after_transition
-        ):
+        elif self.settings.randomize_effects:
             self._randomize_effects()
         self._layout_due = started + self._interval(
             self.rng, self.settings.min_layout_interval, self.settings.max_layout_interval
@@ -370,28 +390,151 @@ class AutomationDirector:
             layer_id for layer_id in self._active_variation_layer_ids
             if layer_id in valid_ids
         )
+        self._layer_last_variation_at = {
+            layer_id: stamp
+            for layer_id, stamp in self._layer_last_variation_at.items()
+            if layer_id in valid_ids
+        }
+        self._manual_layer_until = {
+            layer_id: stamp
+            for layer_id, stamp in self._manual_layer_until.items()
+            if layer_id in valid_ids
+        }
 
-    def _uses_constrained_generative_rules(self) -> bool:
-        return (
-                self.settings.performance_style == "generative"
-                and self.settings.constrained_generative
+    def notify_layer_manual_override(
+            self,
+            layer_id: str,
+            duration_seconds: float = 3.0,
+            now: float | None = None,
+    ) -> None:
+        """Suspend automatic changes after a direct operator edit."""
+        stamp = time.monotonic() if now is None else float(now)
+        duration = max(0.0, min(120.0, float(duration_seconds)))
+        if duration <= 0.0:
+            return
+        self._manual_layer_until[layer_id] = max(
+            self._manual_layer_until.get(layer_id, 0.0),
+            stamp + duration,
         )
+        self._layout_morphs.pop(layer_id, None)
+        # Do not later restore a pre-edit particle value over the operator's edit.
+        self._peak_particle_base.pop(layer_id, None)
+        self._active_variation_layer_ids = tuple(
+            item for item in self._active_variation_layer_ids if item != layer_id
+        )
+
+    def _is_manual_layer_override(self, layer_id: str, now: float) -> bool:
+        deadline = self._manual_layer_until.get(layer_id, 0.0)
+        if deadline <= now:
+            self._manual_layer_until.pop(layer_id, None)
+            return False
+        return True
+
+    def _effective_layer_cooldown(self) -> float:
+        base = self.settings.layer_cooldown_seconds
+        if base <= 0.0:
+            return 0.0
+        drive = max(
+            self._performance_energy,
+            self._performance_intensity,
+            self._macro_values.get("chaos", self.settings.spatial_chaos),
+            self._macro_values.get("density", 0.0),
+            self._macro_values.get("fragment", 0.0),
+            1.0 if self._performance_section == "peak" else 0.0,
+        )
+        # High musical pressure shortens the rest, but never removes it entirely.
+        return max(0.12, base * (1.0 - 0.82 * min(1.0, drive)))
+
+    def _mark_layer_varied(self, layer_id: str, now: float) -> None:
+        self._layer_last_variation_at[layer_id] = float(now)
+
+    def _eligible_variation_layers(self, now: float | None = None) -> list[Layer]:
+        stamp = time.monotonic() if now is None else float(now)
+        cooldown = self._effective_layer_cooldown()
+        eligible: list[Layer] = []
+        for layer in self._layers:
+            if layer.locked or not layer.visible:
+                continue
+            if self._is_manual_layer_override(layer.id, stamp):
+                continue
+            last_change = self._layer_last_variation_at.get(layer.id)
+            if cooldown > 0.0 and last_change is not None:
+                if stamp - last_change < cooldown:
+                    continue
+            eligible.append(layer)
+        return eligible
+
+    def _variation_budget(
+            self,
+            strength: float | None = None,
+            now: float | None = None,
+            eligible_layers: list[Layer] | None = None,
+    ) -> int:
+        """Choose a dynamic scope from music, activity and cooldown-eligible layers."""
+        candidates = (
+            self._eligible_variation_layers(now)
+            if eligible_layers is None else eligible_layers
+        )
+        eligible = len(candidates)
+        if eligible <= 0:
+            return 0
+        chaos = self._macro_values.get("chaos", self.settings.spatial_chaos)
+        fragment = self._macro_values.get("fragment", 0.0)
+        density = self._macro_values.get("density", 0.0)
+        musical_drive = max(
+            self._performance_energy,
+            self._performance_intensity,
+            self._performance_cutoff * 0.55,
+            float(strength or 0.0),
+        )
+        activity_now = time.monotonic()
+        if activity_now - self._last_visual_activity_at >= 0.25:
+            self._last_visual_activity = self._director.measure_visual_activity(self._layers)
+            self._last_visual_activity_at = activity_now
+        underactivity = 1.0 - self._last_visual_activity.score
+        drive = max(
+            0.0,
+            min(
+                1.0,
+                0.30 * chaos
+                + 0.21 * fragment
+                + 0.19 * density
+                + 0.17 * musical_drive
+                + 0.13 * underactivity,
+            ),
+        )
+        # At a genuinely maximal musical peak, allow a deterministic global event.
+        # Outside that case, global bursts remain probabilistic and activity-aware.
+        if self._performance_section == "peak" and drive >= 0.90:
+            return eligible
+        global_burst_probability = max(0.0, min(1.0, (drive - 0.72) / 0.28))
+        if self.rng.random() < global_burst_probability:
+            return eligible
+        fraction = 0.25 + 0.75 * drive
+        return min(eligible, max(1, round(eligible * fraction)))
+
+    def visual_activity_snapshot(self) -> dict[str, object]:
+        """Return the latest composition-only activity estimate for diagnostics/UI."""
+        self._last_visual_activity = self._director.measure_visual_activity(self._layers)
+        self._last_visual_activity_at = time.monotonic()
+        return asdict(self._last_visual_activity)
 
     def _select_variation_layers(
             self,
             prefer_particles: bool = False,
-    ) -> tuple[str, ...] | None:
-        if not self._uses_constrained_generative_rules:
-            return None
+            *,
+            strength: float | None = None,
+            now: float | None = None,
+    ) -> tuple[str, ...]:
+        candidates = self._eligible_variation_layers(now)
+        budget = self._variation_budget(strength, now, candidates)
         return self._director.select_layers(
-            self._layers,
-            self.settings.max_layers_per_variation,
+            candidates,
+            budget,
             self.rng,
-            keep_anchor=(
-                    self.settings.keep_visual_anchor
-                    or self.settings.preserve_background_source
-            ),
+            keep_anchor=self.settings.keep_visual_anchor,
             prefer_particles=prefer_particles,
+            anchor_persistence=self.settings.anchor_persistence,
         )
 
     def _choose_palette(self) -> str | None:
@@ -405,25 +548,35 @@ class AutomationDirector:
             layer_ids: Iterable[str] | None = None,
             now: float | None = None,
     ) -> int:
-        # Only selected video layers move in constrained mode. The director's
-        # protected anchor remains untouched, including its background source.
-        allowed = set(layer_ids) if layer_ids is not None else None
-        constrained = self._uses_constrained_generative_rules
-        if constrained and allowed is None:
-            allowed = set(self._select_variation_layers() or ())
-        if constrained and allowed is not None:
-            self._active_variation_layer_ids = tuple(allowed)
+        # Every visible unlocked visual source participates, not only video.
+        stamp = time.monotonic() if now is None else float(now)
+        allowed = (
+            set(layer_ids)
+            if layer_ids is not None
+            else set(self._select_variation_layers(now=stamp))
+        )
+        self._active_variation_layer_ids = tuple(allowed)
         anchor_id = self._director.choose_anchor(
             self._layers,
-            enabled=constrained and self.settings.keep_visual_anchor,
+            enabled=self.settings.keep_visual_anchor or self.settings.preserve_background_source,
         )
         active = [
             layer for layer in self._layers
-            if layer.source_type == "video"
-               and not layer.locked
-               and layer.visible
-               and (allowed is None or layer.id in allowed)
-               and (not constrained or layer.id != anchor_id)
+            if not layer.locked
+            and layer.visible
+            and layer.id in allowed
+            and not (
+                self.settings.preserve_background_source
+                and layer.source_type == "video"
+                and layer.id == anchor_id
+            )
+            and not self._is_manual_layer_override(layer.id, stamp)
+            and not (
+                layer.source_type == "overlay"
+                and time.time() < float(
+                    getattr(layer, "overlay_manual_override_until", 0.0)
+                )
+            )
         ]
         if not active:
             return 0
@@ -436,7 +589,28 @@ class AutomationDirector:
             [(0.5, 0.5, 0.82), (0.5, 0.5, 0.62), (0.5, 0.5, 0.40), (0.5, 0.5, 0.22)],
         ]
         pattern = self.rng.choice(patterns)
-        stamp = time.monotonic() if now is None else float(now)
+        chaos = max(0.0, min(
+            1.0, self._macro_values.get("chaos", self.settings.spatial_chaos)
+        ))
+        overlap = max(0.0, min(1.0, self.settings.overlap_bias))
+        offscreen = max(0.0, min(1.0, self.settings.offscreen_range))
+        use_seed = self.rng.random() > chaos * 0.78
+        relationship = self.rng.choices(
+            ("independent", "shared_center", "opposed", "nested", "orbit"),
+            weights=(
+                max(0.12, 1.0 - overlap),
+                0.22 + overlap * 0.62,
+                0.16 + overlap * 0.22,
+                0.16 + overlap * 0.30,
+                0.10 + overlap * 0.38,
+            ),
+            k=1,
+        )[0]
+        self._last_layout_relationship = relationship
+        relationship_center = (
+            self.rng.uniform(0.28, 0.72),
+            self.rng.uniform(0.28, 0.72),
+        )
         depth = self._macro_values.get("depth", 0.0)
         duration = self._director.transition_duration(
             self._performance_section,
@@ -447,22 +621,74 @@ class AutomationDirector:
             breakdown_min=self.settings.breakdown_transition_min_seconds,
             breakdown_max=self.settings.breakdown_transition_max_seconds,
             depth=depth,
-        ) if constrained else 0.0
-        chaos = self._macro_values.get("chaos", 0.0)
+        )
         for index, layer in enumerate(active):
-            x, y, size = pattern[index % len(pattern)]
-            jitter = 0.035 + 0.055 * chaos
+            # A new event supersedes an unfinished morph on that layer.
+            self._layout_morphs.pop(layer.id, None)
+            if use_seed:
+                x, y, seed_size = pattern[index % len(pattern)]
+                spread = 0.08 + chaos * 0.52
+                target_x = x + self.rng.uniform(-spread, spread)
+                target_y = y + self.rng.uniform(-spread, spread)
+                target_scale = seed_size * self.rng.uniform(0.55, 1.75 + chaos * 2.0)
+            else:
+                # The director creates spatial relationships, not just independent
+                # random transforms. High overlap bias favours shared visual masses.
+                center_x, center_y = relationship_center
+                cluster_spread = 0.05 + (1.0 - overlap) * 0.45
+                if relationship == "shared_center":
+                    target_x = center_x + self.rng.gauss(0.0, cluster_spread * 0.55)
+                    target_y = center_y + self.rng.gauss(0.0, cluster_spread * 0.55)
+                    target_scale = self.rng.uniform(0.42, 1.35 + chaos * 1.55)
+                elif relationship == "opposed":
+                    side = -1.0 if index % 2 else 1.0
+                    offset = self.rng.uniform(0.08, 0.30 + chaos * 0.18)
+                    target_x = center_x + side * offset
+                    target_y = center_y + self.rng.gauss(0.0, cluster_spread * 0.65)
+                    target_scale = self.rng.uniform(0.35, 1.25 + chaos * 1.55)
+                elif relationship == "nested":
+                    target_x = center_x + self.rng.gauss(0.0, cluster_spread * 0.25)
+                    target_y = center_y + self.rng.gauss(0.0, cluster_spread * 0.25)
+                    nesting = 1.0 - 0.62 * (index / max(1, len(active)))
+                    target_scale = nesting * self.rng.uniform(0.62, 1.30 + chaos * 1.3)
+                elif relationship == "orbit":
+                    angle = (
+                        2.0 * math.pi * index / max(1, len(active))
+                        + self.rng.uniform(-0.28, 0.28)
+                    )
+                    radius = self.rng.uniform(0.12, 0.30 + chaos * 0.18)
+                    target_x = center_x + math.cos(angle) * radius
+                    target_y = center_y + math.sin(angle) * radius
+                    target_scale = self.rng.uniform(0.32, 1.25 + chaos * 1.5)
+                else:
+                    target_x = self.rng.uniform(0.18, 0.82) + self.rng.gauss(
+                        0.0, cluster_spread
+                    )
+                    target_y = self.rng.uniform(0.18, 0.82) + self.rng.gauss(
+                        0.0, cluster_spread
+                    )
+                    target_scale = self.rng.uniform(0.28, 1.35 + chaos * 1.65)
+            if self.rng.random() < offscreen * (0.08 + chaos * 0.48):
+                target_x += self.rng.choice((-1.0, 1.0)) * self.rng.uniform(0.05, offscreen)
+                target_y += self.rng.uniform(-0.35, 0.35) * offscreen
             target_position = (
-                max(0.0, min(1.0, x + self.rng.uniform(-jitter, jitter))),
-                max(0.0, min(1.0, y + self.rng.uniform(-jitter, jitter))),
+                max(-offscreen, min(1.0 + offscreen, target_x)),
+                max(-offscreen, min(1.0 + offscreen, target_y)),
             )
-            target_scale = max(0.12, size * self.rng.uniform(0.88, 1.12))
-            target_rotation = self.rng.uniform(-5.0, 5.0) * (1.0 + chaos * 2.0)
-            target_opacity = self.rng.uniform(0.78, 1.0)
-            target_blend = self.rng.choice(
-                ("normal", "normal", "screen", "add", "multiply", "difference")
+            target_scale = max(0.12, min(4.0, target_scale))
+            rotation_range = 25.0 + chaos * 335.0
+            target_rotation = self.rng.uniform(-rotation_range, rotation_range)
+            target_opacity = self.rng.uniform(0.38, 1.0)
+            target_blend = self.rng.choices(
+                ("normal", "screen", "add", "multiply", "difference"),
+                weights=(3, 2, 2, 1, 2),
+                k=1,
+            )[0]
+            abrupt = (
+                self.rng.random()
+                < self.settings.abrupt_transition_probability * chaos
             )
-            if constrained:
+            if not abrupt:
                 self._layout_morphs[layer.id] = {
                     "started_at": stamp,
                     "duration": duration,
@@ -482,6 +708,7 @@ class AutomationDirector:
                 layer.rotation = target_rotation
                 layer.opacity = target_opacity
                 layer.blend_mode = target_blend
+            self._mark_layer_varied(layer.id, stamp)
         return len(active)
 
     def _tick_layout_transitions(self, now: float) -> bool:
@@ -519,8 +746,7 @@ class AutomationDirector:
             if fraction >= 1.0:
                 layer.blend_mode = str(morph["end_blend_mode"])
                 self._layout_morphs.pop(layer_id, None)
-                if self._uses_constrained_generative_rules:
-                    self._director.mark_transition()
+                self._director.mark_transition()
             changed = True
         return changed
 
@@ -529,18 +755,20 @@ class AutomationDirector:
             layer_ids: Iterable[str] | None,
     ) -> bool:
         allowed = set(layer_ids) if layer_ids is not None else set()
-        constrained = self._uses_constrained_generative_rules
-        if not constrained:
-            allowed = set()
         factor = self._director.particle_peak_factor(
             self._performance_section,
             self._performance_energy,
             self._performance_intensity,
             self._macro_values.get("density", 0.0),
             self.settings.peak_particle_boost,
-        ) if constrained else 1.0
+        )
         changed = False
         for layer in self._layers:
+            if self._is_manual_layer_override(layer.id, time.monotonic()):
+                # A manual edit supersedes the automatic peak boost; never restore
+                # an old cached value over the operator's chosen particle settings.
+                self._peak_particle_base.pop(layer.id, None)
+                continue
             stored = self._peak_particle_base.get(layer.id)
             kind = str(layer.generator_type or "")
             if stored is not None and (
@@ -592,32 +820,29 @@ class AutomationDirector:
             return
         names = [name for name in PRESETS if name != "Clean"]
         self._effects.apply_preset(self.rng.choice(names))
-        if self._uses_constrained_generative_rules:
-            self._director.mark_effect_applied()
+        self._director.mark_effect_applied()
 
     def _randomize_generators(
             self,
             layer_ids: Iterable[str] | None = None,
             *,
             allow_effect_change: bool = True,
+            now: float | None = None,
     ) -> int:
         changed = 0
+        variation_now = time.monotonic() if now is None else float(now)
         self._last_layer_fx_variation = False
         allowed = set(layer_ids) if layer_ids is not None else None
-        if self._uses_constrained_generative_rules and allowed is None:
-            allowed = set(self._select_variation_layers() or ())
-        constrained = self._uses_constrained_generative_rules
-        chaos = self._macro_values.get("chaos", 0.0)
+        if allowed is None:
+            allowed = set(self._select_variation_layers())
+        chaos = self._macro_values.get("chaos", self.settings.spatial_chaos)
         density_macro = self._macro_values.get("density", 0.0)
         decay = self._macro_values.get("decay", 0.0)
         fragment = self._macro_values.get("fragment", 0.0)
         palette_name = None
         palette_values = None
         if self.settings.randomize_palette:
-            if constrained:
-                palette_name = self._choose_palette()
-            else:
-                palette_name = self.rng.choice(palette_names())
+            palette_name = self._choose_palette()
             if palette_name:
                 palette_values = palette_look(palette_name)
 
@@ -626,8 +851,10 @@ class AutomationDirector:
                     layer.locked
                     or not layer.visible
                     or (allowed is not None and layer.id not in allowed)
+                    or self._is_manual_layer_override(layer.id, variation_now)
             ):
                 continue
+            changed_before_layer = changed
 
             if layer.source_type == "generator" and layer.generator_type in GENERATOR_TYPES:
                 kind = layer.generator_type
@@ -661,7 +888,8 @@ class AutomationDirector:
                     text_modes = (
                         "type_on", "word_reveal", "line_wave", "jitter", "crawl", "glitch",
                         "reverse_typewriter", "dissolve", "flicker", "character_displacement",
-                        "vertical_reveal", "scattered_glyphs", "word_collisions", "mechanical_scroll",
+                        "vertical_reveal", "scattered_glyphs", "word_collisions",
+                        "mechanical_scroll",
                     )
                     if fragment >= 0.55:
                         text_modes = (
@@ -677,11 +905,11 @@ class AutomationDirector:
                             0.015, min(0.18, 0.12 + fragment * 0.06)
                         ),
                     })
-                    if constrained and self.rng.random() < 0.25:
+                    if self.rng.random() < 0.25:
                         values["text_writing_mode"] = self.rng.choice(
                             ("horizontal", "vertical_rl", "vertical_lr")
                         )
-                    if constrained and self.rng.random() < 0.25:
+                    if self.rng.random() < 0.25:
                         values["text_path_mode"] = self.rng.choice(
                             ("none", "circle", "arc", "custom")
                         )
@@ -757,6 +985,7 @@ class AutomationDirector:
                             self._peak_particle_base[layer.id] = (
                                 field,
                                 float(layer.generator_settings[field]),
+                                kind,
                             )
                     if self.generator_settings_changed is not None:
                         self.generator_settings_changed(layer)
@@ -790,6 +1019,9 @@ class AutomationDirector:
                     )
                     self._last_layer_fx_variation = True
                     changed += 1
+
+            if changed > changed_before_layer:
+                self._mark_layer_varied(layer.id, variation_now)
         return changed
 
     def set_performance_context(
@@ -833,7 +1065,7 @@ class AutomationDirector:
             macro_values: dict[str, float] | None = None,
             now: float | None = None,
     ) -> bool:
-        """Make rule-constrained decisions on musical section/bar/phrase boundaries."""
+        """Apply a musical cue through the unified visual director."""
         if not self.running:
             return False
         stamp = time.monotonic() if now is None else float(now)
@@ -884,43 +1116,45 @@ class AutomationDirector:
         chaos = self._macro_values.get("chaos", 0.0)
         pressure = self._macro_values.get("pressure", 0.0)
         density = self._macro_values.get("density", 0.0)
-        if self.settings.performance_style == "random":
-            strength = 0.22 + 0.24 * energy + 0.20 * intensity
-        elif self.settings.performance_style == "structured":
-            section_scale = {
-                "intro": 0.20,
-                "development": 0.52,
-                "peak": 0.88,
-                "breakdown": 0.28,
-                "outro": 0.12,
-            }.get(self._performance_section, 0.4)
-            strength = section_scale * (0.45 + 0.55 * max(energy, intensity))
-        else:
-            strength = 0.12 + 0.68 * max(energy, intensity)
+        section_scale = {
+            "intro": 0.46,
+            "development": 0.68,
+            "peak": 0.96,
+            "breakdown": 0.38,
+            "outro": 0.30,
+        }.get(self._performance_section, 0.58)
+        style_bias = {
+            "random": 0.88,
+            "structured": 0.78,
+            "generative": 1.0,
+        }.get(self.settings.performance_style, 1.0)
+        strength = (
+            0.16 + 0.44 * max(energy, intensity) + 0.25 * section_scale
+            + 0.15 * self._macro_values.get("density", 0.0)
+        ) * style_bias
         strength *= 1.0 + 0.22 * chaos + 0.12 * pressure
         strength = max(0.05, min(0.98, strength))
         cutoff_drive = 0.65 + 0.7 * cutoff + 0.12 * self._macro_values.get("fragment", 0.0)
 
-        constrained = self._uses_constrained_generative_rules
         peak_context = (
                 self._performance_section == "peak"
                 or energy >= 0.78
                 or intensity >= 0.82
         )
         variation_layer_ids = self._select_variation_layers(
-            prefer_particles=peak_context
-        ) if constrained else None
-        if constrained:
-            self._active_variation_layer_ids = tuple(variation_layer_ids or ())
+            prefer_particles=peak_context,
+            strength=strength,
+            now=stamp,
+        )
+        self._active_variation_layer_ids = tuple(variation_layer_ids)
         allow_effect_change = (
-                not constrained
-                or not self.settings.effect_after_transition
-                or self._director.effect_ready()
+            not self.settings.effect_after_transition
+            or self._director.effect_ready()
         )
         changed = False
-        allow_variations = event in {"scene", "phrase"} or (
-                event == "bar" and self.settings.performance_style == "generative"
-        )
+        # Every director character participates at phrase/bar/scene boundaries.
+        # The style only biases the probability and intensity, never bypasses the director.
+        allow_variations = event in {"scene", "phrase", "bar"}
         if allow_variations:
             if (
                     self.settings.randomize_layout
@@ -965,10 +1199,10 @@ class AutomationDirector:
                 count = self._randomize_generators(
                     variation_layer_ids,
                     allow_effect_change=allow_effect_change,
+                    now=stamp,
                 )
                 if (
-                        constrained
-                        and allow_effect_change
+                        allow_effect_change
                         and getattr(self, "_last_layer_fx_variation", False)
                 ):
                     self._director.mark_effect_applied()
@@ -979,10 +1213,9 @@ class AutomationDirector:
                     self.settings.max_generator_interval,
                 )
 
-            if constrained:
-                changed = self._apply_peak_particle_density(
-                    variation_layer_ids
-                ) or changed
+            changed = self._apply_peak_particle_density(
+                variation_layer_ids
+            ) or changed
 
         if event == "phrase":
             cut_probability = min(
@@ -995,7 +1228,7 @@ class AutomationDirector:
                 cut_probability,
                 variation_layer_ids,
             ) or changed
-        elif event == "bar" and self.settings.performance_style == "generative":
+        elif event == "bar":
             changed = self._trigger_phrase_cuts(
                 stamp,
                 min(0.35, strength * self.settings.clip_switch_probability * 0.22),
@@ -1007,12 +1240,10 @@ class AutomationDirector:
             f"{self._performance_section} · "
             if self._performance_section != "idle" else ""
         )
-        action = "rule-based variation" if changed and constrained else (
-            "musical variation" if changed else "musical cue evaluated"
-        )
+        action = "generative variation" if changed else "musical cue evaluated"
         anchor = (
             f" · anchor {self._director.anchor_layer_id}"
-            if constrained and self._director.anchor_layer_id else ""
+            if self.settings.keep_visual_anchor and self._director.anchor_layer_id else ""
         )
         self.last_action = (
             f"{section}{action} · {event} · energy {energy:.2f} · "
@@ -1036,21 +1267,21 @@ class AutomationDirector:
         }
         anchor_id = self._director.choose_anchor(
             self._layers,
-            enabled=self._uses_constrained_generative_rules
-                    and self.settings.keep_visual_anchor,
+            enabled=self.settings.keep_visual_anchor or self.settings.preserve_background_source,
         )
         changed = False
         for deck_id, deck in self._decks.items():
             if getattr(deck, "locked", False):
                 continue
             layer = video_layers.get(deck_id)
+            if layer is None or self._is_manual_layer_override(layer.id, now):
+                continue
             if allowed is not None and (
                     layer is None or layer.id not in allowed
             ):
                 continue
             if (
-                    self._uses_constrained_generative_rules
-                    and self.settings.preserve_background_source
+                    self.settings.preserve_background_source
                     and layer is not None
                     and layer.id == anchor_id
             ):
@@ -1065,10 +1296,12 @@ class AutomationDirector:
             )
             if loaded:
                 self._director.mark_transition()
+                self._mark_layer_varied(layer.id, now)
                 changed = True
         return changed
 
     def tick(self, now: float | None = None) -> bool:
+        """Advance the unified director once, independent of the sync source."""
         if not self.running:
             return False
         current = time.monotonic() if now is None else float(now)
@@ -1078,99 +1311,88 @@ class AutomationDirector:
             return True
 
         changed = self._tick_layout_transitions(current)
-        run_time_events = self.settings.musical_sync in {"time", "hybrid"}
-        if self._uses_constrained_generative_rules:
-            if run_time_events:
-                changed = self._tick_constrained_generative(current) or changed
-            else:
-                selected = self._select_variation_layer_ids(
-                    prefer_particles=(
-                            self._performance_section == "peak"
-                            or self._performance_energy >= 0.78
-                    )
+        if self.settings.musical_sync in {"time", "hybrid"}:
+            changed = self._tick_unified_time_events(current) or changed
+        else:
+            # Musical modes are event-driven; retain bounded section/peak response
+            # between phrase/bar/scene cues without running a second scheduler.
+            selected = self._select_variation_layers(
+                prefer_particles=(
+                    self._performance_section == "peak"
+                    or self._performance_energy >= 0.78
                 )
-                changed = self._apply_peak_particle_density(selected) or changed
-            return changed
-
-        if run_time_events:
-            for deck_id, deck in self._decks.items():
-                if getattr(deck, "locked", False):
-                    continue
-                due = self._deck_due.get(deck_id)
-                if due is None:
-                    self._deck_due[deck_id] = current + self._interval(
-                        self.rng,
-                        self.settings.min_cut_interval,
-                        self.settings.max_cut_interval,
-                    )
-                    continue
-                if current < due:
-                    continue
-                asset_id = getattr(deck, "asset_id", None)
-                loaded = self._load_random_segment(deck, asset_id, current)
-                if loaded:
-                    self.last_action = f"Random cut · {deck_id.upper()}"
-                changed = changed or loaded
-
-        if (
-                run_time_events
-                and self.settings.randomize_layout
-                and self._layout_due is not None
-                and current >= self._layout_due
-        ):
-            self._randomize_layout(now=current)
-            self._layout_due = current + self._interval(
-                self.rng,
-                self.settings.min_layout_interval,
-                self.settings.max_layout_interval,
             )
-            self.last_action = "Collage layout changed"
-            changed = True
+            changed = self._apply_peak_particle_density(selected) or changed
+        return changed
 
-        if (
-                run_time_events
-                and self.settings.randomize_effects
-                and self._effects_due is not None
-                and current >= self._effects_due
-        ):
-            self._randomize_effects()
-            self._effects_due = current + self._interval(
-                self.rng,
-                self.settings.min_effect_interval,
-                self.settings.max_effect_interval,
-            )
-            self.last_action = f"Overlay look · {self._effects.preset_name}"
-            changed = True
+    def _tick_unified_time_events(self, current: float) -> bool:
+        """Run interval-driven actions through the same musical variation director."""
+        peak_context = (
+            self._performance_section == "peak"
+            or self._performance_energy >= 0.78
+            or self._performance_intensity >= 0.82
+            or self._macro_values.get("density", 0.0) >= 0.78
+        )
+        strength = (
+            0.16
+            + 0.44 * max(self._performance_energy, self._performance_intensity)
+            + 0.25 * {
+                "intro": 0.46,
+                "development": 0.68,
+                "peak": 0.96,
+                "breakdown": 0.38,
+                "outro": 0.30,
+            }.get(self._performance_section, 0.58)
+            + 0.15 * self._macro_values.get("density", 0.0)
+        )
+        strength *= 1.0 + (
+            0.22 * self._macro_values.get("chaos", self.settings.spatial_chaos)
+            + 0.12 * self._macro_values.get("pressure", 0.0)
+        )
+        strength = max(0.05, min(0.98, strength))
 
-        if (
-                run_time_events
-                and (
+        # Initialise per-deck timers lazily. Each eligible deck remains independent.
+        due_decks: list[str] = []
+        for deck_id, deck in self._decks.items():
+            if getattr(deck, "locked", False):
+                continue
+            if deck_id not in self._deck_due:
+                self._deck_due[deck_id] = current + self._interval(
+                    self.rng,
+                    self.settings.min_cut_interval,
+                    self.settings.max_cut_interval,
+                )
+            elif current >= self._deck_due[deck_id]:
+                due_decks.append(deck_id)
+
+        layout_due = (
+            self.settings.randomize_layout
+            and self._layout_due is not None
+            and current >= self._layout_due
+        )
+        effects_due = (
+            self.settings.randomize_effects
+            and self._effects_due is not None
+            and current >= self._effects_due
+        )
+        generators_due = (
+            (
                 self.settings.randomize_generators
                 or self.settings.randomize_palette
                 or self.settings.randomize_layer_effects
                 or self.settings.randomize_overlays
-        )
-                and self._generators_due is not None
-                and current >= self._generators_due
-        ):
-            count = self._randomize_generators()
-            self._generators_due = current + self._interval(
-                self.rng,
-                self.settings.min_generator_interval,
-                self.settings.max_generator_interval,
             )
-            if count:
-                self.last_action = f"Generators / text / layer FX varied · {count} change(s)"
-                changed = True
-        return changed
-
-    def _tick_constrained_generative(self, current: float) -> bool:
-        peak_context = (
-                self._performance_section == "peak"
-                or self._performance_energy >= 0.78
-                or self._performance_intensity >= 0.82
-                or self._macro_values.get("density", 0.0) >= 0.78
+            and self._generators_due is not None
+            and current >= self._generators_due
         )
+
+        budget = self._select_variation_layers(
+            prefer_particles=peak_context,
+            strength=strength,
+            now=current,
+        )
+        allowed = set(budget)
+        self._active_variation_layer_ids = tuple(budget)
         video_layers = {
             layer.source_id: layer
             for layer in self._layers
@@ -1179,69 +1401,55 @@ class AutomationDirector:
         anchor_id = self._director.choose_anchor(
             self._layers,
             enabled=(
-                    self.settings.keep_visual_anchor
-                    or self.settings.preserve_background_source
+                self.settings.keep_visual_anchor
+                or self.settings.preserve_background_source
             ),
         )
-        due_deck_ids = {
-            deck_id
-            for deck_id, deck in self._decks.items()
-            if (
-                    not getattr(deck, "locked", False)
-                    and self._deck_due.get(deck_id) is not None
-                    and current >= self._deck_due[deck_id]
-                    and (
-                            not self.settings.preserve_background_source
-                            or video_layers.get(deck_id) is None
-                            or video_layers[deck_id].id != anchor_id
-                    )
-            )
-        }
-        layout_due = (
-                self.settings.randomize_layout
-                and self._layout_due is not None
-                and current >= self._layout_due
-        )
-        generators_due = (
-                (
-                        self.settings.randomize_generators
-                        or self.settings.randomize_palette
-                        or self.settings.randomize_layer_effects
-                        or self.settings.randomize_overlays
-                )
-                and self._generators_due is not None
-                and current >= self._generators_due
-        )
-        peak_context_changed = peak_context != self._last_peak_context
-        new_variation_due = bool(
-            due_deck_ids or layout_due or generators_due or peak_context_changed
-        )
-        if new_variation_due:
-            self._active_variation_layer_ids = self._select_variation_layers(
-                prefer_particles=peak_context
-            ) or ()
-        self._last_peak_context = peak_context
-        layer_ids = self._active_variation_layer_ids
-        allowed = set(layer_ids)
+
         changed = False
         transition_happened = False
-
-        for deck_id in due_deck_ids:
+        for deck_id in due_decks:
             deck = self._decks[deck_id]
             layer = video_layers.get(deck_id)
             if layer is None or layer.id not in allowed:
+                self._deck_due[deck_id] = current + self._interval(
+                    self.rng,
+                    self.settings.min_cut_interval,
+                    self.settings.max_cut_interval,
+                )
                 continue
-            if self._load_random_segment(
+            if (
+                self.settings.preserve_background_source
+                and layer.id == anchor_id
+            ):
+                self._deck_due[deck_id] = current + self._interval(
+                    self.rng,
+                    self.settings.min_cut_interval,
+                    self.settings.max_cut_interval,
+                )
+                continue
+            if self.rng.random() < min(
+                0.98,
+                strength * self.settings.clip_switch_probability,
+            ):
+                loaded = self._load_random_segment(
                     deck,
                     getattr(deck, "asset_id", None),
                     current,
-            ):
-                self._director.mark_transition()
-                transition_happened = True
-                changed = True
+                )
+                if loaded:
+                    self._director.mark_transition()
+                    self._mark_layer_varied(layer.id, current)
+                    transition_happened = True
+                    changed = True
+            self._deck_due[deck_id] = current + self._interval(
+                self.rng,
+                self.settings.min_cut_interval,
+                self.settings.max_cut_interval,
+            )
 
         if layout_due:
-            layout_count = self._randomize_layout(layer_ids, now=current)
+            layout_count = self._randomize_layout(budget, now=current)
             changed = bool(layout_count) or changed
             transition_happened = transition_happened or bool(layout_count)
             self._layout_due = current + self._interval(
@@ -1251,15 +1459,10 @@ class AutomationDirector:
             )
 
         effect_ready = (
-                not self.settings.effect_after_transition
-                or self._director.effect_ready()
+            not self.settings.effect_after_transition
+            or self._director.effect_ready()
         )
-        if (
-                self.settings.randomize_effects
-                and self._effects_due is not None
-                and current >= self._effects_due
-                and effect_ready
-        ):
+        if effects_due and effect_ready:
             self._randomize_effects()
             self._effects_due = current + self._interval(
                 self.rng,
@@ -1270,8 +1473,9 @@ class AutomationDirector:
 
         if generators_due:
             count = self._randomize_generators(
-                layer_ids,
+                budget,
                 allow_effect_change=effect_ready,
+                now=current,
             )
             if effect_ready and self._last_layer_fx_variation:
                 self._director.mark_effect_applied()
@@ -1282,13 +1486,19 @@ class AutomationDirector:
             )
             changed = bool(count) or changed
 
-        changed = self._apply_peak_particle_density(layer_ids) or changed
+        changed = self._apply_peak_particle_density(budget) or changed
         if transition_happened:
             self.last_action = (
-                f"transition · {self._performance_section} · "
-                f"{len(layer_ids)} varied layer(s)"
+                f"unified variation · {self._performance_section} · "
+                f"{len(budget)} varied layer(s)"
             )
+        elif changed:
+            self.last_action = f"visual variation · {len(budget)} eligible layer(s)"
         return changed
+
+    def _tick_constrained_generative(self, current: float) -> bool:
+        """Compatibility wrapper for older internal call sites."""
+        return self._tick_unified_time_events(current)
 
     def stop(self) -> None:
         """Finish active morphs and restore temporary peak-only particle boosts."""

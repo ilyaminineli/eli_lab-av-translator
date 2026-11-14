@@ -42,6 +42,7 @@ for package in (
     "glcontext",   # OpenGL context providers
     "soundcard",   # Windows audio loopback/input
     "pythonosc",   # Sonic Pi OSC receiver
+    "qt_material", # Qt Widgets stylesheet and theme assets
     "mido",        # MIDI abstraction; backend is optional
 ):
     package_datas, package_binaries, package_hiddenimports = collect_all(package)
