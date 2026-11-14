@@ -4,6 +4,7 @@ from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QHBoxLayout, QWidget
 
 from ui.icons import app_icon, icon_button
+from ui.i18n import ui_text
 
 
 class TransportBar(QWidget):
@@ -53,6 +54,7 @@ class TransportBar(QWidget):
             if locked
             else "Lock all layers"
         )
-        self.lock_all_button.setToolTip(action)
-        self.lock_all_button.setAccessibleName(action)
+        translated_action = ui_text(action)
+        self.lock_all_button.setToolTip(translated_action)
+        self.lock_all_button.setAccessibleName(translated_action)
         self.lock_all_requested.emit(locked)
