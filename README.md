@@ -55,19 +55,19 @@ The GitHub **Windows Onefile Build** workflow is manual-dispatch only. It does n
 
 1. Import footage into the Media Library and load clips into the four decks.
 2. Add generator and overlay layers as needed; compose the layer order, transforms and effects.
-3. In **AUD / CTRL**, choose system loopback for analysis of actual computer audio, or use Sonic Pi macros without local audio capture.
+3. In **AUDIO / CTRL**, choose system loopback for analysis of actual computer audio, or use Sonic Pi macros without local audio capture.
 4. In **AUTO PERF**, choose style, musical sync and session duration.
 5. Press **PERF MODE**, then run SONATA in Sonic Pi. The app waits in ARMED until it receives the first valid transport/clock event.
 6. Open **View → PROJECTOR OUTPUT** and select the external display.
 7. Stop SONATA to end the current automation pass. Press **STOP PERF MODE** to release resources started by the mode and restore generated defaults.
 
-For same-computer Sonic Pi use, the default receiver destination is `127.0.0.1:57121`. Sonic Pi's own incoming OSC port is not the destination for these outbound messages. See [SONATA integration notes](docs/SONIC_PI_SONATA_INTEGRATION.md). The Performance Macro panel is in AUD / CTRL; the six macros can be fed by audio, transport, Sonic Pi `energy/cutoff` or Modulator Bank outputs, then routed to multiple targets.
+For same-computer Sonic Pi use, the default receiver destination is `127.0.0.1:57121`. Sonic Pi's own incoming OSC port is not the destination for these outbound messages. See [SONATA integration notes](docs/SONIC_PI_SONATA_INTEGRATION.md). The Performance Macro panel is in AUDIO / CTRL; the six macros can be fed by audio, transport, Sonic Pi `energy/cutoff` or Modulator Bank outputs, then routed to multiple targets.
 
 ## Generator and text rendering
 
 Static generator content is rasterized by the shared background service. Text content and typography changes create versioned CPU raster snapshots; text motion such as type-on, reveal, wave, jitter, crawl and glitch is applied by the compositor shader. A newer edit supersedes an older pending snapshot, and preview/projector renderers upload the accepted pixels independently while their own GL context is current.
 
-Text's **TXT RASTER PERF** controls let the operator trade preview detail for edit responsiveness. The last valid texture can remain visible while a new raster is prepared or after a raster failure. These controls do not pause video decoding, GPU motion, effects or audio-reactive updates.
+Text's **TEXT RASTER** controls let the operator trade preview detail for edit responsiveness. The last valid texture can remain visible while a new raster is prepared or after a raster failure. These controls do not pause video decoding, GPU motion, effects or audio-reactive updates.
 
 See [M2 Generative Visuals](docs/M2_GENERATIVE_VISUALS.md) and [M5 Autonomous Performance](docs/M5_AUTONOMOUS_PERFORMANCE.md).
 
