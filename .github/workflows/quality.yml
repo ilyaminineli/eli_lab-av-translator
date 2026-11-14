@@ -58,6 +58,7 @@ jobs:
           main.py
           tests
           scripts/render_japanese_ui_proof.py
+          scripts/check_static_site.py
       - name: Run unit and regression tests
         run: python -m pytest -q
       - name: Prepare a test-only Japanese font
