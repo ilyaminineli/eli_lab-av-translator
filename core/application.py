@@ -1261,7 +1261,7 @@ class Application:
             values["text"] = random_text_sample(
                 str(values.get("text_pool_language", "bilingual")),
                 str(values.get("text_pool_theme", "random")),
-                int(values.get("text_pool_count", 16)),
+                int(values.get("text_pool_count", 8)),
                 seed=seed,
                 use_dictionary=bool(values.get("text_pool_dictionary", True)),
             )
