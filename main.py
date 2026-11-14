@@ -78,12 +78,19 @@ def self_check() -> int:
         errors.append(f"PyAV/FFmpeg: {exc}")
 
     checks["icon"] = ICON_PATH.is_file()
+    dock_icon_files = (
+        RESOURCE_DIR / "icons" / "dock-close.svg",
+        RESOURCE_DIR / "icons" / "dock-float.svg",
+        RESOURCE_DIR / "icons" / "dock-dock.svg",
+    )
+    checks["dock_controls"] = all(path.is_file() for path in dock_icon_files)
     checks["textures"] = (RESOURCE_DIR / "textures").is_dir()
     checks["sketches"] = (RESOURCE_DIR / "sketches_and_strokes").is_dir()
     dictionary_files = list(DICTIONARY_DIR.glob("*.txt"))
     checks["dictionary_text_files"] = len(dictionary_files)
     for name, passed in (
             ("icon", bool(checks["icon"])),
+            ("dock controls", bool(checks["dock_controls"])),
             ("textures", bool(checks["textures"])),
             ("sketches", bool(checks["sketches"])),
             ("dictionary", len(dictionary_files) > 0),
