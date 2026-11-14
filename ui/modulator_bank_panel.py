@@ -32,6 +32,7 @@ from core.modulator_bank import (
     ModulatorDefinition,
     euclidean_pattern,
 )
+from ui.i18n import set_ui_text
 from core.performance_modifiers import (
     PERF_MODIFIER_TARGETS,
     LayerPerformanceModifier,
@@ -420,7 +421,7 @@ class ModulatorBankPanel(QWidget):
             widget.setEnabled(active)
         if definition is None:
             self.name_edit.clear()
-            self.output_label.setText("OUTPUT · —")
+            set_ui_text(self.output_label, "OUTPUT · —")
             self.output_meter.setValue(0)
             self.lfo_group.hide()
             self.follower_group.hide()
@@ -812,9 +813,9 @@ class ModulatorBankPanel(QWidget):
         self.assignment_target_combo.setCurrentIndex(max(0, target))
         self.assignment_target_combo.blockSignals(False)
         if layer is None:
-            self.assignment_layer_label.setText("No layer selected")
+            set_ui_text(self.assignment_layer_label, "No layer selected")
         else:
-            self.assignment_layer_label.setText(
+            set_ui_text(self.assignment_layer_label, 
                 f"{layer.name} · {'LOCKED' if layer.locked else 'READY'}"
             )
         assignable = bool(
@@ -860,8 +861,8 @@ class ModulatorBankPanel(QWidget):
     def refresh_live(self) -> None:
         definition = self._selected_definition()
         if definition is None:
-            self.input_live_label.setText("INPUT · —")
-            self.output_label.setText("OUTPUT · —")
+            set_ui_text(self.input_live_label, "INPUT · —")
+            set_ui_text(self.output_label, "OUTPUT · —")
             self.output_meter.setValue(0)
             return
         if definition.kind == "follower":
@@ -872,9 +873,9 @@ class ModulatorBankPanel(QWidget):
                 definition.input_source, definition.input_source
             )
             if input_value is None:
-                self.input_live_label.setText(f"INPUT · {input_name} · NO SIGNAL")
+                set_ui_text(self.input_live_label, f"INPUT · {input_name} · NO SIGNAL")
             else:
-                self.input_live_label.setText(
+                set_ui_text(self.input_live_label, 
                     f"INPUT · {input_name} · {float(input_value):.3f}"
                 )
         elif definition.kind == "envelope":
@@ -885,9 +886,9 @@ class ModulatorBankPanel(QWidget):
                 definition.trigger_source, definition.trigger_source
             )
             if trigger_value is None:
-                self.input_live_label.setText(f"TRIGGER · {trigger_name} · NO SIGNAL")
+                set_ui_text(self.input_live_label, f"TRIGGER · {trigger_name} · NO SIGNAL")
             else:
-                self.input_live_label.setText(
+                set_ui_text(self.input_live_label, 
                     f"TRIGGER · {trigger_name} · {float(trigger_value):.3f} "
                     f"/ THR {definition.trigger_threshold:.2f}"
                 )
@@ -897,18 +898,18 @@ class ModulatorBankPanel(QWidget):
                 if definition.sync_mode == "transport"
                 else "FREE-RUN CLOCK"
             )
-            self.input_live_label.setText(f"INPUT · {timebase}")
+            set_ui_text(self.input_live_label, f"INPUT · {timebase}")
         live_values = self.application.modulator_bank_engine.live_values()
         source_id = f"modulator.{definition.modulator_id}"
         is_bypassed = not definition.enabled
         if source_id not in live_values:
             if definition.kind == "follower" and definition.enabled:
-                self.output_label.setText("OUTPUT · NO INPUT")
+                set_ui_text(self.output_label, "OUTPUT · NO INPUT")
                 self.output_meter.setValue(0)
                 return
             value = 0.5 if definition.kind != "envelope" else 0.0
         else:
             value = live_values[source_id]
         status = "BYPASSED" if is_bypassed else definition.kind.upper()
-        self.output_label.setText(f"OUTPUT · {value:.3f}  ·  {status}")
+        set_ui_text(self.output_label, f"OUTPUT · {value:.3f}  ·  {status}")
         self.output_meter.setValue(round(max(0.0, min(1.0, value)) * 100))
