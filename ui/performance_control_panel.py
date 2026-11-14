@@ -1534,7 +1534,7 @@ class PerformanceControlPanel(QWidget):
                 else "STOP"
             )
             self.transport_status.setText(
-                f"{transport_state} · {transport.bpm:g} BPM · BR {transport.bar_index} · "
+                f"{transport_state} · {transport.bpm:g} BPM · BAR {transport.bar_index} · "
                 f"BEAT {transport.beat_index + 1}/{transport.beats_per_bar} · "
                 f"PHRASE {transport.phrase_index}"
             )
