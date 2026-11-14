@@ -151,6 +151,19 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         painter.setPen(Qt.PenStyle.NoPen)
         for y in (6.0, 12.0, 18.0):
             painter.drawEllipse(QPointF(12.0, y), 1.35, 1.35)
+    elif name == "close":
+        line((6.0, 6.0), (18.0, 18.0))
+        line((18.0, 6.0), (6.0, 18.0))
+    elif name == "float":
+        path(((4.0, 8.0), (4.0, 5.0), (5.0, 4.0), (13.0, 4.0)))
+        path(((4.0, 8.0), (4.0, 19.0), (16.0, 19.0), (16.0, 14.0)))
+        line((12.0, 4.0), (20.0, 4.0), (20.0, 12.0))
+        line((20.0, 4.0), (10.0, 14.0))
+    elif name == "dock":
+        painter.drawRoundedRect(3.5, 4.0, 17.0, 16.0, 1.5, 1.5)
+        line((8.0, 7.0), (8.0, 17.0))
+        line((8.0, 12.0), (16.0, 12.0))
+        line((13.0, 9.0), (16.0, 12.0), (13.0, 15.0))
     else:
         painter.drawEllipse(QPointF(12.0, 12.0), 7.0, 7.0)
 
@@ -160,11 +173,27 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
 
 def app_icon(name: str, size: int = 24, color: str = ICON_COLOR) -> QIcon:
     """Return a platform-independent monochrome vector-style icon."""
-    icon = QIcon(_render_icon(name, color, size))
+    icon = QIcon()
+    icon.addPixmap(
+        _render_icon(name, color, size),
+        QIcon.Mode.Normal,
+        QIcon.State.Off,
+    )
+    # Checked tool buttons receive a dark mark on their light active surface.
+    icon.addPixmap(
+        _render_icon(name, "#111111", size),
+        QIcon.Mode.Normal,
+        QIcon.State.On,
+    )
     icon.addPixmap(
         _render_icon(name, ICON_DISABLED_COLOR, size),
         QIcon.Mode.Disabled,
         QIcon.State.Off,
+    )
+    icon.addPixmap(
+        _render_icon(name, ICON_DISABLED_COLOR, size),
+        QIcon.Mode.Disabled,
+        QIcon.State.On,
     )
     return icon
 
