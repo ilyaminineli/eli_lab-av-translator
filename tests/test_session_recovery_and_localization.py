@@ -14,8 +14,8 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QProgressBar,
-    QTabWidget,
     QTableWidget,
+    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
