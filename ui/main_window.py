@@ -26,11 +26,11 @@ from config import (
     APP_NAME,
     APP_REPOSITORY_URL,
     APP_STUDIO,
-    APP_VERSION,
+    APP_VER,
 )
 from core.application import Application
 from core.performance_service import PerformanceModePlan
-from effects.settings import PRESETS
+from effects.settings import PSETS
 from ui.asset_library_panel import AssetLibraryPanel
 from ui.automation_panel import AutomationPanel
 from ui.deck_panel import DeckPanel
@@ -53,7 +53,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.application = application
         self.output_manager = OutputWindowManager(application, self)
-        self.setWindowTitle(f"eli_lab AV Translator {APP_VERSION}")
+        self.setWindowTitle(f"eli_lab AV Translator {APP_VER}")
         screen = QGuiApplication.primaryScreen()
         available = screen.availableGeometry() if screen is not None else None
         if available is not None:
@@ -81,7 +81,7 @@ class MainWindow(QMainWindow):
         self.performance_view = PerformanceView(application, self)
 
         self.media_browser = MediaBrowser(application.media_library, self)
-        self.media_dock = self._make_dock("MEDIA LIBRARY", self.media_browser)
+        self.media_dock = self._make_dock("MDL", self.media_browser)
         self.media_dock.setMinimumWidth(240)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.media_dock)
 
@@ -92,12 +92,12 @@ class MainWindow(QMainWindow):
         self.tabifyDockWidget(self.media_dock, self.asset_library_dock)
 
         self.deck_panel = DeckPanel(application, self)
-        self.deck_dock = self._make_dock("VIDEO DECKS", self.deck_panel)
+        self.deck_dock = self._make_dock("VDS", self.deck_panel)
         self.deck_dock.setMinimumHeight(150)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.deck_dock)
 
         self.layer_panel = LayerPanel(application, self)
-        self.layer_dock = self._make_dock("LAYERS", self.layer_panel)
+        self.layer_dock = self._make_dock("LYS", self.layer_panel)
         self.layer_dock.setMinimumWidth(280)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.layer_dock)
 
@@ -106,12 +106,12 @@ class MainWindow(QMainWindow):
             source_provider=lambda: application.composition.layers,
             parent=self,
         )
-        self.effects_dock = self._make_dock("EFFECTS + OVERLAYS", self.effects_panel)
+        self.effects_dock = self._make_dock("FX + OVLS", self.effects_panel)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.effects_dock)
         self.tabifyDockWidget(self.layer_dock, self.effects_dock)
 
         self.automation_panel = AutomationPanel(application.media_library, self)
-        self.automation_dock = self._make_dock("AUTO PERFORMANCE", self.automation_panel)
+        self.automation_dock = self._make_dock("AUTO PERF", self.automation_panel)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.automation_dock)
         self.tabifyDockWidget(self.effects_dock, self.automation_dock)
 
@@ -127,7 +127,7 @@ class MainWindow(QMainWindow):
             self._sync_performance_macro_shortcuts
         )
         self.performance_control_dock = self._make_dock(
-            "AUDIO / CONTROL",
+            "AUD / CTRL",
             self.performance_control_panel,
         )
         self.performance_control_dock.setMinimumWidth(300)
@@ -136,7 +136,7 @@ class MainWindow(QMainWindow):
 
         self.modulator_bank_panel = ModulatorBankPanel(application, self)
         self.modulator_bank_dock = self._make_dock(
-            "MODULATOR BANK",
+            "MOD BANK",
             self.modulator_bank_panel,
         )
         self.modulator_bank_dock.setMinimumWidth(320)
@@ -145,7 +145,7 @@ class MainWindow(QMainWindow):
 
         self.performance_timeline_panel = PerformanceTimelinePanel(application, self)
         self.performance_timeline_dock = self._make_dock(
-            "LIVE PERFORMANCE TIMELINE",
+            "LIVE PERF TMLN",
             self.performance_timeline_panel,
         )
         self.performance_timeline_dock.setMinimumWidth(320)
@@ -162,10 +162,10 @@ class MainWindow(QMainWindow):
         toolbar.setObjectName("performance_toolbar")
         toolbar.setMovable(False)
         toolbar.addWidget(self.transport_bar)
-        self.performance_mode_button = QPushButton("▶ PERFORMANCE MODE")
+        self.performance_mode_button = QPushButton("▶ PERF MODE")
         self.performance_mode_button.setCheckable(True)
         self.performance_mode_button.setToolTip(
-            "Arm Sonic Pi OSC, system-loopback audio, AUTO PERFORMANCE and "
+            "Arm Sonic Pi OSC, system-loopback audio, AUTO PERF and "
             "the saved modulation curves. Then run SONATA Expanded in Sonic Pi."
         )
         self.performance_mode_button.toggled.connect(self._toggle_performance_mode)
@@ -184,7 +184,7 @@ class MainWindow(QMainWindow):
         )
         self.statusBar().addPermanentWidget(self.control_status_label)
         self.status_label = QLabel(
-            "LOCAL PREVIEW IDLE · select PERFORM to initialise OpenGL"
+            "LOCAL PREVIEW IDLE · select PERF to initialise OpenGL"
         )
         self.statusBar().addPermanentWidget(self.status_label)
         self.performance_view.render_status_changed.connect(self.status_label.setText)
@@ -312,11 +312,11 @@ class MainWindow(QMainWindow):
         perform_layout.setContentsMargins(10, 8, 10, 8)
         perform_layout.setSpacing(8)
         perform_header = QHBoxLayout()
-        perform_title = QLabel("LIVE PERFORMANCE")
+        perform_title = QLabel("LIVE PERF")
         perform_title.setObjectName("sectionHeading")
         perform_header.addWidget(perform_title)
         perform_header.addStretch(1)
-        self.workspace_output_label = QLabel("OUTPUT  ·  LOCAL WORKSPACE")
+        self.workspace_output_label = QLabel("OUTPUT  ·  LOCWS")
         self.workspace_output_label.setObjectName("mutedLabel")
         perform_header.addWidget(self.workspace_output_label)
         perform_layout.addLayout(perform_header)
@@ -332,7 +332,7 @@ class MainWindow(QMainWindow):
         # The projector and local preview retain their existing independent contexts.
         self.performance_view.setParent(None)
         self.preview_dock.setWidget(
-            QLabel("LOCAL PREVIEW is now displayed in the central PERFORM workspace.")
+            QLabel("LOCAL PREVIEW is now displayed in the central PERF workspace.")
         )
         self.preview_dock.hide()
         self.performance_aspect_preview = AspectRatioPreview(
@@ -347,11 +347,11 @@ class MainWindow(QMainWindow):
         compose_layout.setContentsMargins(10, 8, 10, 8)
         compose_layout.setSpacing(8)
         compose_header = QHBoxLayout()
-        compose_title = QLabel("COMPOSITION EDITOR")
+        compose_title = QLabel("COMP ED")
         compose_title.setObjectName("sectionHeading")
         compose_header.addWidget(compose_title)
         compose_header.addStretch(1)
-        self.show_preview_button = QPushButton("OPEN PERFORM WORKSPACE")
+        self.show_preview_button = QPushButton("OPEN PERF WS")
         self.show_preview_button.clicked.connect(self.show_local_preview)
         compose_header.addWidget(self.show_preview_button)
         compose_layout.addLayout(compose_header)
@@ -371,18 +371,18 @@ class MainWindow(QMainWindow):
         self.media_browser.setParent(None)
         self.asset_library_panel.setParent(None)
         self.media_dock.setWidget(
-            QLabel("MEDIA LIBRARY is available in the central PREPARE workspace.")
+            QLabel("MDL is available in the central PREPARE workspace.")
         )
         self.asset_library_dock.setWidget(
             QLabel("VISUAL ASSET LIBRARY is available in the central PREPARE workspace.")
         )
         self.media_dock.hide()
         self.asset_library_dock.hide()
-        prepare_tabs.addTab(self.media_browser, "MEDIA LIBRARY")
-        prepare_tabs.addTab(self.asset_library_panel, "VISUAL ASSETS")
+        prepare_tabs.addTab(self.media_browser, "MDL")
+        prepare_tabs.addTab(self.asset_library_panel, "VA")
         prepare_layout.addWidget(prepare_tabs, 1)
 
-        tabs.addTab(perform_page, "01  PERFORM")
+        tabs.addTab(perform_page, "01  PERF")
         tabs.addTab(compose_page, "02  COMPOSE")
         tabs.addTab(prepare_page, "03  PREPARE")
         saved_workspace = self._ui_settings.value(
@@ -399,7 +399,7 @@ class MainWindow(QMainWindow):
         self._ui_settings.setValue("ui/active_workspace_v1", int(index))
         self._ui_settings.sync()
         messages = {
-            0: "PERFORM · live composition workspace",
+            0: "PERF · live composition workspace",
             1: "COMPOSE · edit layers, generators and effects",
             2: "PREPARE · organise footage and visual assets",
         }
@@ -595,9 +595,9 @@ class MainWindow(QMainWindow):
         restore_layout_action.setShortcut(QKeySequence("Ctrl+Shift+0"))
         restore_layout_action.triggered.connect(self.restore_default_layout)
         view_menu.addAction(restore_layout_action)
-        workspace_menu = view_menu.addMenu("WORKSPACE")
+        workspace_menu = view_menu.addMenu("WS")
         for index, label, shortcut in (
-            (0, "01 · PERFORM", "Ctrl+1"),
+            (0, "01 · PERF", "Ctrl+1"),
             (1, "02 · COMPOSE", "Ctrl+2"),
             (2, "03 · PREPARE", "Ctrl+3"),
         ):
@@ -640,7 +640,7 @@ class MainWindow(QMainWindow):
             except Exception as exc:
                 _LOG.exception("Could not stop Performance Mode")
                 QMessageBox.warning(self, "Performance Mode", str(exc))
-            self.performance_mode_button.setText("▶ PERFORMANCE MODE")
+            self.performance_mode_button.setText("▶ PERF MODE")
             self.performance_control_panel.refresh_monitor()
             self.statusBar().showMessage("Performance Mode stopped.", 5000)
             return
@@ -676,11 +676,11 @@ class MainWindow(QMainWindow):
                 self.performance_control_panel.osc_port_spin.setValue(
                     int(receiver["port"])
                 )
-            self.performance_mode_button.setText("■ STOP PERFORMANCE MODE")
+            self.performance_mode_button.setText("■ STOP PERF MODE")
             self.performance_control_panel.refresh_monitor()
             self.statusBar().showMessage(
                 "Performance Mode armed · run SONATA Expanded in Sonic Pi. "
-                "AUTO PERFORMANCE starts on transport/start or the first clock/bar.",
+                "AUTO PERF starts on transport/start or the first clock/bar.",
                 9000,
             )
             if state["phase"] == "degraded":
@@ -694,7 +694,7 @@ class MainWindow(QMainWindow):
             self.performance_mode_button.blockSignals(True)
             self.performance_mode_button.setChecked(False)
             self.performance_mode_button.blockSignals(False)
-            self.performance_mode_button.setText("▶ PERFORMANCE MODE")
+            self.performance_mode_button.setText("▶ PERF MODE")
             QMessageBox.critical(self, "Performance Mode could not start", str(exc))
 
     def _sync_performance_mode_button(self) -> None:
@@ -703,7 +703,7 @@ class MainWindow(QMainWindow):
         self.performance_mode_button.setChecked(enabled)
         self.performance_mode_button.blockSignals(False)
         self.performance_mode_button.setText(
-            "■ STOP PERFORMANCE MODE" if enabled else "▶ PERFORMANCE MODE"
+            "■ STOP PERF MODE" if enabled else "▶ PERF MODE"
         )
 
     def save_performance_set(self) -> None:
@@ -816,7 +816,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Projector output failed", str(exc))
 
     def _projector_output_closed(self) -> None:
-        self.workspace_output_label.setText("OUTPUT  ·  LOCAL WORKSPACE")
+        self.workspace_output_label.setText("OUTPUT  ·  LOCWS")
         if self.performance_view.engine.initialized:
             self.status_label.setText(
                 f"LOCAL PREVIEW READY · {self.performance_view.engine.renderer_name}"
@@ -827,7 +827,7 @@ class MainWindow(QMainWindow):
             )
         else:
             self.status_label.setText(
-                "LOCAL PREVIEW IDLE · select PERFORM to initialise OpenGL"
+                "LOCAL PREVIEW IDLE · select PERF to initialise OpenGL"
             )
         if self._restore_local_preview_on_close:
             self.workspace_tabs.setCurrentIndex(0)
@@ -934,7 +934,7 @@ class MainWindow(QMainWindow):
         )
 
     def randomize_look(self) -> None:
-        choices = [name for name in PRESETS if name != "Clean"]
+        choices = [name for name in PSETS if name != "Clean"]
         if not choices:
             return
         preset = random.choice(choices)
@@ -975,14 +975,14 @@ class MainWindow(QMainWindow):
             )
             self._refresh_automation_status()
         except ValueError as exc:
-            # Empty or unavailable footage pools are expected operator errors,
+            # Empty or unavailable FPOOLs are expected operator errors,
             # not application faults; keep the log useful without a traceback.
             _LOG.warning("Auto Performance unavailable: %s", exc)
             message = str(exc)
             if "No playable video files" in message:
                 message = (
-                    "No playable video files are available in this footage pool. "
-                    "Import a video folder in MEDIA LIBRARY, wait for scanning to finish, "
+                    "No playable video files are available in this FPOOL. "
+                    "Import a video folder in MDL, wait for scanning to finish, "
                     "then retry."
                 )
             self.automation_panel.set_running(False, message)
@@ -1074,7 +1074,7 @@ class MainWindow(QMainWindow):
             self._sync_performance_mode_button()
         if mode["enabled"]:
             phase = mode["phase"].upper()
-            self.performance_mode_button.setText(f"■ STOP PERFORMANCE MODE · {phase}")
+            self.performance_mode_button.setText(f"■ STOP PERF MODE · {phase}")
             automation_state = (
                 "running" if mode["automation_running"]
                 else "armed" if mode["automation_armed"]
@@ -1187,7 +1187,7 @@ class MainWindow(QMainWindow):
             self,
             f"About {APP_NAME}",
             (
-                f"<h2>{APP_NAME} {APP_VERSION}</h2>"
+                f"<h2>{APP_NAME} {APP_VER}</h2>"
                 "<p><b>A live audiovisual instrument for video collage, generative "
                 "graphics and music-driven performance.</b></p>"
                 "<p>Build layered compositions with four independent video decks, "

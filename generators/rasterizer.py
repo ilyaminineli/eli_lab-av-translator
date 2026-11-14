@@ -21,8 +21,8 @@ from PySide6.QtGui import (
 from core.composition import Layer
 from generators.catalog import normalize_settings
 
-GENERATOR_WIDTH = 1600
-GENERATOR_HEIGHT = 900
+GEN_WIDTH = 1600
+GEN_HEIGHT = 900
 
 _GPU_UNIFORM_SETTINGS = (
     "animation",
@@ -68,8 +68,8 @@ class GeneratorRasterizer:
 
     def __init__(
             self,
-            width: int = GENERATOR_WIDTH,
-            height: int = GENERATOR_HEIGHT,
+            width: int = GEN_WIDTH,
+            height: int = GEN_HEIGHT,
     ) -> None:
         self.width = max(320, int(width))
         self.height = max(180, int(height))
@@ -84,7 +84,7 @@ class GeneratorRasterizer:
         payload = {
             "type": layer.generator_type,
             "settings": settings,
-            "size": [GENERATOR_WIDTH, GENERATOR_HEIGHT],
+            "size": [GEN_WIDTH, GEN_HEIGHT],
         }
         encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
         return hashlib.sha1(encoded).hexdigest()
@@ -155,8 +155,8 @@ class GeneratorRasterizer:
             generator_type: str,
             raw_settings: dict[str, Any],
             *,
-            width: int = GENERATOR_WIDTH,
-            height: int = GENERATOR_HEIGHT,
+            width: int = GEN_WIDTH,
+            height: int = GEN_HEIGHT,
     ) -> str:
         settings = _static_raster_settings(generator_type, raw_settings)
         payload = {

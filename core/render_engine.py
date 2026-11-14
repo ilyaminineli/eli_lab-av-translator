@@ -100,7 +100,7 @@ class RenderEngine:
         self.compositor = Compositor(self.context)
         info = self.context.info
         self.renderer_name = str(info.get("GL_RENDERER", "Unknown renderer"))
-        self.version_code = int(info.get("GL_VERSION_CODE", 0))
+        self.version_code = int(info.get("GL_VER_CODE", 0))
         self.initialized = True
         _LOG.info(
             "OpenGL initialized: %s (version code %s)",

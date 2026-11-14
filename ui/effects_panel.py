@@ -15,7 +15,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from effects.settings import PRESETS, EffectSettings
+from effects.settings import PSETS, EffectSettings
 
 _SLIDERS = (
     ("mix", "Effect mix", 0, 100, 100.0),
@@ -39,7 +39,7 @@ _SLIDERS = (
     ("solarize", "Solarization", 0, 100, 100.0),
 )
 
-_ADVANCED_SLIDERS = (
+_ADV_SLIDERS = (
     ("transform_mix", "Transform mix", 0, 100, 100.0),
     ("kaleidoscope_slices", "Kaleidoscope slices", 2, 32, 1.0),
     ("kaleidoscope_rotation", "Kaleidoscope rotation", -180, 180, 1.0),
@@ -81,13 +81,13 @@ class EffectsPanel(QWidget):
         preset_row = QHBoxLayout()
         preset_row.addWidget(QLabel("LOOK"))
         self.preset_combo = QComboBox()
-        self.preset_combo.addItems(list(PRESETS) + ["Custom"])
+        self.preset_combo.addItems(list(PSETS) + ["Custom"])
         preset_row.addWidget(self.preset_combo, 1)
-        self.reset_button = QPushButton("RESET LOOK")
+        self.reset_button = QPushButton("RE LOOK")
         preset_row.addWidget(self.reset_button)
         root.addLayout(preset_row)
 
-        self.enabled_check = QCheckBox("ENABLE MASTER FILTERS")
+        self.enabled_check = QCheckBox("ON MASTER FILTERS")
         self.enabled_check.setChecked(settings.enabled)
         root.addWidget(self.enabled_check)
 
@@ -98,7 +98,7 @@ class EffectsPanel(QWidget):
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(8)
 
-        group = QGroupBox("MASTER FILTERS + OVERLAYS")
+        group = QGroupBox("MASTER FILTERS + OVLS")
         form = QFormLayout(group)
         for key, title, low, high, scale in _SLIDERS:
             row = QHBoxLayout()
@@ -117,7 +117,7 @@ class EffectsPanel(QWidget):
             self._sliders[key] = (slider, value_label, scale)
         content_layout.addWidget(group)
 
-        geometry_group = QGroupBox("GEOMETRY + DISPLACEMENT")
+        geometry_group = QGroupBox("GEO + DISPLACEMENT")
         geometry_form = QFormLayout(geometry_group)
         self.transform_mode_combo = QComboBox()
         for label, value in (
@@ -129,7 +129,7 @@ class EffectsPanel(QWidget):
         ):
             self.transform_mode_combo.addItem(label, value)
         geometry_form.addRow("Transform", self.transform_mode_combo)
-        for key, title, low, high, scale in _ADVANCED_SLIDERS[:11]:
+        for key, title, low, high, scale in _ADV_SLIDERS[:11]:
             row = QHBoxLayout()
             slider = QSlider(Qt.Orientation.Horizontal)
             slider.setRange(low, high)
@@ -156,9 +156,9 @@ class EffectsPanel(QWidget):
 
         feedback_group = QGroupBox("GPU FEEDBACK ENGINE")
         feedback_form = QFormLayout(feedback_group)
-        self.feedback_enabled_check = QCheckBox("ENABLE TEMPORAL FEEDBACK")
+        self.feedback_enabled_check = QCheckBox("ON TEMPORAL FEEDBACK")
         feedback_form.addRow("", self.feedback_enabled_check)
-        for key, title, low, high, scale in _ADVANCED_SLIDERS[11:]:
+        for key, title, low, high, scale in _ADV_SLIDERS[11:]:
             row = QHBoxLayout()
             slider = QSlider(Qt.Orientation.Horizontal)
             slider.setRange(low, high)
@@ -176,10 +176,10 @@ class EffectsPanel(QWidget):
         self.feedback_blend_combo = QComboBox()
         self.feedback_blend_combo.addItems(["normal", "add", "screen", "multiply", "difference"])
         feedback_form.addRow("Feedback blend", self.feedback_blend_combo)
-        self.feedback_frozen_check = QCheckBox("FREEZE FEEDBACK MEMORY")
+        self.feedback_frozen_check = QCheckBox("FREEZE FEEDBACK MEM")
         feedback_form.addRow("", self.feedback_frozen_check)
         feedback_buttons = QHBoxLayout()
-        self.feedback_reset_button = QPushButton("RESET FEEDBACK BUFFER")
+        self.feedback_reset_button = QPushButton("RE FEEDBACK BUFFER")
         feedback_buttons.addWidget(self.feedback_reset_button)
         feedback_buttons.addStretch(1)
         feedback_form.addRow("", feedback_buttons)
@@ -293,7 +293,7 @@ class EffectsPanel(QWidget):
     def sync_from_settings(self) -> None:
         self.preset_combo.blockSignals(True)
         name = self.settings.preset_name
-        self.preset_combo.setCurrentText(name if name in PRESETS else "Custom")
+        self.preset_combo.setCurrentText(name if name in PSETS else "Custom")
         self.preset_combo.blockSignals(False)
         self.sync_sources()
         self.transform_mode_combo.blockSignals(True)

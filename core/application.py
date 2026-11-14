@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from config import RESOURCE_DIR, VIDEO_DECK_IDS
+from config import RESOURCE_DIR, VID_DECK_IDS
 from core.audio_analysis import AudioAnalysisFrame, AudioAnalysisSettings
 from core.audio_capture import AudioCaptureService
 from core.automation import AutomationDirector, AutomationSettings
@@ -33,7 +33,7 @@ from core.performance_environment import (
     SceneMorph,
 )
 from core.performance_macros import (
-    PERFORMANCE_MACRO_IDS,
+    PERF_MACRO_IDS,
     PerformanceMacro,
     PerformanceMacroEngine,
 )
@@ -58,18 +58,18 @@ from core.project_manager import ProjectManager
 from core.scene_profiles import SceneProfile, SceneProfileRegistry
 from effects.layer_settings import normalize_layer_effects
 from effects.settings import EffectSettings
-from generators.catalog import GENERATOR_TYPES, default_generator_settings, normalize_settings
+from generators.catalog import GEN_TYPES, default_generator_settings, normalize_settings
 from generators.palettes import palette_look, palette_names
 from media.asset_index import VisualAssetIndex
 from media.frame_queue import FrameSnapshot
 from media.image_overlay import ImageOverlayPlayer
 from media.library import MediaLibrary
-from media.scanner import SUPPORTED_VIDEO_EXTENSIONS
+from media.scanner import SUPPORTED_VID_EXNS
 from media.video_deck import VideoDeck
 
 _LOG = logging.getLogger(__name__)
 
-_SELECTED_LAYER_MODULATION_TARGETS = (
+_SELECTED_LY_MODULATION_TARGETS = (
     "selected_layer.opacity",
     "selected_layer.rotation",
     "selected_layer.scale",
@@ -111,7 +111,7 @@ _SELECTED_LAYER_MODULATION_TARGETS = (
     "overlay.frame_hold",
 )
 
-_MASTER_MODULATION_FIELDS = frozenset({
+_MASTER_MODULATION_FLDS = frozenset({
     "brightness", "exposure", "contrast", "saturation", "gamma",
     "temperature", "tint", "hue", "vignette", "grain", "scanlines",
     "chromatic", "glitch", "pixelate", "posterize", "invert", "halftone",
@@ -182,7 +182,7 @@ class Application:
         self.automation.palette_changed = self._set_automation_palette
         self.effects = EffectSettings()
         self.decks: dict[str, VideoDeck] = {
-            deck_id: VideoDeck(deck_id) for deck_id in VIDEO_DECK_IDS
+            deck_id: VideoDeck(deck_id) for deck_id in VID_DECK_IDS
         }
         self._frame_snapshots: dict[str, FrameSnapshot] = {}
         self._overlay_frames: dict[str, FrameSnapshot] = {}
@@ -236,7 +236,7 @@ class Application:
             ((0.29, 0.74), (0.56, 0.56), 12.0, "add", 0.88),
             ((0.69, 0.72), (0.38, 0.38), -19.0, "difference", 0.82),
         )
-        for index, (deck_id, layout) in enumerate(zip(VIDEO_DECK_IDS, layouts)):
+        for index, (deck_id, layout) in enumerate(zip(VID_DECK_IDS, layouts)):
             position, scale, rotation, blend_mode, opacity = layout
             self.composition.add_layer(
                 Layer(
@@ -261,7 +261,7 @@ class Application:
         self.window = window
 
     def add_generator_layer(self, generator_type: str) -> Layer:
-        if generator_type not in GENERATOR_TYPES:
+        if generator_type not in GEN_TYPES:
             raise ValueError(f"Unknown generator type: {generator_type}")
         labels = {
             "geometry": "Geometry Generator",
@@ -319,7 +319,7 @@ class Application:
             raise FileNotFoundError(source)
         layer_id = uuid4().hex
         suffix = source.suffix.lower()
-        kind = "video" if suffix in SUPPORTED_VIDEO_EXTENSIONS else "image"
+        kind = "video" if suffix in SUPPORTED_VID_EXNS else "image"
         layer = self.layer_manager.create_layer(
             id=layer_id,
             name=f"Overlay · {source.stem}",
@@ -351,7 +351,7 @@ class Application:
         if not source.is_file():
             raise FileNotFoundError(source)
         kind = layer.overlay_kind or (
-            "video" if source.suffix.lower() in SUPPORTED_VIDEO_EXTENSIONS else "image"
+            "video" if source.suffix.lower() in SUPPORTED_VID_EXNS else "image"
         )
         layer.overlay_kind = kind
         layer.source_type = "overlay"
@@ -823,7 +823,7 @@ class Application:
             )
         except (TypeError, ValueError, RuntimeError) as exc:
             self.performance_mode.mark_degraded(
-                "AUTO PERFORMANCE could not start",
+                "AUTO PERF could not start",
                 str(exc),
             )
             self.performance_mode.set_automation_armed(False, False)
@@ -879,7 +879,7 @@ class Application:
             self.performance_mode.mark_live(event.kind, session_id)
             self._activate_armed_performance_automation()
 
-        # A manually started AUTO PERFORMANCE session can also subscribe to
+        # A manually started AUTO PERF session can also subscribe to
         # SONATA cues; only the one-button mode owns receiver/audio lifecycle.
         if self.automation.running:
             if event.kind == "scene.select":
@@ -1273,7 +1273,7 @@ class Application:
                 layer_id=layer.id,
                 seed=seed,
             )
-            return True, f"TEXT · {layer.name} · SEED {seed}"
+            return True, f"TXT · {layer.name} · SEED {seed}"
 
         if event.event_type == "palette_change":
             palette = str(payload["palette"])
@@ -1363,7 +1363,7 @@ class Application:
                         self.trigger_performance_scene_cue(str(event.payload.get("name", "")))
                     elif event.kind == "macro.set":
                         macro_id = str(event.payload.get("name", ""))
-                        if macro_id in PERFORMANCE_MACRO_IDS:
+                        if macro_id in PERF_MACRO_IDS:
                             self.set_performance_macro_value(
                                 macro_id,
                                 float(event.payload.get("value", 0.0)),
@@ -1527,7 +1527,7 @@ class Application:
         layer = self.composition.get_layer(layer_id)
         if layer is None or layer.locked == bool(locked):
             return
-        target_ids = _SELECTED_LAYER_MODULATION_TARGETS
+        target_ids = _SELECTED_LY_MODULATION_TARGETS
         if locked and layer_id == self._selected_layer_id:
             for target_id in target_ids:
                 base = self._modulation_base_values.pop(target_id, None)
@@ -1542,7 +1542,7 @@ class Application:
         previous_id = self._selected_layer_id
         if next_id == previous_id:
             return
-        target_ids = _SELECTED_LAYER_MODULATION_TARGETS
+        target_ids = _SELECTED_LY_MODULATION_TARGETS
         if previous_id is not None:
             for target_id in target_ids:
                 base = self._modulation_base_values.pop(target_id, None)
@@ -2113,7 +2113,7 @@ class Application:
     def _get_modulation_target(self, target_id: str) -> float | None:
         if target_id.startswith("master."):
             field = target_id.split(".", 1)[1]
-            if field in _MASTER_MODULATION_FIELDS:
+            if field in _MASTER_MODULATION_FLDS:
                 value = getattr(self.effects, field)
                 return float(value) if isinstance(value, (int, float)) else None
             return None
@@ -2191,7 +2191,7 @@ class Application:
     def _set_modulation_target(self, target_id: str, value: float) -> bool:
         if target_id.startswith("master."):
             field = target_id.split(".", 1)[1]
-            if field not in _MASTER_MODULATION_FIELDS:
+            if field not in _MASTER_MODULATION_FLDS:
                 return False
             current = getattr(self.effects, field)
             if isinstance(current, int) and not isinstance(current, bool):
@@ -2699,7 +2699,7 @@ class Application:
             return False
         if target.startswith("performance_macro."):
             macro_id = target.removeprefix("performance_macro.")
-            if macro_id not in PERFORMANCE_MACRO_IDS:
+            if macro_id not in PERF_MACRO_IDS:
                 return False
             self.set_performance_macro_value(macro_id, value, hold_seconds=1.5)
             return True

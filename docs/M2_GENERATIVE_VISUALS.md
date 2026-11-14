@@ -74,7 +74,7 @@ The particle field is generated per pixel in the shader. It does not upload a CP
 
 ## Still and animated-media overlays
 
-Use **+ IMAGE / VIDEO OVERLAY** in the Generators dock or **File → Add Image / Video Overlay**.
+Use **+ IMG / VID OVL** in the Generators dock or **File → Add Image / Video Overlay**.
 
 An overlay becomes a normal composition layer with a saved source path, media kind, transform, opacity, blend mode, visibility, lock and per-layer effects.
 
@@ -87,7 +87,7 @@ Animated-image format support depends on the Qt image-format plugins installed w
 
 ## Independent per-layer effects
 
-The **LAYERS** dock now includes a selected-layer FX section. Each layer stores its own effect dictionary and can have these treatments independently of the master output grade:
+The **LYS** dock now includes a selected-layer FX section. Each layer stores its own effect dictionary and can have these treatments independently of the master output grade:
 
 - Monochrome
 - Inversion

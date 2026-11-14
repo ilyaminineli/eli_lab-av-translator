@@ -61,13 +61,13 @@ Preview and projector use separate OpenGL contexts but share application state a
 ## 5. Run an autonomous Sonic Pi performance
 
 1. Prepare a composition with video decks and/or generator layers.
-2. In **AUDIO / CONTROL**, choose System Loopback for analysis of actual audio-band/onset activity, or Sonic Pi macros only when local capture is unavailable or unnecessary.
-3. In **AUTO PERFORMANCE**, choose Generative or Structured style, musical sync and duration.
-4. Press **PERFORMANCE MODE**.
+2. In **AUD / CTRL**, choose System Loopback for analysis of actual audio-band/onset activity, or Sonic Pi macros only when local capture is unavailable or unnecessary.
+3. In **AUTO PERF**, choose Generative or Structured style, musical sync and duration.
+4. Press **PERF MODE**.
 5. Run SONATA Expanded in Sonic Pi.
 6. Confirm the application moves from ARMED to LIVE and OSC/audio status is healthy.
 7. Open the projector output.
-8. Stop SONATA to end the current AUTO pass. Performance Mode re-arms for a subsequent patch run. Press **STOP PERFORMANCE MODE** when the show is finished.
+8. Stop SONATA to end the current AUTO pass. Performance Mode re-arms for a subsequent patch run. Press **STOP PERF MODE** when the show is finished.
 
 Sonic Pi energy/cutoff macros are normalized musical control signals, not raw audio samples. System loopback is required for actual low/mid/high band and onset analysis.
 
@@ -136,7 +136,7 @@ The application log is:
 ### Audio loopback is unavailable
 
 - Check Windows playback and recording devices.
-- Refresh the device list in AUDIO / CONTROL.
+- Refresh the device list in AUD / CTRL.
 - Sonic Pi transport and energy/cutoff macros can still operate without local audio capture.
 - Actual low/mid/high bands and onset analysis require a supported loopback source.
 

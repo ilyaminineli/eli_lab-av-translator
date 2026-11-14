@@ -10,9 +10,9 @@ from pathlib import Path
 
 from core.composition import Layer
 from core.generative_director import GenerativeVariationDirector
-from effects.layer_settings import LAYER_EFFECT_PRESETS, apply_layer_effect_preset
-from effects.settings import PRESETS, EffectSettings
-from generators.catalog import GENERATOR_TYPES, normalize_settings
+from effects.layer_settings import LY_EFFECT_PSETS, apply_layer_effect_preset
+from effects.settings import PSETS, EffectSettings
+from generators.catalog import GEN_TYPES, normalize_settings
 from generators.palettes import palette_look, palette_names
 from generators.text_pools import random_text_sample
 from media.models import MediaAsset
@@ -821,7 +821,7 @@ class AutomationDirector:
     def _randomize_effects(self) -> None:
         if self._effects is None:
             return
-        names = [name for name in PRESETS if name != "Clean"]
+        names = [name for name in PSETS if name != "Clean"]
         self._effects.apply_preset(self.rng.choice(names))
         self._director.mark_effect_applied()
 
@@ -859,7 +859,7 @@ class AutomationDirector:
                 continue
             changed_before_layer = changed
 
-            if layer.source_type == "generator" and layer.generator_type in GENERATOR_TYPES:
+            if layer.source_type == "generator" and layer.generator_type in GEN_TYPES:
                 kind = layer.generator_type
                 values = normalize_settings(kind, layer.generator_settings)
                 updated = False
@@ -1016,7 +1016,7 @@ class AutomationDirector:
             ):
                 fx = layer.layer_effects if isinstance(layer.layer_effects, dict) else {}
                 if fx.get("enabled", False):
-                    preset_names = [name for name in LAYER_EFFECT_PRESETS if name != "Clean"]
+                    preset_names = [name for name in LY_EFFECT_PSETS if name != "Clean"]
                     layer.layer_effects = apply_layer_effect_preset(
                         self.rng.choice(preset_names)
                     )

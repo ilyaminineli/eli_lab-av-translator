@@ -60,7 +60,7 @@ class PerformanceControlPanel(QWidget):
         root.setContentsMargins(8, 8, 8, 8)
         root.setSpacing(8)
 
-        self.autonomous_mode_group = QGroupBox("AUTONOMOUS PERFORMANCE MODE")
+        self.autonomous_mode_group = QGroupBox("AUTONOMOUS PERF MODE")
         mode_layout = QVBoxLayout(self.autonomous_mode_group)
         self.performance_mode_status_label = QLabel(
             "OFF · arm the show from the main Performance toolbar."
@@ -68,8 +68,8 @@ class PerformanceControlPanel(QWidget):
         self.performance_mode_status_label.setWordWrap(True)
         self.performance_mode_status_label.setObjectName("sectionHeading")
         self.performance_mode_hint_label = QLabel(
-            "Press PERFORMANCE MODE, then run SONATA Expanded in Sonic Pi. The first "
-            "transport packet starts AUTO PERFORMANCE; bars, phrases, energy, cutoff "
+            "Press PERF MODE, then run SONATA Expanded in Sonic Pi. The first "
+            "transport packet starts AUTO PERF; bars, phrases, energy, cutoff "
             "and optional system-loopback audio drive the installed curves."
         )
         self.performance_mode_hint_label.setWordWrap(True)
@@ -108,7 +108,7 @@ class PerformanceControlPanel(QWidget):
         transport_form.addRow("CLOCK", self.transport_status)
         root.addWidget(self.transport_group)
 
-        self.midi_group = QGroupBox("MIDI CONTROLLERS · OPTIONAL")
+        self.midi_group = QGroupBox("MIDI CTRLLERS · OPTIONAL")
         midi_form = QFormLayout(self.midi_group)
         self.midi_device_combo = QComboBox()
         self.midi_refresh_button = QPushButton("DISCOVER DEVICES")
@@ -120,7 +120,7 @@ class PerformanceControlPanel(QWidget):
         self.midi_start_button = QPushButton("CONNECT")
         self.midi_stop_button = QPushButton("DISCONNECT")
         self.midi_stop_button.setEnabled(False)
-        self.midi_learn_button = QPushButton("LEARN NEXT CONTROLLER")
+        self.midi_learn_button = QPushButton("LEARN NEXT CTRLLER")
         midi_buttons.addWidget(self.midi_start_button)
         midi_buttons.addWidget(self.midi_stop_button)
         midi_form.addRow(midi_buttons)
@@ -161,7 +161,7 @@ class PerformanceControlPanel(QWidget):
         midi_form.addRow("STATUS", self.midi_status_label)
         root.addWidget(self.midi_group)
 
-        self.performance_macro_group = QGroupBox("PERFORMANCE MACROS · NORMALIZED 0–1")
+        self.performance_macro_group = QGroupBox("PERF MACROS · NORMALIZED 0–1")
         macro_layout = QVBoxLayout(self.performance_macro_group)
         macro_hint = QLabel(
             "One control can move several parameters across compatible layers and master effects. "
@@ -228,7 +228,7 @@ class PerformanceControlPanel(QWidget):
         macro_layout.addWidget(self.macro_status_label)
         root.addWidget(self.performance_macro_group)
 
-        self.performance_scene_group = QGroupBox("VJ SCENE BANK · COMPOSITIONS")
+        self.performance_scene_group = QGroupBox("VJ SCENE BANK · COMPS")
         scene_form = QFormLayout(self.performance_scene_group)
         self.performance_scene_name = QLineEdit("Scene 01")
         self.performance_scene_cue = QLineEdit()
@@ -313,7 +313,7 @@ class PerformanceControlPanel(QWidget):
         self.osc_hint_label = QLabel(
             "Sonic Pi is an OSC control source, not an item in the audio-device list. "
             "For Sonic Pi on this computer, use 127.0.0.1 and the same UDP port in "
-            "SONATA_expanded.rb. Press PERFORMANCE MODE, then run the patch; the "
+            "SONATA_expanded.rb. Press PERF MODE, then run the patch; the "
             "receiver and default reactive curves are armed automatically."
         )
         self.osc_hint_label.setWordWrap(True)
@@ -331,8 +331,8 @@ class PerformanceControlPanel(QWidget):
             )
         self.scene_intensity_spin = self._float_spin(0.0, 1.0, 0.01, 0.01)
         self.scene_look_combo = QComboBox()
-        from effects.settings import PRESETS
-        self.scene_look_combo.addItems(list(PRESETS))
+        from effects.settings import PSETS
+        self.scene_look_combo.addItems(list(PSETS))
         self.scene_palette_combo = QComboBox()
         self.scene_palette_combo.addItems(palette_names())
         self.quantization_combo = QComboBox()
@@ -354,7 +354,7 @@ class PerformanceControlPanel(QWidget):
         scene_form.addRow(self.scene_buttons)
         root.addWidget(self.scene_group)
 
-        self.audio_group = QGroupBox("AUDIO INPUT / SYSTEM LOOPBACK")
+        self.audio_group = QGroupBox("AUD INPUT / SYS LOOPBACK")
         audio_layout = QVBoxLayout(self.audio_group)
         device_row = QHBoxLayout()
         self.audio_device_combo = QComboBox()
@@ -483,7 +483,7 @@ class PerformanceControlPanel(QWidget):
         self.route_list.setMaximumHeight(140)
         modulation_layout.addWidget(self.route_list)
         preset_buttons = QHBoxLayout()
-        self.audio_reactive_button = QPushButton("ADD AUDIO-REACTIVE ROUTES")
+        self.audio_reactive_button = QPushButton("ADD AUD-REACTIVE ROUTES")
         self.sonic_pi_reactive_button = QPushButton("ADD SONIC PI ROUTES")
         preset_buttons.addWidget(self.audio_reactive_button)
         preset_buttons.addWidget(self.sonic_pi_reactive_button)
@@ -731,14 +731,14 @@ class PerformanceControlPanel(QWidget):
             ("Master · Grain", "master.grain"),
             ("Master · Glitch", "master.glitch"),
             ("Master · Vignette", "master.vignette"),
-            ("AUTO PERFORMANCE · Loop probability", "automation.loop_probability"),
-            ("AUTO PERFORMANCE · Clip switch probability", "automation.clip_switch_probability"),
-            ("AUTO PERFORMANCE · Cut interval", "automation.cut_interval"),
-            ("AUTO PERFORMANCE · Segment minimum", "automation.min_segment_seconds"),
-            ("AUTO PERFORMANCE · Segment maximum", "automation.max_segment_seconds"),
-            ("AUTO PERFORMANCE · Layout interval", "automation.layout_interval"),
-            ("AUTO PERFORMANCE · Effect interval", "automation.effect_interval"),
-            ("AUTO PERFORMANCE · Generator interval", "automation.generator_interval"),
+            ("AUTO PERF · Loop probability", "automation.loop_probability"),
+            ("AUTO PERF · Clip switch probability", "automation.clip_switch_probability"),
+            ("AUTO PERF · Cut interval", "automation.cut_interval"),
+            ("AUTO PERF · Segment minimum", "automation.min_segment_seconds"),
+            ("AUTO PERF · Segment maximum", "automation.max_segment_seconds"),
+            ("AUTO PERF · Layout interval", "automation.layout_interval"),
+            ("AUTO PERF · Effect interval", "automation.effect_interval"),
+            ("AUTO PERF · Generator interval", "automation.generator_interval"),
         ]
         for macro in self.application.performance_macro_engine.list_macros():
             fixed.append((
@@ -1478,7 +1478,7 @@ class PerformanceControlPanel(QWidget):
         mode = self.application.performance_mode_snapshot()
         if not mode["enabled"]:
             self.performance_mode_status_label.setText(
-                "OFF · press PERFORMANCE MODE in the main toolbar to arm the show."
+                "OFF · press PERF MODE in the main toolbar to arm the show."
             )
         elif mode["phase"] == "live":
             automation = "RUNNING" if mode["automation_running"] else "ARMED"
@@ -1525,7 +1525,7 @@ class PerformanceControlPanel(QWidget):
             phrase = (max(0, control.bar_index - 1) // transport.phrase_bars) + 1
             self.transport_status.setText(
                 f"{transport_state} · SONIC PI · {control.bpm:g} BPM · "
-                f"BAR {control.bar_index} · PHRASE {phrase}"
+                f"BR {control.bar_index} · PHRASE {phrase}"
             )
         else:
             transport_state = (
@@ -1534,8 +1534,8 @@ class PerformanceControlPanel(QWidget):
                 else "STOP"
             )
             self.transport_status.setText(
-                f"{transport_state} · {transport.bpm:g} BPM · BAR {transport.bar_index} · "
-                f"BEAT {transport.beat_index + 1}/{transport.beats_per_bar} · "
+                f"{transport_state} · {transport.bpm:g} BPM · BR {transport.bar_index} · "
+                f"BT {transport.beat_index + 1}/{transport.beats_per_bar} · "
                 f"PHRASE {transport.phrase_index}"
             )
         state = self.application.audio_capture.state

@@ -24,7 +24,7 @@ void main() {
 }
 """
 
-_COMPOSITE_FRAGMENT = """#version 330
+_COMPOSITE_FRAG = """#version 330
 uniform sampler2D u_base;
 uniform sampler2D u_layer;
 uniform sampler2D u_mask;
@@ -401,7 +401,7 @@ void main() {
 }
 """
 
-_POST_FRAGMENT = """#version 330
+_POST_FRAG = """#version 330
 uniform sampler2D u_texture;
 uniform vec2 u_resolution;
 uniform float u_time;
@@ -648,19 +648,19 @@ _BLEND_MODES = {
 class Compositor:
     """GPU video-layer compositor followed by real-time master/temporal effects."""
 
-    MAX_PARTICLE_SYSTEMS = 4
-    MAX_TOTAL_PARTICLES = 16384
-    PARTICLE_RETENTION_SECONDS = 6.0
+    MAX_PRTL_SYSS = 4
+    MAX_TOTAL_PRTLS = 16384
+    PRTL_RETENTION_SECONDS = 6.0
 
     def __init__(self, context: moderngl.Context) -> None:
         self.ctx = context
         self.composite_program = context.program(
             vertex_shader=_VERTEX_SHADER,
-            fragment_shader=_COMPOSITE_FRAGMENT,
+            fragment_shader=_COMPOSITE_FRAG,
         )
         self.post_program = context.program(
             vertex_shader=_VERTEX_SHADER,
-            fragment_shader=_POST_FRAGMENT,
+            fragment_shader=_POST_FRAG,
         )
         vertices = np.array(
             [
@@ -866,7 +866,7 @@ class Compositor:
         ordered_layers = sorted(layers, key=lambda item: item.z_index)
         active_particle_ids: set[str] = set()
         particle_outputs: dict[str, moderngl.Texture] = {}
-        particle_budget = self.MAX_TOTAL_PARTICLES
+        particle_budget = self.MAX_TOTAL_PRTLS
         active_particle_systems = 0
         source_layers = {
             layer.source_id: layer
@@ -884,14 +884,14 @@ class Compositor:
                     or particle_layer.opacity <= 0.0
             ):
                 continue
-            if active_particle_systems >= self.MAX_PARTICLE_SYSTEMS or particle_budget <= 0:
+            if active_particle_systems >= self.MAX_PRTL_SYSS or particle_budget <= 0:
                 continue
             settings = normalize_settings(
                 "particle_system_2", particle_layer.generator_settings
             )
             requested = min(
                 int(settings["particle_count"]),
-                ParticleSystem2.MAX_PARTICLES_PER_SYSTEM,
+                ParticleSystem2.MAX_PRTLS_PER_SYS,
                 particle_budget,
             )
             if requested <= 0:
@@ -958,7 +958,7 @@ class Compositor:
             removed = layer_id not in live_particle_ids
             expired = (
                     layer_id not in active_particle_ids
-                    and inactive_for > self.PARTICLE_RETENTION_SECONDS
+                    and inactive_for > self.PRTL_RETENTION_SECONDS
             )
             if removed or expired:
                 self.particle_systems.pop(layer_id).release()

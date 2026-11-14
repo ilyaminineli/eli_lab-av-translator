@@ -34,7 +34,7 @@ class AudioInputDevice:
 
     @property
     def label(self) -> str:
-        suffix = " · SYSTEM LOOPBACK" if self.is_loopback else " · INPUT"
+        suffix = " · SYS LOOPBACK" if self.is_loopback else " · INPUT"
         return f"{self.name}{suffix} ({self.channels} ch)"
 
 

@@ -2,9 +2,9 @@
 
 ## Status
 
-Implemented on `m6/auto-performance-live-particles-4x3-queer-pools`. This follow-up connects the merged C1/D1-D2/E1 capabilities to the existing AUTO PERFORMANCE and modulation systems. Python/ruff and target-Windows GPU validation must be recorded independently; static checks do not establish shader or projector acceptance.
+Implemented on `m6/auto-performance-live-particles-4x3-queer-pools`. This follow-up connects the merged C1/D1-D2/E1 capabilities to the existing AUTO PERF and modulation systems. Python/ruff and target-Windows GPU validation must be recorded independently; static checks do not establish shader or projector acceptance.
 
-## A. AUTO PERFORMANCE coverage
+## A. AUTO PERF coverage
 
 The existing per-layer modifier engine and global Modulation Matrix remain the routing foundations. New parameters are registered with bounded target ranges rather than added as special-case animation code.
 
@@ -17,7 +17,7 @@ The existing per-layer modifier engine and global Modulation Matrix remain the r
 
 The global Modulation Matrix also includes bounded numeric targets for C1 master transforms, displacement and feedback: transform mix, kaleidoscope controls, mosaic tile count, pixel-sort amount/threshold, edge extraction, dithering, displacement amount/scale and feedback amount/decay/zoom/rotation/translation/colour shift/distortion/motion warp/datamosh/delay. The new defaults use beat, onset, phrase, energy, cutoff and audio-band sources.
 
-Discrete choices remain operator decisions. AUTO PERFORMANCE does not select a transform mode, choose a displacement source, toggle temporal feedback, freeze history or issue a feedback reset. Numeric routes take effect when the corresponding effect is enabled by the operator.
+Discrete choices remain operator decisions. AUTO PERF does not select a transform mode, choose a displacement source, toggle temporal feedback, freeze history or issue a feedback reset. Numeric routes take effect when the corresponding effect is enabled by the operator.
 
 ## B. Particle System 2.0 as a live instrument
 
@@ -29,7 +29,7 @@ The requested rate is divided by the number of independent populations. Emission
 
 ### Event routing
 
-AUTO PERFORMANCE can shape live emission and motion with:
+AUTO PERF can shape live emission and motion with:
 
 - Energy and beat pulses → emission rate.
 - Onsets → speed and force accents.
@@ -52,7 +52,7 @@ The main Qt workspace now distinguishes compact layouts by window width and aspe
 
 The initial window geometry and minimum size are bounded by the available primary-screen area. User-saved dock arrangements are preserved; responsive rebalancing is applied to the built-in default layout and after the operator restores that default.
 
-This changes the editor workspace, not the saved composition dimensions. The central PERFORM preview is framed at 16:9 even when the surrounding editor uses a compact or 4:3 layout. The compositor's existing `canvas_fit_scale` keeps the project canvas at its configured aspect ratio and letterboxes it into an output whose aspect differs. It does not stretch content or silently rewrite a 16:9 project to 4:3. Fullscreen output on a 4:3 display therefore keeps a 16:9 image with letterboxing. A separate per-project canvas-aspect selector remains future work.
+This changes the editor workspace, not the saved composition dimensions. The central PERF preview is framed at 16:9 even when the surrounding editor uses a compact or 4:3 layout. The compositor's existing `canvas_fit_scale` keeps the project canvas at its configured aspect ratio and letterboxes it into an output whose aspect differs. It does not stretch content or silently rewrite a 16:9 project to 4:3. Fullscreen output on a 4:3 display therefore keeps a 16:9 image with letterboxing. A separate per-project canvas-aspect selector remains future work.
 
 ## D. Queer text pool and dictionary hygiene
 
@@ -66,7 +66,7 @@ English words read from repository dictionary files pass through an additional n
 
 - [ ] Python 3.12 compileall passes.
 - [ ] Ruff passes.
-- [ ] AUTO PERFORMANCE default installation preserves existing custom routes and modifiers.
+- [ ] AUTO PERF default installation preserves existing custom routes and modifiers.
 - [ ] All new modulation target IDs have a matching getter/setter and bounded target specification.
 - [ ] Numeric master targets are included in the MIDI learn value snapshot.
 - [ ] Continuous emission rate normalizes to 0–3000 and is divided across 1–4 populations.
@@ -79,7 +79,7 @@ English words read from repository dictionary files pass through an additional n
 - [ ] Check that rate remains consistent when population count changes.
 - [ ] Confirm beat/onset/energy routes alter emission and motion without resetting the system.
 - [ ] Hide/show or cut a particle layer within six seconds and confirm simulation continuity; remove it and confirm cleanup.
-- [ ] Enable each master transform / feedback mode and verify its AUTO PERFORMANCE values are visible and musically stable.
+- [ ] Enable each master transform / feedback mode and verify its AUTO PERF values are visible and musically stable.
 - [ ] Verify per-layer FX automation when layer FX are enabled; confirm disabled FX remain bypassed.
 - [ ] Confirm text motion and reveal-step targets update without repeated CPU raster jobs.
 - [ ] Run text scrolling and mechanical scrolling through multiple loop boundaries; no wrapped edge glyphs or out-of-bounds smearing should appear.

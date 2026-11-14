@@ -77,23 +77,23 @@ class GeneratorsPanel(QWidget):
         root.setContentsMargins(8, 8, 8, 8)
         root.setSpacing(7)
 
-        add_group = QGroupBox("ADD GENERATOR / OVERLAY")
+        add_group = QGroupBox("ADD GEN / OVL")
         add_layout = QVBoxLayout(add_group)
         row_one = QHBoxLayout()
-        self.add_geometry_button = QPushButton("+ GEOMETRY")
-        self.add_text_button = QPushButton("+ TEXT ART")
+        self.add_geometry_button = QPushButton("+ GEO")
+        self.add_text_button = QPushButton("+ TXT ART")
         row_one.addWidget(self.add_geometry_button)
         row_one.addWidget(self.add_text_button)
         row_two = QHBoxLayout()
-        self.add_waveform_button = QPushButton("+ WAVEFORM")
-        self.add_particles_button = QPushButton("+ PARTICLES · FIELD")
+        self.add_waveform_button = QPushButton("+ WFM")
+        self.add_particles_button = QPushButton("+ PRTLS · FLD")
         row_two.addWidget(self.add_waveform_button)
         row_two.addWidget(self.add_particles_button)
         row_three = QHBoxLayout()
-        self.add_particle_system_button = QPushButton("+ PARTICLE SYSTEM 2.0")
+        self.add_particle_system_button = QPushButton("+ PRTL SYS 2.0")
         row_three.addWidget(self.add_particle_system_button)
         row_four = QHBoxLayout()
-        self.add_overlay_button = QPushButton("+ IMAGE / VIDEO OVERLAY")
+        self.add_overlay_button = QPushButton("+ IMG / VID OVL")
         self.remove_button = _icon_action(
             self,
             QStyle.StandardPixmap.SP_TrashIcon,
@@ -107,13 +107,13 @@ class GeneratorsPanel(QWidget):
         add_layout.addLayout(row_four)
         root.addWidget(add_group)
 
-        selected_heading = QLabel("SELECTED GENERATOR / OVERLAY")
+        selected_heading = QLabel("SELECTED GEN / OVL")
         selected_heading.setObjectName("sectionHeading")
         root.addWidget(selected_heading)
         self.layer_combo = QComboBox()
         root.addWidget(self.layer_combo)
 
-        self.text_group = QGroupBox("TEXT ART")
+        self.text_group = QGroupBox("TXT ART")
         text_form = QFormLayout(self.text_group)
         self.text_edit = QPlainTextEdit()
         self.text_edit.setMaximumBlockCount(32)
@@ -133,9 +133,9 @@ class GeneratorsPanel(QWidget):
             "Optional JSON array of styled text runs. Each run can set text, font_family, "
             "font_size, font_weight, color, letter_spacing, stroke_color, stroke_width and shadow."
         )
-        text_form.addRow("RICH TEXT RUNS · JSON", self.rich_runs_edit)
+        text_form.addRow("RICH TXT RUNS · JSON", self.rich_runs_edit)
 
-        raster_group = QGroupBox("TEXT RASTER PERFORMANCE")
+        raster_group = QGroupBox("TXT RASTER PERF")
         raster_form = QFormLayout(raster_group)
         self.text_live_preview_check = QCheckBox("Live preview")
         self.text_live_preview_check.setChecked(True)
@@ -178,7 +178,7 @@ class GeneratorsPanel(QWidget):
         self.text_freeze_check.setToolTip(
             "Hold the last uploaded text texture. Edits are coalesced and rasterized when unfrozen."
         )
-        raster_form.addRow("TEXTURE", self.text_freeze_check)
+        raster_form.addRow("TXTURE", self.text_freeze_check)
         self.text_fallback_check = QCheckBox(
             "Keep last valid texture if rasterization fails"
         )
@@ -187,7 +187,7 @@ class GeneratorsPanel(QWidget):
             "When enabled, renderers retain their last successful texture after a raster error."
         )
         raster_form.addRow("RECOVERY", self.text_fallback_check)
-        self.text_raster_status = QLabel("TEXT PIPELINE · READY")
+        self.text_raster_status = QLabel("TXT PIPELINE · READY")
         self.text_raster_status.setObjectName("mutedLabel")
         self.text_raster_status.setToolTip(
             "EDITING → RASTERIZING → READY. "
@@ -224,7 +224,7 @@ class GeneratorsPanel(QWidget):
         self.text_path_mode_combo.addItem("Circular", "circle")
         self.text_path_mode_combo.addItem("Arc", "arc")
         self.text_path_mode_combo.addItem("Custom polyline", "custom")
-        text_form.addRow("TEXT ON PATH", self.text_path_mode_combo)
+        text_form.addRow("TXT ON PATH", self.text_path_mode_combo)
         self.text_path_edit = QPlainTextEdit()
         self.text_path_edit.setPlaceholderText(
             "0.12, 0.68\n0.34, 0.28\n0.66, 0.72\n0.88, 0.32"
@@ -318,7 +318,7 @@ class GeneratorsPanel(QWidget):
         )
         text_form.addRow(self.text_motion_group)
 
-        random_group = QGroupBox("RANDOM TEXT POOL · ENGLISH / 日本語")
+        random_group = QGroupBox("RANDOM TXT POOL · ENGLISH / 日本語")
         random_form = QFormLayout(random_group)
         self.random_language_combo = QComboBox()
         self.random_language_combo.addItem("Bilingual", "bilingual")
@@ -341,7 +341,7 @@ class GeneratorsPanel(QWidget):
         for count in (6, 8, 10, 12, 16):
             self.random_count_combo.addItem(str(count), count)
         self.random_count_combo.setCurrentText("8")
-        random_form.addRow("FRAGMENTS", self.random_count_combo)
+        random_form.addRow("FRAGS", self.random_count_combo)
         self.dictionary_check = QCheckBox("Use repository dictionaries")
         self.dictionary_check.setChecked(True)
         random_form.addRow("DICTIONARY", self.dictionary_check)
@@ -350,7 +350,7 @@ class GeneratorsPanel(QWidget):
             "Allow Auto Performance to regenerate this text layer on its generator cycle."
         )
         self.auto_text_check.setChecked(True)
-        random_form.addRow("AUTO TEXT", self.auto_text_check)
+        random_form.addRow("AUTO TXT", self.auto_text_check)
         self.random_text_button = _icon_action(
             self,
             QStyle.StandardPixmap.SP_BrowserReload,
@@ -360,7 +360,7 @@ class GeneratorsPanel(QWidget):
         text_form.addRow(random_group)
         root.addWidget(self.text_group)
 
-        self.geometry_group = QGroupBox("GEOMETRY PATTERN")
+        self.geometry_group = QGroupBox("GEO PATTERN")
         geometry_form = QFormLayout(self.geometry_group)
         self.geometry_pattern_combo = QComboBox()
         self.geometry_pattern_combo.addItems(
@@ -368,14 +368,14 @@ class GeneratorsPanel(QWidget):
         )
         geometry_form.addRow("PATTERN", self.geometry_pattern_combo)
         self.geometry_density_slider, self.geometry_density_value = self._slider(
-            geometry_form, "DENSITY", 2, 80, 12
+            geometry_form, "DNST", 2, 80, 12
         )
         self.geometry_width_slider, self.geometry_width_value = self._slider(
             geometry_form, "LINE WIDTH", 1, 48, 4
         )
         root.addWidget(self.geometry_group)
 
-        self.waveform_group = QGroupBox("WAVEFORM")
+        self.waveform_group = QGroupBox("WFM")
         waveform_form = QFormLayout(self.waveform_group)
         self.waveform_pattern_combo = QComboBox()
         self.waveform_pattern_combo.addItems(
@@ -396,10 +396,10 @@ class GeneratorsPanel(QWidget):
         )
         root.addWidget(self.waveform_group)
 
-        self.particles_group = QGroupBox("GPU PARTICLE FIELD · LEGACY")
+        self.particles_group = QGroupBox("GPU PRTL FLD · LEGACY")
         particles_form = QFormLayout(self.particles_group)
         self.particle_density_slider, self.particle_density_value = self._slider(
-            particles_form, "FIELD DENSITY", 4, 120, 42
+            particles_form, "FLD DNST", 4, 120, 42
         )
         self.particle_speed_slider, self.particle_speed_value = self._slider(
             particles_form, "SPEED", 0, 200, 22
@@ -415,16 +415,16 @@ class GeneratorsPanel(QWidget):
         )
         self.particle_mode_combo = QComboBox()
         self.particle_mode_combo.addItems(["drift", "rise", "fall", "orbit"])
-        particles_form.addRow("FIELD MODE", self.particle_mode_combo)
+        particles_form.addRow("FLD MODE", self.particle_mode_combo)
         root.addWidget(self.particles_group)
 
-        self.particle_system_group = QGroupBox("PARTICLE SYSTEM 2.0 · GPU PHYSICS")
+        self.particle_system_group = QGroupBox("PRTL SYS 2.0 · GPU PHYSICS")
         system_form = QFormLayout(self.particle_system_group)
         self.particle_system_count_slider, self.particle_system_count_value = self._slider(
-            system_form, "PARTICLES · HARD CAP 8192", 128, 8192, 4096
+            system_form, "PRTLS · HARD CAP 8192", 128, 8192, 4096
         )
         self.particle_emission_rate_slider, self.particle_emission_rate_value = self._slider(
-            system_form, "CONTINUOUS EMISSION · PARTICLES / SEC", 0, 3000, 600
+            system_form, "CONTINUOUS EMISSION · PRTLS / SEC", 0, 3000, 600
         )
         self.particle_population_slider, self.particle_population_value = self._slider(
             system_form, "INDEPENDENT POPULATIONS", 1, 4, 2
@@ -440,7 +440,7 @@ class GeneratorsPanel(QWidget):
         self.particle_source_refresh_button = QPushButton("REFRESH")
         source_row.addWidget(self.particle_emitter_source_combo, 1)
         source_row.addWidget(self.particle_source_refresh_button)
-        system_form.addRow("VIDEO / IMAGE SOURCE", source_row)
+        system_form.addRow("VID / IMG SOURCE", source_row)
         self.particle_emitter_map_combo = QComboBox()
         self.particle_emitter_map_combo.addItem("Brightness / luminance", "luminance")
         self.particle_emitter_map_combo.addItem("Image alpha silhouette", "alpha")
@@ -453,7 +453,7 @@ class GeneratorsPanel(QWidget):
         for count in (4, 8, 12, 16):
             self.particle_emitter_attempts_combo.addItem(str(count), count)
         self.particle_emitter_attempts_combo.setCurrentIndex(2)
-        system_form.addRow("SOURCE SAMPLES / PARTICLE", self.particle_emitter_attempts_combo)
+        system_form.addRow("SOURCE SAMPLES / PRTL", self.particle_emitter_attempts_combo)
         self.particle_emitter_interval_slider, self.particle_emitter_interval_value = (
             self._slider(system_form, "SOURCE RESAMPLE · 0.1 SEC", 1, 100, 5)
         )
@@ -513,7 +513,7 @@ class GeneratorsPanel(QWidget):
         )
         self.particle_force_combo = QComboBox()
         self.particle_force_combo.addItems(["none", "attract", "repel", "orbit"])
-        system_form.addRow("FORCE FIELD", self.particle_force_combo)
+        system_form.addRow("FORCE FLD", self.particle_force_combo)
         self.particle_force_strength_slider, self.particle_force_strength_value = self._slider(
             system_form, "FORCE STRENGTH", 0, 400, 55
         )
@@ -527,7 +527,7 @@ class GeneratorsPanel(QWidget):
             system_form, "TRAIL PERSISTENCE", 0, 100, 72
         )
         self.particle_system_size_slider, self.particle_system_size_value = self._slider(
-            system_form, "PARTICLE RADIUS · PX", 1, 48, 6
+            system_form, "PRTL RADIUS · PX", 1, 48, 6
         )
         self.particle_size_curve_combo = QComboBox()
         self.particle_size_curve_combo.addItems(["constant", "grow", "shrink", "pulse"])
@@ -543,7 +543,7 @@ class GeneratorsPanel(QWidget):
         self.particle_system_hint = QLabel(
             "GPU simulation · fixed 60 Hz steps · max 8192 per layer / 16384 per output. "
             "Continuous rate-based emission can react to beat, onset and energy via AUTO "
-            "PERFORMANCE. Path, video luminance, image alpha and contour emitters sample "
+            "PERF. Path, video luminance, image alpha and contour emitters sample "
             "existing layer textures; source reform follows refreshed targets."
         )
         self.particle_system_hint.setWordWrap(True)
@@ -578,7 +578,7 @@ class GeneratorsPanel(QWidget):
         )
         root.addWidget(self.style_group)
 
-        self.layer_appearance_group = QGroupBox("SELECTED LAYER APPEARANCE")
+        self.layer_appearance_group = QGroupBox("SELECTED LY APPEARANCE")
         appearance_form = QFormLayout(self.layer_appearance_group)
         self.blend_mode_combo = QComboBox()
         self.blend_mode_combo.addItems(
@@ -590,7 +590,7 @@ class GeneratorsPanel(QWidget):
         )
         root.addWidget(self.layer_appearance_group)
 
-        self.overlay_group = QGroupBox("IMAGE / VIDEO OVERLAY")
+        self.overlay_group = QGroupBox("IMG / VID OVL")
         overlay_form = QFormLayout(self.overlay_group)
         self.overlay_in_spin = QDoubleSpinBox()
         self.overlay_in_spin.setRange(0.0, 86400.0)
@@ -635,7 +635,7 @@ class GeneratorsPanel(QWidget):
         root.addWidget(self.overlay_group)
         self.overlay_group.setVisible(False)
 
-        self.apply_button = QPushButton("APPLY GENERATOR SETTINGS")
+        self.apply_button = QPushButton("APPLY GEN SETTINGS")
         self.apply_button.setDefault(True)
         root.addWidget(self.apply_button)
         self.hint_label = QLabel(
@@ -846,8 +846,8 @@ class GeneratorsPanel(QWidget):
             if candidate.source_type not in {"video", "overlay"} or not candidate.source_id:
                 continue
             media_kind = (
-                "VIDEO" if candidate.source_type == "video"
-                else str(candidate.overlay_kind or "IMAGE").upper()
+                "VID" if candidate.source_type == "video"
+                else str(candidate.overlay_kind or "IMG").upper()
             )
             self.particle_emitter_source_combo.addItem(
                 f"{candidate.name} · {media_kind}", candidate.source_id
@@ -1009,11 +1009,11 @@ class GeneratorsPanel(QWidget):
             "rasterizing": "RASTERIZING",
             "ready": "READY",
             "failed": "FAILED",
-            "frozen": "FROZEN · LAST VALID TEXTURE",
+            "frozen": "FROZEN · LAST VALID TXTURE",
         }
         label = labels.get(phase, "READY")
         suffix = f" · {detail}" if detail else ""
-        self.text_raster_status.setText(f"TEXT PIPELINE · {label}{suffix}")
+        self.text_raster_status.setText(f"TXT PIPELINE · {label}{suffix}")
 
     def _sync_text_raster_status(self) -> None:
         layer = self._selected_layer()
@@ -1220,11 +1220,11 @@ class GeneratorsPanel(QWidget):
             if layer.source_type in {"generator", "overlay"}
         ]
         labels = {
-            "geometry": "GEOMETRY",
-            "text": "TEXT ART",
-            "waveform": "WAVEFORM",
-            "particles": "PARTICLES · FIELD",
-            "particle_system_2": "PARTICLE SYSTEM 2.0",
+            "geometry": "GEO",
+            "text": "TXT ART",
+            "waveform": "WFM",
+            "particles": "PRTLS · FLD",
+            "particle_system_2": "PRTL SYS 2.0",
         }
         self._loading = True
         self.layer_combo.blockSignals(True)
@@ -1232,9 +1232,9 @@ class GeneratorsPanel(QWidget):
         for layer in layers:
             if layer.source_type == "overlay":
                 media_kind = (layer.overlay_kind or "media").upper()
-                label = f"OVERLAY · {media_kind} · {layer.name}"
+                label = f"OVL · {media_kind} · {layer.name}"
             else:
-                label = f"{labels.get(layer.generator_type, 'GENERATOR')} · {layer.name}"
+                label = f"{labels.get(layer.generator_type, 'GEN')} · {layer.name}"
             self.layer_combo.addItem(label, layer.id)
         selected = self.layer_combo.findData(previous)
         self.layer_combo.setCurrentIndex(selected if selected >= 0 else 0)
@@ -1283,7 +1283,7 @@ class GeneratorsPanel(QWidget):
         self.overlay_group.setVisible(is_overlay)
         self.apply_button.setVisible(enabled)
         self.apply_button.setText(
-            "APPLY OVERLAY SETTINGS" if is_overlay else "APPLY GENERATOR SETTINGS"
+            "APPLY OVL SETTINGS" if is_overlay else "APPLY GEN SETTINGS"
         )
         self.apply_button.setEnabled(bool(layer and not layer.locked))
         self.remove_button.setEnabled(enabled)

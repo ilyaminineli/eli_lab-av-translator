@@ -5,15 +5,15 @@
 The intended live workflow is deliberately short:
 
 1. Prepare a composition with video decks and/or generator layers.
-2. In AUDIO / CONTROL, select a system-loopback device for local FFT analysis, or select Sonic Pi macros only.
-3. In AUTO PERFORMANCE, choose a style, musical synchronisation mode and session duration. The default is Generative + Phrase synchronised + Until stopped.
-4. Press PERFORMANCE MODE in the main toolbar.
+2. In AUD / CTRL, select a system-loopback device for local FFT analysis, or select Sonic Pi macros only.
+3. In AUTO PERF, choose a style, musical synchronisation mode and session duration. The default is Generative + Phrase synchronised + Until stopped.
+4. Press PERF MODE in the main toolbar.
 5. Run SONATA Expanded in Sonic Pi.
-6. Perform. Stop the Sonic Pi patch to stop AUTO PERFORMANCE at its transport/stop event; press STOP PERFORMANCE MODE to release resources and generated routing.
+6. Perform. Stop the Sonic Pi patch to stop AUTO PERF at its transport/stop event; press STOP PERF MODE to release resources and generated routing.
 
-Performance Mode starts the OSC receiver automatically using the address and port in AUDIO / CONTROL. The default is 127.0.0.1:57121. The receiver may already be running; in that case, the mode reuses it and does not claim ownership of it.
+Performance Mode starts the OSC receiver automatically using the address and port in AUD / CTRL. The default is 127.0.0.1:57121. The receiver may already be running; in that case, the mode reuses it and does not claim ownership of it.
 
-The first accepted Sonic Pi transport/start or clock/bar event changes the mode from ARMED to LIVE and starts the armed AUTO PERFORMANCE session. Starting the mode before running the patch is therefore safe: it waits for Sonic Pi rather than inventing a local musical clock. If the patch is already running and its OSC stream is still live, AUTO PERFORMANCE starts immediately when the mode is armed.
+The first accepted Sonic Pi transport/start or clock/bar event changes the mode from ARMED to LIVE and starts the armed AUTO PERF session. Starting the mode before running the patch is therefore safe: it waits for Sonic Pi rather than inventing a local musical clock. If the patch is already running and its OSC stream is still live, AUTO PERF starts immediately when the mode is armed.
 
 ## Sonic Pi and audio are separate inputs
 
@@ -66,7 +66,7 @@ The raster fingerprint is built from the static settings projection and includes
 
 #### Text raster performance controls
 
-The TEXT RASTER PERFORMANCE section gives the operator independent controls over editing and raster work:
+The TXT RASTER PERF section gives the operator independent controls over editing and raster work:
 
 - **Live Preview:** when enabled, committed text snapshots are rasterized automatically. When disabled, edits may still be committed to the composition, but the last uploaded texture is held until preview is re-enabled or Apply Immediately is invoked.
 - **Commit on pause:** commits the editor buffer after the short typing debounce. Turning it off leaves the buffer pending until an explicit apply or layer switch.
@@ -84,17 +84,17 @@ The four-deck/multi-layer acceptance test remains a target-machine rehearsal: ke
 
 Performance Mode ensures the built-in Sonic Pi energy/cutoff followers, beat/onset envelopes and phrase LFO exist. These become reusable named sources in the Modulator Bank and can feed multiple compatible layer targets. Existing modulator definitions with those AUTO names are re-enabled rather than duplicated.
 
-### AUTO PERFORMANCE
+### AUTO PERF
 
-The mode arms AUTO PERFORMANCE and waits for the Sonic Pi transport. Phrase/scene cues then drive random, structured or generative visual decisions. Generative mode increases variation with energy and intensity; scene IDs classify sections such as intro, development, peak, breakdown and outro. Cut probability, segment length, layout/effect/generator intervals and loop/switch probabilities are also modulation targets.
+The mode arms AUTO PERF and waits for the Sonic Pi transport. Phrase/scene cues then drive random, structured or generative visual decisions. Generative mode increases variation with energy and intensity; scene IDs classify sections such as intro, development, peak, breakdown and outro. Cut probability, segment length, layout/effect/generator intervals and loop/switch probabilities are also modulation targets.
 
 In Phrase mode the scheduled wall-clock randomizer is gated off. Changes are evaluated at phrase/scene cues; bar events can add small generative cuts in Bar/Hybrid modes. Time and Hybrid settings retain interval-based behaviour. This avoids two independent random schedulers fighting the musical form.
 
-If no playable video clips are loaded, AUTO PERFORMANCE can still operate on generators, text, layout, overlays and effects. Video cuts are simply skipped until footage is available.
+If no playable video clips are loaded, AUTO PERF can still operate on generators, text, layout, overlays and effects. Video cuts are simply skipped until footage is available.
 
 ## State and ownership
 
-The mode tracks whether it started the OSC receiver and audio capture. Stop only closes services the mode owns. A receiver or audio stream that was already running before the mode started remains available afterward. When SONATA sends transport/stop, the current AUTO PERFORMANCE pass stops and the mode re-arms; running the patch again starts a fresh pass without toggling Performance Mode.
+The mode tracks whether it started the OSC receiver and audio capture. Stop only closes services the mode owns. A receiver or audio stream that was already running before the mode started remains available afterward. When SONATA sends transport/stop, the current AUTO PERF pass stops and the mode re-arms; running the patch again starts a fresh pass without toggling Performance Mode.
 
 Generated defaults use stable AUTO identifiers. Stop disables only those generated routes, Modulator Bank definitions and per-layer modifiers, evaluates the release path, and restores their baselines. User-authored routes and modifiers remain configured and enabled.
 
@@ -102,7 +102,7 @@ Saving a project or performance set while Performance Mode is live writes the ge
 
 ## Diagnostics and recovery
 
-The AUDIO / CONTROL mode status displays OFF, ARMED, LIVE or DEGRADED. Its tooltip and the application diagnostics expose OSC status/counters, last-message age, audio state/queue/drop counters, bounded control queue state, active route/modulator counts, AUTO section/energy/cutoff and video/decode/render metrics. The main status bar follows the active projector renderer when a projector window is open; when the local preview dock is hidden, it explicitly reports LOCAL PREVIEW IDLE rather than implying that the projector's OpenGL context failed to initialise.
+The AUD / CTRL mode status displays OFF, ARMED, LIVE or DEGRADED. Its tooltip and the application diagnostics expose OSC status/counters, last-message age, audio state/queue/drop counters, bounded control queue state, active route/modulator counts, AUTO section/energy/cutoff and video/decode/render metrics. The main status bar follows the active projector renderer when a projector window is open; when the local preview dock is hidden, it explicitly reports LOCAL PREVIEW IDLE rather than implying that the projector's OpenGL context failed to initialise.
 
 If Sonic Pi is not started, the mode remains ARMED. If its OSC stream becomes stale, the mode returns to a waiting state and stale musical macros expire. If local audio capture fails, the mode continues in Sonic Pi-macro mode. A receiver startup failure is shown as DEGRADED and can be corrected by stopping/rearming the mode.
 

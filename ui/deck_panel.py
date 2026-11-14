@@ -55,7 +55,7 @@ class DeckCard(QGroupBox):
         layout.setSpacing(5)
 
         identity = QHBoxLayout()
-        self.thumbnail_label = QLabel("NO THUMBNAIL")
+        self.thumbnail_label = QLabel("NO THUMB")
         self.thumbnail_label.setObjectName("deckThumbnail")
         self.thumbnail_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.thumbnail_label.setFixedSize(80, 45)
@@ -67,7 +67,7 @@ class DeckCard(QGroupBox):
         self.file_label.setWordWrap(True)
         self.file_label.setMinimumWidth(100)
         self.file_label.setObjectName("deckClipName")
-        self.state_label = QLabel("EMPTY")
+        self.state_label = QLabel("NN")
         self.state_label.setObjectName("mutedLabel")
         self.detail_label = QLabel("Load a clip from the Media Library")
         self.detail_label.setWordWrap(True)
@@ -191,7 +191,7 @@ class DeckCard(QGroupBox):
         pixmap = QPixmap(source) if source else QPixmap()
         if pixmap.isNull():
             self.thumbnail_label.setPixmap(QPixmap())
-            self.thumbnail_label.setText("NO THUMBNAIL")
+            self.thumbnail_label.setText("NO THUMB")
             return
         self.thumbnail_label.setText("")
         self.thumbnail_label.setPixmap(
@@ -234,10 +234,10 @@ class DeckCard(QGroupBox):
         elif path:
             state = "STOPPED / READY"
         else:
-            state = "EMPTY"
+            state = "NN"
         self.state_label.setText(state)
 
-        details = [f"LAYER · {layer_name}"] if layer_name else ["LAYER · NOT ATTACHED"]
+        details = [f"LY · {layer_name}"] if layer_name else ["LY · NOT ATTACHED"]
         if asset:
             if asset.width and asset.height:
                 details.append(f"{asset.width}×{asset.height}")
@@ -324,10 +324,10 @@ class DeckPanel(QWidget):
         outer.addWidget(self.scroll, 1)
         self.cards: dict[str, DeckCard] = {}
         titles = {
-            "deck_a": "VIDEO DECK A",
-            "deck_b": "VIDEO DECK B",
-            "deck_c": "VIDEO DECK C",
-            "deck_d": "VIDEO DECK D",
+            "deck_a": "VD A",
+            "deck_b": "VD B",
+            "deck_c": "VD C",
+            "deck_d": "VD D",
         }
         for deck_id, deck in application.decks.items():
             card = DeckCard(deck_id, titles.get(deck_id, deck_id.upper()), self.body)

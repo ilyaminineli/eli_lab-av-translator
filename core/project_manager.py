@@ -8,7 +8,7 @@ from typing import Any
 from core.composition import Composition
 
 PROJECT_FORMAT = "eli_lab_av_translator"
-PROJECT_SCHEMA_VERSION = 2
+PROJECT_SCHEMA_VER = 2
 
 
 class ProjectManager:
@@ -28,7 +28,7 @@ class ProjectManager:
         destination.parent.mkdir(parents=True, exist_ok=True)
         payload = {
             "format": PROJECT_FORMAT,
-            "schema_version": PROJECT_SCHEMA_VERSION,
+            "schema_version": PROJECT_SCHEMA_VER,
             "project": {"name": composition.name},
             "composition": composition.to_dict(),
             "decks": decks or [],
@@ -52,10 +52,10 @@ class ProjectManager:
         if payload.get("format") != PROJECT_FORMAT:
             raise ValueError("This file is not an eli_lab AV Translator project.")
         version = int(payload.get("schema_version", 0))
-        if version > PROJECT_SCHEMA_VERSION:
+        if version > PROJECT_SCHEMA_VER:
             raise ValueError(
                 f"Project schema {version} is newer than supported schema "
-                f"{PROJECT_SCHEMA_VERSION}."
+                f"{PROJECT_SCHEMA_VER}."
             )
         composition = Composition.from_dict(payload.get("composition", {}))
         decks = payload.get("decks", [])

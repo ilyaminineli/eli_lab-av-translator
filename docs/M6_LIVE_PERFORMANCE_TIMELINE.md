@@ -6,7 +6,7 @@ This is subsection C of the separate **M6 — Advanced Performance Controls** wo
 
 ## Purpose
 
-The Live Performance Timeline is a saved, musical event plan that runs alongside the existing internal or Sonic Pi transport. It adds deliberate structure to a show without replacing AUTO PERFORMANCE or the current generative variation system.
+The Live Performance Timeline is a saved, musical event plan that runs alongside the existing internal or Sonic Pi transport. It adds deliberate structure to a show without replacing AUTO PERF or the current generative variation system.
 
 Events are positioned by **bar and beat**, not by video frame or wall-clock timestamp. A show can contain section and phrase markers as well as actions that recall scenes, control decks, change effects, regenerate text, change palettes, drive Performance Macros and cue transitions.
 
@@ -94,13 +94,13 @@ Effect changes accept only known EffectSettings fields and validated enum values
 
 ## Generative variation alongside the timeline
 
-The timeline is intentionally additive. AUTO PERFORMANCE and the Modulator Bank can continue to produce generative variation while the timeline places structural cues around it. For example, a timeline can mark a new section, recall a known composition, change a palette, trigger text regeneration and push a Performance Macro to a new intensity; AUTO PERFORMANCE can continue making its own interval/bar/phrase-aware decisions inside that section.
+The timeline is intentionally additive. AUTO PERF and the Modulator Bank can continue to produce generative variation while the timeline places structural cues around it. For example, a timeline can mark a new section, recall a known composition, change a palette, trigger text regeneration and push a Performance Macro to a new intensity; AUTO PERF can continue making its own interval/bar/phrase-aware decisions inside that section.
 
 A marker by itself does not change automation style or lock a section's appearance. Use scene recall, effect, palette, text or macro events when the show needs an explicit state change. Manual deck locks and layer locks remain respected for the corresponding actions.
 
 ## Authoring surface
 
-The **LIVE PERFORMANCE TIMELINE** dock provides:
+The **LIVE PERF TMLN** dock provides:
 - A sorted bar/beat event list with event type and label.
 - Enable/disable checkboxes.
 - Bar, beat, event type, label and JSON payload editing.
@@ -125,7 +125,7 @@ The editor intentionally exposes payload JSON for the first increment instead of
 - Sonic Pi beat positions are interpolated between bar packets using the last received BPM. The current protocol does not send every beat as a packet.
 - Scene recall reuses the existing scene morph/cut behaviour. Dual-scene crossfades, midpoint switching and fade-through-black are not implemented here.
 - Phrase markers are user-authored labels at bar/beat positions; the timeline does not infer musical phrases from audio.
-- The timeline can coexist with AUTO PERFORMANCE, but does not yet provide section-scoped automation profiles, nested timelines, conditional branches or generative probability rules per event.
+- The timeline can coexist with AUTO PERF, but does not yet provide section-scoped automation profiles, nested timelines, conditional branches or generative probability rules per event.
 - Target-Windows live musical rehearsal, full SONATA timing, deck/media stress and projector acceptance remain manual validation work. A successful compile/Ruff workflow does not replace those checks.
 
 ## Acceptance checklist
@@ -137,6 +137,6 @@ The editor intentionally exposes payload JSON for the first increment instead of
 - [ ] Disabled events do not execute.
 - [ ] All nine event types validate payloads and execute through the application thread.
 - [ ] Missing scene/media/layer references are reported and do not stop subsequent events.
-- [ ] AUTO PERFORMANCE and macro sources continue operating alongside the timeline.
+- [ ] AUTO PERF and macro sources continue operating alongside the timeline.
 - [ ] A representative 113-bar show is rehearsed on the target Windows machine with scene, deck, effect, text, palette and modulation events.
 - [ ] Timing, late-packet behaviour, manual lock handling, UI responsiveness and projector output are recorded during acceptance.

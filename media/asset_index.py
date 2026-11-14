@@ -5,8 +5,8 @@ import hashlib
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
-IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif", ".apng", ".tif", ".tiff"}
-VIDEO_EXTENSIONS = {".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v"}
+IMG_EXNS = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif", ".apng", ".tif", ".tiff"}
+VID_EXNS = {".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v"}
 
 
 @dataclass(frozen=True)
@@ -71,9 +71,9 @@ class VisualAssetIndex:
                 if not path.is_file() or path.name.startswith("."):
                     continue
                 suffix = path.suffix.lower()
-                if suffix not in IMAGE_EXTENSIONS | VIDEO_EXTENSIONS:
+                if suffix not in IMG_EXNS | VID_EXNS:
                     continue
-                kind = "video" if suffix in VIDEO_EXTENSIONS else "image"
+                kind = "video" if suffix in VID_EXNS else "image"
                 category, tags, purposes = _classify(path, root)
                 identity = hashlib.sha1(str(path).encode("utf-8")).hexdigest()[:16]
                 found[identity] = VisualAsset(

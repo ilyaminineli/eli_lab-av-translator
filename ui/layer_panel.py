@@ -28,13 +28,13 @@ from PySide6.QtWidgets import (
 
 from core.application import Application
 from core.performance_modifiers import (
-    PERFORMANCE_MODIFIER_SOURCES,
-    PERFORMANCE_MODIFIER_TARGETS,
+    PERF_MODIFIER_SOURCES,
+    PERF_MODIFIER_TARGETS,
     LayerPerformanceModifier,
 )
 from effects.layer_settings import (
     EFFECT_STAGE_TYPES,
-    LAYER_EFFECT_PRESETS,
+    LY_EFFECT_PSETS,
     apply_effect_chain_preset,
     normalize_layer_effects,
 )
@@ -73,10 +73,10 @@ class LayerPanel(QWidget):
         controls_layout = QVBoxLayout(controls_body)
         controls_layout.setContentsMargins(2, 2, 2, 2)
 
-        self.layer_lock_check = QCheckBox("LOCK SELECTED LAYER")
+        self.layer_lock_check = QCheckBox("LOCK SELECTED LY")
         controls_layout.addWidget(self.layer_lock_check)
 
-        self.transform_group = QGroupBox("SELECTED LAYER TRANSFORM")
+        self.transform_group = QGroupBox("SELECTED LY TRANSFORM")
         transform_layout = QVBoxLayout(self.transform_group)
         self.position_x = self._add_slider(transform_layout, "X POSITION", 0, 100, 50)
         self.position_y = self._add_slider(transform_layout, "Y POSITION", 0, 100, 50)
@@ -90,7 +90,7 @@ class LayerPanel(QWidget):
         transform_layout.addLayout(blend_row)
         controls_layout.addWidget(self.transform_group)
 
-        self.performance_modifiers_group = QGroupBox("PERFORMANCE MODIFIERS · PER LAYER")
+        self.performance_modifiers_group = QGroupBox("PERF MODIFIERS · PER LY")
         modifier_layout = QVBoxLayout(self.performance_modifiers_group)
         self.modifier_help_label = QLabel(
             "Give this layer its own rhythmic, audio or Sonic Pi movement. "
@@ -98,7 +98,7 @@ class LayerPanel(QWidget):
         )
         self.modifier_help_label.setWordWrap(True)
         modifier_layout.addWidget(self.modifier_help_label)
-        self.modifier_rhythm_status = QLabel("BEAT — · DOWNBEAT — · PHRASE —")
+        self.modifier_rhythm_status = QLabel("BT — · DOWNBT — · PHRASE —")
         self.modifier_rhythm_status.setObjectName("mutedLabel")
         modifier_layout.addWidget(self.modifier_rhythm_status)
         self.modifier_list = QListWidget()
@@ -107,7 +107,7 @@ class LayerPanel(QWidget):
         modifier_layout.addWidget(self.modifier_list)
 
         self.modifier_source_combo = QComboBox()
-        for source_id, label in PERFORMANCE_MODIFIER_SOURCES.items():
+        for source_id, label in PERF_MODIFIER_SOURCES.items():
             self.modifier_source_combo.addItem(label, source_id)
         self.modifier_target_combo = QComboBox()
         self.modifier_curve_combo = QComboBox()
@@ -127,12 +127,12 @@ class LayerPanel(QWidget):
         response_row.addWidget(self.modifier_polarity_combo, 1)
         modifier_layout.addLayout(response_row)
         self.modifier_depth = self._add_slider(
-            modifier_layout, "DEPTH · %", 0, 100, 12
+            modifier_layout, "DPTH · %", 0, 100, 12
         )
         modifier_buttons = QHBoxLayout()
         self.modifier_add_button = QPushButton("ADD MODIFIER")
-        self.modifier_beat_button = QPushButton("BEAT")
-        self.modifier_downbeat_button = QPushButton("DOWNBEAT")
+        self.modifier_beat_button = QPushButton("BT")
+        self.modifier_downbeat_button = QPushButton("DOWNBT")
         self.modifier_phrase_button = QPushButton("PHRASE")
         for button in (
                 self.modifier_add_button,
@@ -148,13 +148,13 @@ class LayerPanel(QWidget):
         self._modifier_signature: tuple = ()
         self._modifier_widgets: dict[str, tuple[QCheckBox, QLabel, QProgressBar]] = {}
 
-        self.layer_fx_group = QGroupBox("SELECTED LAYER EFFECT STACK")
+        self.layer_fx_group = QGroupBox("SELECTED LY EFFECT STACK")
         layer_fx_layout = QVBoxLayout(self.layer_fx_group)
-        self.layer_fx_enabled = QCheckBox("ENABLE LAYER EFFECTS")
+        self.layer_fx_enabled = QCheckBox("ON LY FX")
         self.layer_fx_layout = layer_fx_layout
         layer_fx_layout.addWidget(self.layer_fx_enabled)
         self.layer_fx_preset = QComboBox()
-        self.layer_fx_preset.addItems(list(LAYER_EFFECT_PRESETS) + ["Custom"])
+        self.layer_fx_preset.addItems(list(LY_EFFECT_PSETS) + ["Custom"])
         layer_fx_layout.addWidget(self.layer_fx_preset)
         layer_fx_layout.addWidget(QLabel("STAGE ORDER · TOP TO BOTTOM"))
         self.fx_stage_list = QListWidget()
@@ -177,8 +177,8 @@ class LayerPanel(QWidget):
         layer_fx_layout.addLayout(stage_row)
         chain_row = QHBoxLayout()
         self.fx_chain_save = QPushButton("SAVE CHAIN…")
-        self.fx_chain_export = QPushButton("EXPORT PRESETS…")
-        self.fx_chain_import = QPushButton("IMPORT PRESETS…")
+        self.fx_chain_export = QPushButton("EXPT PSETS…")
+        self.fx_chain_import = QPushButton("IMPORT PSETS…")
         for button in (self.fx_chain_save, self.fx_chain_export, self.fx_chain_import):
             chain_row.addWidget(button)
         layer_fx_layout.addLayout(chain_row)
@@ -206,7 +206,7 @@ class LayerPanel(QWidget):
             self.layer_fx_sliders[key] = (label, slider, title)
         controls_layout.addWidget(self.layer_fx_group)
 
-        self.remove_layer_button = QPushButton("REMOVE SELECTED LAYER")
+        self.remove_layer_button = QPushButton("REMOVE SELECTED LY")
         controls_layout.addWidget(self.remove_layer_button)
         controls_layout.addStretch(1)
         self.controls_scroll = QScrollArea()
@@ -455,7 +455,7 @@ class LayerPanel(QWidget):
 
     def _modifier_targets_for_layer(self, layer) -> list[str]:
         targets = [
-            target_id for target_id, spec in PERFORMANCE_MODIFIER_TARGETS.items()
+            target_id for target_id, spec in PERF_MODIFIER_TARGETS.items()
             if spec.category == "layer"
         ]
         if layer.source_type == "generator":
@@ -490,14 +490,14 @@ class LayerPanel(QWidget):
             player = self.application._overlay_images.get(layer.id)
             if player is not None and player.animated:
                 targets.extend(
-                    target_id for target_id, spec in PERFORMANCE_MODIFIER_TARGETS.items()
+                    target_id for target_id, spec in PERF_MODIFIER_TARGETS.items()
                     if spec.category == "overlay"
                 )
         return targets
 
     def sync_performance_modifier_sources(self) -> None:
         current = self.modifier_source_combo.currentData()
-        sources = dict(PERFORMANCE_MODIFIER_SOURCES)
+        sources = dict(PERF_MODIFIER_SOURCES)
         for definition in self.application.modulator_bank.list_modulators():
             sources[f"modulator.{definition.modulator_id}"] = (
                 f"Bank · {definition.name}"
@@ -519,7 +519,7 @@ class LayerPanel(QWidget):
         self.modifier_target_combo.clear()
         for target_id in valid:
             self.modifier_target_combo.addItem(
-                PERFORMANCE_MODIFIER_TARGETS[target_id].label,
+                PERF_MODIFIER_TARGETS[target_id].label,
                 target_id,
             )
         index = self.modifier_target_combo.findData(current)
@@ -587,7 +587,7 @@ class LayerPanel(QWidget):
         layer = self._selected_layer()
         if layer is None or layer.locked or not target_id:
             return
-        source_label = PERFORMANCE_MODIFIER_SOURCES.get(source_id)
+        source_label = PERF_MODIFIER_SOURCES.get(source_id)
         if source_label is None and source_id.startswith("modulator."):
             definition = self.application.modulator_bank.get(
                 source_id.removeprefix("modulator.")
@@ -596,7 +596,7 @@ class LayerPanel(QWidget):
                 f"Bank · {definition.name}" if definition is not None else source_id
             )
         source_label = source_label or source_id
-        target_label = PERFORMANCE_MODIFIER_TARGETS[target_id].label
+        target_label = PERF_MODIFIER_TARGETS[target_id].label
         modifier = LayerPerformanceModifier(
             name=f"{source_label.split('·')[-1].strip()} → {target_label}",
             source_id=source_id,
@@ -637,7 +637,7 @@ class LayerPanel(QWidget):
         layer = self._selected_layer()
         sources = self.application._modulation_sources()
         self.modifier_rhythm_status.setText(
-            "BEAT {beat:.2f} · DOWNBEAT {downbeat:.2f} · PHRASE {phrase:.2f}".format(
+            "BT {beat:.2f} · DOWNBT {downbeat:.2f} · PHRASE {phrase:.2f}".format(
                 beat=sources.get("transport.beat_pulse", 0.0),
                 downbeat=sources.get("transport.downbeat_pulse", 0.0),
                 phrase=sources.get("transport.phrase_pulse", 0.0),
@@ -689,7 +689,7 @@ class LayerPanel(QWidget):
             for raw in records:
                 modifier_id = str(raw.get("modifier_id", ""))
                 source_id = str(raw.get("source_id", ""))
-                source_label = PERFORMANCE_MODIFIER_SOURCES.get(source_id)
+                source_label = PERF_MODIFIER_SOURCES.get(source_id)
                 if source_label is None and source_id.startswith("modulator."):
                     definition = self.application.modulator_bank.get(
                         source_id.removeprefix("modulator.")
@@ -700,7 +700,7 @@ class LayerPanel(QWidget):
                         else source_id
                     )
                 source_label = source_label or source_id or "unknown source"
-                target_spec = PERFORMANCE_MODIFIER_TARGETS.get(str(raw.get("target_id", "")))
+                target_spec = PERF_MODIFIER_TARGETS.get(str(raw.get("target_id", "")))
                 target_label = target_spec.label if target_spec else str(raw.get("target_id", ""))
                 depth = float(raw.get("depth", 0.0))
                 item = QListWidgetItem()
@@ -771,7 +771,7 @@ class LayerPanel(QWidget):
         self.layer_fx_preset.blockSignals(True)
         imported = self.application.composition.metadata.get("layer_fx_presets", {})
         known_names = (
-                list(LAYER_EFFECT_PRESETS)
+                list(LY_EFFECT_PSETS)
                 + ["Xerox Stack", "Negative Print", "Signal Scan"]
                 + (
                     list(imported) if isinstance(imported, dict) else []
@@ -780,9 +780,9 @@ class LayerPanel(QWidget):
         self.layer_fx_preset.clear()
         self.layer_fx_preset.addItems(list(dict.fromkeys(known_names)) + ["Custom"])
         self.layer_fx_preset.setCurrentText("Custom")
-        for name in LAYER_EFFECT_PRESETS:
+        for name in LY_EFFECT_PSETS:
             if normalize_layer_effects({
-                **LAYER_EFFECT_PRESETS[name],
+                **LY_EFFECT_PSETS[name],
                 "enabled": name != "Clean",
             }) == values:
                 self.layer_fx_preset.setCurrentText(name)

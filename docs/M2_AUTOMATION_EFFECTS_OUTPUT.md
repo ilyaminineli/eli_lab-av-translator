@@ -2,7 +2,7 @@
 
 ## Purpose
 
-M2 turns the four-deck video mixer into an unattended VJ instrument. The operator imports a footage folder, chooses a pacing profile and session length, starts automation, and can send the master composition to a separate monitor or projector.
+M2 turns the four-deck video mixer into an unattended VJ instrument. The operator imports a footage folder, chooses a pacing profile and SESSL, starts automation, and can send the master composition to a separate monitor or projector.
 
 This milestone deliberately focuses on video, effects and automation. Audio and Sonic Pi integration remain separate work.
 
@@ -50,8 +50,8 @@ Built-in looks are parameter presets. They are intentionally editable rather tha
 
 The automation panel exposes:
 
-- Footage pool: all indexed folders or one imported folder.
-- Session length: 30, 45, 60, 90 or 120 minutes, or until stopped.
+- FPOOL: all indexed folders or one imported folder.
+- SESSL: 30, 45, 60, 90 or 120 minutes, or until stopped.
 - Cut rhythm: slow, balanced or fast.
 - In/out length: short, mixed or long fragments.
 - Loop probability: occasional, mixed or frequent.

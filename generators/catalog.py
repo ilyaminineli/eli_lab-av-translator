@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
-GENERATOR_TYPES = ("geometry", "text", "waveform", "particles", "particle_system_2")
+GEN_TYPES = ("geometry", "text", "waveform", "particles", "particle_system_2")
 
 _DEFAULTS: dict[str, dict[str, Any]] = {
     "geometry": {

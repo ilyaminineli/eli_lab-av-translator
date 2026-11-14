@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass
 
-from effects.settings import PRESETS
+from effects.settings import PSETS
 from generators.palettes import palette_names
 
 
@@ -18,7 +18,7 @@ class SceneProfile:
         self.scene_id = str(self.scene_id).strip()
         self.label = str(self.label).strip()[:80] or self.scene_id
         self.intensity = max(0.0, min(1.0, float(self.intensity)))
-        if self.master_look not in PRESETS:
+        if self.master_look not in PSETS:
             self.master_look = "Clean"
         if self.palette not in palette_names():
             self.palette = palette_names()[0]

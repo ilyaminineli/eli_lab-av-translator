@@ -47,17 +47,17 @@ At the top of `SONATA_expanded.rb`, the helper exposes three values:
 
 - `$sp_av_enabled = true` — set to `false` for an audio-only rehearsal.
 - `$sp_av_host = "127.0.0.1"` — explicit AV Translator bind address.
-- `$sp_av_port = 57121` — match the UDP port shown in the AUDIO / CONTROL dock.
+- `$sp_av_port = 57121` — match the UDP port shown in the AUD / CTRL dock.
 
 A unique session identifier is generated at patch start from a wall-clock timestamp with a microsecond component; it does not depend on the patch's seeded musical random generator, so rapid restarts receive distinct IDs. A shared sequence counter increments for each outgoing message inside a short mutex-protected sender section, so concurrent musical loops cannot reuse or reorder sequence numbers. The helper uses Sonic Pi's `osc_send(host, port, path, *args)` API and does not depend on Sonic Pi's incoming OSC port. If AV Translator is closed, local UDP sends are harmless; the patch's audio structure and cues continue to run.
 
 ## One-button autonomous connection
 
-1. Prepare the composition and choose the local audio source in AUDIO / CONTROL. For actual analysis of the sound playing from Sonic Pi, select the system-loopback device. Choose Sonic Pi macros only to run without local audio capture.
+1. Prepare the composition and choose the local audio source in AUD / CTRL. For actual analysis of the sound playing from Sonic Pi, select the system-loopback device. Choose Sonic Pi macros only to run without local audio capture.
 2. Verify the OSC bind address and port. Same-computer use defaults to 127.0.0.1:57121. COPY SONATA SETTINGS copies the address and port lines for the patch.
-3. Press PERFORMANCE MODE in the main toolbar. The application starts the OSC receiver automatically, starts the selected local audio capture if requested, installs missing default modulation curves and AUTO PERFORMANCE assignments, and arms phrase-aware automation.
-4. Run SONATA_expanded.rb in Sonic Pi. The first transport/start or clock/bar packet switches the mode from ARMED to LIVE and starts AUTO PERFORMANCE. Scene changes and phrase cues then drive visual variations.
-5. Watch AUDIO / CONTROL for receiver freshness, audio source state, modulation outputs and AUTO PERFORMANCE status. Stop SONATA to stop automation; press STOP PERFORMANCE MODE to release resources owned by the mode and restore generated mapping baselines.
+3. Press PERF MODE in the main toolbar. The application starts the OSC receiver automatically, starts the selected local audio capture if requested, installs missing default modulation curves and AUTO PERF assignments, and arms phrase-aware automation.
+4. Run SONATA_expanded.rb in Sonic Pi. The first transport/start or clock/bar packet switches the mode from ARMED to LIVE and starts AUTO PERF. Scene changes and phrase cues then drive visual variations.
+5. Watch AUD / CTRL for receiver freshness, audio source state, modulation outputs and AUTO PERF status. Stop SONATA to stop automation; press STOP PERF MODE to release resources owned by the mode and restore generated mapping baselines.
 
 The mode may also reuse an OSC receiver that was started manually. It will not close a receiver or audio stream that was already running before Performance Mode took ownership. Sonic Pi is an OSC control source, not an audio-device entry: normalized energy/cutoff and transport continue to work without local audio capture, while system loopback adds real audio-band/onset analysis.
 
@@ -103,9 +103,9 @@ For example, an additional live patch can set CHAOS to 0.75 with `/eli_lab/v1/ma
 - Input is rate-limited (60 messages/second by default) and the M3 event queue remains bounded.
 - The receiver runs on one dedicated daemon worker. It only creates validated `ControlEvent` objects and submits them to the queue.
 - The main application tick drains a bounded number of events, updates performance-control state and applies modulation. Qt widgets, composition state and OpenGL resources are never touched by the OSC worker.
-- The AUDIO / CONTROL dock shows listening/live/stale status, last address, active session, accepted/rejected/dropped counts and last packet age.
+- The AUD / CTRL dock shows listening/live/stale status, last address, active session, accepted/rejected/dropped counts and last packet age.
 
-A lost packet does not block the clock: the next bar or macro packet is handled independently. Malformed datagrams are discarded and counted; the receiver remains available. A stale sender is recovered by restarting SONATA with a fresh session ID. If STOP PERFORMANCE MODE was pressed, arm Performance Mode again before restarting the patch; the mode starts or reuses the receiver automatically.
+A lost packet does not block the clock: the next bar or macro packet is handled independently. Malformed datagrams are discarded and counted; the receiver remains available. A stale sender is recovered by restarting SONATA with a fresh session ID. If STOP PERF MODE was pressed, arm Performance Mode again before restarting the patch; the mode starts or reuses the receiver automatically.
 
 ## Test without Sonic Pi
 
@@ -117,10 +117,10 @@ The script sends start, bar, scene, energy/cutoff, heartbeat, phrase and end eve
 
 ## Live rehearsal checklist
 
-1. Start AV Translator and press PERFORMANCE MODE. Confirm the receiver is listening on `127.0.0.1:57121` and the mode is ARMED.
+1. Start AV Translator and press PERF MODE. Confirm the receiver is listening on `127.0.0.1:57121` and the mode is ARMED.
 2. In Sonic Pi, leave `$sp_av_enabled = true`, verify host and port, then run SONATA. Confirm the mode moves to LIVE.
 3. Confirm BPM 92, bar positions 1 through 384, all 16 scene IDs, energy/cutoff movement, four-bar phrase cues and final stop.
 4. Stop/restart the patch and confirm the new session is accepted while delayed packets from the prior session are rejected.
-5. Press STOP PERFORMANCE MODE and confirm SONATA audio continues. Re-arm Performance Mode, restart SONATA and confirm a fresh OSC session becomes LIVE.
+5. Press STOP PERF MODE and confirm SONATA audio continues. Re-arm Performance Mode, restart SONATA and confirm a fresh OSC session becomes LIVE.
 
 **Validation boundary:** the OSC protocol and sender insertion are implemented. The complete 384-bar performance has not been executed inside Sonic Pi by the current quality workflow; timing and machine-specific rehearsal remain a manual sign-off.

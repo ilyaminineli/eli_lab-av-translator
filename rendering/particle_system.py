@@ -18,7 +18,7 @@ void main() {
 }
 """
 
-_SIMULATION_FRAGMENT = """#version 330
+_SIMULATION_FRAG = """#version 330
 uniform sampler2D u_state;
 uniform sampler2D u_metadata;
 uniform sampler2D u_target;
@@ -356,7 +356,7 @@ void main() {
 }
 """
 
-_PARTICLE_VERTEX = """#version 330
+_PRTL_VERTEX = """#version 330
 uniform sampler2D u_state;
 uniform sampler2D u_metadata;
 uniform vec2 u_state_size;
@@ -413,7 +413,7 @@ void main() {
 }
 """
 
-_PARTICLE_FRAGMENT = """#version 330
+_PRTL_FRAG = """#version 330
 in vec2 v_quad_uv;
 in vec3 v_color;
 in float v_alpha;
@@ -431,7 +431,7 @@ void main() {
 }
 """
 
-_TRAIL_FRAGMENT = """#version 330
+_TRAIL_FRAG = """#version 330
 uniform sampler2D u_previous;
 uniform float u_decay;
 in vec2 v_uv;
@@ -464,7 +464,7 @@ class _Population:
 class ParticleSystem2:
     """Deterministic GPU particle simulation with a strict bounded resource budget."""
 
-    MAX_PARTICLES_PER_SYSTEM = 8192
+    MAX_PRTLS_PER_SYS = 8192
     MAX_POPULATIONS = 4
     SIMULATION_WIDTH = 128
     FIXED_STEP = 1.0 / 60.0
@@ -475,15 +475,15 @@ class ParticleSystem2:
         self.ctx = context
         self.simulation_program = context.program(
             vertex_shader=_FULLSCREEN_VERTEX,
-            fragment_shader=_SIMULATION_FRAGMENT,
+            fragment_shader=_SIMULATION_FRAG,
         )
         self.particle_program = context.program(
-            vertex_shader=_PARTICLE_VERTEX,
-            fragment_shader=_PARTICLE_FRAGMENT,
+            vertex_shader=_PRTL_VERTEX,
+            fragment_shader=_PRTL_FRAG,
         )
         self.trail_program = context.program(
             vertex_shader=_FULLSCREEN_VERTEX,
-            fragment_shader=_TRAIL_FRAGMENT,
+            fragment_shader=_TRAIL_FRAG,
         )
         self.simulation_vao = context.vertex_array(
             self.simulation_program,
@@ -867,7 +867,7 @@ class ParticleSystem2:
         requested = int(normalized["particle_count"])
         if particle_limit is not None:
             requested = min(requested, max(0, int(particle_limit)))
-        requested = min(requested, self.MAX_PARTICLES_PER_SYSTEM)
+        requested = min(requested, self.MAX_PRTLS_PER_SYS)
         if requested <= 0:
             return None
 

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, fields
 
-PRESETS: dict[str, dict[str, float | bool]] = {
+PSETS: dict[str, dict[str, float | bool]] = {
     "Clean": {},
     "16mm Film": {
         "contrast": 1.12,
@@ -194,10 +194,10 @@ class EffectSettings:
     preset_name: str = "Clean"
 
     def apply_preset(self, name: str) -> None:
-        if name not in PRESETS:
+        if name not in PSETS:
             raise KeyError(f"Unknown effect preset: {name}")
         self.reset()
-        for field_name, value in PRESETS[name].items():
+        for field_name, value in PSETS[name].items():
             setattr(self, field_name, value)
         self.preset_name = name
         self.clamp()

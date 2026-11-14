@@ -8,7 +8,7 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import Any
 
-CONTROL_EVENT_KINDS = frozenset({
+CTRL_EVT_KINDS = frozenset({
     "transport.start",
     "transport.stop",
     "transport.pause",
@@ -42,7 +42,7 @@ class ControlEvent:
     received_at: float = field(default_factory=time.monotonic)
 
     def __post_init__(self) -> None:
-        if self.kind not in CONTROL_EVENT_KINDS:
+        if self.kind not in CTRL_EVT_KINDS:
             raise ValueError(f"Unsupported control event kind: {self.kind!r}")
         source = str(self.source).strip()
         if not _NAME_PATTERN.fullmatch(source):
@@ -322,7 +322,7 @@ class PerformanceControlState:
             else "STOP"
         )
         return (
-            f"CONTROL · {self.source_id.upper()} · {state} · "
-            f"{self.bpm:g} BPM · BAR {self.bar_index} · "
+            f"CTRL · {self.source_id.upper()} · {state} · "
+            f"{self.bpm:g} BPM · BR {self.bar_index} · "
             f"{self.scene_id.upper()} · INT {self.intensity:.2f}"
         )

@@ -1,6 +1,6 @@
 # M6 — Advanced VJ Environment
 
-**Status:** M6-A1, M6-B1, M6-C1, M6-D1/D2 and M6-E1 are merged to `main`. E1 delivers rich runs, practical vertical layouts, text paths and texture-space GPU animation; E2 glyph instancing and E3 presets/text feedback remain future slices. This live-performance follow-up adds AUTO PERFORMANCE targets for the newer typography, layer-FX and Particle System 2.0 controls, continuous particle emission, adaptive compact/4:3 workspace sizing, and a Queer text pool. Target-Windows GPU and projector validation remains open.  
+**Status:** M6-A1, M6-B1, M6-C1, M6-D1/D2 and M6-E1 are merged to `main`. E1 delivers rich runs, practical vertical layouts, text paths and texture-space GPU animation; E2 glyph instancing and E3 presets/text feedback remain future slices. This live-performance follow-up adds AUTO PERF targets for the newer typography, layer-FX and Particle System 2.0 controls, continuous particle emission, adaptive compact/4:3 workspace sizing, and a Queer text pool. Target-Windows GPU and projector validation remains open.  
 **First workstream:** A. A proper live mixer.  
 **Design references:** live-mixer / media-bin workflows in Resolume Arena, VDMX media bins and TouchDesigner performance interfaces. These are interaction references, not a requirement to clone another product's UI.
 
@@ -69,7 +69,7 @@ The exact A/B grouping, crossfader curve, transition duration and whether previe
 
 - Make media-bin triggers available to manual operation and to explicit automation actions.
 - Allow optional beat/bar/phrase quantization and retain immediate manual override.
-- Respect layer/deck locks and manual ownership; AUTO PERFORMANCE must not unexpectedly replace a manually protected source.
+- Respect layer/deck locks and manual ownership; AUTO PERF must not unexpectedly replace a manually protected source.
 - Keep user actions observable in the existing performance diagnostics and, where appropriate, in a bounded event/action history.
 - Persist bin definitions, clip references, deck assignments and operator preferences in a versioned format. Do not persist transient decoder handles or GPU objects.
 - Define missing-media and moved-path recovery without deleting original media.
@@ -91,7 +91,7 @@ The VJ Scene Bank promotes the existing Performance Scene Bank into a full compo
 
 The implementation reuses the versioned `PerformanceScene` model to preserve existing project and performance-set compatibility. B1 adds complete deck and modulation capture/recall, operator cue metadata, MIDI/OSC scene triggers, internal/external clock quantization and compatible random scene selection.
 
-See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md) for the full payload, recall safety rules, transition boundary and B0–B4 delivery sequence.
+See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMP_BANK.md) for the full payload, recall safety rules, transition boundary and B0–B4 delivery sequence.
 
 **Current B1 boundary:** compatible numeric parameters morph using the configured curve. Media source, text/generator content and other discrete settings currently use an explicit cut. Dual-scene crossfade, midpoint source switching, fade-through-black, scene sequences and per-parameter locks are not yet implemented.
 
@@ -105,7 +105,7 @@ The advanced visual path extends the existing ModernGL compositor without moving
 - A per-output feedback engine backed by a bounded five-texture GPU history ring. Controls include amount, decay, zoom, rotation, translation, colour shift, distortion, motion-difference-driven warp, block displacement, blend mode and up to three frames of delay.
 - Feedback freeze and generation-based reset; history remains local to each output's GL context and is never serialized as a GPU resource.
 
-The C1 directional scan-sort and motion-driven warp are intentionally shader approximations, not a full GPU sort algorithm or a dense optical-flow solver. Full pixel sorting, high-quality flow estimation, dedicated line-composition tools and multi-stage temporal transitions remain later C slices. See [M6-C — Advanced Visual Transformations](M6_C_ADVANCED_VISUAL_TRANSFORMATIONS.md).
+The C1 directional scan-sort and motion-driven warp are intentionally shader approximations, not a full GPU sort algorithm or a dense optical-flow solver. Full pixel sorting, high-quality flow estimation, dedicated line-composition tools and multi-stage temporal transitions remain later C slices. See [M6-C — Advanced Visual Transformations](M6_C_ADV_VISUAL_TRANSFORMATIONS.md).
 
 ## D. Advanced particle simulation
 
@@ -158,7 +158,7 @@ Per-population overrides, per-population modulation targets, advanced vector/col
 - Resize, layer removal and GL-context teardown release all simulation and trail resources.
 - A 4-deck composition with the maximum particle budget maintains responsive rendering on the target performance GPU.
 
-See [M6-D — Advanced Particle Simulation](M6_D_ADVANCED_PARTICLE_SIMULATION.md).
+See [M6-D — Advanced Particle Simulation](M6_D_ADV_PRTL_SIMULATION.md).
 
 ## E. Typography as an independent visual instrument
 
@@ -221,14 +221,14 @@ M6-A is ready for operator rehearsal when:
 
 M0–M5 remain the foundation. M5 code is merged to `main`; its static quality workflow passed on `358dc597`. M5's live SONATA, audio-device and projector stress checks remain manual sign-off tasks and should be carried forward in the project validation log rather than treated as passed. M6 development can proceed in parallel with those hardware checks.
 
-See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md), [ROADMAP.md](ROADMAP.md), [ARCHITECTURE.md](ARCHITECTURE.md) and [M5 Completion Handoff](M5_COMPLETION_HANDOFF.md).
+See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMP_BANK.md), [ROADMAP.md](ROADMAP.md), [ARCHITECTURE.md](ARCHITECTURE.md) and [M5 Completion Handoff](M5_COMPLETION_HANDOFF.md).
 
 
 ## F. Advanced performance controls
 
-**The Performance Macro System is merged to `main` in PR #30.** Six built-in macros — CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT — fan one 0–1 control value out to multiple master and compatible per-layer targets. They can be driven manually, by keyboard toggle, MIDI CC/note, OSC, audio/transport sources or Modulator Bank outputs. The macro definitions and assignments are persisted with projects and performance sets.
+**The Performance Macro System is merged to `main` in PR #30.** Six built-in macros — CHAOS, DNST, DPTH, DEC, PRESSURE and FRAG — fan one 0–1 control value out to multiple master and compatible per-layer targets. They can be driven manually, by keyboard toggle, MIDI CC/note, OSC, audio/transport sources or Modulator Bank outputs. The macro definitions and assignments are persisted with projects and performance sets.
 
-See [M6 — Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md) for the full source, routing, persistence and validation boundaries.
+See [M6 — Advanced Performance Controls](M6_ADV_PERF_CTRLS.md) for the full source, routing, persistence and validation boundaries.
 
 ## G. Live Performance Timeline
 
@@ -236,8 +236,8 @@ See [M6 — Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md) 
 
 Supported event types are scene markers, phrase markers, saved-scene recall, deck/clip triggers, master effect changes, Text Art regeneration, palette changes, Performance Macro modulation and transition cues. Each event has an authored bar/beat, label, enabled state and validated JSON payload. Same-beat events run in insertion order.
 
-The LIVE PERFORMANCE TIMELINE dock exposes the event list, editor, arm/disarm, rewind and the eight-section example structure. Event actions use existing app services and are processed on the application/UI tick. AUTO PERFORMANCE and Modulator Bank modulation can continue generating variation inside the timeline structure.
+The LIVE PERF TMLN dock exposes the event list, editor, arm/disarm, rewind and the eight-section example structure. Event actions use existing app services and are processed on the application/UI tick. AUTO PERF and Modulator Bank modulation can continue generating variation inside the timeline structure.
 
 Sonic Pi currently reports one clock event per bar. The timeline interpolates beat positions locally from that packet's BPM and timestamp; this is not a per-beat OSC clock or frame-accurate sync. Scene transitions retain the current numeric morph and discrete cut behaviour. Project loading restores timeline definitions but does not automatically arm playback.
 
-See [M6 — Live Performance Timeline](M6_LIVE_PERFORMANCE_TIMELINE.md) for event payloads, clock handling, persistence, limits and acceptance checks.
+See [M6 — Live Performance Timeline](M6_LIVE_PERF_TMLN.md) for event payloads, clock handling, persistence, limits and acceptance checks.

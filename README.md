@@ -4,7 +4,7 @@
 
 ## Project status — 14 November 2026
 
-The `main` branch contains the M0–M6 rendering, video, generator, performance-control and live-workspace foundations, plus the first M7 implementation increments. [PR #34](https://github.com/ilyaminineli/eli_lab-av-translator/pull/34) merged the unified visual director and the initial PERFORM / COMPOSE / PREPARE workspace shell. [PR #35](https://github.com/ilyaminineli/eli_lab-av-translator/pull/35) hardened timeline/macro runtime handling, bounded generator raster work, and introduced the monochrome workspace theme and 16:9 local preview frame.
+The `main` branch contains the M0–M6 rendering, video, generator, performance-control and live-workspace foundations, plus the first M7 implementation increments. [PR #34](https://github.com/ilyaminineli/eli_lab-av-translator/pull/34) merged the unified visual director and the initial PERF / COMPOSE / PREPARE workspace shell. [PR #35](https://github.com/ilyaminineli/eli_lab-av-translator/pull/35) hardened timeline/macro runtime handling, bounded generator raster work, and introduced the monochrome workspace theme and 16:9 local preview frame.
 
 The current `ui/adaptive-chaos-control-refresh` branch continues that work: freeform multi-source collage layouts, responsive four-deck cards, compact icon actions, headline-led Text Art and updated About/version information. This branch is not yet part of `main`.
 
@@ -17,14 +17,14 @@ The Quality workflow performs Python compilation, Ruff and regression tests. Tho
 - **M2 — Generative visuals:** geometry, Text Art, waveform and GPU particle generators; still/animated-image/video overlays; per-layer and master effects; animated typography and generator motion.
 - **M3 — Audio-reactive control:** internal transport, physical-input/system-loopback analysis, RMS/peak/low/mid/high/onset features, scenes and a normalized modulation matrix.
 - **M4 — Sonic Pi integration:** versioned `/eli_lab/v1` OSC receiver, session/sequence validation, bounded event delivery, diagnostics and SONATA control integration. Sonic Pi remains the music/audio playback authority.
-- **M5 — Performance environment:** one-button Performance Mode, phrase-aware AUTO PERFORMANCE, Modulator Bank, per-layer performance modifiers, MIDI mapping/scene tools and shared performance diagnostics.
+- **M5 — Performance environment:** one-button Performance Mode, phrase-aware AUTO PERF, Modulator Bank, per-layer performance modifiers, MIDI mapping/scene tools and shared performance diagnostics.
 - **M5 — Asynchronous generator rendering:** one application-owned background raster worker, latest-revision-wins snapshots, per-layer pending-job coalescing, static CPU raster / animated GPU-shader separation, preview/projector-local uploads and lifecycle invalidation.
 - **M5 — Text raster controls:** live preview, Apply Immediately, commit-on-pause, 25/50/75/100% preview quality, optional 1600×900 final raster, 1–20 Hz text-job rate limit, freeze, last-valid-texture fallback and pipeline status.
-- **M6 — Live performance controls:** six normalized 0–1 Performance Macros (CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT), Modulator Bank source assignments, MIDI/OSC/keyboard input, VJ scenes and a bar/beat live performance timeline.
+- **M6 — Live performance controls:** six normalized 0–1 Performance Macros (CHAOS, DNST, DPTH, DEC, PRESSURE and FRAG), Modulator Bank source assignments, MIDI/OSC/keyboard input, VJ scenes and a bar/beat live performance timeline.
 - **M7-A — Unified visual director:** composition-aware variation across video, generators and overlays; dynamic all-layer variation budgets, spatial relationships, optional anchors, activity feedback, per-layer cooldowns and manual-override precedence.
-- **M7-B — Operator workspace foundation:** central PERFORM / COMPOSE / PREPARE workspaces, a shared macro strip, compact/responsive workspace constraints and the monochrome Qt Material base theme.
+- **M7-B — Operator workspace foundation:** central PERF / COMPOSE / PREPARE workspaces, a shared macro strip, compact/responsive workspace constraints and the monochrome Qt Material base theme.
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for milestone state and remaining acceptance gates. Implementation detail is in the [M5 Autonomous Performance guide](docs/M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance Environment](docs/M5_PERFORMANCE_ENVIRONMENT.md), [Architecture](docs/ARCHITECTURE.md) and [M5 Completion Handoff](docs/M5_COMPLETION_HANDOFF.md).
+See [docs/ROADMAP.md](docs/ROADMAP.md) for milestone state and remaining acceptance gates. Implementation detail is in the [M5 Autonomous Performance guide](docs/M5_AUTONOMOUS_PERF.md), [M5 Performance Environment](docs/M5_PERF_ENVIRONMENT.md), [Architecture](docs/ARCHITECTURE.md) and [M5 Completion Handoff](docs/M5_COMPLETION_HANDOFF.md).
 
 ## Build and run on Windows
 
@@ -55,21 +55,21 @@ The GitHub **Windows Onefile Build** workflow is manual-dispatch only. It does n
 
 1. Import footage into the Media Library and load clips into the four decks.
 2. Add generator and overlay layers as needed; compose the layer order, transforms and effects.
-3. In **AUDIO / CONTROL**, choose system loopback for analysis of actual computer audio, or use Sonic Pi macros without local audio capture.
-4. In **AUTO PERFORMANCE**, choose style, musical sync and session duration.
-5. Press **PERFORMANCE MODE**, then run SONATA in Sonic Pi. The app waits in ARMED until it receives the first valid transport/clock event.
+3. In **AUD / CTRL**, choose system loopback for analysis of actual computer audio, or use Sonic Pi macros without local audio capture.
+4. In **AUTO PERF**, choose style, musical sync and session duration.
+5. Press **PERF MODE**, then run SONATA in Sonic Pi. The app waits in ARMED until it receives the first valid transport/clock event.
 6. Open **View → PROJECTOR OUTPUT** and select the external display.
-7. Stop SONATA to end the current automation pass. Press **STOP PERFORMANCE MODE** to release resources started by the mode and restore generated defaults.
+7. Stop SONATA to end the current automation pass. Press **STOP PERF MODE** to release resources started by the mode and restore generated defaults.
 
-For same-computer Sonic Pi use, the default receiver destination is `127.0.0.1:57121`. Sonic Pi's own incoming OSC port is not the destination for these outbound messages. See [SONATA integration notes](docs/SONIC_PI_SONATA_INTEGRATION.md). The Performance Macro panel is in AUDIO / CONTROL; the six macros can be fed by audio, transport, Sonic Pi `energy/cutoff` or Modulator Bank outputs, then routed to multiple targets.
+For same-computer Sonic Pi use, the default receiver destination is `127.0.0.1:57121`. Sonic Pi's own incoming OSC port is not the destination for these outbound messages. See [SONATA integration notes](docs/SONIC_PI_SONATA_INTEGRATION.md). The Performance Macro panel is in AUD / CTRL; the six macros can be fed by audio, transport, Sonic Pi `energy/cutoff` or Modulator Bank outputs, then routed to multiple targets.
 
 ## Generator and text rendering
 
 Static generator content is rasterized by the shared background service. Text content and typography changes create versioned CPU raster snapshots; text motion such as type-on, reveal, wave, jitter, crawl and glitch is applied by the compositor shader. A newer edit supersedes an older pending snapshot, and preview/projector renderers upload the accepted pixels independently while their own GL context is current.
 
-Text's **TEXT RASTER PERFORMANCE** controls let the operator trade preview detail for edit responsiveness. The last valid texture can remain visible while a new raster is prepared or after a raster failure. These controls do not pause video decoding, GPU motion, effects or audio-reactive updates.
+Text's **TXT RASTER PERF** controls let the operator trade preview detail for edit responsiveness. The last valid texture can remain visible while a new raster is prepared or after a raster failure. These controls do not pause video decoding, GPU motion, effects or audio-reactive updates.
 
-See [M2 Generative Visuals](docs/M2_GENERATIVE_VISUALS.md) and [M5 Autonomous Performance](docs/M5_AUTONOMOUS_PERFORMANCE.md).
+See [M2 Generative Visuals](docs/M2_GENERATIVE_VISUALS.md) and [M5 Autonomous Performance](docs/M5_AUTONOMOUS_PERF.md).
 
 ## System requirements and practical limits
 
@@ -104,4 +104,4 @@ Writable application data, the SQLite media index, thumbnails and logs live unde
 
 ## M6 — Advanced VJ Environment
 
-M6 is in active development across the live-deck, scene-bank, visual-transformation, particle, typography and performance-control workstreams. The current Performance Macro follow-up is documented in [docs/M6_ADVANCED_PERFORMANCE_CONTROLS.md](docs/M6_ADVANCED_PERFORMANCE_CONTROLS.md); the wider VJ scope and acceptance criteria are tracked in [docs/M6_ADVANCED_VJ_ENVIRONMENT.md](docs/M6_ADVANCED_VJ_ENVIRONMENT.md).
+M6 is in active development across the live-deck, scene-bank, visual-transformation, particle, typography and performance-control workstreams. The current Performance Macro follow-up is documented in [docs/M6_ADV_PERF_CTRLS.md](docs/M6_ADV_PERF_CTRLS.md); the wider VJ scope and acceptance criteria are tracked in [docs/M6_ADV_VJ_ENVIRONMENT.md](docs/M6_ADV_VJ_ENVIRONMENT.md).

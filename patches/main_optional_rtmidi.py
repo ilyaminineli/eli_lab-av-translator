@@ -8,7 +8,7 @@ import sys
 from PySide6.QtGui import QIcon, QSurfaceFormat
 from PySide6.QtWidgets import QApplication
 
-from config import APP_NAME, APP_VERSION, ICON_PATH, configure_logging
+from config import APP_NAME, APP_VER, ICON_PATH, configure_logging
 from core.application import Application
 from ui.main_window import MainWindow
 
@@ -91,7 +91,7 @@ def self_check() -> int:
     checks["opengl"] = "requires a real display/GPU; not tested by --self-check"
     report = {
         "application": APP_NAME,
-        "version": APP_VERSION,
+        "version": APP_VER,
         "runtime_root": str(RESOURCE_DIR.parent),
         "checks": checks,
         "errors": errors,
@@ -108,7 +108,7 @@ def main() -> int:
 
     qt_app = QApplication(sys.argv)
     qt_app.setApplicationName(APP_NAME)
-    qt_app.setApplicationVersion(APP_VERSION)
+    qt_app.setApplicationVersion(APP_VER)
     qt_app.setOrganizationName("eli_lab")
 
     if ICON_PATH.exists():
@@ -119,7 +119,7 @@ def main() -> int:
     application.set_window(window)
     window.show()
 
-    logging.getLogger(__name__).info("%s %s started", APP_NAME, APP_VERSION)
+    logging.getLogger(__name__).info("%s %s started", APP_NAME, APP_VER)
     return qt_app.exec()
 
 

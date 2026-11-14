@@ -22,7 +22,7 @@ The roadmap is deliberately staged. M0–M2 establish the visual instrument. M3 
 | M2 — Generative Visuals | Core generator and overlay workflow implemented; advanced extensions remain | Geometry, Text Art, waveform and GPU particle fields are available. Still/animated-image/video overlays, layer effects, shader animation and project persistence are implemented. Vector paths, shape groups and a full particle simulation with lifetime/velocity/acceleration remain future extensions. |
 | M3 — Audio-Reactive Engine & Control Foundation | Software implementation complete; Windows hardware sign-off pending | Internal transport and quantization, SoundCard input/loopback capture, FFT/onset/tempo analysis, scene profiles, editable modulation matrix, lock/manual-override precedence and persistence are implemented. Physical device/reconnect and sustained-session checks remain on the performance PC. The repository unit-test suite was removed at the user's request; current CI performs static checks only. |
 | M4 — Sonic Pi Integration | Software complete; live rehearsal pending | Versioned `/eli_lab/v1` receiver, test sender, diagnostics, bounded validation, M3 clock/modulation bridge and optional SONATA sender are implemented. Verify the complete 384-bar performance on the target machine. |
-| M5 — Performance Environment | Software implementation merged; target-machine acceptance pending | Performance Mode, AUTO PERFORMANCE, Modulator Bank, per-layer modifiers, MIDI/performance-set foundations, asynchronous generator rasterization and text-raster controls are on main. Quality #116 passed compile/Ruff. SONATA, audio-device, four-deck and projector checks remain manual; recording/muxing is deferred separately. |
+| M5 — Performance Environment | Software implementation merged; target-machine acceptance pending | Performance Mode, AUTO PERF, Modulator Bank, per-layer modifiers, MIDI/performance-set foundations, asynchronous generator rasterization and text-raster controls are on main. Quality #116 passed compile/Ruff. SONATA, audio-device, four-deck and projector checks remain manual; recording/muxing is deferred separately. |
 | M6 — Advanced VJ Environment and performance controls | Initial A1, B1, C1, D1/D2, E1, macros and timeline merged; remaining slices and hardware acceptance open | PR #30 adds normalized Performance Macros; PR #31 adds the saved bar/beat Live Performance Timeline. M6-A2/A3, B2+, later C–E work and Windows live/projector acceptance remain planned. |
 
 ### Observed machine test
@@ -59,7 +59,7 @@ The November 4 RTX 4060 screenshot showed approximately 18.9 FPS. The new counte
 | M7-F — 3D Rendering Foundation | Separate renderer, procedural meshes/wireframes, displacement, instancing and camera; expose output as a compositor source. | Research / planned |
 | M7-G — Integration + Release Validation | Persistence, scenes, sets, GPU ownership, preview/projector parity, sustained Windows performance, reference-scene regression and UI acceptance. | Planned |
 
-**M7 design rule:** the director should understand the composition, but it must never be afraid to destroy it. There is no separate legacy-chaos mode. CHAOTIC, GENERATIVE and STRUCTURED are continuous influences on one director, not separate engines.
+**M7 design rule:** the director should understand the composition, but it must never be afraid to destroy it. There is no separate legacy-chaos mode. CHAOTIC, GENERATIVE and STRCD are continuous influences on one director, not separate engines.
 
 ---
 
@@ -321,7 +321,7 @@ The optional runtime dependency is `soundcard>=0.4.6`. Audio capture is optional
 
 **Remaining hardware sign-off:** on the intended Windows performance machine, test a physical input and system loopback, unplug/reconnect the active device, verify manual source refresh/restart, and run a sustained audio-reactive session while video is rendering. CI's fake devices do not replace those checks.
 
-See [M3 Audio-Reactive Foundation](M3_AUDIO_REACTIVE_FOUNDATION.md).
+See [M3 Audio-Reactive Foundation](M3_AUD_REACTIVE_FOUNDATION.md).
 
 ---
 
@@ -339,7 +339,7 @@ See [M3 Audio-Reactive Foundation](M3_AUDIO_REACTIVE_FOUNDATION.md).
 - Session IDs, monotonically increasing per-session sequence numbers, restart de-duplication and stale-session rejection.
 - Bounded 60-message/second ingress, malformed-packet recovery and diagnostics for last address, freshness, accepted, rejected, rate-limited and dropped messages.
 - A single network worker that only submits validated events to the bounded M3 queue; the application/UI tick owns state changes.
-- AUDIO / CONTROL dock controls and live/stale receiver monitor.
+- AUD / CTRL dock controls and live/stale receiver monitor.
 - Local deterministic OSC sender and UDP/protocol tests that do not require Sonic Pi.
 - SONATA sender helper with explicit host/port, unique session ID, shared sequence counter and no-AV toggle.
 - Patch output at start, bar, scene, per-bar energy/cutoff macro, four-bar phrase, heartbeat and end points. The 93 audio loops remain untouched.
@@ -356,16 +356,16 @@ See [SONATA Expanded integration notes](SONIC_PI_SONATA_INTEGRATION.md).
 
 ## Status
 
-**M5 software implementation is merged to main.** Performance Mode, AUTO PERFORMANCE, Modulator Bank, per-layer performance modifiers, MIDI/performance-set foundations, asynchronous generator rasterization and text-raster controls are implemented. Quality workflow #116 passed compile/Ruff on main commit `358dc597`. Live SONATA, audio-device, four-deck stress and projector acceptance remain manual sign-off. Master-output recording/audio muxing is not implemented and is tracked separately; it does not block starting M6.
+**M5 software implementation is merged to main.** Performance Mode, AUTO PERF, Modulator Bank, per-layer performance modifiers, MIDI/performance-set foundations, asynchronous generator rasterization and text-raster controls are implemented. Quality workflow #116 passed compile/Ruff on main commit `358dc597`. Live SONATA, audio-device, four-deck stress and projector acceptance remain manual sign-off. Master-output recording/audio muxing is not implemented and is tracked separately; it does not block starting M6.
 
 ## Implemented
 
-- One-button Performance Mode in the main toolbar. It starts/reuses the versioned Sonic Pi OSC receiver, optionally starts system-loopback capture, enables generated curves and arms AUTO PERFORMANCE.
-- SONATA transport/start or the first clock/bar event switches the mode LIVE and starts AUTO PERFORMANCE. Scene selections and phrase cues trigger musical visual decisions; transport/stop stops the automation session while the mode waits for a patch restart.
+- One-button Performance Mode in the main toolbar. It starts/reuses the versioned Sonic Pi OSC receiver, optionally starts system-loopback capture, enables generated curves and arms AUTO PERF.
+- SONATA transport/start or the first clock/bar event switches the mode LIVE and starts AUTO PERF. Scene selections and phrase cues trigger musical visual decisions; transport/stop stops the automation session while the mode waits for a patch restart.
 - Shared Sonic Pi energy/cutoff and transport controls plus local audio RMS/peak/low/mid/high/onset features feed one automation energy/cutoff context. Stale audio and OSC inputs expire rather than holding the last value indefinitely.
 - Non-destructive default routes for master effects, AUTO cut/clip/segment/layout/effect/generator controls, and generated per-layer curves for video transforms, procedural geometry, Text Art, waveform, particles and animated overlays.
 - Built-in Modulator Bank followers, envelopes and phrase LFOs are created/reused and connected to compatible layer parameters.
-- AUTO PERFORMANCE supports random, structured and generative styles with time, bar, phrase and hybrid scheduling. Phrase mode gates off the independent wall-clock randomizer so musical cues own the variations.
+- AUTO PERF supports random, structured and generative styles with time, bar, phrase and hybrid scheduling. Phrase mode gates off the independent wall-clock randomizer so musical cues own the variations.
 - Stop Performance Mode disables only generated AUTO defaults, restores their baselines and closes only the OSC/audio services it started. User-authored mappings and previously running services are preserved.
 - Project saves persist the selected Performance Mode plan but store generated default routes/modifiers disabled, so project opening does not unexpectedly start a live show.
 - Dictionary candidates in `generators/text_pools.py` are cached by language, theme and dictionary-file version to avoid rescanning multi-megabyte dictionaries on each regeneration.
@@ -386,13 +386,13 @@ See [SONATA Expanded integration notes](SONIC_PI_SONATA_INTEGRATION.md).
 
 **M5 implementation exit is met and merged.** M5 live-performance acceptance remains open until the target-machine checks above are run and recorded. Recording/audio muxing is explicitly deferred as a separate deliverable. See [M5 Completion & Live Validation Handoff](M5_COMPLETION_HANDOFF.md).
 
-See [M5 Autonomous Performance](M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance Environment](M5_PERFORMANCE_ENVIRONMENT.md), [M5 Unified Mapping Matrix](M5_MAPPING_MATRIX.md), [M5 Performance Modifiers](M5_PERFORMANCE_MODIFIERS.md) and [M5 Modulator Bank](M5_MODULATOR_BANK.md).
+See [M5 Autonomous Performance](M5_AUTONOMOUS_PERF.md), [M5 Performance Environment](M5_PERF_ENVIRONMENT.md), [M5 Unified Mapping Matrix](M5_MAPPING_MATRIX.md), [M5 Performance Modifiers](M5_PERF_MODIFIERS.md) and [M5 Modulator Bank](M5_MOD_BANK.md).
 
 # M6 — Advanced VJ Environment
 
 ## Status
 
-**Merged foundations — M6-A1, M6-B1, M6-C1, M6-D1/D2 and M6-E1 are on `main`.** C1 adds GPU transforms and feedback; D1/D2 add the bounded GPU particle system and source/path emitters; E1 adds rich typography, vertical layouts, paths and shader motion. The current live-performance follow-up connects these new targets to AUTO PERFORMANCE, adds rate-based particle emission and retains state across short layer cuts. Adaptive compact/4:3 workspace sizing and the Queer text pool are included. Target-Windows GPU/projector acceptance remains open; media bins, synchronized multi-trigger, scene transitions and D3 particle authoring remain future work.
+**Merged foundations — M6-A1, M6-B1, M6-C1, M6-D1/D2 and M6-E1 are on `main`.** C1 adds GPU transforms and feedback; D1/D2 add the bounded GPU particle system and source/path emitters; E1 adds rich typography, vertical layouts, paths and shader motion. The current live-performance follow-up connects these new targets to AUTO PERF, adds rate-based particle emission and retains state across short layer cuts. Adaptive compact/4:3 workspace sizing and the Queer text pool are included. Target-Windows GPU/projector acceptance remains open; media bins, synchronized multi-trigger, scene transitions and D3 particle authoring remain future work.
 
 ## A. A proper live mixer
 
@@ -416,12 +416,12 @@ Before coding, settle the policy when more clips are selected than decks are ava
 - Multiple clips can be mapped to available decks and launched as one operator action.
 - Quantized launches share one beat/bar/phrase boundary and can be cancelled before triggering.
 - Deck source, playback, pending, locked and failed states are visible on the live surface.
-- Manual protection and locks prevent AUTO PERFORMANCE from unexpectedly replacing operator-controlled material.
+- Manual protection and locks prevent AUTO PERF from unexpectedly replacing operator-controlled material.
 - Four-deck playback, generators/effects and projector output continue to use the existing bounded worker and per-context rendering architecture.
 - Media/decode failures remain local and the UI stays responsive under active four-deck load.
 - Bins and assignments can be saved/reopened without persisting decoder handles or GPU resources.
 
-The detailed initial scope and staged acceptance checklist are in [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md).
+The detailed initial scope and staged acceptance checklist are in [M6 Advanced VJ Environment](M6_ADV_VJ_ENVIRONMENT.md).
 
 ## M6-B — VJ Scene and Composition Banks
 
@@ -429,19 +429,19 @@ The detailed initial scope and staged acceptance checklist are in [M6 Advanced V
 
 **Transition boundary:** current numeric-compatible parameters morph; discrete media/text/generator changes still use a cut. Dual-scene crossfade, midpoint switching, sequences and per-parameter locks remain planned.
 
-See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md) for implementation details and acceptance criteria.
+See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMP_BANK.md) for implementation details and acceptance criteria.
 
 ## M6-C — Advanced Visual Transformations
 
 **C1 is merged to `main`.** The ModernGL compositor now has GPU-only image geometry and temporal processing. The first slice includes kaleidoscope, polar remapping, mosaic/tile, directional scan displacement, selectable layer-driven displacement maps, edge extraction, ordered dithering and a dedicated feedback engine with bounded per-renderer GPU history. Feedback exposes amount, decay, zoom, rotation, translation, colour shift, distortion, motion-driven warp, datamosh blocks, blend mode, short frame delay, freeze and reset.
 
-Directional scan sorting is a controlled shader approximation, not a full image-region sorting algorithm. Motion-driven warp is temporal-difference/gradient driven, not a dense optical-flow solver. These limitations and later C2/C3 work are documented in [M6-C — Advanced Visual Transformations](M6_C_ADVANCED_VISUAL_TRANSFORMATIONS.md).
+Directional scan sorting is a controlled shader approximation, not a full image-region sorting algorithm. Motion-driven warp is temporal-difference/gradient driven, not a dense optical-flow solver. These limitations and later C2/C3 work are documented in [M6-C — Advanced Visual Transformations](M6_C_ADV_VISUAL_TRANSFORMATIONS.md).
 
 ## M6-D — Advanced Particle Simulation
 
-**D1 + D2 are merged to `main`.** Particle System 2.0 remains separate from the legacy procedural `particles` field. D1 adds point/circle/rectangle emitters, deterministic seeded populations, fixed-step GPU lifetime/velocity/acceleration simulation, turbulence, attract/repel/orbit fields, size curves and trails. D2 adds editable path emitters, video-luminance, image alpha/luma silhouette and contour emitters, plus GPU source-target reformation with periodic target resampling. The live-event follow-up adds a bounded 0–3000 particles/second emission rate (distributed across populations), event-driven AUTO PERFORMANCE mappings and six-second state retention across brief inactive cuts. Resource ceilings remain 8192 particles per system, four systems and 16384 particles per output renderer. Simulation and source sampling are owned by each Compositor/GL context and bypass the CPU raster service.
+**D1 + D2 are merged to `main`.** Particle System 2.0 remains separate from the legacy procedural `particles` field. D1 adds point/circle/rectangle emitters, deterministic seeded populations, fixed-step GPU lifetime/velocity/acceleration simulation, turbulence, attract/repel/orbit fields, size curves and trails. D2 adds editable path emitters, video-luminance, image alpha/luma silhouette and contour emitters, plus GPU source-target reformation with periodic target resampling. The live-event follow-up adds a bounded 0–3000 particles/second emission rate (distributed across populations), event-driven AUTO PERF mappings and six-second state retention across brief inactive cuts. Resource ceilings remain 8192 particles per system, four systems and 16384 particles per output renderer. Simulation and source sampling are owned by each Compositor/GL context and bypass the CPU raster service.
 
-Per-population overrides and advanced vector/collision fields remain D3 work. See [M6-D — Advanced Particle Simulation](M6_D_ADVANCED_PARTICLE_SIMULATION.md).
+Per-population overrides and advanced vector/collision fields remain D3 work. See [M6-D — Advanced Particle Simulation](M6_D_ADV_PRTL_SIMULATION.md).
 
 ## M6-E — Typography as an independent visual instrument
 
@@ -450,7 +450,7 @@ E1 is merged to `main`. It extends Text Art without moving layout or raster work
 - Styled rich-text runs with per-run typeface, size, weight, colour, tracking, outline and shadow.
 - Horizontal mixed-language layout, vertical right-to-left / left-to-right columns, and text on circular, arc and custom paths.
 - GPU texture-space animation controls for reverse typewriter reveal, dissolve, flicker, character-cell displacement, vertical reveal, scattered glyph motion, segmented collision-style movement and mechanical scrolling.
-- AUTO PERFORMANCE now has a live target for text reveal-step/column density, in addition to text motion speed and amount.
+- AUTO PERF now has a live target for text reveal-step/column density, in addition to text motion speed and amount.
 
 The next E2 slice should introduce a bounded glyph atlas/instance representation for truly independent per-character transforms, deterministic replacement, and word/character timing. E3 can address reusable typographic presets and a dedicated text-feedback route. E1's vertical layout and shader modes require visual validation on the Windows target GPU; they are not yet a per-glyph engine.
 
@@ -458,21 +458,21 @@ See [M6-E — Typography as an Independent Visual Instrument](M6_E_TYPOGRAPHY.md
 
 ## M6 live-performance integration follow-up
 
-The new text, layer-FX and Particle System 2.0 controls are registered as per-layer performance targets and in the manual modulation/MIDI target registry. AUTO PERFORMANCE includes energy/beat/onset routes for particle emission and physics, phrase/energy routes for trails and source reformation, reveal-step motion for typography, and modulation of all numeric per-layer FX parameters. C1 master transforms, displacement and temporal-feedback parameters are also registered in the global Modulation Matrix and receive default energy/beat/onset routes. Effect modes, feedback enable/freeze/reset and source selection remain operator decisions. GPU-only changes remain uniform updates; they do not require per-frame CPU rasterization.
+The new text, layer-FX and Particle System 2.0 controls are registered as per-layer performance targets and in the manual modulation/MIDI target registry. AUTO PERF includes energy/beat/onset routes for particle emission and physics, phrase/energy routes for trails and source reformation, reveal-step motion for typography, and modulation of all numeric per-layer FX parameters. C1 master transforms, displacement and temporal-feedback parameters are also registered in the global Modulation Matrix and receive default energy/beat/onset routes. Effect modes, feedback enable/freeze/reset and source selection remain operator decisions. GPU-only changes remain uniform updates; they do not require per-frame CPU rasterization.
 
 The workspace adapts dock constraints and default sizing for compact and 4:3 windows while preserving user-saved layouts. The compositor already fits the existing composition canvas to output aspect without distortion; it letterboxes rather than stretching content. This UI adaptation does not silently change a project's stored canvas resolution.
 
 Text Art includes an explicit **Queer / クィア** pool with the word **QUEER**, identity and pronoun vocabulary, and short self-definition / chosen-family phrases in English and Japanese. Offensive English dictionary headwords are filtered during dictionary ingestion as an additional safeguard; local dictionary files remain user-editable and should continue to be curated.
 
-See [M6 Live Performance and Workspace Integration](M6_LIVE_PERFORMANCE_WORKSPACE.md) for implementation details and acceptance checks.
+See [M6 Live Performance and Workspace Integration](M6_LIVE_PERF_WS.md) for implementation details and acceptance checks.
 
 ## M6 — Advanced performance controls
 
 ### A. Performance Macro System
 
-**Merged to `main` in PR #30.** Six normalized 0–1 controls — CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT — sit above the existing modulation matrix and per-layer modifier engine. Each macro fans out to compatible master and per-layer targets. Macros can take a continuous source from audio analysis, transport/rhythm, Sonic Pi energy/cutoff or Modulator Bank outputs, while manual sliders, keyboard toggles, MIDI CC/note learn and the versioned OSC `/eli_lab/v1/macro/set` route provide direct control. Macro values, source assignments and keyboard shortcuts are persisted with projects and performance sets.
+**Merged to `main` in PR #30.** Six normalized 0–1 controls — CHAOS, DNST, DPTH, DEC, PRESSURE and FRAG — sit above the existing modulation matrix and per-layer modifier engine. Each macro fans out to compatible master and per-layer targets. Macros can take a continuous source from audio analysis, transport/rhythm, Sonic Pi energy/cutoff or Modulator Bank outputs, while manual sliders, keyboard toggles, MIDI CC/note learn and the versioned OSC `/eli_lab/v1/macro/set` route provide direct control. Macro values, source assignments and keyboard shortcuts are persisted with projects and performance sets.
 
-See [M6 Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md).
+See [M6 Advanced Performance Controls](M6_ADV_PERF_CTRLS.md).
 
 ### C. Live Performance Timeline
 
@@ -480,11 +480,11 @@ See [M6 Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md).
 
 The timeline is musical rather than frame-based: each event is positioned at a 1-based bar and beat, events at the same position retain authored order, and the one-shot cursor can be armed, disarmed and rewound. The existing OSC protocol reports a bar clock with BPM, so the application interpolates beats locally between fresh bar packets. It does not claim frame-accurate external clock. Timeline definitions are saved in project/performance-set payloads, but playback never auto-arms on project open.
 
-The dedicated **LIVE PERFORMANCE TIMELINE** dock edits event positions, labels, enabled state and validated JSON payloads, and can insert the example section markers at bars 1, 17, 33, 49, 65, 81, 97 and 113. Event actions execute on the application/UI tick and reuse the existing scene, deck, EffectSettings, generator, palette and macro APIs. AUTO PERFORMANCE can continue generating variation inside the timeline's structural sections.
+The dedicated **LIVE PERF TMLN** dock edits event positions, labels, enabled state and validated JSON payloads, and can insert the example section markers at bars 1, 17, 33, 49, 65, 81, 97 and 113. Event actions execute on the application/UI tick and reuse the existing scene, deck, EffectSettings, generator, palette and macro APIs. AUTO PERF can continue generating variation inside the timeline's structural sections.
 
 Current boundaries: no SMPTE/frame timeline, conditional branches or nested sequences; phrase markers are authored markers rather than inferred phrases; scene transitions retain the existing numeric-morph / discrete-cut behaviour. The target-Windows live rehearsal and musical timing acceptance remain open.
 
-See [M6 Advanced Performance Controls — C: Live Performance Timeline](M6_LIVE_PERFORMANCE_TIMELINE.md).
+See [M6 Advanced Performance Controls — C: Live Performance Timeline](M6_LIVE_PERF_TMLN.md).
 
 ## Engineering principles across all milestones
 
@@ -505,4 +505,4 @@ See [M6 Advanced Performance Controls — C: Live Performance Timeline](M6_LIVE_
 4. Continue M6-B2: dual-scene transition engine, then scene sequences and parameter locks.
 5. Continue M5 target-machine validation and the independent Video Mixer Completion Gate. Keep recording/audio muxing separately scoped.
 
-See [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md) for the current M6-A scope and acceptance criteria.
+See [M6 Advanced VJ Environment](M6_ADV_VJ_ENVIRONMENT.md) for the current M6-A scope and acceptance criteria.

@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from config import THUMBNAIL_DIR
+from config import THUMB_DIR
 
 _LOG = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def generate_thumbnail(
         _LOG.debug("Thumbnail dependencies are unavailable.")
         return None
 
-    target = THUMBNAIL_DIR / f"{asset_id}.jpg"
+    target = THUMB_DIR / f"{asset_id}.jpg"
     target.parent.mkdir(parents=True, exist_ok=True)
     if target.is_file():
         return target

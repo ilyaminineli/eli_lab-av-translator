@@ -14,7 +14,7 @@ void main() {
 }
 """
 
-_FEEDBACK_FRAGMENT = """#version 330
+_FEEDBACK_FRAG = """#version 330
 uniform sampler2D u_current;
 uniform sampler2D u_history;
 uniform vec2 u_resolution;
@@ -126,13 +126,13 @@ void main() {
 class FeedbackEngine:
     """Per-render-context GPU feedback history; no CPU texture readback is performed."""
 
-    HISTORY_LENGTH = 5
+    HISTORY_LEN = 5
 
     def __init__(self, context: moderngl.Context, vertex_buffer: moderngl.Buffer) -> None:
         self.ctx = context
         self.program = context.program(
             vertex_shader=_VERTEX_SHADER,
-            fragment_shader=_FEEDBACK_FRAGMENT,
+            fragment_shader=_FEEDBACK_FRAG,
         )
         self.vao = context.vertex_array(
             self.program,
@@ -163,7 +163,7 @@ class FeedbackEngine:
         if self.size == size:
             return
         self._release_targets()
-        for _ in range(self.HISTORY_LENGTH):
+        for _ in range(self.HISTORY_LEN):
             texture = self.ctx.texture(size, 4, dtype="f1")
             texture.filter = (moderngl.LINEAR, moderngl.LINEAR)
             texture.repeat_x = False
@@ -200,7 +200,7 @@ class FeedbackEngine:
         destination = self.ctx.detect_framebuffer(glo=int(target_fbo))
         write_index = self.write_index
         delay = settings.feedback_delay_frames
-        read_index = (write_index - 1 - delay) % self.HISTORY_LENGTH
+        read_index = (write_index - 1 - delay) % self.HISTORY_LEN
         history_valid = int(self.history_count > delay)
         output = (
             destination
@@ -242,8 +242,8 @@ class FeedbackEngine:
 
         if not settings.feedback_frozen:
             self.ctx.copy_framebuffer(destination, output)
-            self.write_index = (write_index + 1) % self.HISTORY_LENGTH
-            self.history_count = min(self.HISTORY_LENGTH, self.history_count + 1)
+            self.write_index = (write_index + 1) % self.HISTORY_LEN
+            self.history_count = min(self.HISTORY_LEN, self.history_count + 1)
 
     def release(self) -> None:
         self._release_targets()

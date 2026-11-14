@@ -8,7 +8,7 @@ from pathlib import Path
 from media.models import MediaAsset
 
 _LOG = logging.getLogger(__name__)
-SUPPORTED_VIDEO_EXTENSIONS = {
+SUPPORTED_VID_EXNS = {
     ".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v", ".mpg", ".mpeg",
     ".wmv", ".mts", ".m2ts", ".ogv",
 }
@@ -31,7 +31,7 @@ class MediaScanner:
         paths = root.rglob("*") if recursive else root.iterdir()
         assets: list[MediaAsset] = []
         for path in paths:
-            if not path.is_file() or path.suffix.lower() not in SUPPORTED_VIDEO_EXTENSIONS:
+            if not path.is_file() or path.suffix.lower() not in SUPPORTED_VID_EXNS:
                 continue
             try:
                 stat = path.stat()

@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 from typing import Any
 
-LAYER_EFFECT_DEFAULTS: dict[str, Any] = {
+LY_EFFECT_DEFAULTS: dict[str, Any] = {
     "enabled": False,
     "stages": [],
     "mix": 1.0,
@@ -19,7 +19,7 @@ LAYER_EFFECT_DEFAULTS: dict[str, Any] = {
     "chromatic": 0.0,
 }
 
-LAYER_EFFECT_PRESETS: dict[str, dict[str, Any]] = {
+LY_EFFECT_PSETS: dict[str, dict[str, Any]] = {
     "Clean": {},
     "Monochrome": {"monochrome": 1.0, "contrast": 1.12},
     "Xerox": {
@@ -54,7 +54,7 @@ LAYER_EFFECT_PRESETS: dict[str, dict[str, Any]] = {
 
 
 def default_layer_effects() -> dict[str, Any]:
-    return deepcopy(LAYER_EFFECT_DEFAULTS)
+    return deepcopy(LY_EFFECT_DEFAULTS)
 
 
 def normalize_layer_effects(settings: dict[str, Any] | None) -> dict[str, Any]:
@@ -80,11 +80,11 @@ def normalize_layer_effects(settings: dict[str, Any] | None) -> dict[str, Any]:
 
 
 def apply_layer_effect_preset(name: str) -> dict[str, Any]:
-    if name not in LAYER_EFFECT_PRESETS:
+    if name not in LY_EFFECT_PSETS:
         raise KeyError(f"Unknown layer effect preset: {name}")
     values = default_layer_effects()
     values["enabled"] = name != "Clean"
-    values.update(LAYER_EFFECT_PRESETS[name])
+    values.update(LY_EFFECT_PSETS[name])
     return normalize_layer_effects(values)
 
 

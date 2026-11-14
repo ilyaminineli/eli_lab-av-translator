@@ -46,7 +46,7 @@ FOLLOWER_SOURCES: dict[str, str] = {
     "audio.beat_confidence": "Audio · Beat confidence",
 }
 
-MODULATOR_KINDS = ("follower", "envelope", "lfo", "steps", "rhythm")
+MOD_KINDS = ("follower", "envelope", "lfo", "steps", "rhythm")
 
 
 def euclidean_pattern(
@@ -118,7 +118,7 @@ class ModulatorDefinition:
     def normalize(self) -> None:
         self.modulator_id = str(self.modulator_id).strip()[:40] or uuid4().hex[:12]
         self.name = str(self.name).strip()[:64] or "Modulator"
-        if self.kind not in MODULATOR_KINDS:
+        if self.kind not in MOD_KINDS:
             self.kind = "lfo"
         if self.sync_mode not in {"transport", "free"}:
             self.sync_mode = "transport"
@@ -374,7 +374,7 @@ def builtin_modulator_presets() -> list[ModulatorPreset]:
 class ModulatorBank:
     """Project-persisted source bank plus reusable built-in and user presets."""
 
-    VERSION = 1
+    VER = 1
 
     def __init__(self) -> None:
         self.modulators: dict[str, ModulatorDefinition] = {}
@@ -506,7 +506,7 @@ class ModulatorBank:
 
     def to_dict(self) -> dict[str, object]:
         return {
-            "version": self.VERSION,
+            "version": self.VER,
             "modulators": [item.to_dict() for item in self.modulators.values()],
             "presets": [
                 item.to_dict() for item in self.presets.values() if not item.builtin
@@ -517,7 +517,7 @@ class ModulatorBank:
         destination = Path(path)
         payload = {
             "format": "eli-lab-modulator-presets",
-            "version": self.VERSION,
+            "version": self.VER,
             "presets": [
                 preset.to_dict()
                 for preset in self.presets.values()

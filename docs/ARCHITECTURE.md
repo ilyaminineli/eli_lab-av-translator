@@ -37,7 +37,7 @@ The legacy `particles` generator remains a procedural shader field in the layer 
 
 - Each particle-system layer owns ping-pong RGBA32F state, metadata and source-target textures with framebuffer pairs. Position, velocity, age, lifetime, respawn cycle, size variation and optional reformation targets remain on the GPU.
 - Simulation advances at a fixed 60 Hz step with at most four substeps per render. Spawn randomness is derived from the configured seed, particle index and respawn cycle; no CPU particle arrays are updated per frame.
-- A deterministic per-substep birth gate spreads particles over time according to the configured emission rate. The requested particles/second is divided across populations; AUTO PERFORMANCE may modulate rate, speed, size, lifetime, turbulence, force, trail persistence and source reformation from live beat/onset/energy signals.
+- A deterministic per-substep birth gate spreads particles over time according to the configured emission rate. The requested particles/second is divided across populations; AUTO PERF may modulate rate, speed, size, lifetime, turbulence, force, trail persistence and source reformation from live beat/onset/energy signals.
 - Systems remain resident for up to six seconds after a layer becomes temporarily inactive, preserving simulation/trail continuity across brief cuts. Removed, failed or expired systems are released; output teardown releases all renderer-local resources.
 - Point/circle/rectangle/path emitters are evaluated in the simulation shader. Video-luminance, image alpha/luma silhouette and contour emitters sample an existing layer texture with a bounded deterministic candidate search on respawn; sampled local coordinates are mapped through the source layer's transform.
 - When reformation is active, particle target coordinates are periodically refreshed from the current source frame. A GPU spring force returns particles toward those source positions, allowing footage to break apart and re-form without CPU particle updates.
@@ -70,7 +70,7 @@ Text editing keeps a UI buffer separate from committed layer settings. The opera
 
 ## Performance-control lifecycle
 
-M3 introduced the normalized transport/audio/control model. M4 adds the versioned `/eli_lab/v1` OSC adapter. M5 connects those sources to Performance Mode, AUTO PERFORMANCE, the Modulator Bank and per-layer performance modifiers.
+M3 introduced the normalized transport/audio/control model. M4 adds the versioned `/eli_lab/v1` OSC adapter. M5 connects those sources to Performance Mode, AUTO PERF, the Modulator Bank and per-layer performance modifiers.
 
 1. Audio, OSC, MIDI and internal transport adapters validate input and publish normalized events or feature snapshots.
 2. Network/device callbacks place bounded items into thread-safe queues; they do not mutate composition or UI state.
@@ -105,4 +105,4 @@ The GitHub Windows Onefile Build workflow is manual-dispatch only. The normal Qu
 
 ## M6 direction
 
-M6 — Advanced VJ Environment — is in active development. The current four video decks remain the playback foundation; M6 builds operator controls on the existing decode, composition and GPU ownership boundaries. The Performance Macro follow-up adds a shared 0–1 control layer above modulation and per-layer targets. See [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md) and [M6 Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md).
+M6 — Advanced VJ Environment — is in active development. The current four video decks remain the playback foundation; M6 builds operator controls on the existing decode, composition and GPU ownership boundaries. The Performance Macro follow-up adds a shared 0–1 control layer above modulation and per-layer targets. See [M6 Advanced VJ Environment](M6_ADV_VJ_ENVIRONMENT.md) and [M6 Advanced Performance Controls](M6_ADV_PERF_CTRLS.md).

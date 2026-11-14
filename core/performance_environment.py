@@ -9,8 +9,8 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-PERFORMANCE_SET_FORMAT = "eli_lab_performance_set"
-PERFORMANCE_SET_VERSION = 1
+PERF_SET_FORMAT = "eli_lab_performance_set"
+PERF_SET_VER = 1
 
 
 @dataclass
@@ -223,7 +223,7 @@ class PerformanceSetStore:
                       scenes: list[PerformanceScene] | None = None,
                       midi_mappings: list[MIDIMapping] | None = None) -> dict[str, Any]:
         return {
-            "format": PERFORMANCE_SET_FORMAT, "version": PERFORMANCE_SET_VERSION,
+            "format": PERF_SET_FORMAT, "version": PERF_SET_VER,
             "created_at": time.time(), "composition": composition, "decks": decks,
             "effects": effects, "automation_settings": automation_settings,
             "performance_settings": performance_settings,
@@ -236,8 +236,8 @@ class PerformanceSetStore:
         destination = Path(path).expanduser().resolve()
         destination.parent.mkdir(parents=True, exist_ok=True)
         data = dict(payload)
-        data["format"] = PERFORMANCE_SET_FORMAT
-        data["version"] = PERFORMANCE_SET_VERSION
+        data["format"] = PERF_SET_FORMAT
+        data["version"] = PERF_SET_VER
         temporary = destination.with_name(destination.name + ".tmp")
         try:
             temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
@@ -250,10 +250,10 @@ class PerformanceSetStore:
     @staticmethod
     def load(path: str | Path) -> dict[str, Any]:
         data = json.loads(Path(path).expanduser().resolve().read_text(encoding='utf-8'))
-        if not isinstance(data, dict) or data.get("format") != PERFORMANCE_SET_FORMAT:
+        if not isinstance(data, dict) or data.get("format") != PERF_SET_FORMAT:
             raise ValueError("This file is not an eli_lab performance set.")
         version = int(data.get('version', 0))
-        if version > PERFORMANCE_SET_VERSION:
+        if version > PERF_SET_VER:
             raise ValueError(f"Performance set version {version} is newer than supported.")
         for key, expected in (('composition', dict), ('decks', list), ('effects', dict),
                               ('automation_settings', dict), ('performance_settings', dict),

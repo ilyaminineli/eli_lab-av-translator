@@ -4,7 +4,7 @@
 
 The Modulator Bank separates a time-varying control source from the visual parameter it drives. A single modulator can be assigned to multiple targets and layers; each assignment keeps its own depth, polarity and response curve.
 
-The bank is available as a dedicated **MODULATOR BANK** dock, next to **AUDIO / CONTROL**. The View menu also includes the dock visibility action.
+The bank is available as a dedicated **MOD BANK** dock, next to **AUD / CTRL**. The View menu also includes the dock visibility action.
 
 ## Modulator types
 
@@ -48,14 +48,14 @@ This supports patterns such as four-on-the-floor, clave-like accents, triplets, 
 
 ## Using the bank
 
-1. Open **MODULATOR BANK** from the right-side dock tabs or **View** menu.
+1. Open **MOD BANK** from the right-side dock tabs or **View** menu.
 2. Create a Control Follower, LFO, Envelope, Steps or Rhythm source, or load a preset.
-3. Edit the name, timebase and type-specific settings, then click **APPLY MODULATOR CHANGES**.
-4. Select a layer in the LAYERS dock. The bank's **ASSIGN TO SELECTED LAYER** section offers only compatible targets for that layer.
-5. Set assignment depth and response, then click **ASSIGN MODULATOR TO LAYER**.
+3. Edit the name, timebase and type-specific settings, then click **APPLY MOD CHANGES**.
+4. Select a layer in the LYS dock. The bank's **ASSIGN TO SELECTED LY** section offers only compatible targets for that layer.
+5. Set assignment depth and response, then click **ASSIGN MOD TO LY**.
 6. Assign the same bank source to further targets or layers. Its output is evaluated once and reused by every assignment.
 
-The Layer dock's existing per-layer modifier list displays bank sources by name alongside direct audio, transport and Sonic Pi sources. The global **AUDIO / CONTROL → MODULATION MATRIX** source list also exposes each active bank modulator, so the same source can drive a global target such as master grain/brightness, or an **AUTO PERFORMANCE** parameter such as generator interval, as well as layer-local targets. One LFO or follower can therefore feed a waveform frequency locally and a master effect or automation interval globally.
+The Layer dock's existing per-layer modifier list displays bank sources by name alongside direct audio, transport and Sonic Pi sources. The global **AUD / CTRL → MODULATION MATRIX** source list also exposes each active bank modulator, so the same source can drive a global target such as master grain/brightness, or an **AUTO PERF** parameter such as generator interval, as well as layer-local targets. One LFO or follower can therefore feed a waveform frequency locally and a master effect or automation interval globally.
 
 Removing a bank modulator removes its per-layer assignments and any global matrix routes that use it. Project loading drops global routes whose referenced bank source is missing. Bypassing a modulator releases its targets to their saved baselines.
 
@@ -63,11 +63,11 @@ Removing a bank modulator removes its per-layer assignments and any global matri
 
 The bank includes built-in presets for Sonic Pi energy and cutoff followers, slow phrase swells, quarter-note triangle motion, dotted pulses, beat plucks, downbeat envelopes, audio-onset envelopes, four-on-the-floor, clave-inspired accents, triplet shimmer, a bipolar staircase and seeded random drift.
 
-- **LOAD PRESET** creates a new active modulator from the selected preset; it does not overwrite the current modulator.
-- **SAVE AS PRESET** stores the selected modulator as a user preset.
+- **LOAD PSET** creates a new active modulator from the selected preset; it does not overwrite the current modulator.
+- **SAVE AS PSET** stores the selected modulator as a user preset.
 - **DUPLICATE** copies an active modulator with a new ID.
-- **EXPORT USER PRESETS** writes custom presets to a portable JSON file.
-- **IMPORT PRESETS** adds presets from an exported JSON file. Built-in presets cannot be deleted; user presets can.
+- **EXPT USER PSETS** writes custom presets to a portable JSON file.
+- **IMPORT PSETS** adds presets from an exported JSON file. Built-in presets cannot be deleted; user presets can.
 
 Active modulators and user presets are saved in the current AV Translator project. Imported/exported preset files can be reused in other projects.
 

@@ -21,7 +21,7 @@ class ModifierTargetSpec:
     category: str
 
 
-PERFORMANCE_MODIFIER_SOURCES: dict[str, str] = {
+PERF_MODIFIER_SOURCES: dict[str, str] = {
     "transport.beat_pulse": "Rhythm · Every beat",
     "transport.downbeat_pulse": "Rhythm · Bar downbeat",
     "transport.phrase_pulse": "Rhythm · Phrase start",
@@ -38,14 +38,14 @@ PERFORMANCE_MODIFIER_SOURCES: dict[str, str] = {
     "macro.energy": "Sonic Pi · Energy",
     "macro.cutoff": "Sonic Pi · Cutoff",
     "performance_macro.chaos": "Performance Macro · CHAOS",
-    "performance_macro.density": "Performance Macro · DENSITY",
-    "performance_macro.depth": "Performance Macro · DEPTH",
-    "performance_macro.decay": "Performance Macro · DECAY",
+    "performance_macro.density": "Performance Macro · DNST",
+    "performance_macro.depth": "Performance Macro · DPTH",
+    "performance_macro.decay": "Performance Macro · DEC",
     "performance_macro.pressure": "Performance Macro · PRESSURE",
-    "performance_macro.fragment": "Performance Macro · FRAGMENT",
+    "performance_macro.fragment": "Performance Macro · FRAG",
 }
 
-PERFORMANCE_MODIFIER_TARGETS: dict[str, ModifierTargetSpec] = {
+PERF_MODIFIER_TARGETS: dict[str, ModifierTargetSpec] = {
     "layer.opacity": ModifierTargetSpec("layer.opacity", "Layer opacity", 0.0, 1.0, "layer"),
     "layer.rotation": ModifierTargetSpec(
         "layer.rotation", "Layer rotation", -180.0, 180.0, "layer"
@@ -194,9 +194,9 @@ class LayerPerformanceModifier:
         else:
             if self.source_id not in SOURCE_RANGES:
                 raise ValueError(f"Unknown performance modifier source: {self.source_id}")
-            if self.source_id not in PERFORMANCE_MODIFIER_SOURCES:
+            if self.source_id not in PERF_MODIFIER_SOURCES:
                 raise ValueError(f"Unsupported per-layer source: {self.source_id}")
-        if self.target_id not in PERFORMANCE_MODIFIER_TARGETS:
+        if self.target_id not in PERF_MODIFIER_TARGETS:
             raise ValueError(f"Unknown performance modifier target: {self.target_id}")
         self.modifier_id = str(self.modifier_id).strip()[:40] or uuid4().hex[:10]
         self.name = str(self.name).strip()[:48] or "Performance modifier"
@@ -395,7 +395,7 @@ class LayerPerformanceModifierEngine:
                 runtime.last_update = stamp
                 current_live[runtime_key] = smoothed
 
-                spec = PERFORMANCE_MODIFIER_TARGETS[modifier.target_id]
+                spec = PERF_MODIFIER_TARGETS[modifier.target_id]
                 polarity_value = (
                     smoothed
                     if modifier.polarity == "positive"
@@ -418,7 +418,7 @@ class LayerPerformanceModifierEngine:
                 if base is None:
                     continue
                 self._base_values[target_key] = float(base)
-            spec = PERFORMANCE_MODIFIER_TARGETS[target_id]
+            spec = PERF_MODIFIER_TARGETS[target_id]
             value = self._base_values[target_key] + offset
             value = max(spec.minimum, min(spec.maximum, value))
             if set_target(layer_id, target_id, value):

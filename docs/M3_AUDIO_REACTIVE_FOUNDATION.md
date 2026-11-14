@@ -89,7 +89,7 @@ The modulation target registry is being expanded beyond master effects and two g
 - Animated image overlays: playback speed and frame hold.
 - Auto Performance: loop probability, clip-switch probability, cut interval, segment length, layout interval, look interval and generator/text variation interval.
 
-The Audio / Control dock also has two route presets: **ADD AUDIO-REACTIVE ROUTES** and **ADD SONIC PI ROUTES**. They add starter mappings from audio bands/onsets or Sonic Pi energy/cutoff and transport state. Existing operator-authored routes are preserved; the presets do not silently replace a route that already owns a target.
+The Audio / Control dock also has two route presets: **ADD AUD-REACTIVE ROUTES** and **ADD SONIC PI ROUTES**. They add starter mappings from audio bands/onsets or Sonic Pi energy/cutoff and transport state. Existing operator-authored routes are preserved; the presets do not silently replace a route that already owns a target.
 
 Generator targets act on the currently selected, unlocked, compatible generator. Overlay playback targets apply only to an animated image overlay. Auto Performance targets change the corresponding live director settings; locks and manual overrides continue to take precedence. The modulation worker boundary remains unchanged: routes are evaluated on the application tick, not in audio or OSC workers.
 
@@ -102,7 +102,7 @@ Generator targets act on the currently selected, unlocked, compatible generator.
 
 ### 5. UI and application integration
 
-- New dock: **AUDIO / CONTROL**.
+- New dock: **AUD / CTRL**.
 - Internal transport controls, scene profile editor, input/loopback selector, test signal, audio meters, tempo confidence and editable modulation route list.
 - Compact transport/scene/source status in the main status bar.
 - Audio capture, analysis and modulation work remain off the Qt paint path. The audio worker only publishes bounded analysis frames; the application tick consumes them and applies the visual state.

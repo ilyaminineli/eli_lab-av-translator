@@ -5,16 +5,16 @@ import re
 from dataclasses import asdict, dataclass, field
 from uuid import uuid4
 
-from config import VIDEO_DECK_IDS
-from core.performance_macros import PERFORMANCE_MACRO_IDS
-from effects.settings import PRESETS
+from config import VID_DECK_IDS
+from core.performance_macros import PERF_MACRO_IDS
+from effects.settings import PSETS
 from generators.palettes import palette_names
 
-TIMELINE_VERSION = 1
-MAX_TIMELINE_EVENTS = 512
-MAX_TIMELINE_BAR = 1_000_000
+TMLN_VER = 1
+MAX_TMLN_EVTS = 512
+MAX_TMLN_BR = 1_000_000
 
-TIMELINE_EVENT_TYPES = (
+TMLN_EVT_TYPES = (
     "scene_marker",
     "phrase_marker",
     "scene_recall",
@@ -26,7 +26,7 @@ TIMELINE_EVENT_TYPES = (
     "transition_cue",
 )
 
-TIMELINE_EVENT_LABELS = {
+TMLN_EVT_LABELS = {
     "scene_marker": "Scene marker",
     "phrase_marker": "Phrase marker",
     "scene_recall": "Scene recall",
@@ -38,7 +38,7 @@ TIMELINE_EVENT_LABELS = {
     "transition_cue": "Transition cue",
 }
 
-EFFECT_SETTING_FIELDS = frozenset({
+EFFECT_SETTING_FLDS = frozenset({
     "enabled", "mix", "brightness", "exposure", "contrast", "saturation", "gamma",
     "temperature", "tint", "hue", "vignette", "grain", "scanlines", "chromatic",
     "glitch", "pixelate", "posterize", "invert", "halftone", "solarize",
@@ -121,14 +121,14 @@ class PerformanceTimelineEvent:
         self.event_id = _identifier(self.event_id, "Timeline event ID", 40)
         if isinstance(self.bar, bool) or not isinstance(self.bar, int):
             raise ValueError("Timeline bar must be an integer.")
-        if not 1 <= self.bar <= MAX_TIMELINE_BAR:
-            raise ValueError(f"Timeline bar must be between 1 and {MAX_TIMELINE_BAR}.")
+        if not 1 <= self.bar <= MAX_TMLN_BR:
+            raise ValueError(f"Timeline bar must be between 1 and {MAX_TMLN_BR}.")
         if isinstance(self.beat, bool) or not isinstance(self.beat, int):
             raise ValueError("Timeline beat must be an integer.")
         if not 1 <= self.beat <= 16:
             raise ValueError("Timeline beat must be between 1 and 16.")
         self.event_type = str(self.event_type).strip()
-        if self.event_type not in TIMELINE_EVENT_TYPES:
+        if self.event_type not in TMLN_EVT_TYPES:
             raise ValueError(f"Unknown timeline event type: {self.event_type}")
         self.label = str(self.label).strip()[:80]
         if not isinstance(self.enabled, bool):
@@ -161,8 +161,8 @@ class PerformanceTimelineEvent:
 
         elif self.event_type == "clip_trigger":
             deck_id = str(self.payload.get("deck_id", "")).strip()
-            if deck_id not in VIDEO_DECK_IDS:
-                raise ValueError(f"Clip trigger deck must be one of {', '.join(VIDEO_DECK_IDS)}.")
+            if deck_id not in VID_DECK_IDS:
+                raise ValueError(f"Clip trigger deck must be one of {', '.join(VID_DECK_IDS)}.")
             action = str(self.payload.get("action", "play")).strip().lower()
             if action not in {"load", "play", "pause", "hold", "release", "restart", "stop", "seek"}:
                 raise ValueError("Unsupported clip trigger action.")
@@ -198,11 +198,11 @@ class PerformanceTimelineEvent:
         elif self.event_type == "effect_change":
             preset = str(self.payload.get("preset_name", "")).strip()
             settings = self.payload.get("settings", {})
-            if preset and preset not in PRESETS:
+            if preset and preset not in PSETS:
                 raise ValueError(f"Unknown master effect preset: {preset}")
             if not isinstance(settings, dict):
                 raise ValueError("Effect settings must be a JSON object.")
-            unknown = set(settings) - EFFECT_SETTING_FIELDS
+            unknown = set(settings) - EFFECT_SETTING_FLDS
             if unknown:
                 raise ValueError(
                     "Unsupported effect field(s): " + ", ".join(sorted(unknown))
@@ -249,8 +249,8 @@ class PerformanceTimelineEvent:
 
         elif self.event_type == "modulation":
             macro_id = str(self.payload.get("macro_id", "")).strip()
-            if macro_id not in PERFORMANCE_MACRO_IDS:
-                raise ValueError(f"Modulation event macro must be one of {', '.join(PERFORMANCE_MACRO_IDS)}.")
+            if macro_id not in PERF_MACRO_IDS:
+                raise ValueError(f"Modulation event macro must be one of {', '.join(PERF_MACRO_IDS)}.")
             value = _finite_number(self.payload.get("value"), "Macro value")
             if not 0.0 <= value <= 1.0:
                 raise ValueError("Macro value must be normalized between 0 and 1.")
@@ -317,8 +317,8 @@ class PerformanceTimeline:
             else PerformanceTimelineEvent.from_dict(event)
         )
         item.normalize()
-        if len(self.events) >= MAX_TIMELINE_EVENTS:
-            raise ValueError(f"A timeline can contain at most {MAX_TIMELINE_EVENTS} events.")
+        if len(self.events) >= MAX_TMLN_EVTS:
+            raise ValueError(f"A timeline can contain at most {MAX_TMLN_EVTS} events.")
         if any(existing.event_id == item.event_id for existing in self.events):
             raise ValueError(f"Duplicate timeline event ID: {item.event_id}")
         self.events.append(item)
@@ -378,7 +378,7 @@ class PerformanceTimeline:
             current_beat: int = 1,
             transport_running: bool = False,
     ) -> None:
-        bar = max(1, min(MAX_TIMELINE_BAR, int(current_bar)))
+        bar = max(1, min(MAX_TMLN_BR, int(current_bar)))
         beat = max(1, min(16, int(current_beat)))
         self.armed = True
         self.current_bar = bar
@@ -400,7 +400,7 @@ class PerformanceTimeline:
             beats_per_bar: int = 4,
     ) -> None:
         """Prime a running show at a received clock position without replaying earlier bars."""
-        bar_value = max(1, min(MAX_TIMELINE_BAR, int(bar)))
+        bar_value = max(1, min(MAX_TMLN_BR, int(bar)))
         beat_value = max(1, min(max(1, min(16, int(beats_per_bar))), int(beat)))
         position = (bar_value, beat_value)
         self._fired_ids = {
@@ -454,7 +454,7 @@ class PerformanceTimeline:
             beats_per_bar: int = 4,
     ) -> list[PerformanceTimelineEvent]:
         current = (
-            max(1, min(MAX_TIMELINE_BAR, int(bar))),
+            max(1, min(MAX_TMLN_BR, int(bar))),
             max(1, min(max(1, min(16, int(beats_per_bar))), int(beat))),
         )
         if current != (self.current_bar, self.current_beat):
@@ -500,7 +500,7 @@ class PerformanceTimeline:
             success: bool,
             message: str,
     ) -> None:
-        self.last_event_label = event.label or TIMELINE_EVENT_LABELS[event.event_type]
+        self.last_event_label = event.label or TMLN_EVT_LABELS[event.event_type]
         self.last_event_type = event.event_type
         self.last_event_result = ("OK · " if success else "SKIPPED · ") + str(message)
         self.last_error = "" if success else str(message)
@@ -511,7 +511,7 @@ class PerformanceTimeline:
     def to_dict(self) -> dict[str, object]:
         """Serialize definitions only; an opened project never resumes armed playback."""
         return {
-            "version": TIMELINE_VERSION,
+            "version": TMLN_VER,
             "events": [item.to_dict() for item in self.events],
         }
 
@@ -523,7 +523,7 @@ class PerformanceTimeline:
         result: list[PerformanceTimelineEvent] = []
         seen: set[str] = set()
         if isinstance(raw_events, list):
-            for raw in raw_events[:MAX_TIMELINE_EVENTS]:
+            for raw in raw_events[:MAX_TMLN_EVTS]:
                 if not isinstance(raw, dict):
                     continue
                 try:

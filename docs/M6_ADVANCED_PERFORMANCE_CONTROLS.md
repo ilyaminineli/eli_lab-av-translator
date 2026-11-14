@@ -1,6 +1,6 @@
 # M6 — Advanced Performance Controls
 
-**Status:** Performance Macro System implementation is merged to `main` in [PR #30](https://github.com/ilyaminineli/eli_lab-av-translator/pull/30). The normal Windows Quality workflow checks Python compilation and Ruff; keyboard, MIDI, OSC, audio-device and live GPU behaviour still require target-machine validation. The [Live Performance Timeline](M6_LIVE_PERFORMANCE_TIMELINE.md) is now merged as PR #31 and uses these macros for scheduled modulation events.
+**Status:** Performance Macro System implementation is merged to `main` in [PR #30](https://github.com/ilyaminineli/eli_lab-av-translator/pull/30). The normal Windows Quality workflow checks Python compilation and Ruff; keyboard, MIDI, OSC, audio-device and live GPU behaviour still require target-machine validation. The [Live Performance Timeline](M6_LIVE_PERF_TMLN.md) is now merged as PR #31 and uses these macros for scheduled modulation events.
 
 ## A. Performance Macro System
 
@@ -13,11 +13,11 @@ Every macro has a normalized value in the inclusive range 0–1.
 | Macro | Intended control domain |
 | --- | --- |
 | **CHAOS** | Glitch, rotation, chromatic displacement and feedback motion |
-| **DENSITY** | Mosaic/tile density, kaleidoscope slices, text reveal steps and particle emission |
-| **DEPTH** | Transform mix, zoom, feedback amount, trails and layer positioning |
-| **DECAY** | Feedback persistence, layer-FX mix, particle lifetime and trails |
+| **DNST** | Mosaic/tile density, kaleidoscope slices, text reveal steps and particle emission |
+| **DPTH** | Transform mix, zoom, feedback amount, trails and layer positioning |
+| **DEC** | Feedback persistence, layer-FX mix, particle lifetime and trails |
 | **PRESSURE** | Contrast, edge/threshold treatment, distortion and particle forces |
-| **FRAGMENT** | Pixelation, pixel sorting, displacement scale, glyph motion and particle spread |
+| **FRAG** | Pixelation, pixel sorting, displacement scale, glyph motion and particle spread |
 
 The initial value for each built-in macro is 0.0. Default master and per-layer mappings are installed without replacing operator-authored routes or assignments. The per-layer engine applies mappings only to compatible, unlocked layers. Target settings that require CPU rasterization are deliberately excluded from the default live density mapping; text reveal and particle controls use existing shader/simulation targets.
 
@@ -34,11 +34,11 @@ Each macro has an editable keyboard shortcut. The default shortcuts are:
 | Macro | Default shortcut |
 | --- | --- |
 | CHAOS | `Ctrl+Alt+1` |
-| DENSITY | `Ctrl+Alt+2` |
-| DEPTH | `Ctrl+Alt+3` |
-| DECAY | `Ctrl+Alt+4` |
+| DNST | `Ctrl+Alt+2` |
+| DPTH | `Ctrl+Alt+3` |
+| DEC | `Ctrl+Alt+4` |
 | PRESSURE | `Ctrl+Alt+5` |
-| FRAGMENT | `Ctrl+Alt+6` |
+| FRAG | `Ctrl+Alt+6` |
 
 A shortcut toggles its macro between 0.0 and 1.0. It is an endpoint toggle, not a key-pressure or hold-to-modulate control. Shortcuts are application-wide while the main window is active.
 

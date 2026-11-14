@@ -10,7 +10,7 @@ import unicodedata
 from config import PROJECT_ROOT
 
 # Curated phrases are retained as a reliable fallback and for short-form collage text.
-TEXT_POOLS: dict[str, dict[str, tuple[str, ...]]] = {
+TXT_POOLS: dict[str, dict[str, tuple[str, ...]]] = {
     "memory": {
         "en": (
             "MEMORY", "AFTERIMAGE", "ARCHIVE", "REMNANT", "RECALL", "ERASURE",
@@ -227,10 +227,10 @@ def random_text_sample(
     """Return a seeded English/Japanese phrase set, optionally enriched from local dictionaries."""
     if language not in {"english", "japanese", "bilingual"}:
         language = "bilingual"
-    if theme not in TEXT_POOLS:
+    if theme not in TXT_POOLS:
         theme = "random"
     rng = random.Random(seed)
-    pool = TEXT_POOLS[theme]
+    pool = TXT_POOLS[theme]
     english = list(pool["en"])
     japanese = list(pool["ja"])
     if use_dictionary:

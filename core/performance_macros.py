@@ -9,7 +9,7 @@ from typing import Literal
 from core.modulation import SOURCE_RANGES
 
 MacroCurve = Literal["linear", "smoothstep", "exponential"]
-PERFORMANCE_MACRO_IDS = (
+PERF_MACRO_IDS = (
     "chaos",
     "density",
     "depth",
@@ -92,15 +92,15 @@ def default_performance_macros() -> list[PerformanceMacro]:
             "Ctrl+Alt+1",
         ),
         (
-            "density", "DENSITY", "Text, particle and geometric density",
+            "density", "DNST", "Text, particle and geometric density",
             "Ctrl+Alt+2",
         ),
         (
-            "depth", "DEPTH", "Zoom, feedback depth, trails and layer position",
+            "depth", "DPTH", "Zoom, feedback depth, trails and layer position",
             "Ctrl+Alt+3",
         ),
         (
-            "decay", "DECAY", "Feedback persistence, trails and particle lifetime",
+            "decay", "DEC", "Feedback persistence, trails and particle lifetime",
             "Ctrl+Alt+4",
         ),
         (
@@ -108,7 +108,7 @@ def default_performance_macros() -> list[PerformanceMacro]:
             "Ctrl+Alt+5",
         ),
         (
-            "fragment", "FRAGMENT", "Pixelation, glyph motion and displacement",
+            "fragment", "FRAG", "Pixelation, glyph motion and displacement",
             "Ctrl+Alt+6",
         ),
     )
@@ -144,7 +144,7 @@ class PerformanceMacroEngine:
         self._runtime: dict[str, _MacroRuntime] = {}
 
     def list_macros(self) -> list[PerformanceMacro]:
-        return [self.macros[key] for key in PERFORMANCE_MACRO_IDS if key in self.macros]
+        return [self.macros[key] for key in PERF_MACRO_IDS if key in self.macros]
 
     def get(self, macro_id: str) -> PerformanceMacro | None:
         return self.macros.get(str(macro_id))

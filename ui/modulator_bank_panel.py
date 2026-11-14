@@ -33,7 +33,7 @@ from core.modulator_bank import (
     euclidean_pattern,
 )
 from core.performance_modifiers import (
-    PERFORMANCE_MODIFIER_TARGETS,
+    PERF_MODIFIER_TARGETS,
     LayerPerformanceModifier,
 )
 
@@ -60,7 +60,7 @@ class ModulatorBankPanel(QWidget):
         root.setContentsMargins(8, 8, 8, 8)
         root.setSpacing(8)
 
-        bank_group = QGroupBox("MODULATOR BANK · REUSABLE SOURCES")
+        bank_group = QGroupBox("MOD BANK · REUSABLE SOURCES")
         bank_layout = QVBoxLayout(bank_group)
         self.modulator_list = QListWidget()
         self.modulator_list.setMinimumHeight(112)
@@ -91,46 +91,46 @@ class ModulatorBankPanel(QWidget):
         bank_layout.addLayout(edit_row)
         root.addWidget(bank_group)
 
-        preset_group = QGroupBox("PRESET LIBRARY")
+        preset_group = QGroupBox("PSET LIBRARY")
         preset_layout = QVBoxLayout(preset_group)
         self.preset_combo = QComboBox()
         self.preset_combo.currentIndexChanged.connect(self._update_preset_actions)
         preset_layout.addWidget(self.preset_combo)
         preset_buttons = QHBoxLayout()
-        self.load_preset_button = QPushButton("LOAD PRESET")
-        self.save_preset_button = QPushButton("SAVE AS PRESET…")
-        self.delete_preset_button = QPushButton("DELETE USER PRESET")
+        self.load_preset_button = QPushButton("LOAD PSET")
+        self.save_preset_button = QPushButton("SAVE AS PSET…")
+        self.delete_preset_button = QPushButton("DELETE USER PSET")
         preset_buttons.addWidget(self.load_preset_button)
         preset_buttons.addWidget(self.save_preset_button)
         preset_layout.addLayout(preset_buttons)
         preset_layout.addWidget(self.delete_preset_button)
         preset_io_row = QHBoxLayout()
-        self.export_presets_button = QPushButton("EXPORT USER PRESETS…")
-        self.import_presets_button = QPushButton("IMPORT PRESETS…")
+        self.export_presets_button = QPushButton("EXPT USER PSETS…")
+        self.import_presets_button = QPushButton("IMPORT PSETS…")
         preset_io_row.addWidget(self.export_presets_button)
         preset_io_row.addWidget(self.import_presets_button)
         preset_layout.addLayout(preset_io_row)
         root.addWidget(preset_group)
 
-        editor_group = QGroupBox("MODULATOR EDITOR")
+        editor_group = QGroupBox("MOD ED")
         editor = QVBoxLayout(editor_group)
         common_form = QFormLayout()
         self.name_edit = QLineEdit()
-        self.enabled_check = QCheckBox("ENABLED")
+        self.enabled_check = QCheckBox("OND")
         self.sync_combo = QComboBox()
         self.sync_combo.addItem("SYNC TO TRANSPORT", "transport")
         self.sync_combo.addItem("FREE RUN", "free")
         self.reset_combo = QComboBox()
         self.reset_combo.addItem("CONTINUOUS", "transport")
-        self.reset_combo.addItem("RESET EVERY BAR", "bar")
-        self.reset_combo.addItem("RESET EVERY PHRASE", "phrase")
+        self.reset_combo.addItem("RE EVERY BR", "bar")
+        self.reset_combo.addItem("RE EVERY PHRASE", "phrase")
         common_form.addRow("NAME", self.name_edit)
         common_form.addRow(self.enabled_check)
         common_form.addRow("TIMEBASE", self.sync_combo)
-        common_form.addRow("PHASE RESET", self.reset_combo)
+        common_form.addRow("PHASE RE", self.reset_combo)
         editor.addLayout(common_form)
 
-        self.lfo_group = QGroupBox("LFO · CYCLIC WAVEFORM")
+        self.lfo_group = QGroupBox("LFO · CYCLIC WFM")
         lfo_form = QFormLayout(self.lfo_group)
         self.waveform_combo = QComboBox()
         for value, label in (
@@ -147,14 +147,14 @@ class ModulatorBankPanel(QWidget):
         self.lfo_rate_hz = self._double_spin(0.005, 30.0, 0.25, 3)
         self.lfo_phase = self._double_spin(0.0, 1.0, 0.0, 3)
         self.lfo_pulse_width = self._double_spin(0.02, 0.98, 0.5, 2)
-        lfo_form.addRow("WAVEFORM", self.waveform_combo)
-        lfo_form.addRow("PERIOD · BEATS", self.lfo_rate_beats)
+        lfo_form.addRow("WFM", self.waveform_combo)
+        lfo_form.addRow("PERIOD · BTS", self.lfo_rate_beats)
         lfo_form.addRow("RATE · HZ (FREE)", self.lfo_rate_hz)
         lfo_form.addRow("PHASE", self.lfo_phase)
         lfo_form.addRow("PULSE WIDTH", self.lfo_pulse_width)
         editor.addWidget(self.lfo_group)
 
-        self.follower_group = QGroupBox("CONTROL FOLLOWER · SONIC PI / AUDIO")
+        self.follower_group = QGroupBox("CTRL FOLLOWER · SONIC PI / AUD")
         follower_form = QFormLayout(self.follower_group)
         self.input_source_combo = QComboBox()
         for source_id, label in FOLLOWER_SOURCES.items():
@@ -195,7 +195,7 @@ class ModulatorBankPanel(QWidget):
         envelope_form.addRow("TRIGGER THRESHOLD", self.trigger_threshold_spin)
         envelope_form.addRow("RETRIGGER", self.retrigger_combo)
         envelope_form.addRow("ATTACK", self.attack_spin)
-        envelope_form.addRow("DECAY", self.decay_spin)
+        envelope_form.addRow("DEC", self.decay_spin)
         envelope_form.addRow("SUSTAIN", self.sustain_spin)
         envelope_form.addRow("GATE / HOLD", self.gate_spin)
         envelope_form.addRow("RELEASE", self.release_spin)
@@ -221,7 +221,7 @@ class ModulatorBankPanel(QWidget):
         self.seed_spin = QSpinBox()
         self.seed_spin.setRange(0, 2_147_483_647)
         self.seed_spin.setValue(211)
-        self.euclidean_group = QGroupBox("EUCLIDEAN RHYTHM GENERATOR")
+        self.euclidean_group = QGroupBox("EUCLIDEAN RHYTHM GEN")
         euclidean_form = QFormLayout(self.euclidean_group)
         self.euclidean_pulses = QSpinBox()
         self.euclidean_pulses.setRange(0, 64)
@@ -239,7 +239,7 @@ class ModulatorBankPanel(QWidget):
         euclidean_form.addRow(self.euclidean_generate_button)
         sequence_form.addRow(self.euclidean_group)
         sequence_form.addRow("STEP VALUES · 0–1", self.steps_edit)
-        sequence_form.addRow("DIVISION · BEATS", self.division_spin)
+        sequence_form.addRow("DIVISION · BTS", self.division_spin)
         sequence_form.addRow("STEP RATE · HZ (FREE)", self.step_rate_spin)
         sequence_form.addRow("INTERPOLATION", self.interpolation_combo)
         sequence_form.addRow("DIRECTION", self.direction_combo)
@@ -255,11 +255,11 @@ class ModulatorBankPanel(QWidget):
         self.editor_hint.setWordWrap(True)
         self.editor_hint.setObjectName("mutedLabel")
         editor.addWidget(self.editor_hint)
-        self.apply_button = QPushButton("APPLY MODULATOR CHANGES")
+        self.apply_button = QPushButton("APPLY MOD CHANGES")
         editor.addWidget(self.apply_button)
         root.addWidget(editor_group)
 
-        assignment_group = QGroupBox("ASSIGN TO SELECTED LAYER")
+        assignment_group = QGroupBox("ASSIGN TO SELECTED LY")
         assignment_form = QFormLayout(assignment_group)
         self.assignment_layer_label = QLabel("No layer selected")
         self.assignment_layer_label.setWordWrap(True)
@@ -275,11 +275,11 @@ class ModulatorBankPanel(QWidget):
         self.assignment_polarity_combo.addItem("AUTO · TYPE DEFAULT", "auto")
         self.assignment_polarity_combo.addItem("BIPOLAR · CENTRED", "bipolar")
         self.assignment_polarity_combo.addItem("POSITIVE · ONE WAY", "positive")
-        assignment_form.addRow("LAYER", self.assignment_layer_label)
+        assignment_form.addRow("LY", self.assignment_layer_label)
         assignment_form.addRow("TARGET", self.assignment_target_combo)
-        assignment_form.addRow("DEPTH", depth_row)
+        assignment_form.addRow("DPTH", depth_row)
         assignment_form.addRow("RESPONSE", self.assignment_polarity_combo)
-        self.assign_button = QPushButton("ASSIGN MODULATOR TO LAYER")
+        self.assign_button = QPushButton("ASSIGN MOD TO LY")
         assignment_form.addRow(self.assign_button)
         root.addWidget(assignment_group)
 
@@ -762,7 +762,7 @@ class ModulatorBankPanel(QWidget):
 
     def _targets_for_layer(self, layer) -> list[str]:
         targets = [
-            target_id for target_id, spec in PERFORMANCE_MODIFIER_TARGETS.items()
+            target_id for target_id, spec in PERF_MODIFIER_TARGETS.items()
             if spec.category == "layer"
         ]
         if layer.source_type == "generator":
@@ -830,7 +830,7 @@ class ModulatorBankPanel(QWidget):
         self.assignment_target_combo.clear()
         if layer is not None:
             for target_id in self._targets_for_layer(layer):
-                spec = PERFORMANCE_MODIFIER_TARGETS[target_id]
+                spec = PERF_MODIFIER_TARGETS[target_id]
                 self.assignment_target_combo.addItem(spec.label, target_id)
         target = self.assignment_target_combo.findData(current)
         if target < 0 and layer is not None:
@@ -869,7 +869,7 @@ class ModulatorBankPanel(QWidget):
                 if definition.kind in {"envelope", "follower"}
                 else "bipolar"
             )
-        target_label = PERFORMANCE_MODIFIER_TARGETS[str(target_id)].label
+        target_label = PERF_MODIFIER_TARGETS[str(target_id)].label
         modifier = LayerPerformanceModifier(
             name=f"{definition.name} → {target_label}",
             source_id=f"modulator.{definition.modulator_id}",

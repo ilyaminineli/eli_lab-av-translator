@@ -333,7 +333,7 @@ class GenerativeVariationDirector:
             breakdown_max: float = 9.0,
             depth: float = 0.0,
     ) -> float:
-        """Choose a smooth transition duration, extending breakdowns and DEPTH."""
+        """Choose a smooth transition duration, extending breakdowns and DPTH."""
         if slow_breakdowns and section == "breakdown":
             low = max(2.0, float(breakdown_min))
             high = max(low, float(breakdown_max))

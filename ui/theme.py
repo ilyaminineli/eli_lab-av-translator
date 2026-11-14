@@ -6,10 +6,10 @@ from qt_material import apply_stylesheet
 
 # Neutral Material base; all application accents are overridden to grayscale below.
 DEFAULT_THEME = "dark_teal.xml"
-DENSITY_SCALE = "-1"
+DNST_SCALE = "-1"
 
 MATERIAL_COLORS = {
-    "density_scale": DENSITY_SCALE,
+    "density_scale": DNST_SCALE,
     "primaryColor": "#bdbdbd",
     "primaryLightColor": "#f0f0f0",
     "secondaryColor": "#242424",

@@ -10,8 +10,8 @@ from typing import Any
 from PySide6.QtCore import QObject, Signal
 
 from generators.rasterizer import (
-    GENERATOR_HEIGHT,
-    GENERATOR_WIDTH,
+    GEN_HEIGHT,
+    GEN_WIDTH,
     GeneratorRasterizer,
     raster_content_snapshot,
 )
@@ -76,15 +76,15 @@ class GeneratorRasterService(QObject):
             full_resolution: bool = False,
     ) -> tuple[int, int]:
         if full_resolution:
-            return GENERATOR_WIDTH, GENERATOR_HEIGHT
+            return GEN_WIDTH, GEN_HEIGHT
         scale = (
             self._text_preview_scale
             if generator_type == "text"
             else self._raster_preview_scale
         )
         return (
-            max(320, round(GENERATOR_WIDTH * scale)),
-            max(180, round(GENERATOR_HEIGHT * scale)),
+            max(320, round(GEN_WIDTH * scale)),
+            max(180, round(GEN_HEIGHT * scale)),
         )
 
     def fingerprint_for(

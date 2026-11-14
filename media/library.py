@@ -6,7 +6,7 @@ from contextlib import contextmanager
 from pathlib import Path
 from time import time
 
-from config import MEDIA_DB_PATH, THUMBNAIL_DIR
+from config import MEDIA_DB_PATH, THUMB_DIR
 from media.models import MediaAsset
 from media.scanner import MediaScanner
 
@@ -21,7 +21,7 @@ class MediaLibrary:
     ) -> None:
         self.database_path = Path(database_path or MEDIA_DB_PATH).expanduser()
         self.thumbnail_directory = Path(
-            thumbnail_directory or THUMBNAIL_DIR
+            thumbnail_directory or THUMB_DIR
         ).expanduser()
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
         self.thumbnail_directory.mkdir(parents=True, exist_ok=True)
@@ -50,17 +50,17 @@ class MediaLibrary:
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS assets (
-                    id TEXT PRIMARY KEY,
-                    path TEXT NOT NULL UNIQUE,
-                    collection_id TEXT NOT NULL,
-                    name TEXT NOT NULL,
+                    id TXT PRIMARY KEY,
+                    path TXT NOT NULL UNIQUE,
+                    collection_id TXT NOT NULL,
+                    name TXT NOT NULL,
                     duration REAL,
                     width INTEGER,
                     height INTEGER,
                     fps REAL,
-                    codec TEXT,
-                    thumbnail_path TEXT,
-                    status TEXT NOT NULL,
+                    codec TXT,
+                    thumbnail_path TXT,
+                    status TXT NOT NULL,
                     file_size INTEGER NOT NULL,
                     modified_at REAL NOT NULL
                 )
@@ -72,9 +72,9 @@ class MediaLibrary:
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS collections (
-                    id TEXT PRIMARY KEY,
-                    root_path TEXT NOT NULL,
-                    name TEXT NOT NULL,
+                    id TXT PRIMARY KEY,
+                    root_path TXT NOT NULL,
+                    name TXT NOT NULL,
                     imported_at REAL NOT NULL
                 )
                 """

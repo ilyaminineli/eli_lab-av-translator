@@ -8,12 +8,12 @@ Modifiers are stored in the owning Layer record and travel with the composition.
 
 ## Where to find it
 
-1. Select a layer in the LAYERS dock.
-2. Open PERFORMANCE MODIFIERS · PER LAYER beneath SELECTED LAYER TRANSFORM.
+1. Select a layer in the LYS dock.
+2. Open PERF MODIFIERS · PER LY beneath SELECTED LY TRANSFORM.
 3. Choose a source, target, response curve, polarity and depth.
 4. Click ADD MODIFIER, or use one of the quick rhythmic buttons:
-   - BEAT — add a short pulse on every beat.
-   - DOWNBEAT — add a pulse on the first beat of each bar.
+   - BT — add a short pulse on every beat.
+   - DOWNBT — add a pulse on the first beat of each bar.
    - PHRASE — add a pulse at the start of each four-bar phrase.
 5. Start the internal transport or SONATA in Sonic Pi. The rhythm readout and modifier meters show the live source values.
 

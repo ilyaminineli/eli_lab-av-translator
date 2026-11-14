@@ -161,7 +161,7 @@ class PerformanceModeService:
         return value
 
 
-# The global matrix handles master-output and AUTO PERFORMANCE parameters. Layer
+# The global matrix handles master-output and AUTO PERF parameters. Layer
 # domains use the same LayerPerformanceModifier engine used by authored modifiers.
 DEFAULT_MATRIX_ROUTES: tuple[tuple[str, str, float, float, bool, float], ...] = (
     ("performance_macro.chaos", "master.glitch", 0.0, 0.82, False, 0.78),
@@ -225,7 +225,7 @@ LEGACY_CPU_RASTER_MODIFIERS: dict[str, set[tuple[str, str]]] = {
     },
 }
 
-DEFAULT_MODULATORS: tuple[tuple[str, str], ...] = (
+DEFAULT_MODS: tuple[tuple[str, str], ...] = (
     ("follower-sonic-pi-energy", "AUTO · Sonic Pi energy"),
     ("follower-sonic-pi-cutoff", "AUTO · Sonic Pi cutoff"),
     ("env-beat-pluck", "AUTO · Beat envelope"),
@@ -327,7 +327,7 @@ def install_default_modulators(bank: ModulatorBank) -> dict[str, str]:
     """Ensure the reusable followers, beat/onset envelopes and phrase LFO exist."""
     result: dict[str, str] = {}
     by_name = {item.name: item for item in bank.list_modulators()}
-    for preset_id, name in DEFAULT_MODULATORS:
+    for preset_id, name in DEFAULT_MODS:
         existing = by_name.get(name)
         if existing is not None:
             existing.enabled = True
@@ -382,7 +382,7 @@ def _performance_macro_modifier(
 
 
 def install_default_performance_macro_modifiers(layers: list[object]) -> int:
-    """Install reusable macro-to-layer mappings without requiring AUTO PERFORMANCE."""
+    """Install reusable macro-to-layer mappings without requiring AUTO PERF."""
     universal = {
         "chaos": (
             ("rotation accent", "layer.rotation", 0.08),
