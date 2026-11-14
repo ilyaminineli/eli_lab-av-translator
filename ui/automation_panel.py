@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 
 from core.automation import AutomationSettings
 from media.library import MediaLibrary
+from ui.i18n import set_ui_text
 
 
 class AutomationPanel(QWidget):
@@ -219,15 +220,17 @@ class AutomationPanel(QWidget):
         self.collection_combo.blockSignals(False)
         self.start_button.setEnabled(bool(playable) and not self._running)
         if not playable and not self._running:
-            self.status_label.setText(
+            set_ui_text(
+                self.status_label,
                 "No playable video files. Import a video folder or choose a pool "
-                "with readable clips."
+                "with readable clips.",
             )
         elif playable and self.status_label.text().startswith(
             "No playable video files"
         ):
-            self.status_label.setText(
-                f"Ready · {len(playable)} playable video clip(s) available."
+            set_ui_text(
+                self.status_label,
+                f"Ready · {len(playable)} playable video clip(s) available.",
             )
 
     def _build_settings(self) -> AutomationSettings:
@@ -334,7 +337,7 @@ class AutomationPanel(QWidget):
         self.start_button.setEnabled(not running and playable)
         self.stop_button.setEnabled(running)
         if message:
-            self.status_label.setText(message)
+            set_ui_text(self.status_label, message)
 
     def set_status(self, message: str) -> None:
         self.status_label.setText(message)
