@@ -3,8 +3,8 @@ from __future__ import annotations
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import QHBoxLayout, QWidget
 
-from ui.icons import app_icon, icon_button
 from ui.i18n import ui_text
+from ui.icons import app_icon, icon_button
 
 
 class TransportBar(QWidget):
