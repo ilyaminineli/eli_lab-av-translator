@@ -47,12 +47,12 @@ The November 4 RTX 4060 screenshot showed approximately 18.9 FPS. The new counte
 
 # M7 — Unified Generative Audiovisual Instrument
 
-**Status:** In progress on `m7/unified-visual-director`. Full design brief: [M7.md](M7.md). The initial implementation removes the universal two-layer selection ceiling, makes anchor/background protection opt-in, applies spatial variation to visible unlocked visual layers beyond video, and restores high-variance/overlapping/off-canvas composition. Compile, Ruff, regression and target-Windows GPU/projector checks are still pending.
+**Status:** In progress on `m7/unified-visual-director`. Full design brief and implementation log: [M7.md](M7.md). M7-A now has dynamic uncapped variation, optional anchors, cross-source spatial mutation, relationship-aware placement and a composition-only Visual Activity estimate. Initial M7-B work adds the Qt Material styling foundation and central Perform / Compose / Prepare workspaces. Current Visual Activity/UI changes are under CI revalidation; target-Windows GPU/projector acceptance remains open.
 
 | Workstream | Scope | Status |
 | --- | --- | --- |
-| M7-A — Unified Visual Director | One director blends chaotic freedom, musical/generative intelligence and compositional structure. Dynamic variation budgets, optional anchors, all visual-layer participation, adaptive transitions, layer relationships and Visual Activity. | In progress |
-| M7-B — Performance UI Redesign | Perform / Compose / Prepare workspaces; central live canvas; context-sensitive inspector; quick/advanced controls; prominent macros, timeline and status; responsive/persistent layouts. | Planned |
+| M7-A — Unified Visual Director | One director blends chaotic freedom, musical/generative intelligence and compositional structure. Dynamic variation budgets, optional anchors, all visual-layer participation, adaptive transitions, first Visual Activity estimate and relationship-aware spatial placement. Feedback/particle/effect telemetry, cooldowns, manual-override precedence, broader state-awareness and regression coverage remain open. | In progress |
+| M7-B — Performance UI Redesign | Initial central Perform / Compose / Prepare workspaces, central live canvas, shared macro strip, central media/visual-asset preparation tabs, Qt Material dark-red theme and workspace shortcuts. Context-sensitive inspector, quick/advanced control separation, timeline visibility, responsive refinement and target-Windows UI acceptance remain open. | In progress |
 | M7-C — Generative Drawing Engine | GPU/vector paths, Bézier curves, animated strokes, accumulation, hatching, contours, recursive and field-driven geometry. | Planned |
 | M7-D — Temporal + Print Processing | Extend existing feedback; layer/source routing, temporal echoes/stutter, procedural printmaking and reorderable print stages. | Planned |
 | M7-E — Advanced Signal Visualizer | Phase scope, spectrogram, frequency geometry, spectral particles, signal fields and waveform deformation using existing audio/modulation sources. | Planned |
