@@ -36,6 +36,7 @@ jobs:
           core/generative_director.py
           ui/automation_panel.py
           ui/main_window.py
+          ui/performance_control_panel.py
           ui/theme.py
           main.py
           tests
