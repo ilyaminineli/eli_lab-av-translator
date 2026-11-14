@@ -91,6 +91,10 @@ class MainWindow(QMainWindow):
         self._autosave_timer = QTimer(self)
         self._autosave_timer.setInterval(30000)
         self._autosave_timer.timeout.connect(self._autosave_session)
+        self._autosave_debounce = QTimer(self)
+        self._autosave_debounce.setSingleShot(True)
+        self._autosave_debounce.setInterval(1500)
+        self._autosave_debounce.timeout.connect(self._autosave_session)
         self._restore_local_preview_on_close = False
 
         self.performance_view = PerformanceView(application, self)
@@ -289,7 +293,7 @@ class MainWindow(QMainWindow):
             self.deck_panel.lock_changed,
             self.performance_control_panel.macros_changed,
         ):
-            signal.connect(self._autosave_session)
+            signal.connect(self._schedule_session_autosave)
 
         self._create_actions()
         self._sync_performance_macro_shortcuts()
@@ -1288,12 +1292,20 @@ class MainWindow(QMainWindow):
         self._ui_settings.setValue("ui/show_hints_v1", self._show_hints)
         self._ui_settings.setValue("session/restore_v1", self._restore_session_enabled)
         self._ui_settings.sync()
+        if self._restore_session_enabled:
+            self._autosave_timer.start()
+            self._autosave_session()
+        else:
+            self._autosave_timer.stop()
+            self._autosave_debounce.stop()
         gui = QGuiApplication.instance()
         if gui is not None:
             tooltip_filter = getattr(gui, "_eli_tooltip_filter", None)
             if tooltip_filter is not None:
                 tooltip_filter.set_enabled(self._show_hints)
-        self.statusBar().showMessage("Settings saved.", 2500)
+        self.statusBar().showMessage(
+            "Settings saved · restart to apply language changes.", 3500
+        )
 
     def _refresh_after_project_load(self) -> None:
         self._sync_performance_mode_button()
@@ -1326,6 +1338,10 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage("Session recovery failed.", 5000)
         finally:
             self._restoring_session = False
+
+    def _schedule_session_autosave(self, *_args) -> None:
+        if self._restore_session_enabled and not self._restoring_session:
+            self._autosave_debounce.start()
 
     def _autosave_session(self, *_args) -> None:
         if (
@@ -1370,6 +1386,7 @@ class MainWindow(QMainWindow):
             "ui/active_workspace_v1",
             self.workspace_tabs.currentIndex(),
         )
+        self._autosave_debounce.stop()
         self._autosave_timer.stop()
         if self._restore_session_enabled:
             self._autosave_session()
