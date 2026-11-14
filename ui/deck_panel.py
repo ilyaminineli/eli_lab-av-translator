@@ -7,6 +7,7 @@ from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QCheckBox,
+    QFrame,
     QGridLayout,
     QGroupBox,
     QHBoxLayout,
@@ -305,7 +306,7 @@ class DeckPanel(QWidget):
         self.scroll.setWidgetResizable(True)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        self.scroll.setFrameShape(QFrame.Shape.NoFrame)
         self.body = QWidget()
         self.body.setMinimumWidth(0)
         self.grid = QGridLayout(self.body)
