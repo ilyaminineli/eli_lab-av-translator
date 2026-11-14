@@ -20,7 +20,7 @@ from PySide6.QtWidgets import (
 
 from core.application import Application
 from ui.hints import ToolTipFilter
-from ui.i18n import apply_widget_translations, tr, ui_text
+from ui.i18n import apply_widget_translations, tr
 from ui.performance_timeline_panel import PerformanceTimelinePanel
 from ui.settings_dialog import SettingsDialog
 from ui.theme import application_font_families, configure_application_theme
