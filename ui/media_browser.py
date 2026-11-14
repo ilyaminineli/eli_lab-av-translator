@@ -24,7 +24,7 @@ from PySide6.QtWidgets import (
 from media.library import MediaLibrary
 from media.models import MediaAsset
 from media.thumbnails import generate_thumbnail
-from ui.i18n import set_ui_text
+from ui.i18n import set_ui_text, ui_text
 from ui.icons import app_icon
 
 _LOG = logging.getLogger(__name__)
@@ -158,7 +158,7 @@ class MediaBrowser(QWidget):
         self.refresh()
 
     def choose_folder(self) -> None:
-        folder = QFileDialog.getExistingDirectory(self, "Add video folder")
+        folder = QFileDialog.getExistingDirectory(self, ui_text("Add video folder"))
         if folder:
             self.scan_folder(folder)
 
@@ -334,7 +334,7 @@ class MediaBrowser(QWidget):
         name = self.collection_combo.currentText()
         answer = QMessageBox.question(
             self,
-            "Remove folder from media library",
+            ui_text("Remove folder from media library"),
             (
                 f"Remove {name} from the library index?\n\n"
                 "This removes its entries and cached thumbnails only. "
@@ -357,8 +357,8 @@ class MediaBrowser(QWidget):
     def prune_missing_files(self) -> None:
         answer = QMessageBox.question(
             self,
-            "Remove missing files",
-            "Remove library entries whose source files can no longer be found?",
+            ui_text("Remove missing files"),
+            ui_text("Remove library entries whose source files can no longer be found?"),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )
@@ -376,7 +376,7 @@ class MediaBrowser(QWidget):
     def clear_library(self) -> None:
         answer = QMessageBox.question(
             self,
-            "Clear media library",
+            ui_text("Clear media library"),
             (
                 "Remove every indexed folder and clip from the media library?\n\n"
                 "This does NOT delete original source videos. "
