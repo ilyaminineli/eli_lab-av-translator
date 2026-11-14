@@ -232,7 +232,7 @@ def test_dynamic_dialog_and_multiline_media_prompts_translate() -> None:
         "モジュレータープリセットを3件インポートしました。"
     )
     prompt = (
-        "Remove Archive from the library index?\\n\\n"
+        "Remove Archive from the library index?\n\n"
         "This removes its entries and cached thumbnails only. "
         "Your original video files and folders will NOT be deleted. "
         "Clips already loaded into decks continue playing."
