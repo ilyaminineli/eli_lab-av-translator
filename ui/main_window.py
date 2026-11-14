@@ -40,7 +40,7 @@ from ui.modulator_bank_panel import ModulatorBankPanel
 from ui.output_window import OutputWindowManager
 from ui.performance_control_panel import PerformanceControlPanel
 from ui.performance_timeline_panel import PerformanceTimelinePanel
-from ui.performance_view import PerformanceView
+from ui.performance_view import AspectRatioPreview, PerformanceView
 from ui.transport_bar import TransportBar
 
 _LOG = logging.getLogger(__name__)
@@ -332,7 +332,11 @@ class MainWindow(QMainWindow):
             QLabel("LOCAL PREVIEW is now displayed in the central PERFORM workspace.")
         )
         self.preview_dock.hide()
-        perform_layout.addWidget(self.performance_view, 1)
+        self.performance_aspect_preview = AspectRatioPreview(
+            self.performance_view,
+            parent=perform_page,
+        )
+        perform_layout.addWidget(self.performance_aspect_preview, 1)
         perform_layout.addWidget(self.live_macro_strip, 0)
 
         compose_page = QWidget(tabs)
