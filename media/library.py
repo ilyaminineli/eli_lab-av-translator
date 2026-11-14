@@ -50,17 +50,17 @@ class MediaLibrary:
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS assets (
-                    id TXT PRIMARY KEY,
-                    path TXT NOT NULL UNIQUE,
-                    collection_id TXT NOT NULL,
-                    name TXT NOT NULL,
+                    id TEXT PRIMARY KEY,
+                    path TEXT NOT NULL UNIQUE,
+                    collection_id TEXT NOT NULL,
+                    name TEXT NOT NULL,
                     duration REAL,
                     width INTEGER,
                     height INTEGER,
                     fps REAL,
-                    codec TXT,
-                    thumbnail_path TXT,
-                    status TXT NOT NULL,
+                    codec TEXT,
+                    thumbnail_path TEXT,
+                    status TEXT NOT NULL,
                     file_size INTEGER NOT NULL,
                     modified_at REAL NOT NULL
                 )
@@ -72,9 +72,9 @@ class MediaLibrary:
             connection.execute(
                 """
                 CREATE TABLE IF NOT EXISTS collections (
-                    id TXT PRIMARY KEY,
-                    root_path TXT NOT NULL,
-                    name TXT NOT NULL,
+                    id TEXT PRIMARY KEY,
+                    root_path TEXT NOT NULL,
+                    name TEXT NOT NULL,
                     imported_at REAL NOT NULL
                 )
                 """
