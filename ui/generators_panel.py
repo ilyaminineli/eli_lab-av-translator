@@ -31,7 +31,7 @@ from core.application import Application
 from generators.catalog import normalize_settings
 from generators.palettes import import_aco_palette, palette_look, palette_names
 from generators.text_pools import random_text_sample
-from ui.i18n import ui_text
+from ui.i18n import set_ui_text, ui_text
 from ui.icons import icon_button
 
 
@@ -1029,7 +1029,7 @@ class GeneratorsPanel(QWidget):
         }
         label = labels.get(phase, "READY")
         suffix = f" · {detail}" if detail else ""
-        self.text_raster_status.setText(f"TEXT PIPELINE · {label}{suffix}")
+        set_ui_text(self.text_raster_status, f"TEXT PIPELINE · {label}{suffix}")
 
     def _sync_text_raster_status(self) -> None:
         layer = self._selected_layer()
@@ -1148,9 +1148,10 @@ class GeneratorsPanel(QWidget):
             )
         self._committed_text = str(normalized["text"])
         if layer.id == self.layer_combo.currentData():
-            self.hint_label.setText(
+            set_ui_text(
+                self.hint_label,
                 f"Text committed · {len(self._committed_text)} characters. "
-                "Rasterization continues in the background."
+                "Rasterization continues in the background.",
             )
         self.manual_target_changed.emit("generator.*")
         self.composition_changed.emit()
@@ -1204,12 +1205,13 @@ class GeneratorsPanel(QWidget):
         try:
             layer = self.application.add_media_overlay(path)
             self.refresh(select_id=layer.id)
-            self.hint_label.setText(
-                f"Added {layer.name}. Edit opacity, blend mode and playback below."
+            set_ui_text(
+                self.hint_label,
+                f"Added {layer.name}. Edit opacity, blend mode and playback below.",
             )
             self.composition_changed.emit()
         except Exception as exc:
-            self.hint_label.setText(f"Could not add overlay: {exc}")
+            set_ui_text(self.hint_label, f"Could not add overlay: {exc}")
 
     def _selected_layer(self):
         layer_id = self.layer_combo.currentData()
@@ -1305,7 +1307,7 @@ class GeneratorsPanel(QWidget):
         self.layer_appearance_group.setEnabled(bool(layer and not layer.locked))
         self.overlay_group.setEnabled(bool(layer and is_overlay and not layer.locked))
         if not enabled:
-            self.hint_label.setText("Add or select a generator or overlay layer.")
+            set_ui_text(self.hint_label, "Add or select a generator or overlay layer.")
             return
         if self._loading:
             return
@@ -1382,8 +1384,9 @@ class GeneratorsPanel(QWidget):
             self.overlay_speed_spin.setToolTip(ui_text(overlay_help))
             self.overlay_frame_hold_spin.setToolTip(ui_text(overlay_help))
             self.overlay_loop_check.setToolTip(ui_text(overlay_help))
-            self.hint_label.setText(
-                f"Editing {layer.name} · opacity and blend mode update live."
+            set_ui_text(
+                self.hint_label,
+                f"Editing {layer.name} · opacity and blend mode update live.",
             )
             self._loading = False
             self.selected_layer_changed.emit(layer.id)
@@ -1992,8 +1995,9 @@ class GeneratorsPanel(QWidget):
         if layer.source_type == "overlay":
             self._apply_overlay_settings()
             self._apply_layer_appearance()
-            self.hint_label.setText(
-                f"Applied overlay playback and appearance settings to {layer.name}."
+            set_ui_text(
+                self.hint_label,
+                f"Applied overlay playback and appearance settings to {layer.name}.",
             )
             return
         if layer.source_type != "generator":
@@ -2027,7 +2031,7 @@ class GeneratorsPanel(QWidget):
             try:
                 text_runs = self._read_text_runs()
             except ValueError as exc:
-                self.hint_label.setText(f"Rich text runs not applied · {exc}")
+                set_ui_text(self.hint_label, f"Rich text runs not applied · {exc}")
                 return
             settings.update(
                 {
@@ -2165,8 +2169,9 @@ class GeneratorsPanel(QWidget):
             )
         self.manual_target_changed.emit("generator.*")
         self.composition_changed.emit()
-        self.hint_label.setText(
-            f"Applied {layer.name}. Static content updates once; animation remains GPU-side."
+        set_ui_text(
+            self.hint_label,
+            f"Applied {layer.name}. Static content updates once; animation remains GPU-side.",
         )
 
     def remove_selected(self) -> None:
