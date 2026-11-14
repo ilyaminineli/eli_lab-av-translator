@@ -559,7 +559,8 @@ class GeneratorsPanel(QWidget):
         style_form.addRow("BACKGROUND COLOUR", self.background_color)
         self.palette_combo = QComboBox()
         self.palette_combo.addItem("Manual colours", "")
-        self.palette_combo.addItems(palette_names())
+        for palette_name in palette_names():
+            self.palette_combo.addItem(palette_name, palette_name)
         style_form.addRow("JAPANESE PALETTE LOOK", self.palette_combo)
         self.import_palette_button = QPushButton("IMPORT ACO PALETTE…")
         style_form.addRow(self.import_palette_button)
@@ -652,7 +653,7 @@ class GeneratorsPanel(QWidget):
         self.add_overlay_button.clicked.connect(self.add_overlay_media)
         self.remove_button.clicked.connect(self.remove_selected)
         self.layer_combo.currentIndexChanged.connect(self.load_selected)
-        self.palette_combo.currentTextChanged.connect(self._palette_changed)
+        self.palette_combo.currentIndexChanged.connect(self._palette_changed)
         self.blend_mode_combo.currentTextChanged.connect(self._apply_layer_appearance)
         self.opacity_slider.valueChanged.connect(self._apply_layer_appearance)
         for control in (
@@ -1856,15 +1857,24 @@ class GeneratorsPanel(QWidget):
         self.palette_combo.blockSignals(True)
         self.palette_combo.clear()
         self.palette_combo.addItem("Manual colours", "")
-        self.palette_combo.addItems(palette_names())
+        for palette_name in palette_names():
+            self.palette_combo.addItem(palette_name, palette_name)
         self.palette_combo.blockSignals(False)
         if imported:
             self.palette_combo.setCurrentText(imported[0])
 
-    def _palette_changed(self, name: str) -> None:
-        if not name or name == "Manual colours":
+    def _palette_changed(self, *_args) -> None:
+        # The visible label is localized; palette identity must always come
+        # from itemData so a translated label cannot become a registry key.
+        name = str(self.palette_combo.currentData() or "")
+        if not name:
             return
-        look = palette_look(name)
+        try:
+            look = palette_look(name)
+        except KeyError:
+            # Imported palettes may be removed from the registry after the
+            # combo is populated. Keep the current manual colours in that case.
+            return
         self.primary_color.setText(str(look["primary_color"]))
         self.secondary_color.setText(str(look["secondary_color"]))
         self.background_color.setText(str(look["background_color"]))
