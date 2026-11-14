@@ -902,19 +902,19 @@ class MainWindow(QMainWindow):
                 lambda value: set_ui_text(self.status_label, value, self._language)
             )
             if window.performance_view.engine.initialized:
-                self.status_label.setText(
+                set_ui_text(self.status_label, 
                     f"PROJECTOR READY · {window.performance_view.engine.renderer_name}"
                 )
             elif window.performance_view._initialization_error:
-                self.status_label.setText(
+                set_ui_text(self.status_label, 
                     f"PROJECTOR ERROR · {window.performance_view._initialization_error}"
                 )
             else:
-                self.status_label.setText(
+                set_ui_text(self.status_label, 
                     "PROJECTOR OPEN · waiting for its OpenGL context"
                 )
             window.closed.connect(self._projector_output_closed)
-            self.workspace_output_label.setText(
+            set_ui_text(self.workspace_output_label, 
                 f"OUTPUT  ·  PROJECTOR  ·  {screen.name()}"
             )
             self._show_status_message(
@@ -929,17 +929,17 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Projector output failed", str(exc))
 
     def _projector_output_closed(self) -> None:
-        self.workspace_output_label.setText("OUTPUT  ·  LOCAL")
+        set_ui_text(self.workspace_output_label, "OUTPUT  ·  LOCAL")
         if self.performance_view.engine.initialized:
-            self.status_label.setText(
+            set_ui_text(self.status_label, 
                 f"LOCAL PREVIEW READY · {self.performance_view.engine.renderer_name}"
             )
         elif self.performance_view._initialization_error:
-            self.status_label.setText(
+            set_ui_text(self.status_label, 
                 f"LOCAL PREVIEW ERROR · {self.performance_view._initialization_error}"
             )
         else:
-            self.status_label.setText(
+            set_ui_text(self.status_label, 
                 ui_text("LOCAL PREVIEW · IDLE")
             )
         if self._restore_local_preview_on_close:
@@ -1146,7 +1146,7 @@ class MainWindow(QMainWindow):
                 )
         control_revision = self.application.performance_control.revision
         if control_revision != self._last_control_revision:
-            self.control_status_label.setText(
+            set_ui_text(self.control_status_label, 
                 self.application.performance_control.status_text()
             )
             self._last_control_revision = control_revision
