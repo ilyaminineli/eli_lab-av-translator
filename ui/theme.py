@@ -392,6 +392,9 @@ QDockWidget::float-button {{
     height: 15px;
     margin: 0 4px;
 }}
+QDockWidget::float-button {{
+    image: url("{float_icon}");
+}}
 QDockWidget::float-button:checked {{
     image: url("{dock_icon}");
 }}
