@@ -8,6 +8,7 @@ os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import QApplication, QWidget
 
+from config import RESOURCE_DIR
 from core.automation import AutomationSettings
 from core.composition import Layer
 from core.performance_manager import PerformanceManager
@@ -244,13 +245,21 @@ def test_monochrome_icon_set_renders_and_keeps_accessible_actions() -> None:
     icon_names = (
         "play", "pause", "stop", "load", "restart", "shuffle", "layout",
         "sparkles", "lock", "unlock", "trash", "apply", "reset", "settings",
-        "warning", "library", "image", "menu",
+        "warning", "library", "image", "menu", "close", "float", "dock",
     )
 
     for name in icon_names:
         icon = app_icon(name)
         assert not icon.isNull()
         assert not icon.pixmap(24, 24, QIcon.Mode.Disabled).isNull()
+
+    checked_icon = app_icon("lock").pixmap(
+        24, 24, QIcon.Mode.Normal, QIcon.State.On
+    )
+    assert not checked_icon.isNull()
+
+    for icon_name in ("dock-close.svg", "dock-float.svg", "dock-dock.svg"):
+        assert (RESOURCE_DIR / "icons" / icon_name).is_file()
 
     button = icon_button(parent, "settings", "Media library tools", checkable=True)
     assert button.toolTip() == "Media library tools"
