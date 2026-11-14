@@ -38,8 +38,8 @@ from core.modulation import (
     ModulationRoute,
 )
 from core.scene_profiles import SceneProfile
-from ui.i18n import set_ui_text
 from generators.palettes import palette_names
+from ui.i18n import set_ui_text
 
 
 class PerformanceControlPanel(QWidget):
