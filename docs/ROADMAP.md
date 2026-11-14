@@ -321,7 +321,7 @@ The optional runtime dependency is `soundcard>=0.4.6`. Audio capture is optional
 
 **Remaining hardware sign-off:** on the intended Windows performance machine, test a physical input and system loopback, unplug/reconnect the active device, verify manual source refresh/restart, and run a sustained audio-reactive session while video is rendering. CI's fake devices do not replace those checks.
 
-See [M3 Audio-Reactive Foundation](M3_AUD_REACTIVE_FOUNDATION.md).
+See [M3 Audio-Reactive Foundation](M3_AUDIO_REACTIVE_FOUNDATION.md).
 
 ---
 
@@ -386,7 +386,7 @@ See [SONATA Expanded integration notes](SONIC_PI_SONATA_INTEGRATION.md).
 
 **M5 implementation exit is met and merged.** M5 live-performance acceptance remains open until the target-machine checks above are run and recorded. Recording/audio muxing is explicitly deferred as a separate deliverable. See [M5 Completion & Live Validation Handoff](M5_COMPLETION_HANDOFF.md).
 
-See [M5 Autonomous Performance](M5_AUTONOMOUS_PERF.md), [M5 Performance Environment](M5_PERF_ENVIRONMENT.md), [M5 Unified Mapping Matrix](M5_MAPPING_MATRIX.md), [M5 Performance Modifiers](M5_PERF_MODIFIERS.md) and [M5 Modulator Bank](M5_MOD_BANK.md).
+See [M5 Autonomous Performance](M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance Environment](M5_PERFORMANCE_ENVIRONMENT.md), [M5 Unified Mapping Matrix](M5_MAPPING_MATRIX.md), [M5 Performance Modifiers](M5_PERFORMANCE_MODIFIERS.md) and [M5 Modulator Bank](M5_MODULATOR_BANK.md).
 
 # M6 — Advanced VJ Environment
 
@@ -421,7 +421,7 @@ Before coding, settle the policy when more clips are selected than decks are ava
 - Media/decode failures remain local and the UI stays responsive under active four-deck load.
 - Bins and assignments can be saved/reopened without persisting decoder handles or GPU resources.
 
-The detailed initial scope and staged acceptance checklist are in [M6 Advanced VJ Environment](M6_ADV_VJ_ENVIRONMENT.md).
+The detailed initial scope and staged acceptance checklist are in [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md).
 
 ## M6-B — VJ Scene and Composition Banks
 
@@ -429,19 +429,19 @@ The detailed initial scope and staged acceptance checklist are in [M6 Advanced V
 
 **Transition boundary:** current numeric-compatible parameters morph; discrete media/text/generator changes still use a cut. Dual-scene crossfade, midpoint switching, sequences and per-parameter locks remain planned.
 
-See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMP_BANK.md) for implementation details and acceptance criteria.
+See [M6-B — VJ Scene and Composition Banks](M6_B_SCENE_COMPOSITION_BANK.md) for implementation details and acceptance criteria.
 
 ## M6-C — Advanced Visual Transformations
 
 **C1 is merged to `main`.** The ModernGL compositor now has GPU-only image geometry and temporal processing. The first slice includes kaleidoscope, polar remapping, mosaic/tile, directional scan displacement, selectable layer-driven displacement maps, edge extraction, ordered dithering and a dedicated feedback engine with bounded per-renderer GPU history. Feedback exposes amount, decay, zoom, rotation, translation, colour shift, distortion, motion-driven warp, datamosh blocks, blend mode, short frame delay, freeze and reset.
 
-Directional scan sorting is a controlled shader approximation, not a full image-region sorting algorithm. Motion-driven warp is temporal-difference/gradient driven, not a dense optical-flow solver. These limitations and later C2/C3 work are documented in [M6-C — Advanced Visual Transformations](M6_C_ADV_VISUAL_TRANSFORMATIONS.md).
+Directional scan sorting is a controlled shader approximation, not a full image-region sorting algorithm. Motion-driven warp is temporal-difference/gradient driven, not a dense optical-flow solver. These limitations and later C2/C3 work are documented in [M6-C — Advanced Visual Transformations](M6_C_ADVANCED_VISUAL_TRANSFORMATIONS.md).
 
 ## M6-D — Advanced Particle Simulation
 
 **D1 + D2 are merged to `main`.** Particle System 2.0 remains separate from the legacy procedural `particles` field. D1 adds point/circle/rectangle emitters, deterministic seeded populations, fixed-step GPU lifetime/velocity/acceleration simulation, turbulence, attract/repel/orbit fields, size curves and trails. D2 adds editable path emitters, video-luminance, image alpha/luma silhouette and contour emitters, plus GPU source-target reformation with periodic target resampling. The live-event follow-up adds a bounded 0–3000 particles/second emission rate (distributed across populations), event-driven AUTO PERF mappings and six-second state retention across brief inactive cuts. Resource ceilings remain 8192 particles per system, four systems and 16384 particles per output renderer. Simulation and source sampling are owned by each Compositor/GL context and bypass the CPU raster service.
 
-Per-population overrides and advanced vector/collision fields remain D3 work. See [M6-D — Advanced Particle Simulation](M6_D_ADV_PRTL_SIMULATION.md).
+Per-population overrides and advanced vector/collision fields remain D3 work. See [M6-D — Advanced Particle Simulation](M6_D_ADVANCED_PARTICLE_SIMULATION.md).
 
 ## M6-E — Typography as an independent visual instrument
 
@@ -464,7 +464,7 @@ The workspace adapts dock constraints and default sizing for compact and 4:3 win
 
 Text Art includes an explicit **Queer / クィア** pool with the word **QUEER**, identity and pronoun vocabulary, and short self-definition / chosen-family phrases in English and Japanese. Offensive English dictionary headwords are filtered during dictionary ingestion as an additional safeguard; local dictionary files remain user-editable and should continue to be curated.
 
-See [M6 Live Performance and Workspace Integration](M6_LIVE_PERF_WS.md) for implementation details and acceptance checks.
+See [M6 Live Performance and Workspace Integration](M6_LIVE_PERFORMANCE_WORKSPACE.md) for implementation details and acceptance checks.
 
 ## M6 — Advanced performance controls
 
@@ -472,7 +472,7 @@ See [M6 Live Performance and Workspace Integration](M6_LIVE_PERF_WS.md) for impl
 
 **Merged to `main` in PR #30.** Six normalized 0–1 controls — CHAOS, DNST, DPTH, DEC, PRESSURE and FRAG — sit above the existing modulation matrix and per-layer modifier engine. Each macro fans out to compatible master and per-layer targets. Macros can take a continuous source from audio analysis, transport/rhythm, Sonic Pi energy/cutoff or Modulator Bank outputs, while manual sliders, keyboard toggles, MIDI CC/note learn and the versioned OSC `/eli_lab/v1/macro/set` route provide direct control. Macro values, source assignments and keyboard shortcuts are persisted with projects and performance sets.
 
-See [M6 Advanced Performance Controls](M6_ADV_PERF_CTRLS.md).
+See [M6 Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md).
 
 ### C. Live Performance Timeline
 
@@ -484,7 +484,7 @@ The dedicated **LIVE PERF TMLN** dock edits event positions, labels, enabled sta
 
 Current boundaries: no SMPTE/frame timeline, conditional branches or nested sequences; phrase markers are authored markers rather than inferred phrases; scene transitions retain the existing numeric-morph / discrete-cut behaviour. The target-Windows live rehearsal and musical timing acceptance remain open.
 
-See [M6 Advanced Performance Controls — C: Live Performance Timeline](M6_LIVE_PERF_TMLN.md).
+See [M6 Advanced Performance Controls — C: Live Performance Timeline](M6_LIVE_PERFORMANCE_TIMELINE.md).
 
 ## Engineering principles across all milestones
 
@@ -505,4 +505,4 @@ See [M6 Advanced Performance Controls — C: Live Performance Timeline](M6_LIVE_
 4. Continue M6-B2: dual-scene transition engine, then scene sequences and parameter locks.
 5. Continue M5 target-machine validation and the independent Video Mixer Completion Gate. Keep recording/audio muxing separately scoped.
 
-See [M6 Advanced VJ Environment](M6_ADV_VJ_ENVIRONMENT.md) for the current M6-A scope and acceptance criteria.
+See [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md) for the current M6-A scope and acceptance criteria.
