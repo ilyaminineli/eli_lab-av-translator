@@ -72,11 +72,16 @@ def test_manual_layout_randomizer_uses_video_generator_and_overlay_layers() -> N
     changed = manager.randomize_layout(layers)
 
     assert changed == 4
-    assert {layer.id for layer in layers if layer.z_index < 0} <= {
-        "video-background", "geometry", "overlay"
-    }
+    assert next(
+        layer for layer in layers if layer.id == "video-background"
+    ).z_index == -1
     text_layer = next(layer for layer in layers if layer.id == "text-headline")
-    assert text_layer.z_index == max(layer.z_index for layer in layers)
+    highest_other_visible_layer = max(
+        layer.z_index
+        for layer in layers
+        if layer.visible and layer.id != text_layer.id
+    )
+    assert text_layer.z_index > highest_other_visible_layer
     assert text_layer.scale[0] >= 1.02
     assert text_layer.scale[1] >= 1.02
     for layer in layers:
