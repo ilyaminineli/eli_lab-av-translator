@@ -314,7 +314,8 @@ def test_manual_override_cancels_morph_and_suspends_automation() -> None:
     director.notify_layer_manual_override("layer-0", duration_seconds=3.0, now=10.0)
 
     assert "layer-0" not in director._layout_morphs
-    assert "layer-0" not in director._peak_particle_base
+    # A transform edit pauses the boost, but keeps its baseline for restoration.
+    assert director._peak_particle_base["layer-0"] == ("density", 20.0, "particles")
     assert "layer-0" not in {
         layer.id for layer in director._eligible_variation_layers(now=11.0)
     }
