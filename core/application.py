@@ -2512,6 +2512,9 @@ class Application:
         self._tick_scene_morph()
         sources = self._modulation_sources()
         energy, cutoff = self._automation_musical_context(sources)
+        # Evaluate the macro engine first so the director receives the latest
+        # normalized values, including source-driven macros, on this same tick.
+        self.apply_modulation()
         self.automation.set_performance_context(
             energy=energy,
             cutoff=cutoff,
@@ -2519,7 +2522,6 @@ class Application:
             bar_index=int(self.performance_control.bar_index),
             macro_values=self.performance_macro_values(),
         )
-        self.apply_modulation()
         self._monitor_performance_mode()
         return processed_events + processed_audio + len(clock_events) + midi_events
 
