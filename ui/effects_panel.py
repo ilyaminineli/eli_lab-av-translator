@@ -10,6 +10,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QPushButton,
     QScrollArea,
+    QSizePolicy,
     QSlider,
     QVBoxLayout,
     QWidget,
@@ -77,15 +78,22 @@ class EffectsPanel(QWidget):
         self.settings = settings
         self.source_provider = source_provider
         self._sliders: dict[str, tuple[QSlider, QLabel, float]] = {}
+        self.setMinimumWidth(0)
+        self.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Preferred,
+        )
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(8, 8, 8, 8)
+        root.setContentsMargins(4, 6, 4, 6)
         preset_row = QHBoxLayout()
         preset_row.addWidget(QLabel("LOOK"))
         self.preset_combo = QComboBox()
+        self.preset_combo.setMinimumWidth(0)
         self.preset_combo.addItems(list(PSETS) + ["Custom"])
         preset_row.addWidget(self.preset_combo, 1)
-        self.reset_button = QPushButton("RESET LOOK")
+        self.reset_button = QPushButton("RESET")
+        self.reset_button.setToolTip("Reset the master look to its default values")
         preset_row.addWidget(self.reset_button)
         root.addLayout(preset_row)
 
@@ -94,20 +102,29 @@ class EffectsPanel(QWidget):
         root.addWidget(self.enabled_check)
 
         scroll = QScrollArea()
+        scroll.setMinimumWidth(0)
         scroll.setWidgetResizable(True)
+        scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         content = QWidget()
+        content.setMinimumWidth(0)
+        content.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Preferred,
+        )
         content_layout = QVBoxLayout(content)
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(8)
 
         group = QGroupBox("MASTER FILTERS + OVERLAYS")
         form = QFormLayout(group)
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         for key, title, low, high, scale in _SLIDERS:
             row = QHBoxLayout()
             slider = QSlider(Qt.Orientation.Horizontal)
             slider.setRange(low, high)
             value_label = QLabel("0")
-            value_label.setMinimumWidth(42)
+            value_label.setMinimumWidth(34)
             value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
             slider.valueChanged.connect(
                 lambda value, field=key, multiplier=scale, label=value_label: self._value_changed(
@@ -122,7 +139,12 @@ class EffectsPanel(QWidget):
 
         geometry_group = QGroupBox("GEOMETRY + DISPLACEMENT")
         geometry_form = QFormLayout(geometry_group)
+        geometry_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        geometry_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.transform_mode_combo = QComboBox()
+        self.transform_mode_combo.setMinimumWidth(0)
         for label, value in (
             ("Off", "none"),
             ("Kaleidoscope", "kaleidoscope"),
@@ -150,7 +172,11 @@ class EffectsPanel(QWidget):
             self._sliders[key] = (slider, value_label, scale)
         source_row = QHBoxLayout()
         self.displacement_source_combo = QComboBox()
-        self.displacement_refresh_button = QPushButton("REFRESH")
+        self.displacement_source_combo.setMinimumWidth(0)
+        self.displacement_refresh_button = QPushButton("SCAN")
+        self.displacement_refresh_button.setToolTip(
+            "Refresh available displacement sources"
+        )
         source_row.addWidget(self.displacement_source_combo, 1)
         source_row.addWidget(self.displacement_refresh_button)
         geometry_form.addRow("Displacement source", source_row)
@@ -160,6 +186,10 @@ class EffectsPanel(QWidget):
 
         feedback_group = QGroupBox("GPU FEEDBACK ENGINE")
         feedback_form = QFormLayout(feedback_group)
+        feedback_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        feedback_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.feedback_enabled_check = QCheckBox("ENABLE TEMPORAL FEEDBACK")
         feedback_form.addRow("", self.feedback_enabled_check)
         for key, title, low, high, scale in _ADV_SLIDERS[11:]:
@@ -186,7 +216,8 @@ class EffectsPanel(QWidget):
         self.feedback_frozen_check = QCheckBox("FREEZE FEEDBACK")
         feedback_form.addRow("", self.feedback_frozen_check)
         feedback_buttons = QHBoxLayout()
-        self.feedback_reset_button = QPushButton("RESET FEEDBACK BUFFER")
+        self.feedback_reset_button = QPushButton("RESET BUFFER")
+        self.feedback_reset_button.setToolTip("Clear the temporal feedback buffer")
         feedback_buttons.addWidget(self.feedback_reset_button)
         feedback_buttons.addStretch(1)
         feedback_form.addRow("", feedback_buttons)
