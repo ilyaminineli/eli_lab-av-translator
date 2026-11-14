@@ -379,11 +379,6 @@ class AutomationDirector:
             if layer_id in valid_ids
         )
 
-    @property
-    def _uses_constrained_generative_rules(self) -> bool:
-        """Compatibility accessor: the unified musical director is always active."""
-        return True
-
     def _variation_budget(self, strength: float | None = None) -> int:
         """Choose a dynamic scope from music, macros and the number of eligible layers."""
         eligible = sum(1 for layer in self._layers if layer.visible and not layer.locked)
@@ -402,6 +397,11 @@ class AutomationDirector:
             0.0,
             min(1.0, 0.36 * chaos + 0.25 * fragment + 0.22 * density + 0.17 * musical_drive),
         )
+        # Strong musical/macro peaks occasionally open the variation scope fully.
+        # This is a weighted global burst, not a fixed maximum-layer setting.
+        global_burst_probability = max(0.0, min(1.0, (drive - 0.72) / 0.28))
+        if self.rng.random() < global_burst_probability:
+            return eligible
         fraction = 0.25 + 0.75 * drive
         return min(eligible, max(1, round(eligible * fraction)))
 
@@ -449,6 +449,12 @@ class AutomationDirector:
                 and layer.source_type == "video"
                 and layer.id == anchor_id
             )
+            and not (
+                layer.source_type == "overlay"
+                and time.time() < float(
+                    getattr(layer, "overlay_manual_override_until", 0.0)
+                )
+            )
         ]
         if not active:
             return 0
@@ -480,6 +486,8 @@ class AutomationDirector:
             depth=depth,
         )
         for index, layer in enumerate(active):
+            # A new event supersedes an unfinished morph on that layer.
+            self._layout_morphs.pop(layer.id, None)
             if use_seed:
                 x, y, seed_size = pattern[index % len(pattern)]
                 spread = 0.08 + chaos * 0.52
