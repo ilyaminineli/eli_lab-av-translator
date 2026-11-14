@@ -3499,10 +3499,6 @@ class Application:
                 **performance_settings.get("performance_mode_plan", {}),
                 "start_automation": False,
             }
-            for key in ("modulation_routes",):
-                for route in performance_settings.get(key, []):
-                    if str(route.get("source_id", "")).startswith(("audio.", "macro.")):
-                        route["enabled"] = bool(route.get("enabled", True))
             for deck_state in deck_states:
                 deck_state["playing"] = False
                 deck_state["paused"] = False
