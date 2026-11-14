@@ -14,9 +14,9 @@ MATERIAL_COLORS = {
     "primaryLightColor": "#f0f0f0",
     "secondaryColor": "#242424",
     "secondaryLightColor": "#3a3a3a",
-    "accentColor": "#f2f2f2",
-    "primaryTextColor": "#f5f5f5",
-    "secondaryTextColor": "#bdbdbd",
+    "secondaryDarkColor": "#101010",
+    "primaryTextColor": "#090909",
+    "secondaryTextColor": "#f0f0f0",
     "disabledTextColor": "#666666",
     "iconColor": "#eeeeee",
     "backgroundColor": "#090909",
@@ -169,6 +169,29 @@ QProgressBar {
 }
 QProgressBar::chunk {
     background: #bdbdbd;
+}
+QMenu {
+    background: #151515;
+    color: #eeeeee;
+    border: 1px solid #3a3a3a;
+}
+QMenu::item {
+    padding: 5px 24px 5px 10px;
+}
+QMenu::item:selected {
+    background: #e6e6e6;
+    color: #090909;
+}
+QAbstractItemView::item:selected {
+    background: #dedede;
+    color: #090909;
+}
+QHeaderView::section {
+    background: #191919;
+    color: #dedede;
+    border: 0;
+    border-bottom: 1px solid #3a3a3a;
+    padding: 4px 6px;
 }
 QScrollArea {
     border: 0;
