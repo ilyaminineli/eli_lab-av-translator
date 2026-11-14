@@ -63,13 +63,13 @@ class DeckCard(QGroupBox):
 
         details = QVBoxLayout()
         details.setSpacing(2)
-        self.file_label = QLabel("No video loaded")
+        self.file_label = QLabel("EMPTY")
         self.file_label.setWordWrap(True)
         self.file_label.setMinimumWidth(0)
         self.file_label.setObjectName("deckClipName")
         self.state_label = QLabel("EMPTY")
         self.state_label.setObjectName("mutedLabel")
-        self.detail_label = QLabel("Load a clip from the Media Library")
+        self.detail_label = QLabel("—")
         self.detail_label.setWordWrap(True)
         self.detail_label.setMinimumWidth(0)
         self.detail_label.setObjectName("mutedLabel")
@@ -98,7 +98,7 @@ class DeckCard(QGroupBox):
         controls = QHBoxLayout()
         controls.setSpacing(3)
         self.load_button = icon_button(
-            self, "load", "Load a clip from the Media Library", size=28
+            self, "load", "—", size=28
         )
         self.play_button = icon_button(
             self, "play", "Start or resume this deck", size=28
@@ -206,7 +206,7 @@ class DeckCard(QGroupBox):
         layer_name: str | None,
     ) -> None:
         self.file_label.setText(
-            asset.name if asset else (Path(path).name if path else "No video loaded")
+            asset.name if asset else (Path(path).name if path else "EMPTY")
         )
         self._held = bool(held)
         if error:
@@ -238,7 +238,7 @@ class DeckCard(QGroupBox):
             if path:
                 details.append(str(path))
             else:
-                details.append("Load a clip from the Media Library")
+                details.append("—")
             self._set_thumbnail(None)
         self.detail_label.setText(" · ".join(details))
 
