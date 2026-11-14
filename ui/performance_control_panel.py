@@ -545,6 +545,17 @@ class PerformanceControlPanel(QWidget):
         self.refresh_routes()
         self.refresh_monitor()
 
+    def take_performance_macro_group(self, parent: QWidget | None = None) -> QGroupBox:
+        """Detach the existing macro controls for use on the central Perform surface."""
+        body = self.scroll.widget()
+        layout = body.layout() if body is not None else None
+        if layout is not None:
+            layout.removeWidget(self.performance_macro_group)
+        self.performance_macro_group.setParent(parent)
+        self.performance_macro_group.setMaximumHeight(250)
+        self.performance_macro_group.setObjectName("livePerformanceMacroStrip")
+        return self.performance_macro_group
+
     def refresh_midi_devices(self) -> None:
         selected = self.midi_device_combo.currentData()
         self.midi_device_combo.blockSignals(True)
