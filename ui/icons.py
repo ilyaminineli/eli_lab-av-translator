@@ -171,6 +171,21 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         line((8.0, 7.0), (8.0, 17.0))
         line((8.0, 12.0), (16.0, 12.0))
         line((13.0, 9.0), (16.0, 12.0), (13.0, 15.0))
+    elif name in {"japanese_mark", "mark"}:
+        # A compact "絵" seal: an abstract composition glyph rather than
+        # a literal torii/flag motif. The negative space keeps it legible
+        # at both toolbar and Windows taskbar icon sizes.
+        painter.save()
+        painter.setPen(QPen(QColor(color), max(1.6, size / 12.0),
+                            Qt.PenStyle.SolidLine,
+                            Qt.PenCapStyle.SquareCap,
+                            Qt.PenJoinStyle.MiterJoin))
+        painter.drawRect(QRectF(3.2, 3.2, 17.6, 17.6))
+        line((6.2, 7.0), (17.7, 7.0))
+        line((6.2, 11.0), (17.7, 11.0))
+        line((7.0, 16.8), (11.8, 13.8), (17.2, 18.0))
+        line((12.0, 13.2), (12.0, 19.0))
+        painter.restore()
     else:
         painter.drawEllipse(QPointF(12.0, 12.0), 7.0, 7.0)
 
