@@ -115,6 +115,11 @@ def main() -> int:
                 problems.append(f"{relative_path}: missing or invalid {label}")
 
         for href in inspector.links:
+            parsed_href = urlsplit(href)
+            if parsed_href.path.lower().endswith(".md"):
+                problems.append(
+                    f"{relative_path}: raw Markdown links are not public site routes: {href!r}"
+                )
             target = local_target(relative_path, href)
             if target is not None and not target.is_file():
                 problems.append(f"{relative_path}: broken local link {href!r}")
