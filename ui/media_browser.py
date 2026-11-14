@@ -149,7 +149,7 @@ class MediaBrowser(QWidget):
         self.asset_list.itemDoubleClicked.connect(self.assign_item)
         layout.addWidget(self.asset_list, 1)
 
-        self.status_label = QLabel("Add a folder containing video footage.")
+        self.status_label = QLabel("")
         self.status_label.setWordWrap(True)
         self.status_label.setObjectName("mutedLabel")
         layout.addWidget(self.status_label)
