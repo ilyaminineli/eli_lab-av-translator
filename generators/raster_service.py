@@ -13,7 +13,7 @@ from generators.rasterizer import (
     GENERATOR_HEIGHT,
     GENERATOR_WIDTH,
     GeneratorRasterizer,
-    raster_content_settings,
+    raster_content_snapshot,
 )
 
 _LOG = logging.getLogger(__name__)
@@ -100,11 +100,11 @@ class GeneratorRasterService(QObject):
             )
             cached = self._fingerprint_cache.get(layer_id)
 
-        raster_settings = raster_content_settings(generator_type, settings)
+        raster_snapshot = raster_content_snapshot(settings)
         if (
                 cached is not None
                 and cached[0] == generator_type
-                and cached[1] == raster_settings
+                and cached[1] == raster_snapshot
                 and cached[2] == width
                 and cached[3] == height
         ):
@@ -119,7 +119,7 @@ class GeneratorRasterService(QObject):
         with self._lock:
             self._fingerprint_cache[layer_id] = (
                 generator_type,
-                deepcopy(raster_settings),
+                deepcopy(raster_snapshot),
                 width,
                 height,
                 fingerprint,
