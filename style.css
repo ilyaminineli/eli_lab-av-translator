@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Noto+Sans+JP:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Noto+Sans+JP:wght@400;500;600&family=Noto+Serif+JP:wght@400;500;600;700&display=swap');
 :root {
   --ink:#090909; --surface:#101010; --inset:#151515; --paper:#eeeeee;
   --muted:#a3a3a3; --dim:#737373; --rule:#303030; --bright:#f5f5f5;
@@ -113,7 +113,15 @@ a{color:inherit;text-decoration:none} a:hover{color:var(--bright)}
 .document-endmark{display:flex;align-items:center;gap:12px;margin-top:58px;padding-top:15px;border-top:1px solid var(--rule);color:var(--dim);font:8px var(--mono);letter-spacing:.16em}
 .document-endmark span{color:#eee;font:21px var(--display)}
 html[lang="ja"] body{font-family:var(--body)}
-html[lang="ja"] .hero h1,html[lang="ja"] .plate-copy h2,html[lang="ja"] .section-heading,html[lang="ja"] .feature-heading h2,html[lang="ja"] .audience-grid h2,html[lang="ja"] .download-copy h2,html[lang="ja"] .document-content h1,html[lang="ja"] .document-content h2,html[lang="ja"] .document-content h3,html[lang="ja"] .document-content h4{font-family:"Noto Sans JP","Yu Mincho",serif;letter-spacing:-.03em}
+html[lang="ja"] .hero h1,html[lang="ja"] .plate-copy h2,html[lang="ja"] .section-heading,html[lang="ja"] .feature-heading h2,html[lang="ja"] .audience-grid h2,html[lang="ja"] .download-copy h2,html[lang="ja"] .document-content h1,html[lang="ja"] .document-content h2,html[lang="ja"] .document-content h3,html[lang="ja"] .document-content h4{font-family:"Noto Serif JP","Yu Mincho","Hiragino Mincho ProN",serif;letter-spacing:0;font-weight:500}
+.document-content .document-lede{max-width:720px;margin:0 0 34px;color:#d5d5d5;font-size:16px;line-height:2}
+.reference-list{border-top:1px solid var(--rule)}
+.reference-list>a{display:grid;grid-template-columns:42px 1fr 26px;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--rule);text-decoration:none}
+.reference-list>a>span{color:var(--dim);font:10px var(--mono)}
+.reference-list h3{margin:0 0 3px;font:500 11px var(--mono);letter-spacing:.1em}
+.reference-list p{margin:0;color:#aaa;font-size:12px}
+.reference-list b{color:#aaa;font:16px var(--body);text-align:right}
+.reference-list a:hover h3,.reference-list a:hover b{color:#fff}
 html[lang="ja"] .hero h1{line-height:1.1}
 @media(max-width:800px){
   :root{--page:min(100% - 36px,680px)}
