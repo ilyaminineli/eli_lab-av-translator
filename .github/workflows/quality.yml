@@ -57,5 +57,16 @@ jobs:
           ui/transport_bar.py
           main.py
           tests
+          scripts/render_japanese_ui_proof.py
       - name: Run unit and regression tests
         run: python -m pytest -q
+      - name: Render Japanese UI typography proof
+        run: python scripts/render_japanese_ui_proof.py
+        env:
+          QT_QPA_PLATFORM: offscreen
+      - name: Upload Japanese UI typography proof
+        uses: actions/upload-artifact@v4
+        with:
+          name: japanese-ui-typography-proof
+          path: artifacts/japanese-ui-proof.png
+          if-no-files-found: error
