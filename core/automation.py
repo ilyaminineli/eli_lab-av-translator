@@ -406,6 +406,8 @@ class AutomationDirector:
             layer_id: str,
             duration_seconds: float = 3.0,
             now: float | None = None,
+            *,
+            invalidate_peak_particle_base: bool = False,
     ) -> None:
         """Suspend automatic changes after a direct operator edit."""
         stamp = time.monotonic() if now is None else float(now)
@@ -417,8 +419,10 @@ class AutomationDirector:
             stamp + duration,
         )
         self._layout_morphs.pop(layer_id, None)
-        # Do not later restore a pre-edit particle value over the operator's edit.
-        self._peak_particle_base.pop(layer_id, None)
+        if invalidate_peak_particle_base:
+            # Generator edits to particle density/emission supersede the cached
+            # temporary peak baseline. Transform edits must retain that baseline.
+            self._peak_particle_base.pop(layer_id, None)
         self._active_variation_layer_ids = tuple(
             item for item in self._active_variation_layer_ids if item != layer_id
         )
@@ -765,9 +769,8 @@ class AutomationDirector:
         changed = False
         for layer in self._layers:
             if self._is_manual_layer_override(layer.id, time.monotonic()):
-                # A manual edit supersedes the automatic peak boost; never restore
-                # an old cached value over the operator's chosen particle settings.
-                self._peak_particle_base.pop(layer.id, None)
+                # Pause automatic particle modulation during the manual-edit window.
+                # Keep the baseline unless the generator parameter itself was edited.
                 continue
             stored = self._peak_particle_base.get(layer.id)
             kind = str(layer.generator_type or "")

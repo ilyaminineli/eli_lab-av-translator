@@ -2342,7 +2342,11 @@ class Application:
             selected is not None
             and target_id.startswith(("selected_layer.", "generator.", "overlay.", "layer."))
         ):
-            self.automation.notify_layer_manual_override(selected.id, duration_seconds)
+            self.automation.notify_layer_manual_override(
+                selected.id,
+                duration_seconds,
+                invalidate_peak_particle_base=target_id.startswith("generator."),
+            )
         for key in targets:
             current = self._get_modulation_target(key)
             if current is not None:

@@ -263,7 +263,10 @@ def test_layout_director_selects_relationship_aware_patterns() -> None:
 
 def test_layer_cooldown_is_adaptive_and_can_be_disabled() -> None:
     director = AutomationDirector(seed=21)
-    director.settings = AutomationSettings(layer_cooldown_seconds=2.0)
+    director.settings = AutomationSettings(
+        layer_cooldown_seconds=2.0,
+        spatial_chaos=0.0,
+    )
     director.settings.normalize()
 
     calm = director._effective_layer_cooldown()
@@ -283,7 +286,10 @@ def test_layer_cooldown_is_adaptive_and_can_be_disabled() -> None:
 def test_layer_cooldown_excludes_recently_varied_layers_then_releases_them() -> None:
     director = AutomationDirector(seed=22)
     director._layers = make_layers(3)
-    director.settings = AutomationSettings(layer_cooldown_seconds=2.0)
+    director.settings = AutomationSettings(
+        layer_cooldown_seconds=2.0,
+        spatial_chaos=0.0,
+    )
     director.settings.normalize()
     director._mark_layer_varied("layer-0", now=10.0)
 
@@ -308,7 +314,8 @@ def test_manual_override_cancels_morph_and_suspends_automation() -> None:
     director.notify_layer_manual_override("layer-0", duration_seconds=3.0, now=10.0)
 
     assert "layer-0" not in director._layout_morphs
-    assert "layer-0" not in director._peak_particle_base
+    # A transform edit pauses the boost, but keeps its baseline for restoration.
+    assert director._peak_particle_base["layer-0"] == ("density", 20.0, "particles")
     assert "layer-0" not in {
         layer.id for layer in director._eligible_variation_layers(now=11.0)
     }
@@ -335,3 +342,19 @@ def test_layout_randomization_respects_manual_override_window() -> None:
 
     assert changed == 2
     assert director._layers[0].position == original
+
+
+
+def test_transform_override_keeps_peak_particle_baseline_but_generator_edit_invalidates() -> None:
+    director = AutomationDirector(seed=25)
+    director._peak_particle_base["layer-0"] = ("density", 20.0, "particles")
+
+    director.notify_layer_manual_override("layer-0", now=10.0)
+    assert director._peak_particle_base["layer-0"] == ("density", 20.0, "particles")
+
+    director.notify_layer_manual_override(
+        "layer-0",
+        now=11.0,
+        invalidate_peak_particle_base=True,
+    )
+    assert "layer-0" not in director._peak_particle_base
