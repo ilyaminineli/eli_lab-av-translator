@@ -22,7 +22,6 @@ from PySide6.QtWidgets import (
 
 from config import (
     APP_AUTHOR,
-    APP_COPYRIGHT,
     APP_NAME,
     APP_REPOSITORY_URL,
     APP_STUDIO,
@@ -37,6 +36,7 @@ from ui.automation_panel import AutomationPanel
 from ui.deck_panel import DeckPanel
 from ui.effects_panel import EffectsPanel
 from ui.generators_panel import GeneratorsPanel
+from ui.i18n import tr
 from ui.layer_panel import LayerPanel
 from ui.media_browser import MediaBrowser
 from ui.modulator_bank_panel import ModulatorBankPanel
@@ -44,9 +44,8 @@ from ui.output_window import OutputWindowManager
 from ui.performance_control_panel import PerformanceControlPanel
 from ui.performance_timeline_panel import PerformanceTimelinePanel
 from ui.performance_view import AspectRatioPreview, PerformanceView
-from ui.transport_bar import TransportBar
-from ui.i18n import tr
 from ui.settings_dialog import SettingsDialog
+from ui.transport_bar import TransportBar
 
 _LOG = logging.getLogger(__name__)
 
