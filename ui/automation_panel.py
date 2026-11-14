@@ -178,7 +178,7 @@ class AutomationPanel(QWidget):
         layout.addWidget(self.start_button)
         layout.addWidget(self.stop_button)
 
-        self.status_label = QLabel("Ready · import a footage folder to begin.")
+        self.status_label = QLabel("READY")
         self.status_label.setWordWrap(True)
         self.status_label.setObjectName("mutedLabel")
         layout.addWidget(self.status_label)
