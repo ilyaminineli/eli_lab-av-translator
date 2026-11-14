@@ -150,3 +150,57 @@ html[lang="ja"] .hero h1{line-height:1.1}
   .home-endnote{align-items:flex-start;flex-direction:column;justify-content:center;gap:6px;padding:12px 0}
   .footer-right{gap:10px}
 }
+
+
+/* Quiet motion: an editorial entrance, not a dashboard animation loop. */
+@keyframes page-arrive {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes rule-arrive {
+  from { transform: scaleX(.15); opacity: .2; }
+  to { transform: scaleX(1); opacity: 1; }
+}
+@keyframes signal-breathe {
+  0%, 100% { opacity: .86; transform: translate(-50%, -50%) scale(.97); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.035); }
+}
+.hero-kicker { animation: page-arrive .55s cubic-bezier(.2,.7,.2,1) both; }
+.hero h1 { animation: page-arrive .72s cubic-bezier(.2,.7,.2,1) .06s both; }
+.hero-lede { animation: page-arrive .7s cubic-bezier(.2,.7,.2,1) .14s both; }
+.hero-actions { animation: page-arrive .7s cubic-bezier(.2,.7,.2,1) .2s both; }
+.signal-plate { animation: page-arrive .85s cubic-bezier(.2,.7,.2,1) .12s both; }
+.signal-crosshair { animation: signal-breathe 7s ease-in-out 1s infinite; }
+.section-index .index-line { transform-origin: left center; animation: rule-arrive .8s ease-out both; }
+.workflow-row, .feature-grid article, .doc-links > a {
+  transition: background-color .22s ease, border-color .22s ease,
+              transform .22s ease, color .22s ease;
+}
+.workflow-row:hover { background: rgba(255,255,255,.018); }
+.feature-grid article:hover { background: #111; transform: translateY(-2px); }
+.doc-links > a:hover { transform: translateX(4px); }
+.primary-nav a { position: relative; }
+.primary-nav a:not(.language-switch)::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -7px;
+  height: 1px;
+  background: #eeeeee;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform .2s ease;
+}
+.primary-nav a:hover::after { transform: scaleX(1); }
+.signal-layer { transition: background-color .35s ease, border-color .35s ease; }
+.signal-plate:hover .layer-one { background: rgba(255,255,255,.07); }
+.signal-plate:hover .layer-two { border-color: #f0f0f0; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: .01ms !important;
+  }
+}
