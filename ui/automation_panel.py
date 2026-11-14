@@ -113,13 +113,17 @@ class AutomationPanel(QWidget):
 
         self.director_group = QGroupBox("UNIFIED MUSICAL / GENERATIVE DIRECTOR")
         director_form = QFormLayout(self.director_group)
-        self.constrained_generative_check = QCheckBox("Unified director · always active")
-        self.constrained_generative_check.setChecked(True)
-        self.constrained_generative_check.setEnabled(False)
-        self.max_variation_layers_spin = QSpinBox()
-        self.max_variation_layers_spin.setRange(0, 256)
-        self.max_variation_layers_spin.setSpecialValueText("Adaptive · driven by music + CHAOS")
-        self.max_variation_layers_spin.setValue(0)
+        self.director_active_label = QLabel(
+            "UNIFIED DIRECTOR ACTIVE · CHAOTIC / GENERATIVE / STRUCTURED"
+        )
+        self.director_active_label.setWordWrap(True)
+        self.director_active_label.setObjectName("mutedLabel")
+        self.variation_scope_label = QLabel(
+            "Adaptive scope · the director can select every visible, unlocked layer. "
+            "Musical energy and CHAOS / DENSITY / FRAGMENT expand or focus each variation."
+        )
+        self.variation_scope_label.setWordWrap(True)
+        self.variation_scope_label.setObjectName("mutedLabel")
         self.keep_anchor_check = QCheckBox("Prefer a recognizable visual anchor")
         self.keep_anchor_check.setChecked(False)
         self.preserve_background_check = QCheckBox(
@@ -154,8 +158,8 @@ class AutomationPanel(QWidget):
         self.breakdown_max_spin.setDecimals(1)
         self.breakdown_max_spin.setSuffix(" s")
         self.breakdown_max_spin.setValue(9.0)
-        director_form.addRow(self.constrained_generative_check)
-        director_form.addRow("VARIATION SCOPE", self.max_variation_layers_spin)
+        director_form.addRow(self.director_active_label)
+        director_form.addRow("VARIATION SCOPE", self.variation_scope_label)
         director_form.addRow(self.keep_anchor_check)
         director_form.addRow(self.preserve_background_check)
         director_form.addRow(self.effect_after_transition_check)
@@ -263,7 +267,7 @@ class AutomationPanel(QWidget):
             performance_style=str(self.performance_style_combo.currentData()),
             musical_sync=str(self.musical_sync_combo.currentData()),
             constrained_generative=True,
-            max_layers_per_variation=self.max_variation_layers_spin.value(),
+            max_layers_per_variation=0,
             keep_visual_anchor=self.keep_anchor_check.isChecked(),
             preserve_background_source=self.preserve_background_check.isChecked(),
             effect_after_transition=self.effect_after_transition_check.isChecked(),
@@ -303,7 +307,6 @@ class AutomationPanel(QWidget):
             if key in settings:
                 control.setChecked(bool(settings[key]))
         for control, key in (
-                (self.max_variation_layers_spin, "max_layers_per_variation"),
                 (self.palette_memory_spin, "palette_memory_phrases"),
                 (self.peak_particle_boost_spin, "peak_particle_boost"),
                 (self.breakdown_min_spin, "breakdown_transition_min_seconds"),
