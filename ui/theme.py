@@ -2,125 +2,186 @@ from __future__ import annotations
 
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
-from qt_material import apply_stylesheet
 
 from config import RESOURCE_DIR
 from ui.hints import ToolTipFilter
 
-# Neutral Material base; all application accents are overridden to grayscale below.
-DEFAULT_THEME = "dark_teal.xml"
-DNST_SCALE = "-1"
-
-MATERIAL_COLORS = {
-    "density_scale": DNST_SCALE,
-    "primaryColor": "#bdbdbd",
-    "primaryLightColor": "#f0f0f0",
-    "secondaryColor": "#242424",
-    "secondaryLightColor": "#3a3a3a",
-    "secondaryDarkColor": "#101010",
-    "primaryTextColor": "#090909",
-    "secondaryTextColor": "#f0f0f0",
-    "disabledTextColor": "#666666",
-    "iconColor": "#eeeeee",
-    "backgroundColor": "#090909",
-    "paperColor": "#151515",
-}
-
 APP_STYLE = """
-QMainWindow, QDialog {
+QMainWindow, QDialog, QMessageBox {
     background: #090909;
     color: #eeeeee;
 }
+QMenuBar {
+    background: #090909;
+    color: #bdbdbd;
+    border-bottom: 1px solid #252525;
+    padding: 2px 8px;
+    spacing: 8px;
+}
+QMenuBar::item {
+    background: transparent;
+    padding: 5px 9px;
+    margin: 0 1px;
+}
+QMenuBar::item:selected {
+    background: #171717;
+    color: #ffffff;
+}
+QMenu {
+    background: #101010;
+    color: #eeeeee;
+    border: 1px solid #383838;
+    padding: 5px;
+}
+QMenu::item {
+    padding: 7px 28px 7px 12px;
+}
+QMenu::item:selected {
+    background: #e8e8e8;
+    color: #090909;
+}
+QToolBar {
+    background: #090909;
+    border: 0;
+    spacing: 9px;
+    padding: 7px 12px;
+}
+QToolBar::separator {
+    width: 1px;
+    background: #303030;
+    margin: 5px 7px;
+}
+QStatusBar {
+    background: #101010;
+    border-top: 1px solid #303030;
+    color: #a3a3a3;
+    padding: 3px 9px;
+    min-height: 22px;
+}
+QStatusBar::item { border: 0; }
 QDockWidget {
     background: #101010;
     color: #eeeeee;
 }
 QDockWidget::title {
-    background: #151515;
-    color: #f0f0f0;
-    padding: 6px 9px;
-    border-bottom: 1px solid #303030;
-    font-weight: 700;
-}
-QToolBar {
-    background: #090909;
-    border: 0;
-    spacing: 5px;
-    padding: 3px 6px;
-}
-QStatusBar {
     background: #101010;
-    border-top: 1px solid #303030;
-    color: #c7c7c7;
+    color: #a3a3a3;
+    padding: 9px 12px;
+    border: 0;
+    border-bottom: 1px solid #303030;
+    text-align: left;
+    font-size: 9px;
+}
+QDockWidget::close-button,
+QDockWidget::float-button {
+    background: transparent;
+    border: 0;
+    width: 15px;
+    height: 15px;
+    margin: 0 4px;
+}
+QDockWidget::close-button:hover,
+QDockWidget::float-button:hover {
+    background: #202020;
+    border: 1px solid #555555;
 }
 QTabWidget::pane {
     background: #101010;
-    border: 1px solid #303030;
+    border: 0;
+    border-top: 1px solid #303030;
+}
+QTabBar {
+    background: #090909;
+    qproperty-drawBase: 0;
 }
 QTabBar::tab {
-    background: #141414;
-    color: #a8a8a8;
-    padding: 7px 13px;
-    min-height: 21px;
+    background: transparent;
+    color: #888888;
+    padding: 9px 15px 10px;
+    min-height: 23px;
     border: 0;
     border-bottom: 2px solid transparent;
 }
+QTabBar::tab:hover {
+    color: #eeeeee;
+    background: #111111;
+}
 QTabBar::tab:selected {
-    background: #222222;
+    background: transparent;
     color: #ffffff;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: 2px solid #eeeeee;
 }
 QGroupBox {
     background: transparent;
-    color: #eeeeee;
-    border: 1px solid #303030;
-    border-radius: 3px;
-    margin-top: 9px;
-    padding: 7px 6px 5px 6px;
+    color: #e5e5e5;
+    border: 1px solid #2b2b2b;
+    border-radius: 1px;
+    margin-top: 14px;
+    padding: 12px 10px 9px;
 }
 QGroupBox::title {
     subcontrol-origin: margin;
-    left: 8px;
-    padding: 0 4px;
-    color: #e6e6e6;
-    font-weight: 700;
+    left: 10px;
+    padding: 0 6px;
+    color: #bcbcbc;
+    background: #101010;
+    font-size: 9px;
 }
-QLabel {
-    color: #e5e5e5;
-}
+QLabel { color: #e5e5e5; }
 QLabel#sectionHeading {
-    color: #ffffff;
-    font-weight: 800;
-    letter-spacing: 1px;
+    color: #f0f0f0;
+    font-size: 16px;
+    font-weight: 400;
+    padding: 2px 0 4px;
 }
 QLabel#mutedLabel {
-    color: #a3a3a3;
+    color: #929292;
+    font-size: 9px;
 }
 QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox,
 QPlainTextEdit, QTextEdit, QListWidget, QTreeWidget, QTableWidget {
-    background: #101010;
+    background: #0d0d0d;
     color: #eeeeee;
-    border: 1px solid #383838;
+    border: 1px solid #303030;
+    border-radius: 1px;
+    padding: 5px 7px;
     selection-background-color: #dedede;
     selection-color: #090909;
 }
+QLineEdit:hover, QComboBox:hover, QSpinBox:hover, QDoubleSpinBox:hover,
+QPlainTextEdit:hover, QTextEdit:hover {
+    border-color: #4a4a4a;
+}
 QLineEdit:focus, QComboBox:focus, QSpinBox:focus,
 QDoubleSpinBox:focus, QPlainTextEdit:focus, QTextEdit:focus {
-    border: 1px solid #d0d0d0;
+    border: 1px solid #969696;
+}
+QComboBox::drop-down {
+    border: 0;
+    width: 22px;
+}
+QComboBox QAbstractItemView {
+    background: #111111;
+    color: #eeeeee;
+    border: 1px solid #424242;
+    selection-background-color: #dedede;
+    selection-color: #090909;
+    outline: 0;
 }
 QPushButton {
-    background: #1b1b1b;
+    background: #151515;
     color: #e8e8e8;
-    border: 1px solid #3b3b3b;
-    border-radius: 3px;
-    padding: 5px 9px;
+    border: 1px solid #343434;
+    border-radius: 1px;
+    padding: 7px 12px;
+    min-height: 17px;
 }
 QPushButton:hover {
-    background: #292929;
-    border-color: #777777;
+    background: #202020;
+    border-color: #6a6a6a;
 }
 QPushButton:pressed {
-    background: #363636;
+    background: #303030;
 }
 QPushButton:checked {
     background: #ededed;
@@ -128,24 +189,24 @@ QPushButton:checked {
     border-color: #ededed;
 }
 QPushButton:disabled {
-    background: #141414;
-    color: #666666;
-    border-color: #292929;
+    background: #101010;
+    color: #626262;
+    border-color: #262626;
 }
 QToolButton {
-    background: #1b1b1b;
-    color: #e8e8e8;
-    border: 1px solid #3b3b3b;
-    border-radius: 3px;
-    padding: 2px;
+    background: transparent;
+    color: #dedede;
+    border: 1px solid transparent;
+    border-radius: 1px;
+    padding: 5px;
 }
 QToolButton:hover {
-    background: #303030;
-    border-color: #858585;
+    background: #181818;
+    border-color: #424242;
 }
 QToolButton:pressed {
-    background: #3b3b3b;
-    border-color: #b0b0b0;
+    background: #2c2c2c;
+    border-color: #777777;
 }
 QToolButton:checked {
     background: #ededed;
@@ -153,100 +214,123 @@ QToolButton:checked {
     border-color: #ededed;
 }
 QToolButton:disabled {
-    background: #141414;
-    border-color: #292929;
+    color: #5e5e5e;
 }
-QCheckBox {
-    spacing: 6px;
-    color: #d9d9d9;
+QCheckBox, QRadioButton {
+    spacing: 7px;
+    color: #d7d7d7;
 }
-QCheckBox::indicator {
+QCheckBox::indicator, QRadioButton::indicator {
     width: 13px;
     height: 13px;
     background: #101010;
-    border: 1px solid #777777;
-    border-radius: 2px;
+    border: 1px solid #737373;
 }
-QCheckBox::indicator:checked {
+QCheckBox::indicator { border-radius: 1px; }
+QRadioButton::indicator { border-radius: 7px; }
+QCheckBox::indicator:checked, QRadioButton::indicator:checked {
     background: #eeeeee;
     border-color: #eeeeee;
 }
 QSlider::groove:horizontal {
-    height: 3px;
-    background: #414141;
+    height: 2px;
+    background: #3c3c3c;
 }
-QSlider::sub-page:horizontal {
-    background: #d8d8d8;
-}
-QSlider::add-page:horizontal {
-    background: #303030;
-}
+QSlider::sub-page:horizontal { background: #cfcfcf; }
+QSlider::add-page:horizontal { background: #292929; }
 QSlider::handle:horizontal {
-    width: 10px;
+    width: 11px;
+    height: 11px;
     margin: -5px 0;
-    background: #f0f0f0;
-    border: 1px solid #f0f0f0;
-    border-radius: 5px;
+    background: #eeeeee;
+    border: 1px solid #eeeeee;
+    border-radius: 6px;
 }
 QProgressBar {
-    background: #1a1a1a;
-    border: 1px solid #383838;
+    background: #141414;
+    border: 1px solid #303030;
     color: #eaeaea;
     text-align: center;
+    min-height: 8px;
 }
-QProgressBar::chunk {
-    background: #bdbdbd;
+QProgressBar::chunk { background: #bdbdbd; }
+QHeaderView::section {
+    background: #121212;
+    color: #a3a3a3;
+    border: 0;
+    border-bottom: 1px solid #303030;
+    padding: 7px 9px;
 }
-QMenu {
-    background: #151515;
-    color: #eeeeee;
-    border: 1px solid #3a3a3a;
-}
-QMenu::item {
-    padding: 5px 24px 5px 10px;
-}
-QMenu::item:selected {
-    background: #e6e6e6;
-    color: #090909;
+QAbstractItemView::item {
+    padding: 3px;
 }
 QAbstractItemView::item:selected {
     background: #dedede;
     color: #090909;
 }
-QHeaderView::section {
-    background: #191919;
-    color: #dedede;
-    border: 0;
-    border-bottom: 1px solid #3a3a3a;
-    padding: 4px 6px;
-}
-QScrollArea {
-    border: 0;
-    background: transparent;
-}
+QScrollArea { border: 0; background: transparent; }
 QScrollBar:vertical, QScrollBar:horizontal {
     background: #101010;
     border: 0;
     margin: 0;
 }
 QScrollBar::handle:vertical, QScrollBar::handle:horizontal {
-    background: #454545;
-    min-height: 22px;
-    min-width: 22px;
-    border-radius: 3px;
+    background: #3d3d3d;
+    min-height: 24px;
+    min-width: 24px;
+    border: 2px solid #101010;
 }
 QScrollBar::handle:vertical:hover, QScrollBar::handle:horizontal:hover {
-    background: #666666;
+    background: #696969;
 }
 QScrollBar::add-line, QScrollBar::sub-line {
     width: 0;
     height: 0;
 }
 QToolTip {
-    background: #171717;
-    color: #f0f0f0;
+    background: #151515;
+    color: #eeeeee;
     border: 1px solid #555555;
-    padding: 4px;
+    padding: 5px 7px;
+}
+QMessageBox QLabel {
+    color: #eeeeee;
+    min-width: 280px;
+}
+QMessageBox QPushButton {
+    min-width: 72px;
+}
+"""
+
+
+def _typography_stylesheet(language: str) -> str:
+    if language == "ja":
+        return """
+QLabel#sectionHeading {
+    font-family: "Yu Mincho";
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 0px;
+}
+QDockWidget::title, QTabBar::tab, QLabel#mutedLabel, QStatusBar {
+    font-family: "Yu Gothic UI";
+    letter-spacing: 0.4px;
+}
+QLabel#brandMark {
+    font-family: "Yu Mincho";
+}
+QLabel#brandName {
+    font-family: "Yu Gothic UI";
+}
+"""
+    return """
+QLabel#sectionHeading, QLabel#brandMark {
+    font-family: "Georgia";
+}
+QDockWidget::title, QTabBar::tab, QLabel#mutedLabel, QStatusBar,
+QLabel#brandName {
+    font-family: "Consolas";
+    letter-spacing: 0.8px;
 }
 """
 
@@ -271,7 +355,7 @@ def application_font_families(language: str = "en") -> list[str]:
 
 
 def apply_application_language(app: QApplication, language: str) -> None:
-    """Apply the selected UI language and its system-first typeface stack."""
+    """Apply body fonts and matching editorial heading/metadata type."""
     normalized = language if language in {"en", "ja"} else "en"
     font = QFont()
     font.setFamilies(application_font_families(normalized))
@@ -279,6 +363,8 @@ def apply_application_language(app: QApplication, language: str) -> None:
     font.setStyleHint(QFont.StyleHint.SansSerif)
     app.setFont(font)
     app.setProperty("ui_language", normalized)
+    base_style = str(app.property("_eli_theme_base") or APP_STYLE)
+    app.setStyleSheet(f"{base_style}\n{_typography_stylesheet(normalized)}")
 
 
 def configure_application_theme(
@@ -286,46 +372,35 @@ def configure_application_theme(
     show_hints: bool = True,
     language: str = "en",
 ) -> None:
-    """Apply a compact, high-contrast monochrome Qt Material theme."""
-    apply_stylesheet(
-        app,
-        theme=DEFAULT_THEME,
-        extra=MATERIAL_COLORS,
-    )
-    apply_application_language(app, language)
+    """Apply the monochrome editorial theme and system-first language fonts."""
+    app.setStyle("Fusion")
     tooltip_filter = ToolTipFilter(show_hints, app)
     app.installEventFilter(tooltip_filter)
     app._eli_tooltip_filter = tooltip_filter
 
     icon_directory = (RESOURCE_DIR / "icons").resolve()
-    # Qt style sheets expect a native filesystem path here, not a file: URL.
-    # On Windows, file: URLs are treated as relative paths by the QSS image loader.
     close_icon = (icon_directory / "dock-close.svg").as_posix()
     float_icon = (icon_directory / "dock-float.svg").as_posix()
     dock_icon = (icon_directory / "dock-dock.svg").as_posix()
     dock_controls_style = f"""
 QDockWidget::close-button,
 QDockWidget::float-button {{
+    image: url("{close_icon}");
     background: transparent;
     border: 0;
     width: 15px;
     height: 15px;
     margin: 0 4px;
 }}
-QDockWidget::close-button {{
-    image: url("{close_icon}");
-}}
-QDockWidget::float-button {{
-    image: url("{float_icon}");
-}}
 QDockWidget::float-button:checked {{
     image: url("{dock_icon}");
 }}
 QDockWidget::close-button:hover,
 QDockWidget::float-button:hover {{
-    background: #303030;
-    border: 1px solid #666666;
-    border-radius: 3px;
+    background: #202020;
+    border: 1px solid #555555;
+    border-radius: 1px;
 }}
 """
-    app.setStyleSheet(f"{app.styleSheet()}\n{APP_STYLE}\n{dock_controls_style}")
+    app.setProperty("_eli_theme_base", f"{APP_STYLE}\n{dock_controls_style}")
+    apply_application_language(app, language)
