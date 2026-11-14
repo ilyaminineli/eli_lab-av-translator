@@ -32,11 +32,11 @@ from core.modulator_bank import (
     ModulatorDefinition,
     euclidean_pattern,
 )
-from ui.i18n import set_ui_text
 from core.performance_modifiers import (
     PERF_MODIFIER_TARGETS,
     LayerPerformanceModifier,
 )
+from ui.i18n import set_ui_text
 
 
 class ModulatorBankPanel(QWidget):
