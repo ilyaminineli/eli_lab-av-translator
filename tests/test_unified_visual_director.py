@@ -4,7 +4,7 @@ import random
 
 from core.automation import AutomationDirector, AutomationSettings
 from core.composition import Layer
-from core.generative_director import GenerativeVariationDirector
+from core.generative_director import GenerativeVariationDirector, VisualActivity
 
 
 def make_layers(count: int = 6) -> list[Layer]:
@@ -173,3 +173,75 @@ def test_bar_events_reach_the_director_for_every_director_character() -> None:
         )
 
         assert "bar" in director.last_action
+
+
+def test_visual_activity_detects_overlapping_layers() -> None:
+    layers = [
+        Layer(
+            id="base",
+            source_type="video",
+            position=(0.5, 0.5),
+            scale=(0.8, 0.8),
+        ),
+        Layer(
+            id="text",
+            source_type="generator",
+            generator_type="text",
+            position=(0.5, 0.5),
+            scale=(0.4, 0.4),
+        ),
+    ]
+
+    activity = VisualActivity.measure(layers)
+
+    assert activity.layer_count == 2
+    assert activity.overlap == 1.0
+    assert activity.source_diversity > 0.0
+    assert 0.0 < activity.score <= 1.0
+
+
+def test_visual_activity_detects_off_canvas_and_transform_activity() -> None:
+    layers = [
+        Layer(
+            id="offscreen",
+            source_type="video",
+            position=(1.25, 0.5),
+            scale=(0.8, 0.8),
+            rotation=90.0,
+        ),
+    ]
+
+    activity = GenerativeVariationDirector.measure_visual_activity(layers)
+
+    assert activity.layer_count == 1
+    assert activity.offscreen > 0.0
+    assert activity.transform > 0.0
+    assert activity.score > 0.0
+
+
+def test_layout_director_selects_relationship_aware_patterns() -> None:
+    relationships: set[str] = set()
+    valid = {"independent", "shared_center", "opposed", "nested", "orbit"}
+
+    for seed in range(20):
+        director = AutomationDirector(seed=seed)
+        layers = make_layers(6)
+        director._layers = layers
+        director.settings = AutomationSettings(
+            spatial_chaos=1.0,
+            overlap_bias=1.0,
+            offscreen_range=0.5,
+            abrupt_transition_probability=1.0,
+        )
+        director.settings.normalize()
+        director._macro_values = {"chaos": 1.0, "density": 1.0, "fragment": 1.0}
+
+        director._randomize_layout(
+            layer_ids=[layer.id for layer in layers],
+            now=100.0,
+        )
+        relationships.add(director._last_layout_relationship)
+
+    assert relationships
+    assert relationships <= valid
+    assert "shared_center" in relationships or "orbit" in relationships
