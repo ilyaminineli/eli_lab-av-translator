@@ -188,7 +188,9 @@ class PerformanceControlPanel(QWidget):
             slider.setMinimumWidth(52)
             value_label = QLabel("0.00")
             value_label.setMinimumWidth(32)
-            value_label.setAlignment(Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter)
+            value_label.setAlignment(
+                Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
+            )
             source_combo = QComboBox()
             source_combo.setMinimumWidth(0)
             source_combo.setMaximumWidth(150)
@@ -208,16 +210,19 @@ class PerformanceControlPanel(QWidget):
             self.macro_source_combos[macro.macro_id] = source_combo
             self.macro_key_edits[macro.macro_id] = key_edit
             slider.valueChanged.connect(
-                lambda value, macro_id=macro.macro_id:
-                self._performance_macro_value_changed(macro_id, value)
+                lambda value, macro_id=macro.macro_id: self._performance_macro_value_changed(
+                    macro_id, value
+                )
             )
             source_combo.currentIndexChanged.connect(
-                lambda _index, macro_id=macro.macro_id:
-                self._performance_macro_source_changed(macro_id)
+                lambda _index, macro_id=macro.macro_id: self._performance_macro_source_changed(
+                    macro_id
+                )
             )
             key_edit.keySequenceChanged.connect(
-                lambda sequence, macro_id=macro.macro_id:
-                self._performance_macro_shortcut_changed(macro_id, sequence)
+                lambda sequence, macro_id=macro.macro_id: self._performance_macro_shortcut_changed(
+                    macro_id, sequence
+                )
             )
         self.macro_status_label = QLabel(
             "Keyboard shortcuts toggle a macro between 0 and 1. "
@@ -232,17 +237,19 @@ class PerformanceControlPanel(QWidget):
         scene_form = QFormLayout(self.performance_scene_group)
         self.performance_scene_name = QLineEdit("Scene 01")
         self.performance_scene_cue = QLineEdit()
-        self.performance_scene_cue.setPlaceholderText("OSC cue · letters, numbers, . _ : -")
+        self.performance_scene_cue.setPlaceholderText(
+            "OSC cue · letters, numbers, . _ : -"
+        )
         self.performance_scene_cue.setToolTip(
             "Use 1–64 letters, numbers, period, underscore, colon or hyphen. "
             "A matching /eli_lab/v1/cue/trigger message recalls this VJ scene."
         )
         self.performance_scene_quantization = QComboBox()
         for label, value in (
-                ("Immediate", "immediate"),
-                ("Next beat", "beat"),
-                ("Next bar", "bar"),
-                ("Next phrase", "phrase"),
+            ("Immediate", "immediate"),
+            ("Next beat", "beat"),
+            ("Next bar", "bar"),
+            ("Next phrase", "phrase"),
         ):
             self.performance_scene_quantization.addItem(label, value)
         self.performance_scene_morph = QDoubleSpinBox()
@@ -257,10 +264,10 @@ class PerformanceControlPanel(QWidget):
         )
         self.performance_scene_curve = QComboBox()
         for label, value in (
-                ("Linear", "linear"),
-                ("Smoothstep", "smoothstep"),
-                ("Ease in", "ease_in"),
-                ("Ease out", "ease_out"),
+            ("Linear", "linear"),
+            ("Smoothstep", "smoothstep"),
+            ("Ease in", "ease_in"),
+            ("Ease out", "ease_out"),
         ):
             self.performance_scene_curve.addItem(label, value)
         self.performance_scene_curve.setCurrentIndex(
@@ -332,6 +339,7 @@ class PerformanceControlPanel(QWidget):
         self.scene_intensity_spin = self._float_spin(0.0, 1.0, 0.01, 0.01)
         self.scene_look_combo = QComboBox()
         from effects.settings import PSETS
+
         self.scene_look_combo.addItems(list(PSETS))
         self.scene_palette_combo = QComboBox()
         self.scene_palette_combo.addItems(palette_names())
@@ -388,16 +396,18 @@ class PerformanceControlPanel(QWidget):
 
         self._audio_discovery_error = ""
         self._last_device_poll = 0.0
-        self.audio_state_label = QLabel("Audio disabled · video continues independently.")
+        self.audio_state_label = QLabel(
+            "Audio disabled · video continues independently."
+        )
         self.audio_state_label.setWordWrap(True)
         audio_layout.addWidget(self.audio_state_label)
         self.audio_meter_bars: dict[str, QProgressBar] = {}
         for key, label in (
-                ("rms", "RMS / ENERGY"),
-                ("low", "LOW"),
-                ("mid", "MID"),
-                ("high", "HIGH"),
-                ("onset", "ONSET"),
+            ("rms", "RMS / ENERGY"),
+            ("low", "LOW"),
+            ("mid", "MID"),
+            ("high", "HIGH"),
+            ("onset", "ONSET"),
         ):
             row = QHBoxLayout()
             row.addWidget(QLabel(label))
@@ -501,9 +511,15 @@ class PerformanceControlPanel(QWidget):
         outer.addWidget(self.scroll, 1)
 
         self.transport_start_button.clicked.connect(self._start_transport)
-        self.transport_pause_button.clicked.connect(self.application.pause_internal_transport)
-        self.transport_resume_button.clicked.connect(self.application.resume_internal_transport)
-        self.transport_stop_button.clicked.connect(self.application.stop_internal_transport)
+        self.transport_pause_button.clicked.connect(
+            self.application.pause_internal_transport
+        )
+        self.transport_resume_button.clicked.connect(
+            self.application.resume_internal_transport
+        )
+        self.transport_stop_button.clicked.connect(
+            self.application.stop_internal_transport
+        )
         self.bpm_spin.valueChanged.connect(self.application.set_internal_tempo)
         self.meter_combo.currentIndexChanged.connect(self._meter_changed)
         self.scene_combo.currentIndexChanged.connect(self._load_scene_profile)
@@ -519,12 +535,16 @@ class PerformanceControlPanel(QWidget):
         self.midi_update_button.clicked.connect(self._update_selected_midi_mapping)
         self.midi_remove_button.clicked.connect(self._remove_selected_midi_mapping)
         self.midi_target_combo.currentIndexChanged.connect(self._midi_target_changed)
-        self.midi_mapping_list.currentItemChanged.connect(self._load_selected_midi_mapping)
+        self.midi_mapping_list.currentItemChanged.connect(
+            self._load_selected_midi_mapping
+        )
         self.performance_scene_capture.clicked.connect(self._capture_performance_scene)
         self.performance_scene_recall.clicked.connect(self._recall_performance_scene)
         self.performance_scene_remove.clicked.connect(self._remove_performance_scene)
         self.performance_scene_random.clicked.connect(self._random_performance_scene)
-        self.performance_scene_list.currentItemChanged.connect(self._load_performance_scene_editor)
+        self.performance_scene_list.currentItemChanged.connect(
+            self._load_performance_scene_editor
+        )
         self.osc_start_button.clicked.connect(self._start_osc)
         self.osc_stop_button.clicked.connect(self._stop_osc)
         self.osc_copy_button.clicked.connect(self._copy_sonata_settings)
@@ -578,8 +598,9 @@ class PerformanceControlPanel(QWidget):
             self.midi_device_combo.setCurrentIndex(index)
         self.midi_device_combo.blockSignals(False)
         self.midi_status_label.setText(
-            f"{len(devices)} input(s) available." if devices else
-            "No inputs found · install the optional MIDI extra to enable hardware input."
+            f"{len(devices)} input(s) available."
+            if devices
+            else "No inputs found · install the optional MIDI extra to enable hardware input."
         )
 
     def _start_midi(self) -> None:
@@ -614,7 +635,9 @@ class PerformanceControlPanel(QWidget):
             )
             for scene in scenes
         )
-        if not force and signature == getattr(self, "_performance_scene_signature", None):
+        if not force and signature == getattr(
+            self, "_performance_scene_signature", None
+        ):
             return
         selected = self.performance_scene_list.currentItem()
         selected_id = selected.data(Qt.ItemDataRole.UserRole) if selected else None
@@ -635,8 +658,7 @@ class PerformanceControlPanel(QWidget):
             f"Scene {len(self.application.performance_scenes) + 1:02d}"
         )
         scene_id = "".join(
-            character.lower() if character.isalnum() else "-"
-            for character in label
+            character.lower() if character.isalnum() else "-" for character in label
         ).strip("-")
         while "--" in scene_id:
             scene_id = scene_id.replace("--", "-")
@@ -668,8 +690,8 @@ class PerformanceControlPanel(QWidget):
             return
         scene_id = str(item.data(Qt.ItemDataRole.UserRole))
         if self.application.schedule_performance_scene(
-                scene_id,
-                morph_seconds=self.performance_scene_morph.value(),
+            scene_id,
+            morph_seconds=self.performance_scene_morph.value(),
         ):
             self.midi_status_label.setText(
                 f"VJ scene scheduled · {item.text()} · transition "
@@ -732,7 +754,10 @@ class PerformanceControlPanel(QWidget):
             ("Master · Glitch", "master.glitch"),
             ("Master · Vignette", "master.vignette"),
             ("AUTO PERF · Loop probability", "automation.loop_probability"),
-            ("AUTO PERF · Clip switch probability", "automation.clip_switch_probability"),
+            (
+                "AUTO PERF · Clip switch probability",
+                "automation.clip_switch_probability",
+            ),
             ("AUTO PERF · Cut interval", "automation.cut_interval"),
             ("AUTO PERF · Segment minimum", "automation.min_segment_seconds"),
             ("AUTO PERF · Segment maximum", "automation.max_segment_seconds"),
@@ -741,10 +766,12 @@ class PerformanceControlPanel(QWidget):
             ("AUTO PERF · Generator interval", "automation.generator_interval"),
         ]
         for macro in self.application.performance_macro_engine.list_macros():
-            fixed.append((
-                f"Performance Macro · {macro.name}",
-                f"performance_macro.{macro.macro_id}",
-            ))
+            fixed.append(
+                (
+                    f"Performance Macro · {macro.name}",
+                    f"performance_macro.{macro.macro_id}",
+                )
+            )
         for label, target in fixed:
             self.midi_target_combo.addItem(label, target)
         for scene in self.application.performance_scenes.values():
@@ -753,8 +780,10 @@ class PerformanceControlPanel(QWidget):
                 f"scene.trigger.{scene.scene_id}",
             )
         layer_targets = (
-            ("Opacity", "layer.opacity"), ("Rotation", "layer.rotation"),
-            ("Scale", "layer.scale"), ("Position X", "layer.position_x"),
+            ("Opacity", "layer.opacity"),
+            ("Rotation", "layer.rotation"),
+            ("Scale", "layer.scale"),
+            ("Position X", "layer.position_x"),
             ("Position Y", "layer.position_y"),
             ("Geometry · Motion speed", "generator.animation_speed"),
             ("Geometry · Motion amount", "generator.animation_amount"),
@@ -809,8 +838,11 @@ class PerformanceControlPanel(QWidget):
         device = str(self.midi_device_combo.currentData() or "*")
         try:
             self.application.begin_midi_learn(
-                str(target), device, self.midi_min_spin.value(),
-                self.midi_max_spin.value(), str(self.midi_curve_combo.currentData()),
+                str(target),
+                device,
+                self.midi_min_spin.value(),
+                self.midi_max_spin.value(),
+                str(self.midi_curve_combo.currentData()),
                 self.midi_pickup_check.isChecked(),
             )
         except (TypeError, ValueError) as exc:
@@ -821,8 +853,19 @@ class PerformanceControlPanel(QWidget):
     def refresh_midi_mappings(self, force: bool = False) -> None:
         mappings = self.application.midi_mapping_engine.mappings
         signature = tuple(
-            (m.mapping_id, m.device_id, m.channel, m.message, m.number, m.target,
-             m.minimum, m.maximum, m.curve, m.pickup, m.enabled)
+            (
+                m.mapping_id,
+                m.device_id,
+                m.channel,
+                m.message,
+                m.number,
+                m.target,
+                m.minimum,
+                m.maximum,
+                m.curve,
+                m.pickup,
+                m.enabled,
+            )
             for m in mappings
         )
         if not force and signature == getattr(self, "_midi_mapping_signature", None):
@@ -832,10 +875,10 @@ class PerformanceControlPanel(QWidget):
         self.midi_mapping_list.clear()
         for mapping in mappings:
             label = (
-                    f"{mapping.device_id} · CH {mapping.channel + 1} · "
-                    f"{mapping.message.upper()} {mapping.number} → {mapping.target} · "
-                    f"{mapping.minimum:g}…{mapping.maximum:g} · {mapping.curve}"
-                    + (" · PICKUP" if mapping.pickup else "")
+                f"{mapping.device_id} · CH {mapping.channel + 1} · "
+                f"{mapping.message.upper()} {mapping.number} → {mapping.target} · "
+                f"{mapping.minimum:g}…{mapping.maximum:g} · {mapping.curve}"
+                + (" · PICKUP" if mapping.pickup else "")
             )
             item = QListWidgetItem(label)
             item.setData(Qt.ItemDataRole.UserRole, mapping.mapping_id)
@@ -849,8 +892,12 @@ class PerformanceControlPanel(QWidget):
             return
         mapping_id = current.data(Qt.ItemDataRole.UserRole)
         mapping = next(
-            (item for item in self.application.midi_mapping_engine.mappings
-             if item.mapping_id == mapping_id), None
+            (
+                item
+                for item in self.application.midi_mapping_engine.mappings
+                if item.mapping_id == mapping_id
+            ),
+            None,
         )
         if mapping is None:
             return
@@ -900,7 +947,11 @@ class PerformanceControlPanel(QWidget):
             return
         mapping_id = item.data(Qt.ItemDataRole.UserRole)
         self.application.set_midi_mappings(
-            [m for m in self.application.midi_mapping_engine.mappings if m.mapping_id != mapping_id]
+            [
+                m
+                for m in self.application.midi_mapping_engine.mappings
+                if m.mapping_id != mapping_id
+            ]
         )
         self.refresh_midi_mappings(force=True)
         self.midi_status_label.setText("MIDI mapping removed.")
@@ -920,9 +971,9 @@ class PerformanceControlPanel(QWidget):
 
         settings = self.application.audio_capture.settings
         for control, value in (
-                (self.sensitivity_spin, settings.sensitivity),
-                (self.audio_attack_spin, settings.attack_ms),
-                (self.audio_release_spin, settings.release_ms),
+            (self.sensitivity_spin, settings.sensitivity),
+            (self.audio_attack_spin, settings.attack_ms),
+            (self.audio_release_spin, settings.release_ms),
         ):
             control.blockSignals(True)
             control.setValue(value)
@@ -937,7 +988,9 @@ class PerformanceControlPanel(QWidget):
             )
         self.scene_combo.blockSignals(False)
         scene_id = self.application.performance_control.scene_id
-        if scene_id not in {profile.scene_id for profile in self.application.scene_profiles.all()}:
+        if scene_id not in {
+            profile.scene_id for profile in self.application.scene_profiles.all()
+        }:
             scene_id = self.application.scene_profiles.all()[0].scene_id
         self.sync_scene_selection(scene_id)
         self.refresh_routes()
@@ -960,10 +1013,10 @@ class PerformanceControlPanel(QWidget):
 
     @staticmethod
     def _float_spin(
-            minimum: float,
-            maximum: float,
-            step: float,
-            value: float,
+        minimum: float,
+        maximum: float,
+        step: float,
+        value: float,
     ) -> QDoubleSpinBox:
         spin = QDoubleSpinBox()
         spin.setRange(minimum, maximum)
@@ -1012,13 +1065,15 @@ class PerformanceControlPanel(QWidget):
 
     def _save_scene_profile(self) -> None:
         profile = self.application.scene_profiles.get(self._selected_scene_id())
-        self.application.update_scene_profile(SceneProfile(
-            scene_id=profile.scene_id,
-            label=profile.label,
-            intensity=self.scene_intensity_spin.value(),
-            master_look=self.scene_look_combo.currentText(),
-            palette=self.scene_palette_combo.currentText(),
-        ))
+        self.application.update_scene_profile(
+            SceneProfile(
+                scene_id=profile.scene_id,
+                label=profile.label,
+                intensity=self.scene_intensity_spin.value(),
+                master_look=self.scene_look_combo.currentText(),
+                palette=self.scene_palette_combo.currentText(),
+            )
+        )
         self.scene_save_button.setText("SAVED")
         self.scene_save_button.setEnabled(False)
         self.scene_save_button.setToolTip("Scene profile saved in the current project.")
@@ -1088,11 +1143,13 @@ class PerformanceControlPanel(QWidget):
             self.audio_state_label.setText(f"Audio unavailable · {exc}")
 
     def _audio_settings_changed(self, *_args) -> None:
-        self.application.update_audio_analysis_settings(AudioAnalysisSettings(
-            sensitivity=self.sensitivity_spin.value(),
-            attack_ms=self.audio_attack_spin.value(),
-            release_ms=self.audio_release_spin.value(),
-        ))
+        self.application.update_audio_analysis_settings(
+            AudioAnalysisSettings(
+                sensitivity=self.sensitivity_spin.value(),
+                attack_ms=self.audio_attack_spin.value(),
+                release_ms=self.audio_release_spin.value(),
+            )
+        )
 
     def _copy_sonata_settings(self) -> None:
         host = self.osc_bind_edit.text().strip() or "127.0.0.1"
@@ -1111,8 +1168,11 @@ class PerformanceControlPanel(QWidget):
             # Never overwrite an operator-authored route silently. Existing routes
             # retain their source, curve, ranges and precedence until edited manually.
             existing = next(
-                (route for route in self.application.modulation.routes
-                 if route.target_id == target_id),
+                (
+                    route
+                    for route in self.application.modulation.routes
+                    if route.target_id == target_id
+                ),
                 None,
             )
             if existing is not None:
@@ -1147,24 +1207,36 @@ class PerformanceControlPanel(QWidget):
         )
 
     def _install_audio_reactive_routes(self) -> None:
-        self._install_route_preset((
-            ("audio.rms", "generator.animation_speed", 0.35, 5.5, False),
-            ("audio.low", "generator.density", 8.0, 72.0, False),
-            ("audio.high", "generator.text_animation_amount", 0.005, 0.16, False),
-            ("audio.onset", "automation.cut_interval", 3.0, 20.0, True),
-            ("audio.beat_confidence", "automation.clip_switch_probability", 0.15, 0.9, False),
-            ("audio.peak", "selected_layer.opacity", 0.35, 1.0, False),
-        ), "Audio-reactive setup")
+        self._install_route_preset(
+            (
+                ("audio.rms", "generator.animation_speed", 0.35, 5.5, False),
+                ("audio.low", "generator.density", 8.0, 72.0, False),
+                ("audio.high", "generator.text_animation_amount", 0.005, 0.16, False),
+                ("audio.onset", "automation.cut_interval", 3.0, 20.0, True),
+                (
+                    "audio.beat_confidence",
+                    "automation.clip_switch_probability",
+                    0.15,
+                    0.9,
+                    False,
+                ),
+                ("audio.peak", "selected_layer.opacity", 0.35, 1.0, False),
+            ),
+            "Audio-reactive setup",
+        )
 
     def _install_sonic_pi_routes(self) -> None:
-        self._install_route_preset((
-            ("macro.energy", "generator.animation_amount", 0.02, 0.45, False),
-            ("macro.cutoff", "generator.animation_speed", 0.25, 6.5, False),
-            ("macro.energy", "automation.loop_probability", 0.15, 0.9, False),
-            ("transport.intensity", "automation.layout_interval", 6.0, 30.0, True),
-            ("transport.phase", "selected_layer.opacity", 0.3, 1.0, False),
-            ("macro.cutoff", "generator.waveform_frequency", 1.0, 12.0, False),
-        ), "Sonic Pi setup")
+        self._install_route_preset(
+            (
+                ("macro.energy", "generator.animation_amount", 0.02, 0.45, False),
+                ("macro.cutoff", "generator.animation_speed", 0.25, 6.5, False),
+                ("macro.energy", "automation.loop_probability", 0.15, 0.9, False),
+                ("transport.intensity", "automation.layout_interval", 6.0, 30.0, True),
+                ("transport.phase", "selected_layer.opacity", 0.3, 1.0, False),
+                ("macro.cutoff", "generator.waveform_frequency", 1.0, 12.0, False),
+            ),
+            "Sonic Pi setup",
+        )
 
     def _start_osc(self) -> None:
         try:
@@ -1188,7 +1260,9 @@ class PerformanceControlPanel(QWidget):
             return
         snapshot = receiver.snapshot()
         age = snapshot["last_message_age"]
-        freshness = f"{float(age):.1f}s ago" if age is not None else "no packets received"
+        freshness = (
+            f"{float(age):.1f}s ago" if age is not None else "no packets received"
+        )
         address = snapshot["last_address"] or "—"
         session = snapshot["active_session"] or "—"
         self.osc_status_label.setText(
@@ -1218,7 +1292,7 @@ class PerformanceControlPanel(QWidget):
         target_id = str(self.target_combo.currentData())
         selected = self.route_list.currentItem()
         if selected is None and any(
-                route.target_id == target_id for route in self.application.modulation.routes
+            route.target_id == target_id for route in self.application.modulation.routes
         ):
             self.modulation_status.setText(
                 "That target already has a route. Select it to edit, or choose another target."
@@ -1275,7 +1349,11 @@ class PerformanceControlPanel(QWidget):
             return
         route_id = current.data(Qt.ItemDataRole.UserRole)
         route = next(
-            (item for item in self.application.modulation.routes if item.route_id == route_id),
+            (
+                item
+                for item in self.application.modulation.routes
+                if item.route_id == route_id
+            ),
             None,
         )
         if route is None:
@@ -1291,15 +1369,15 @@ class PerformanceControlPanel(QWidget):
             control.blockSignals(False)
         self._target_changed()
         for control, value in (
-                (self.input_min_spin, route.input_min),
-                (self.input_max_spin, route.input_max),
-                (self.output_min_spin, route.output_min),
-                (self.output_max_spin, route.output_max),
-                (self.ceiling_spin, route.intensity_ceiling),
-                (self.smoothing_spin, route.smoothing_ms),
-                (self.attack_spin, route.attack_ms),
-                (self.release_spin, route.release_ms),
-                (self.hold_spin, route.hold_ms),
+            (self.input_min_spin, route.input_min),
+            (self.input_max_spin, route.input_max),
+            (self.output_min_spin, route.output_min),
+            (self.output_max_spin, route.output_max),
+            (self.ceiling_spin, route.intensity_ceiling),
+            (self.smoothing_spin, route.smoothing_ms),
+            (self.attack_spin, route.attack_ms),
+            (self.release_spin, route.release_ms),
+            (self.hold_spin, route.hold_ms),
         ):
             control.setValue(value)
         self.invert_check.setChecked(route.inverted)
@@ -1315,7 +1393,11 @@ class PerformanceControlPanel(QWidget):
     def _route_enabled_changed(self, item: QListWidgetItem) -> None:
         route_id = item.data(Qt.ItemDataRole.UserRole)
         route = next(
-            (item for item in self.application.modulation.routes if item.route_id == route_id),
+            (
+                item
+                for item in self.application.modulation.routes
+                if item.route_id == route_id
+            ),
             None,
         )
         if route is not None:
@@ -1354,9 +1436,9 @@ class PerformanceControlPanel(QWidget):
         self.macros_changed.emit()
 
     def _performance_macro_shortcut_changed(
-            self,
-            macro_id: str,
-            sequence: QKeySequence,
+        self,
+        macro_id: str,
+        sequence: QKeySequence,
     ) -> None:
         current = self.application.performance_macro_engine.get(macro_id)
         if current is None:
@@ -1415,9 +1497,7 @@ class PerformanceControlPanel(QWidget):
             if not source_id.startswith("modulator.")
         }
         for definition in self.application.modulator_bank.list_modulators():
-            labels[f"modulator.{definition.modulator_id}"] = (
-                f"Bank · {definition.name}"
-            )
+            labels[f"modulator.{definition.modulator_id}"] = f"Bank · {definition.name}"
         self.source_combo.blockSignals(True)
         self.source_combo.clear()
         for source_id, label in labels.items():
@@ -1518,9 +1598,9 @@ class PerformanceControlPanel(QWidget):
         control = self.application.performance_control
         if control.source_id == "sonic_pi":
             transport_state = (
-                "RUN" if control.transport_running
-                else "PAUSE" if control.transport_paused
-                else "STOP"
+                "RUN"
+                if control.transport_running
+                else "PAUSE" if control.transport_paused else "STOP"
             )
             phrase = (max(0, control.bar_index - 1) // transport.phrase_bars) + 1
             self.transport_status.setText(
@@ -1529,9 +1609,9 @@ class PerformanceControlPanel(QWidget):
             )
         else:
             transport_state = (
-                "RUN" if transport.running and not transport.paused
-                else "PAUSE" if transport.paused
-                else "STOP"
+                "RUN"
+                if transport.running and not transport.paused
+                else "PAUSE" if transport.paused else "STOP"
             )
             self.transport_status.setText(
                 f"{transport_state} · {transport.bpm:g} BPM · BAR {transport.bar_index} · "
@@ -1540,9 +1620,9 @@ class PerformanceControlPanel(QWidget):
             )
         state = self.application.audio_capture.state
         if (
-                self.application.audio_capture.source_kind in {"input", "loopback"}
-                and state == AudioCaptureState.RUNNING
-                and time.monotonic() - self._last_device_poll >= 3.0
+            self.application.audio_capture.source_kind in {"input", "loopback"}
+            and state == AudioCaptureState.RUNNING
+            and time.monotonic() - self._last_device_poll >= 3.0
         ):
             self._last_device_poll = time.monotonic()
             self.application.audio_capture.refresh_device_state()
@@ -1563,7 +1643,8 @@ class PerformanceControlPanel(QWidget):
         confidence = float(features.get("beat_confidence", 0.0) or 0.0)
         self.audio_tempo_label.setText(
             f"Tempo estimate · {bpm:g} BPM · confidence {confidence:.2f}"
-            if bpm is not None else "Tempo estimate · listening for transients…"
+            if bpm is not None
+            else "Tempo estimate · listening for transients…"
         )
         self.refresh_osc_status()
         self.refresh_performance_scenes()
@@ -1572,7 +1653,9 @@ class PerformanceControlPanel(QWidget):
         learn = getattr(self.application, "_midi_learn_request", None)
         learned = getattr(self.application, "_midi_learn_last_event", "")
         if learn is not None:
-            self.midi_status_label.setText(f"LEARNING · move a controller for {learn['target']}")
+            self.midi_status_label.setText(
+                f"LEARNING · move a controller for {learn['target']}"
+            )
         elif learned:
             self.midi_status_label.setText(f"LEARNED · {learned}")
         outputs = self.application.modulation.outputs()
@@ -1581,5 +1664,6 @@ class PerformanceControlPanel(QWidget):
                 f"{TARGET_SPECS[key].label}: {value:.2f}"
                 for key, value in outputs.items()
             )
-            if outputs else "No modulation outputs active. Enable audio or select a control source."
+            if outputs
+            else "No modulation outputs active. Enable audio or select a control source."
         )

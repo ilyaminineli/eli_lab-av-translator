@@ -98,7 +98,9 @@ class PerformanceModeService:
             ),
         )
 
-    def mark_armed(self, *, osc_owned: bool, audio_owned: bool, audio_status: str) -> None:
+    def mark_armed(
+        self, *, osc_owned: bool, audio_owned: bool, audio_status: str
+    ) -> None:
         state = self.snapshot_state
         state.osc_owned = bool(osc_owned)
         state.audio_owned = bool(audio_owned)
@@ -199,9 +201,23 @@ DEFAULT_MATRIX_ROUTES: tuple[tuple[str, str, float, float, bool, float], ...] = 
     ("performance_macro.depth", "master.feedback_zoom", 1.0, 1.55, False, 0.58),
     ("performance_macro.chaos", "master.feedback_rotation", 0.0, 14.0, False, 0.5),
     ("transport.beat_pulse", "master.feedback_translate_x", -0.025, 0.025, False, 0.38),
-    ("transport.phrase_pulse", "master.feedback_translate_y", -0.025, 0.025, False, 0.38),
+    (
+        "transport.phrase_pulse",
+        "master.feedback_translate_y",
+        -0.025,
+        0.025,
+        False,
+        0.38,
+    ),
     ("audio.high", "master.feedback_color_shift", 0.0, 0.22, False, 0.35),
-    ("performance_macro.pressure", "master.feedback_distortion", 0.0, 0.78, False, 0.58),
+    (
+        "performance_macro.pressure",
+        "master.feedback_distortion",
+        0.0,
+        0.78,
+        False,
+        0.58,
+    ),
     ("performance_macro.chaos", "master.feedback_motion_warp", 0.0, 0.62, False, 0.55),
     ("audio.onset", "master.feedback_datamosh", 0.0, 0.18, False, 0.38),
     ("transport.beat_pulse", "master.feedback_delay_frames", 0.0, 2.0, False, 0.3),
@@ -246,7 +262,9 @@ def install_default_performance_macro_routes(matrix: ModulationMatrix) -> int:
                 (route for route in matrix.routes if route.target_id == target),
                 None,
             )
-            if existing is not None and existing.route_id.startswith("auto-performance-"):
+            if existing is not None and existing.route_id.startswith(
+                "auto-performance-"
+            ):
                 changes = {
                     "source_id": source,
                     "output_min": low,
@@ -254,26 +272,30 @@ def install_default_performance_macro_routes(matrix: ModulationMatrix) -> int:
                     "inverted": inverted,
                     "intensity_ceiling": ceiling,
                 }
-                if any(getattr(existing, key) != value for key, value in changes.items()):
+                if any(
+                    getattr(existing, key) != value for key, value in changes.items()
+                ):
                     matrix.update_route(existing.route_id, changes)
             continue
-        matrix.add_route(ModulationRoute(
-            route_id=f"performance-macro-{target.replace('.', '-')}",
-            source_id=source,
-            target_id=target,
-            input_min=0.0,
-            input_max=1.0,
-            output_min=low,
-            output_max=high,
-            curve="smoothstep",
-            inverted=inverted,
-            smoothing_ms=80.0,
-            attack_ms=35.0,
-            release_ms=260.0,
-            hold_ms=0.0,
-            intensity_ceiling=ceiling,
-            enabled=True,
-        ))
+        matrix.add_route(
+            ModulationRoute(
+                route_id=f"performance-macro-{target.replace('.', '-')}",
+                source_id=source,
+                target_id=target,
+                input_min=0.0,
+                input_max=1.0,
+                output_min=low,
+                output_max=high,
+                curve="smoothstep",
+                inverted=inverted,
+                smoothing_ms=80.0,
+                attack_ms=35.0,
+                release_ms=260.0,
+                hold_ms=0.0,
+                intensity_ceiling=ceiling,
+                enabled=True,
+            )
+        )
         existing_targets.add(target)
         added += 1
     return added
@@ -288,7 +310,9 @@ def install_default_matrix_routes(matrix: ModulationMatrix) -> int:
             existing = next(
                 (route for route in matrix.routes if route.target_id == target), None
             )
-            if existing is not None and existing.route_id.startswith("auto-performance-"):
+            if existing is not None and existing.route_id.startswith(
+                "auto-performance-"
+            ):
                 changes = {
                     "source_id": source,
                     "output_min": low,
@@ -297,7 +321,9 @@ def install_default_matrix_routes(matrix: ModulationMatrix) -> int:
                     "intensity_ceiling": ceiling,
                     "enabled": True,
                 }
-                if any(getattr(existing, key) != value for key, value in changes.items()):
+                if any(
+                    getattr(existing, key) != value for key, value in changes.items()
+                ):
                     matrix.update_route(existing.route_id, changes)
             continue
         route = ModulationRoute(
@@ -342,20 +368,20 @@ def install_default_modulators(bank: ModulatorBank) -> dict[str, str]:
 
 
 def _modifier(
-        name: str,
-        source_id: str,
-        target_id: str,
-        depth: float,
-        curve: str = "smoothstep",
-        attack_ms: float = 35.0,
-        release_ms: float = 300.0,
-        polarity: str = "positive",
+    name: str,
+    source_id: str,
+    target_id: str,
+    depth: float,
+    curve: str = "smoothstep",
+    attack_ms: float = 35.0,
+    release_ms: float = 300.0,
+    polarity: str = "positive",
 ) -> LayerPerformanceModifier:
     return LayerPerformanceModifier(
         modifier_id=(
-                        f"auto-{source_id.removeprefix('modulator.').replace('.', '-')}-"
-                        f"{target_id.replace('.', '-')}"
-                    )[:40],
+            f"auto-{source_id.removeprefix('modulator.').replace('.', '-')}-"
+            f"{target_id.replace('.', '-')}"
+        )[:40],
         name=f"AUTO · {name}",
         source_id=source_id,
         target_id=target_id,
@@ -369,10 +395,10 @@ def _modifier(
 
 
 def _performance_macro_modifier(
-        macro_id: str,
-        name: str,
-        target_id: str,
-        depth: float,
+    macro_id: str,
+    name: str,
+    target_id: str,
+    depth: float,
 ) -> LayerPerformanceModifier:
     source_id = f"performance_macro.{macro_id}"
     item = _modifier(name, source_id, target_id, depth)
@@ -422,7 +448,12 @@ def install_default_performance_macro_modifiers(layers: list[object]) -> int:
             ("density", "reveal density", "generator.text_animation_columns", 0.12),
             ("decay", "scroll speed", "generator.text_animation_speed", 0.08),
             ("pressure", "text distortion", "generator.text_animation_amount", 0.10),
-            ("fragment", "glyph fragmentation", "generator.text_animation_amount", 0.18),
+            (
+                "fragment",
+                "glyph fragmentation",
+                "generator.text_animation_amount",
+                0.18,
+            ),
         ),
         "waveform": (
             ("chaos", "waveform movement", "generator.animation_amount", 0.10),
@@ -441,7 +472,12 @@ def install_default_performance_macro_modifiers(layers: list[object]) -> int:
         "particle_system_2": (
             ("chaos", "particle speed", "generator.particle_speed", 0.12),
             ("chaos", "particle turbulence", "generator.particle_turbulence", 0.12),
-            ("density", "continuous emission", "generator.particle_emission_rate", 0.16),
+            (
+                "density",
+                "continuous emission",
+                "generator.particle_emission_rate",
+                0.16,
+            ),
             ("density", "particle radius", "generator.particle_system_size", 0.10),
             ("depth", "particle trails", "generator.particle_trail", 0.14),
             ("depth", "source reformation", "generator.particle_reform_strength", 0.10),
@@ -462,7 +498,8 @@ def install_default_performance_macro_modifiers(layers: list[object]) -> int:
             layer.performance_modifiers = configured
         existing = {
             (str(raw.get("source_id", "")), str(raw.get("target_id", "")))
-            for raw in configured if isinstance(raw, dict)
+            for raw in configured
+            if isinstance(raw, dict)
         }
         candidates = [
             _performance_macro_modifier(macro_id, name, target, depth)
@@ -487,8 +524,8 @@ def install_default_performance_macro_modifiers(layers: list[object]) -> int:
 
 
 def install_default_layer_modifiers(
-        layers: list[object],
-        modulator_ids: dict[str, str],
+    layers: list[object],
+    modulator_ids: dict[str, str],
 ) -> int:
     """Install GPU-friendly curves and migrate the earlier CPU-raster defaults."""
     energy = f"modulator.{modulator_ids['follower-sonic-pi-energy']}"
@@ -507,14 +544,16 @@ def install_default_layer_modifiers(
         legacy = LEGACY_CPU_RASTER_MODIFIERS.get(str(kind), set())
         if legacy:
             configured[:] = [
-                raw for raw in configured
+                raw
+                for raw in configured
                 if not (
-                        isinstance(raw, dict)
-                        and str(raw.get("modifier_id", "")).startswith("auto-")
-                        and (
-                            str(raw.get("name", "")),
-                            str(raw.get("target_id", "")),
-                        ) in legacy
+                    isinstance(raw, dict)
+                    and str(raw.get("modifier_id", "")).startswith("auto-")
+                    and (
+                        str(raw.get("name", "")),
+                        str(raw.get("target_id", "")),
+                    )
+                    in legacy
                 )
             ]
         # Migrate prior AUTO curves even on currently locked layers; do not
@@ -524,132 +563,222 @@ def install_default_layer_modifiers(
 
         existing_records = {
             (str(raw.get("source_id", "")), str(raw.get("target_id", ""))): raw
-            for raw in configured if isinstance(raw, dict)
+            for raw in configured
+            if isinstance(raw, dict)
         }
         existing = set(existing_records)
         candidates: list[LayerPerformanceModifier] = []
 
         if layer.source_type == "video":
-            candidates.extend((
-                _modifier(
-                    "downbeat opacity", "transport.beat_pulse", "layer.opacity",
-                    0.10, "exponential", 8.0, 180.0,
-                ),
-                _modifier("bass scale", "audio.low", "layer.scale", 0.08),
-                _modifier("energy rotation", energy, "layer.rotation", 0.035),
-            ))
+            candidates.extend(
+                (
+                    _modifier(
+                        "downbeat opacity",
+                        "transport.beat_pulse",
+                        "layer.opacity",
+                        0.10,
+                        "exponential",
+                        8.0,
+                        180.0,
+                    ),
+                    _modifier("bass scale", "audio.low", "layer.scale", 0.08),
+                    _modifier("energy rotation", energy, "layer.rotation", 0.035),
+                )
+            )
         elif layer.source_type == "generator" and layer.generator_type:
-            settings = normalize_settings(layer.generator_type, layer.generator_settings)
+            settings = normalize_settings(
+                layer.generator_type, layer.generator_settings
+            )
             if kind == "geometry":
-                candidates.extend((
-                    _modifier(
-                        "energy deformation", energy, "generator.animation_amount", 0.10
-                    ),
-                    _modifier(
-                        "cutoff motion", cutoff, "generator.animation_speed", 0.12
-                    ),
-                    _modifier(
-                        "beat rotation", beat, "layer.rotation",
-                        0.055, "exponential", 8.0, 220.0,
-                    ),
-                    _modifier("phrase scale", swell, "layer.scale", 0.035),
-                ))
+                candidates.extend(
+                    (
+                        _modifier(
+                            "energy deformation",
+                            energy,
+                            "generator.animation_amount",
+                            0.10,
+                        ),
+                        _modifier(
+                            "cutoff motion", cutoff, "generator.animation_speed", 0.12
+                        ),
+                        _modifier(
+                            "beat rotation",
+                            beat,
+                            "layer.rotation",
+                            0.055,
+                            "exponential",
+                            8.0,
+                            220.0,
+                        ),
+                        _modifier("phrase scale", swell, "layer.scale", 0.035),
+                    )
+                )
             elif kind == "text":
-                candidates.extend((
-                    _modifier(
-                        "energy typography", energy, "generator.text_animation_amount", 0.24
-                    ),
-                    _modifier(
-                        "cutoff type speed", cutoff, "generator.text_animation_speed", 0.16
-                    ),
-                    _modifier("phrase type scale", swell, "layer.scale", 0.035),
-                    _modifier(
-                        "onset tracking", onset, "layer.rotation",
-                        0.035, "exponential", 5.0, 240.0,
-                    ),
-                    _modifier(
-                        "phrase reveal density", swell,
-                        "generator.text_animation_columns", 0.08,
-                    ),
-                ))
+                candidates.extend(
+                    (
+                        _modifier(
+                            "energy typography",
+                            energy,
+                            "generator.text_animation_amount",
+                            0.24,
+                        ),
+                        _modifier(
+                            "cutoff type speed",
+                            cutoff,
+                            "generator.text_animation_speed",
+                            0.16,
+                        ),
+                        _modifier("phrase type scale", swell, "layer.scale", 0.035),
+                        _modifier(
+                            "onset tracking",
+                            onset,
+                            "layer.rotation",
+                            0.035,
+                            "exponential",
+                            5.0,
+                            240.0,
+                        ),
+                        _modifier(
+                            "phrase reveal density",
+                            swell,
+                            "generator.text_animation_columns",
+                            0.08,
+                        ),
+                    )
+                )
             elif kind == "waveform":
-                candidates.extend((
-                    _modifier(
-                        "bass scale", "audio.low", "layer.scale",
-                        0.18, "exponential", 8.0, 220.0,
-                    ),
-                    _modifier(
-                        "cutoff motion", cutoff, "generator.animation_speed", 0.12
-                    ),
-                    _modifier(
-                        "beat motion", beat, "generator.animation_amount",
-                        0.12, "exponential", 5.0, 180.0,
-                    ),
-                ))
+                candidates.extend(
+                    (
+                        _modifier(
+                            "bass scale",
+                            "audio.low",
+                            "layer.scale",
+                            0.18,
+                            "exponential",
+                            8.0,
+                            220.0,
+                        ),
+                        _modifier(
+                            "cutoff motion", cutoff, "generator.animation_speed", 0.12
+                        ),
+                        _modifier(
+                            "beat motion",
+                            beat,
+                            "generator.animation_amount",
+                            0.12,
+                            "exponential",
+                            5.0,
+                            180.0,
+                        ),
+                    )
+                )
             elif kind == "particles":
                 # Particle fields are evaluated directly in the fragment shader;
                 # these targets update uniforms and never invalidate a CPU texture.
-                candidates.extend((
-                    _modifier(
-                        "energy particle speed", energy, "generator.particle_speed", 0.24
-                    ),
-                    _modifier(
-                        "onset particle size", onset, "generator.particle_size",
-                        0.18, "exponential", 5.0, 160.0,
-                    ),
-                    _modifier(
-                        "beat trails", beat, "generator.particle_trail",
-                        0.22, "exponential", 5.0, 200.0,
-                    ),
-                    _modifier(
-                        "phrase spread", swell, "generator.particle_spread", 0.10
-                    ),
-                ))
+                candidates.extend(
+                    (
+                        _modifier(
+                            "energy particle speed",
+                            energy,
+                            "generator.particle_speed",
+                            0.24,
+                        ),
+                        _modifier(
+                            "onset particle size",
+                            onset,
+                            "generator.particle_size",
+                            0.18,
+                            "exponential",
+                            5.0,
+                            160.0,
+                        ),
+                        _modifier(
+                            "beat trails",
+                            beat,
+                            "generator.particle_trail",
+                            0.22,
+                            "exponential",
+                            5.0,
+                            200.0,
+                        ),
+                        _modifier(
+                            "phrase spread", swell, "generator.particle_spread", 0.10
+                        ),
+                    )
+                )
             elif kind == "particle_system_2":
                 # Fixed-step simulation exposes these as uniforms; automation
                 # changes live behaviour without recreating GPU populations.
-                candidates.extend((
-                    _modifier(
-                        "energy emission rate", energy,
-                        "generator.particle_emission_rate", 0.12,
-                    ),
-                    _modifier(
-                        "beat emission pulse", beat,
-                        "generator.particle_emission_rate",
-                        0.18, "exponential", 4.0, 170.0,
-                    ),
-                    _modifier(
-                        "onset particle speed", onset,
-                        "generator.particle_speed", 0.10,
-                        "exponential", 4.0, 150.0,
-                    ),
-                    _modifier(
-                        "bass force field", "audio.low",
-                        "generator.particle_force_strength", 0.12,
-                    ),
-                    _modifier(
-                        "cutoff turbulence", cutoff,
-                        "generator.particle_turbulence", 0.14,
-                    ),
-                    _modifier(
-                        "phrase particle trails", swell,
-                        "generator.particle_trail", 0.12,
-                    ),
-                    _modifier(
-                        "source reform", energy,
-                        "generator.particle_reform_strength", 0.08,
-                    ),
-                    _modifier(
-                        "downbeat particle radius", beat,
-                        "generator.particle_system_size",
-                        0.08, "exponential", 5.0, 180.0,
-                    ),
-                    _modifier(
-                        "onset force accent", onset,
-                        "generator.particle_force_strength",
-                        0.08, "exponential", 4.0, 150.0,
-                    ),
-                ))
+                candidates.extend(
+                    (
+                        _modifier(
+                            "energy emission rate",
+                            energy,
+                            "generator.particle_emission_rate",
+                            0.12,
+                        ),
+                        _modifier(
+                            "beat emission pulse",
+                            beat,
+                            "generator.particle_emission_rate",
+                            0.18,
+                            "exponential",
+                            4.0,
+                            170.0,
+                        ),
+                        _modifier(
+                            "onset particle speed",
+                            onset,
+                            "generator.particle_speed",
+                            0.10,
+                            "exponential",
+                            4.0,
+                            150.0,
+                        ),
+                        _modifier(
+                            "bass force field",
+                            "audio.low",
+                            "generator.particle_force_strength",
+                            0.12,
+                        ),
+                        _modifier(
+                            "cutoff turbulence",
+                            cutoff,
+                            "generator.particle_turbulence",
+                            0.14,
+                        ),
+                        _modifier(
+                            "phrase particle trails",
+                            swell,
+                            "generator.particle_trail",
+                            0.12,
+                        ),
+                        _modifier(
+                            "source reform",
+                            energy,
+                            "generator.particle_reform_strength",
+                            0.08,
+                        ),
+                        _modifier(
+                            "downbeat particle radius",
+                            beat,
+                            "generator.particle_system_size",
+                            0.08,
+                            "exponential",
+                            5.0,
+                            180.0,
+                        ),
+                        _modifier(
+                            "onset force accent",
+                            onset,
+                            "generator.particle_force_strength",
+                            0.08,
+                            "exponential",
+                            4.0,
+                            150.0,
+                        ),
+                    )
+                )
             else:
                 settings = {}
 
@@ -657,39 +786,104 @@ def install_default_layer_modifiers(
                 "geometry": (
                     ("chaos", "motion amount", "generator.animation_amount", 0.12),
                     ("depth", "motion speed", "generator.animation_speed", 0.10),
-                    ("fragment", "fragmented motion", "generator.animation_amount", 0.10),
+                    (
+                        "fragment",
+                        "fragmented motion",
+                        "generator.animation_amount",
+                        0.10,
+                    ),
                 ),
                 "text": (
                     ("chaos", "glyph motion", "generator.text_animation_amount", 0.18),
-                    ("density", "reveal density", "generator.text_animation_columns", 0.12),
+                    (
+                        "density",
+                        "reveal density",
+                        "generator.text_animation_columns",
+                        0.12,
+                    ),
                     ("decay", "scroll speed", "generator.text_animation_speed", 0.08),
-                    ("pressure", "text distortion", "generator.text_animation_amount", 0.10),
-                    ("fragment", "glyph fragmentation", "generator.text_animation_amount", 0.18),
+                    (
+                        "pressure",
+                        "text distortion",
+                        "generator.text_animation_amount",
+                        0.10,
+                    ),
+                    (
+                        "fragment",
+                        "glyph fragmentation",
+                        "generator.text_animation_amount",
+                        0.18,
+                    ),
                 ),
                 "waveform": (
                     ("chaos", "waveform movement", "generator.animation_amount", 0.10),
-                    ("depth", "waveform motion speed", "generator.animation_speed", 0.08),
-                    ("pressure", "waveform amplitude", "generator.waveform_amplitude", 0.12),
+                    (
+                        "depth",
+                        "waveform motion speed",
+                        "generator.animation_speed",
+                        0.08,
+                    ),
+                    (
+                        "pressure",
+                        "waveform amplitude",
+                        "generator.waveform_amplitude",
+                        0.12,
+                    ),
                 ),
                 "particles": (
                     ("chaos", "particle speed", "generator.particle_speed", 0.14),
                     ("density", "particle density", "generator.density", 0.10),
                     ("depth", "particle trails", "generator.particle_trail", 0.12),
-                    ("decay", "particle trail persistence", "generator.particle_trail", 0.18),
+                    (
+                        "decay",
+                        "particle trail persistence",
+                        "generator.particle_trail",
+                        0.18,
+                    ),
                     ("pressure", "particle size", "generator.particle_size", 0.08),
                     ("fragment", "particle spread", "generator.particle_spread", 0.12),
                 ),
                 "particle_system_2": (
                     ("chaos", "particle speed", "generator.particle_speed", 0.12),
-                    ("chaos", "particle turbulence", "generator.particle_turbulence", 0.12),
-                    ("density", "continuous emission", "generator.particle_emission_rate", 0.16),
-                    ("density", "particle radius", "generator.particle_system_size", 0.10),
+                    (
+                        "chaos",
+                        "particle turbulence",
+                        "generator.particle_turbulence",
+                        0.12,
+                    ),
+                    (
+                        "density",
+                        "continuous emission",
+                        "generator.particle_emission_rate",
+                        0.16,
+                    ),
+                    (
+                        "density",
+                        "particle radius",
+                        "generator.particle_system_size",
+                        0.10,
+                    ),
                     ("depth", "particle trails", "generator.particle_trail", 0.14),
-                    ("depth", "source reformation", "generator.particle_reform_strength", 0.10),
+                    (
+                        "depth",
+                        "source reformation",
+                        "generator.particle_reform_strength",
+                        0.10,
+                    ),
                     ("decay", "particle lifetime", "generator.particle_lifetime", 0.14),
                     ("decay", "particle persistence", "generator.particle_trail", 0.18),
-                    ("pressure", "particle force", "generator.particle_force_strength", 0.12),
-                    ("pressure", "particle turbulence", "generator.particle_turbulence", 0.10),
+                    (
+                        "pressure",
+                        "particle force",
+                        "generator.particle_force_strength",
+                        0.12,
+                    ),
+                    (
+                        "pressure",
+                        "particle turbulence",
+                        "generator.particle_turbulence",
+                        0.10,
+                    ),
                     ("fragment", "particle spread", "generator.particle_spread", 0.14),
                 ),
             }
@@ -722,107 +916,155 @@ def install_default_layer_modifiers(
                 "generator.particle_reform_strength": "reform_strength",
             }
             candidates = [
-                item for item in candidates
+                item
+                for item in candidates
                 if (
-                        item.target_id.startswith("layer.")
-                        or available.get(item.target_id) in settings
+                    item.target_id.startswith("layer.")
+                    or available.get(item.target_id) in settings
                 )
             ]
         elif layer.source_type == "overlay":
-            candidates.extend((
-                _modifier("overlay rate", energy, "overlay.playback_speed", 0.18),
-                _modifier(
-                    "overlay frame pulse", beat, "overlay.frame_hold",
-                    0.22, "exponential", 5.0, 180.0,
-                ),
-            ))
+            candidates.extend(
+                (
+                    _modifier("overlay rate", energy, "overlay.playback_speed", 0.18),
+                    _modifier(
+                        "overlay frame pulse",
+                        beat,
+                        "overlay.frame_hold",
+                        0.22,
+                        "exponential",
+                        5.0,
+                        180.0,
+                    ),
+                )
+            )
 
         # Layer FX are GPU-evaluated on every composition type.
-        candidates.extend((
-            _performance_macro_modifier(
-                "chaos", "rotation accent", "layer.rotation", 0.08
-            ),
-            _performance_macro_modifier(
-                "chaos", "chromatic aberration", "layer_fx.chromatic", 0.14
-            ),
-            _performance_macro_modifier(
-                "chaos", "invert accent", "layer_fx.invert", 0.08
-            ),
-            _performance_macro_modifier(
-                "chaos", "scanline intensity", "layer_fx.scanlines", 0.10
-            ),
-            _performance_macro_modifier(
-                "density", "layer scale density", "layer.scale", 0.06
-            ),
-            _performance_macro_modifier(
-                "density", "threshold density", "layer_fx.threshold", 0.06
-            ),
-            _performance_macro_modifier(
-                "depth", "layer scale depth", "layer.scale", 0.12
-            ),
-            _performance_macro_modifier(
-                "depth", "horizontal depth", "layer.position_x", 0.05
-            ),
-            _performance_macro_modifier(
-                "depth", "vertical depth", "layer.position_y", 0.05
-            ),
-            _performance_macro_modifier(
-                "decay", "effect persistence", "layer_fx.mix", 0.10
-            ),
-            _performance_macro_modifier(
-                "pressure", "contrast pressure", "layer_fx.contrast", 0.12
-            ),
-            _performance_macro_modifier(
-                "pressure", "threshold pressure", "layer_fx.threshold", 0.10
-            ),
-            _performance_macro_modifier(
-                "pressure", "brightness pressure", "layer_fx.brightness", 0.06
-            ),
-            _performance_macro_modifier(
-                "fragment", "posterize fragments", "layer_fx.posterize", 0.12
-            ),
-            _performance_macro_modifier(
-                "fragment", "chromatic fragments", "layer_fx.chromatic", 0.10
-            ),
-            _modifier(
-                "high-band chromatic", "audio.high",
-                "layer_fx.chromatic", 0.14,
-                "exponential", 5.0, 180.0,
-            ),
-            _modifier(
-                "beat scanlines", beat, "layer_fx.scanlines",
-                0.12, "exponential", 4.0, 160.0,
-            ),
-            _modifier(
-                "phrase posterize", swell, "layer_fx.posterize", 0.10,
-            ),
-            _modifier(
-                "onset invert accent", onset, "layer_fx.invert",
-                0.08, "exponential", 4.0, 160.0,
-            ),
-            _modifier(
-                "energy hue shift", energy, "layer_fx.hue", 0.06,
-            ),
-            _modifier(
-                "energy saturation", energy, "layer_fx.saturation", 0.08,
-            ),
-            _modifier(
-                "phrase monochrome", swell, "layer_fx.monochrome", 0.10,
-            ),
-            _modifier(
-                "onset threshold", onset, "layer_fx.threshold", 0.08,
-            ),
-            _modifier(
-                "bass layer contrast", "audio.low", "layer_fx.contrast", 0.10,
-            ),
-            _modifier(
-                "cutoff brightness", cutoff, "layer_fx.brightness", 0.07,
-            ),
-            _modifier(
-                "energy FX blend", energy, "layer_fx.mix", 0.06,
-                polarity="bipolar",
-            ),
-        ))
+        candidates.extend(
+            (
+                _performance_macro_modifier(
+                    "chaos", "rotation accent", "layer.rotation", 0.08
+                ),
+                _performance_macro_modifier(
+                    "chaos", "chromatic aberration", "layer_fx.chromatic", 0.14
+                ),
+                _performance_macro_modifier(
+                    "chaos", "invert accent", "layer_fx.invert", 0.08
+                ),
+                _performance_macro_modifier(
+                    "chaos", "scanline intensity", "layer_fx.scanlines", 0.10
+                ),
+                _performance_macro_modifier(
+                    "density", "layer scale density", "layer.scale", 0.06
+                ),
+                _performance_macro_modifier(
+                    "density", "threshold density", "layer_fx.threshold", 0.06
+                ),
+                _performance_macro_modifier(
+                    "depth", "layer scale depth", "layer.scale", 0.12
+                ),
+                _performance_macro_modifier(
+                    "depth", "horizontal depth", "layer.position_x", 0.05
+                ),
+                _performance_macro_modifier(
+                    "depth", "vertical depth", "layer.position_y", 0.05
+                ),
+                _performance_macro_modifier(
+                    "decay", "effect persistence", "layer_fx.mix", 0.10
+                ),
+                _performance_macro_modifier(
+                    "pressure", "contrast pressure", "layer_fx.contrast", 0.12
+                ),
+                _performance_macro_modifier(
+                    "pressure", "threshold pressure", "layer_fx.threshold", 0.10
+                ),
+                _performance_macro_modifier(
+                    "pressure", "brightness pressure", "layer_fx.brightness", 0.06
+                ),
+                _performance_macro_modifier(
+                    "fragment", "posterize fragments", "layer_fx.posterize", 0.12
+                ),
+                _performance_macro_modifier(
+                    "fragment", "chromatic fragments", "layer_fx.chromatic", 0.10
+                ),
+                _modifier(
+                    "high-band chromatic",
+                    "audio.high",
+                    "layer_fx.chromatic",
+                    0.14,
+                    "exponential",
+                    5.0,
+                    180.0,
+                ),
+                _modifier(
+                    "beat scanlines",
+                    beat,
+                    "layer_fx.scanlines",
+                    0.12,
+                    "exponential",
+                    4.0,
+                    160.0,
+                ),
+                _modifier(
+                    "phrase posterize",
+                    swell,
+                    "layer_fx.posterize",
+                    0.10,
+                ),
+                _modifier(
+                    "onset invert accent",
+                    onset,
+                    "layer_fx.invert",
+                    0.08,
+                    "exponential",
+                    4.0,
+                    160.0,
+                ),
+                _modifier(
+                    "energy hue shift",
+                    energy,
+                    "layer_fx.hue",
+                    0.06,
+                ),
+                _modifier(
+                    "energy saturation",
+                    energy,
+                    "layer_fx.saturation",
+                    0.08,
+                ),
+                _modifier(
+                    "phrase monochrome",
+                    swell,
+                    "layer_fx.monochrome",
+                    0.10,
+                ),
+                _modifier(
+                    "onset threshold",
+                    onset,
+                    "layer_fx.threshold",
+                    0.08,
+                ),
+                _modifier(
+                    "bass layer contrast",
+                    "audio.low",
+                    "layer_fx.contrast",
+                    0.10,
+                ),
+                _modifier(
+                    "cutoff brightness",
+                    cutoff,
+                    "layer_fx.brightness",
+                    0.07,
+                ),
+                _modifier(
+                    "energy FX blend",
+                    energy,
+                    "layer_fx.mix",
+                    0.06,
+                    polarity="bipolar",
+                ),
+            )
+        )
 
         for item in candidates:
             item.normalize()
@@ -840,10 +1082,10 @@ def install_default_layer_modifiers(
 
 
 def set_default_routing_enabled(
-        matrix: ModulationMatrix,
-        bank: ModulatorBank,
-        layers: list[object],
-        enabled: bool,
+    matrix: ModulationMatrix,
+    bank: ModulatorBank,
+    layers: list[object],
+    enabled: bool,
 ) -> None:
     """Gate only generated AUTO routes, modulators and layer curves."""
     state = bool(enabled)
@@ -856,5 +1098,7 @@ def set_default_routing_enabled(
     for layer in layers:
         records = getattr(layer, "performance_modifiers", [])
         for record in records:
-            if isinstance(record, dict) and str(record.get("name", "")).startswith("AUTO ·"):
+            if isinstance(record, dict) and str(record.get("name", "")).startswith(
+                "AUTO ·"
+            ):
                 record["enabled"] = state

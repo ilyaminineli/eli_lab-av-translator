@@ -41,7 +41,9 @@ class PerformanceMacro:
     def normalize(self) -> None:
         self.macro_id = str(self.macro_id).strip().lower()
         if not _MACRO_ID.fullmatch(self.macro_id):
-            raise ValueError("Performance macro ID must be a short lowercase identifier.")
+            raise ValueError(
+                "Performance macro ID must be a short lowercase identifier."
+            )
         self.name = str(self.name).strip()[:32] or self.macro_id.upper()
         self.description = str(self.description).strip()[:160]
         self.value = float(self.value)
@@ -51,12 +53,13 @@ class PerformanceMacro:
         self.enabled = bool(self.enabled)
         self.input_source = str(self.input_source).strip()[:128]
         if self.input_source:
-            is_modulator = (
-                    self.input_source.startswith("modulator.")
-                    and bool(self.input_source.removeprefix("modulator.").strip())
+            is_modulator = self.input_source.startswith("modulator.") and bool(
+                self.input_source.removeprefix("modulator.").strip()
             )
             if self.input_source not in SOURCE_RANGES and not is_modulator:
-                raise ValueError(f"Unknown performance macro input: {self.input_source}")
+                raise ValueError(
+                    f"Unknown performance macro input: {self.input_source}"
+                )
         self.input_min = float(self.input_min)
         self.input_max = float(self.input_max)
         if not math.isfinite(self.input_min) or not math.isfinite(self.input_max):
@@ -88,27 +91,39 @@ def default_performance_macros() -> list[PerformanceMacro]:
     """Create the six built-in macros with safe, neutral values and unique shortcuts."""
     definitions = (
         (
-            "chaos", "CHAOS", "Glitch, rotation, displacement and feedback intensity",
+            "chaos",
+            "CHAOS",
+            "Glitch, rotation, displacement and feedback intensity",
             "Ctrl+Alt+1",
         ),
         (
-            "density", "DNST", "Text, particle and geometric density",
+            "density",
+            "DNST",
+            "Text, particle and geometric density",
             "Ctrl+Alt+2",
         ),
         (
-            "depth", "DPTH", "Zoom, feedback depth, trails and layer position",
+            "depth",
+            "DPTH",
+            "Zoom, feedback depth, trails and layer position",
             "Ctrl+Alt+3",
         ),
         (
-            "decay", "DEC", "Feedback persistence, trails and particle lifetime",
+            "decay",
+            "DEC",
+            "Feedback persistence, trails and particle lifetime",
             "Ctrl+Alt+4",
         ),
         (
-            "pressure", "PRESSURE", "Contrast, threshold and distortion intensity",
+            "pressure",
+            "PRESSURE",
+            "Contrast, threshold and distortion intensity",
             "Ctrl+Alt+5",
         ),
         (
-            "fragment", "FRAG", "Pixelation, glyph motion and displacement",
+            "fragment",
+            "FRAG",
+            "Pixelation, glyph motion and displacement",
             "Ctrl+Alt+6",
         ),
     )
@@ -150,14 +165,13 @@ class PerformanceMacroEngine:
         return self.macros.get(str(macro_id))
 
     def reset(self) -> None:
-        self.macros = {
-            item.macro_id: item for item in default_performance_macros()
-        }
+        self.macros = {item.macro_id: item for item in default_performance_macros()}
         self._runtime.clear()
 
     def update_macro(self, macro: PerformanceMacro | dict[str, object]) -> None:
         item = (
-            macro if isinstance(macro, PerformanceMacro)
+            macro
+            if isinstance(macro, PerformanceMacro)
             else PerformanceMacro.from_dict(macro)
         )
         item.normalize()
@@ -166,9 +180,11 @@ class PerformanceMacroEngine:
         if item.keyboard_shortcut:
             duplicate = next(
                 (
-                    other for other in self.macros.values()
+                    other
+                    for other in self.macros.values()
                     if other.macro_id != item.macro_id
-                       and other.keyboard_shortcut.casefold() == item.keyboard_shortcut.casefold()
+                    and other.keyboard_shortcut.casefold()
+                    == item.keyboard_shortcut.casefold()
                 ),
                 None,
             )
@@ -180,11 +196,11 @@ class PerformanceMacroEngine:
         self._runtime.pop(item.macro_id, None)
 
     def set_value(
-            self,
-            macro_id: str,
-            value: float,
-            hold_seconds: float = 1.5,
-            now: float | None = None,
+        self,
+        macro_id: str,
+        value: float,
+        hold_seconds: float = 1.5,
+        now: float | None = None,
     ) -> float:
         item = self.macros.get(str(macro_id))
         if item is None:
@@ -212,9 +228,9 @@ class PerformanceMacroEngine:
         return value
 
     def evaluate(
-            self,
-            sources: dict[str, float],
-            now: float | None = None,
+        self,
+        sources: dict[str, float],
+        now: float | None = None,
     ) -> dict[str, float]:
         stamp = time.monotonic() if now is None else float(now)
         outputs: dict[str, float] = {}
@@ -228,9 +244,9 @@ class PerformanceMacroEngine:
             elif item.input_source:
                 raw = sources.get(item.input_source)
                 if raw is not None and math.isfinite(float(raw)):
-                    target = (
-                                     float(raw) - item.input_min
-                             ) / max(1e-9, item.input_max - item.input_min)
+                    target = (float(raw) - item.input_min) / max(
+                        1e-9, item.input_max - item.input_min
+                    )
                     target = self._curve(max(0.0, min(1.0, target)), item.input_curve)
                     if item.input_invert:
                         target = 1.0 - target
@@ -238,7 +254,10 @@ class PerformanceMacroEngine:
                 else:
                     if runtime.source_missing_since is None:
                         runtime.source_missing_since = stamp
-                    if stamp - runtime.source_missing_since <= self.SOURCE_MISSING_HOLD_SECONDS:
+                    if (
+                        stamp - runtime.source_missing_since
+                        <= self.SOURCE_MISSING_HOLD_SECONDS
+                    ):
                         target = (
                             runtime.current
                             if runtime.current is not None
@@ -267,7 +286,7 @@ class PerformanceMacroEngine:
             item.macro_id: (
                 self._runtime[item.macro_id].current
                 if item.macro_id in self._runtime
-                   and self._runtime[item.macro_id].current is not None
+                and self._runtime[item.macro_id].current is not None
                 else item.value
             )
             for item in self.list_macros()

@@ -104,20 +104,22 @@ class SoundCardBackend:
             if not device_id:
                 continue
             is_loopback = bool(getattr(microphone, "isloopback", False))
-            devices.append(AudioInputDevice(
-                id=device_id,
-                name=str(getattr(microphone, "name", device_id)),
-                channels=channel_count,
-                is_loopback=is_loopback,
-                kind="loopback" if is_loopback else "input",
-            ))
+            devices.append(
+                AudioInputDevice(
+                    id=device_id,
+                    name=str(getattr(microphone, "name", device_id)),
+                    channels=channel_count,
+                    is_loopback=is_loopback,
+                    kind="loopback" if is_loopback else "input",
+                )
+            )
         return devices
 
     def open_recorder(
-            self,
-            device_id: str,
-            sample_rate: int,
-            block_size: int,
+        self,
+        device_id: str,
+        sample_rate: int,
+        block_size: int,
     ) -> Any:
         import soundcard as sc
 
@@ -132,7 +134,8 @@ class SoundCardBackend:
 
         microphone = next(
             (
-                mic for mic in sc.all_microphones(include_loopback=True)
+                mic
+                for mic in sc.all_microphones(include_loopback=True)
                 if str(getattr(mic, "id", "")) == device_id
             ),
             None,
@@ -163,9 +166,9 @@ class SyntheticAudio:
         phase = np.mod(time_values, beat_period)
         transient = np.exp(-phase * 35.0) * (phase < 0.04)
         signal = (
-                0.16 * np.sin(2.0 * np.pi * 110.0 * time_values)
-                + 0.08 * np.sin(2.0 * np.pi * 880.0 * time_values)
-                + 0.60 * transient
+            0.16 * np.sin(2.0 * np.pi * 110.0 * time_values)
+            + 0.08 * np.sin(2.0 * np.pi * 880.0 * time_values)
+            + 0.60 * transient
         )
         self._sample_index += count
         return np.asarray(signal, dtype=np.float32).reshape(-1, 1)
@@ -175,11 +178,11 @@ class AudioCaptureService:
     """Owns one capture/analysis worker and publishes bounded feature snapshots."""
 
     def __init__(
-            self,
-            backend: Any | None = None,
-            settings: AudioAnalysisSettings | None = None,
-            sample_rate: int = 48000,
-            block_size: int = 1024,
+        self,
+        backend: Any | None = None,
+        settings: AudioAnalysisSettings | None = None,
+        sample_rate: int = 48000,
+        block_size: int = 1024,
     ) -> None:
         self.backend = backend or SoundCardBackend()
         self.settings = settings or AudioAnalysisSettings()
@@ -248,14 +251,16 @@ class AudioCaptureService:
         )
 
     def start_replay(
-            self,
-            samples: np.ndarray,
-            sample_rate: int,
-            repeat: bool = False,
+        self,
+        samples: np.ndarray,
+        sample_rate: int,
+        repeat: bool = False,
     ) -> None:
         data = np.asarray(samples, dtype=np.float32)
         if data.ndim not in {1, 2} or data.size == 0:
-            raise ValueError("Replay audio must be a non-empty mono or multichannel array.")
+            raise ValueError(
+                "Replay audio must be a non-empty mono or multichannel array."
+            )
         self._replay_samples = np.array(data, dtype=np.float32, copy=True)
         self.sample_rate = max(8000, int(sample_rate))
         self._replay_repeat = bool(repeat)
@@ -266,15 +271,17 @@ class AudioCaptureService:
         )
 
     def _start_worker(
-            self,
-            source_kind: str,
-            device_id: str,
-            device_name: str,
+        self,
+        source_kind: str,
+        device_id: str,
+        device_name: str,
     ) -> None:
         if self._thread is not None and self._thread.is_alive():
             self.stop()
             if self._thread is not None and self._thread.is_alive():
-                raise RuntimeError("The previous audio capture worker has not stopped yet.")
+                raise RuntimeError(
+                    "The previous audio capture worker has not stopped yet."
+                )
         self.frames.clear()
         self._cancel = threading.Event()
         self._worker_generation += 1
@@ -296,21 +303,21 @@ class AudioCaptureService:
         thread.start()
 
     def _publish_samples(
-            self,
-            analyzer: AudioAnalyzer,
-            samples: np.ndarray,
-            timestamp: float,
+        self,
+        analyzer: AudioAnalyzer,
+        samples: np.ndarray,
+        timestamp: float,
     ) -> None:
         frame = analyzer.process(samples, self.sample_rate, timestamp)
         self.frames.push_latest(frame)
 
     def _run_worker(
-            self,
-            generation: int,
-            source_kind: str,
-            device_id: str,
-            analyzer: AudioAnalyzer,
-            cancel: threading.Event,
+        self,
+        generation: int,
+        source_kind: str,
+        device_id: str,
+        analyzer: AudioAnalyzer,
+        cancel: threading.Event,
     ) -> None:
         try:
             if source_kind in {"input", "loopback"}:

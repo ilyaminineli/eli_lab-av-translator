@@ -8,20 +8,22 @@ from collections import deque
 from dataclasses import dataclass, field
 from typing import Any
 
-CTRL_EVT_KINDS = frozenset({
-    "transport.start",
-    "transport.stop",
-    "transport.pause",
-    "transport.tempo",
-    "transport.meter",
-    "clock.beat",
-    "clock.bar",
-    "scene.select",
-    "scene.intensity",
-    "macro.set",
-    "cue.trigger",
-    "source.heartbeat",
-})
+CTRL_EVT_KINDS = frozenset(
+    {
+        "transport.start",
+        "transport.stop",
+        "transport.pause",
+        "transport.tempo",
+        "transport.meter",
+        "clock.beat",
+        "clock.bar",
+        "scene.select",
+        "scene.intensity",
+        "macro.set",
+        "cue.trigger",
+        "source.heartbeat",
+    }
+)
 _NAME_PATTERN = re.compile(r"^[A-Za-z0-9_.:-]{1,64}$")
 _DEFAULT_QUEUE_CAPACITY = 512
 
@@ -99,7 +101,9 @@ class ControlEventQueue:
     def drain(self, limit: int = 128) -> list[ControlEvent]:
         count = max(0, int(limit))
         with self._lock:
-            drained = [self._events.popleft() for _ in range(min(count, len(self._events)))]
+            drained = [
+                self._events.popleft() for _ in range(min(count, len(self._events)))
+            ]
         return drained
 
     def clear(self) -> None:
@@ -137,11 +141,11 @@ class PerformanceControlState:
 
     @staticmethod
     def _number(
-            payload: dict[str, Any],
-            key: str,
-            default: float | None = None,
-            minimum: float | None = None,
-            maximum: float | None = None,
+        payload: dict[str, Any],
+        key: str,
+        default: float | None = None,
+        minimum: float | None = None,
+        maximum: float | None = None,
     ) -> float:
         raw = payload.get(key, default)
         if isinstance(raw, bool) or not isinstance(raw, (int, float)):
@@ -157,11 +161,11 @@ class PerformanceControlState:
 
     @staticmethod
     def _integer(
-            payload: dict[str, Any],
-            key: str,
-            default: int | None = None,
-            minimum: int | None = None,
-            maximum: int | None = None,
+        payload: dict[str, Any],
+        key: str,
+        default: int | None = None,
+        minimum: int | None = None,
+        maximum: int | None = None,
     ) -> int:
         raw = payload.get(key, default)
         if isinstance(raw, bool) or not isinstance(raw, int):
@@ -317,9 +321,9 @@ class PerformanceControlState:
 
     def status_text(self) -> str:
         state = (
-            "PAUSE" if self.transport_paused
-            else "RUN" if self.transport_running
-            else "STOP"
+            "PAUSE"
+            if self.transport_paused
+            else "RUN" if self.transport_running else "STOP"
         )
         return (
             f"CONTROL · {self.source_id.upper()} · {state} · "

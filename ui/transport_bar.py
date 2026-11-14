@@ -28,8 +28,11 @@ class TransportBar(QWidget):
             self, "sparkles", "Apply a randomized master-effect look", size=32
         )
         self.lock_all_button = icon_button(
-            self, "unlock", "Lock or unlock all decks and visual layers",
-            size=32, checkable=True,
+            self,
+            "unlock",
+            "Lock or unlock all decks and visual layers",
+            size=32,
+            checkable=True,
         )
 
         self.random_set_button.clicked.connect(self.random_set_requested)
@@ -47,7 +50,8 @@ class TransportBar(QWidget):
         self.lock_all_button.setIcon(app_icon("lock" if locked else "unlock"))
         action = (
             "Unlock all decks and visual layers"
-            if locked else "Lock all decks and visual layers"
+            if locked
+            else "Lock all decks and visual layers"
         )
         self.lock_all_button.setToolTip(action)
         self.lock_all_button.setAccessibleName(action)

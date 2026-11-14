@@ -46,7 +46,9 @@ PERF_MODIFIER_SOURCES: dict[str, str] = {
 }
 
 PERF_MODIFIER_TARGETS: dict[str, ModifierTargetSpec] = {
-    "layer.opacity": ModifierTargetSpec("layer.opacity", "Layer opacity", 0.0, 1.0, "layer"),
+    "layer.opacity": ModifierTargetSpec(
+        "layer.opacity", "Layer opacity", 0.0, 1.0, "layer"
+    ),
     "layer.rotation": ModifierTargetSpec(
         "layer.rotation", "Layer rotation", -180.0, 180.0, "layer"
     ),
@@ -90,7 +92,6 @@ PERF_MODIFIER_TARGETS: dict[str, ModifierTargetSpec] = {
     "layer_fx.saturation": ModifierTargetSpec(
         "layer_fx.saturation", "Layer FX saturation", 0.0, 2.5, "layer"
     ),
-
     "generator.animation_speed": ModifierTargetSpec(
         "generator.animation_speed", "Generator animation speed", 0.0, 8.0, "generator"
     ),
@@ -107,10 +108,18 @@ PERF_MODIFIER_TARGETS: dict[str, ModifierTargetSpec] = {
         "generator.text_animation_speed", "Text animation speed", 0.0, 8.0, "generator"
     ),
     "generator.text_animation_amount": ModifierTargetSpec(
-        "generator.text_animation_amount", "Text animation amount", 0.0, 0.18, "generator"
+        "generator.text_animation_amount",
+        "Text animation amount",
+        0.0,
+        0.18,
+        "generator",
     ),
     "generator.text_animation_columns": ModifierTargetSpec(
-        "generator.text_animation_columns", "Text animation reveal steps", 2.0, 80.0, "generator"
+        "generator.text_animation_columns",
+        "Text animation reveal steps",
+        2.0,
+        80.0,
+        "generator",
     ),
     "generator.font_size": ModifierTargetSpec(
         "generator.font_size", "Text font size", 12.0, 420.0, "generator"
@@ -137,10 +146,18 @@ PERF_MODIFIER_TARGETS: dict[str, ModifierTargetSpec] = {
         "generator.particle_trail", "Particle trail", 0.0, 1.0, "generator"
     ),
     "generator.particle_emission_rate": ModifierTargetSpec(
-        "generator.particle_emission_rate", "Particle emission rate", 0.0, 3000.0, "generator"
+        "generator.particle_emission_rate",
+        "Particle emission rate",
+        0.0,
+        3000.0,
+        "generator",
     ),
     "generator.particle_system_size": ModifierTargetSpec(
-        "generator.particle_system_size", "Particle System 2.0 size", 1.0, 48.0, "generator"
+        "generator.particle_system_size",
+        "Particle System 2.0 size",
+        1.0,
+        48.0,
+        "generator",
     ),
     "generator.particle_lifetime": ModifierTargetSpec(
         "generator.particle_lifetime", "Particle lifetime", 0.25, 60.0, "generator"
@@ -149,7 +166,11 @@ PERF_MODIFIER_TARGETS: dict[str, ModifierTargetSpec] = {
         "generator.particle_turbulence", "Particle turbulence", 0.0, 1.5, "generator"
     ),
     "generator.particle_force_strength": ModifierTargetSpec(
-        "generator.particle_force_strength", "Particle force strength", 0.0, 4.0, "generator"
+        "generator.particle_force_strength",
+        "Particle force strength",
+        0.0,
+        4.0,
+        "generator",
     ),
     "generator.particle_reform_strength": ModifierTargetSpec(
         "generator.particle_reform_strength",
@@ -188,12 +209,19 @@ class LayerPerformanceModifier:
                 raise ValueError("A modulator source must include a modulator ID.")
         elif is_performance_macro:
             if self.source_id.removeprefix("performance_macro.") not in {
-                "chaos", "density", "depth", "decay", "pressure", "fragment"
+                "chaos",
+                "density",
+                "depth",
+                "decay",
+                "pressure",
+                "fragment",
             }:
                 raise ValueError(f"Unknown performance macro source: {self.source_id}")
         else:
             if self.source_id not in SOURCE_RANGES:
-                raise ValueError(f"Unknown performance modifier source: {self.source_id}")
+                raise ValueError(
+                    f"Unknown performance modifier source: {self.source_id}"
+                )
             if self.source_id not in PERF_MODIFIER_SOURCES:
                 raise ValueError(f"Unsupported per-layer source: {self.source_id}")
         if self.target_id not in PERF_MODIFIER_TARGETS:
@@ -248,12 +276,12 @@ class LayerPerformanceModifierEngine:
         return value
 
     def notify_manual_override(
-            self,
-            layer_id: str,
-            target_ids: set[str],
-            modifier_records: list[dict[str, object]],
-            duration_seconds: float = 3.0,
-            now: float | None = None,
+        self,
+        layer_id: str,
+        target_ids: set[str],
+        modifier_records: list[dict[str, object]],
+        duration_seconds: float = 3.0,
+        now: float | None = None,
     ) -> None:
         stamp = time.monotonic() if now is None else float(now)
         affected_ids: set[str] = set()
@@ -272,10 +300,10 @@ class LayerPerformanceModifierEngine:
                 self._live_values.pop(runtime_key, None)
 
     def claimed_targets(
-            self,
-            layer,
-            now: float | None = None,
-            available_sources: set[str] | None = None,
+        self,
+        layer,
+        now: float | None = None,
+        available_sources: set[str] | None = None,
     ) -> set[str]:
         if layer is None:
             return set()
@@ -293,16 +321,14 @@ class LayerPerformanceModifierEngine:
                 ("modulator.", "macro.", "performance_macro.")
             )
             source_available = (
-                    available_sources is None
-                    or not source_requires_presence
-                    or modifier.source_id in available_sources
+                available_sources is None
+                or not source_requires_presence
+                or modifier.source_id in available_sources
             )
             if (
-                    modifier.enabled
-                    and source_available
-                    and stamp >= self._manual_until.get(
-                (layer_id, modifier.target_id), 0.0
-            )
+                modifier.enabled
+                and source_available
+                and stamp >= self._manual_until.get((layer_id, modifier.target_id), 0.0)
             ):
                 result.add(modifier.target_id)
         return result
@@ -315,19 +341,22 @@ class LayerPerformanceModifierEngine:
         self._live_values.clear()
 
     def clear_layer(self, layer_id: str) -> None:
-        self._runtime = {key: value for key, value in self._runtime.items() if key[0] != layer_id}
-        self._base_values = {
-            key: value for key, value in self._base_values.items()
-            if key[0] != layer_id
+        self._runtime = {
+            key: value for key, value in self._runtime.items() if key[0] != layer_id
         }
-        self._active_targets = {key for key in self._active_targets if key[0] != layer_id}
+        self._base_values = {
+            key: value for key, value in self._base_values.items() if key[0] != layer_id
+        }
+        self._active_targets = {
+            key for key in self._active_targets if key[0] != layer_id
+        }
         self._manual_until = {
-            key: value for key, value in self._manual_until.items()
+            key: value
+            for key, value in self._manual_until.items()
             if key[0] != layer_id
         }
         self._live_values = {
-            key: value for key, value in self._live_values.items()
-            if key[0] != layer_id
+            key: value for key, value in self._live_values.items() if key[0] != layer_id
         }
 
     def live_values(self, layer_id: str) -> dict[str, float]:
@@ -342,12 +371,12 @@ class LayerPerformanceModifierEngine:
         return dict(self._base_values)
 
     def evaluate(
-            self,
-            layers: list[object],
-            sources: dict[str, float],
-            get_target,
-            set_target,
-            now: float | None = None,
+        self,
+        layers: list[object],
+        sources: dict[str, float],
+        get_target,
+        set_target,
+        now: float | None = None,
     ) -> dict[tuple[str, str], float]:
         stamp = time.monotonic() if now is None else float(now)
         contributions: dict[tuple[str, str], float] = {}
@@ -387,7 +416,11 @@ class LayerPerformanceModifierEngine:
                 if runtime.current is None:
                     smoothed = source
                 else:
-                    tau = modifier.attack_ms if source > runtime.current else modifier.release_ms
+                    tau = (
+                        modifier.attack_ms
+                        if source > runtime.current
+                        else modifier.release_ms
+                    )
                     dt = max(0.0, stamp - runtime.last_update)
                     alpha = 1.0 - math.exp(-dt / max(0.001, tau / 1000.0))
                     smoothed = runtime.current + alpha * (source - runtime.current)

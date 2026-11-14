@@ -16,6 +16,7 @@ PERF_SET_VER = 1
 @dataclass
 class MIDIMapping:
     """Stable MIDI-to-performance binding with scaling and pickup semantics."""
+
     mapping_id: str = field(default_factory=lambda: uuid4().hex[:12])
     device_id: str = "*"
     channel: int = 0
@@ -51,12 +52,16 @@ class MIDIMapping:
         self.pickup = bool(self.pickup)
         if self.last_physical is not None:
             physical = float(self.last_physical)
-            self.last_physical = max(0.0, min(1.0, physical)) if math.isfinite(physical) else None
+            self.last_physical = (
+                max(0.0, min(1.0, physical)) if math.isfinite(physical) else None
+            )
 
     def to_dict(self) -> dict[str, Any]:
         self.normalize()
         data = asdict(self)
-        data.pop("last_physical", None)  # transient hardware position is not a saved setting
+        data.pop(
+            "last_physical", None
+        )  # transient hardware position is not a saved setting
         return data
 
     @classmethod
@@ -98,9 +103,15 @@ class MIDIMappingEngine:
             return value * value
         return value
 
-    def process(self, device_id: str, message: str, channel: int, number: int,
-                value: float, current_targets: dict[str, float] | None = None
-                ) -> list[tuple[str, float]]:
+    def process(
+        self,
+        device_id: str,
+        message: str,
+        channel: int,
+        number: int,
+        value: float,
+        current_targets: dict[str, float] | None = None,
+    ) -> list[tuple[str, float]]:
         physical = float(value)
         if not math.isfinite(physical):
             return []
@@ -108,7 +119,7 @@ class MIDIMappingEngine:
         current_targets = current_targets or {}
         results: list[tuple[str, float]] = []
         for item in self.mappings:
-            if not item.enabled or item.device_id not in {'*', str(device_id)}:
+            if not item.enabled or item.device_id not in {"*", str(device_id)}:
                 continue
             if (item.message, item.channel, item.number) != (message, channel, number):
                 continue
@@ -116,25 +127,34 @@ class MIDIMappingEngine:
             self._previous[item.mapping_id] = physical
             if item.pickup and item.target in current_targets:
                 target_norm = (float(current_targets[item.target]) - item.minimum) / (
-                        item.maximum - item.minimum
+                    item.maximum - item.minimum
                 )
-                crossed = previous is not None and (previous - target_norm) * (
-                        physical - target_norm
-                ) <= 0
+                crossed = (
+                    previous is not None
+                    and (previous - target_norm) * (physical - target_norm) <= 0
+                )
                 close = abs(physical - target_norm) <= 0.015
-                if not (self._pickup_armed.get(item.mapping_id, False) or crossed or close):
+                if not (
+                    self._pickup_armed.get(item.mapping_id, False) or crossed or close
+                ):
                     continue
                 self._pickup_armed[item.mapping_id] = True
             shaped = self._curve(physical, item.curve)
             item.last_physical = physical
-            results.append((item.target, item.minimum + shaped * (item.maximum - item.minimum)))
+            results.append(
+                (item.target, item.minimum + shaped * (item.maximum - item.minimum))
+            )
         return results
 
     def to_dict(self) -> list[dict[str, Any]]:
         return [item.to_dict() for item in self.mappings]
 
     def load_dict(self, values: object) -> None:
-        mappings = [v for v in values if isinstance(v, dict)] if isinstance(values, list) else []
+        mappings = (
+            [v for v in values if isinstance(v, dict)]
+            if isinstance(values, list)
+            else []
+        )
         self.replace_mappings(mappings)
 
 
@@ -148,11 +168,13 @@ class PerformanceScene:
     quantization: str = "bar"
     cue: str = ""
     tags: list[str] = field(default_factory=list)
-    transition: dict[str, Any] = field(default_factory=lambda: {
-        "duration": 0.0,
-        "curve": "smoothstep",
-        "discrete": "cut",
-    })
+    transition: dict[str, Any] = field(
+        default_factory=lambda: {
+            "duration": 0.0,
+            "curve": "smoothstep",
+            "discrete": "cut",
+        }
+    )
 
     def normalize(self) -> None:
         self.scene_id = str(self.scene_id).strip()[:64]
@@ -161,13 +183,14 @@ class PerformanceScene:
             self.quantization = "bar"
         self.cue = str(self.cue).strip()
         if self.cue and (
-                len(self.cue) > 64
-                or any(
-            character not in (
+            len(self.cue) > 64
+            or any(
+                character
+                not in (
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.:-"
+                )
+                for character in self.cue
             )
-            for character in self.cue
-        )
         ):
             raise ValueError(
                 "OSC scene cue must be 1–64 characters using letters, numbers, "
@@ -194,6 +217,7 @@ class PerformanceScene:
         except (TypeError, ValueError):
             duration = 0.0
         import math
+
         if not math.isfinite(duration):
             duration = 0.0
         curve = str(raw_transition.get("curve", "smoothstep"))
@@ -217,15 +241,23 @@ class PerformanceSetStore:
     """Versioned, atomic set persistence. Validation occurs before application mutation."""
 
     @staticmethod
-    def build_payload(composition: dict[str, Any], decks: list[dict[str, Any]],
-                      effects: dict[str, Any], automation_settings: dict[str, Any],
-                      performance_settings: dict[str, Any],
-                      scenes: list[PerformanceScene] | None = None,
-                      midi_mappings: list[MIDIMapping] | None = None) -> dict[str, Any]:
+    def build_payload(
+        composition: dict[str, Any],
+        decks: list[dict[str, Any]],
+        effects: dict[str, Any],
+        automation_settings: dict[str, Any],
+        performance_settings: dict[str, Any],
+        scenes: list[PerformanceScene] | None = None,
+        midi_mappings: list[MIDIMapping] | None = None,
+    ) -> dict[str, Any]:
         return {
-            "format": PERF_SET_FORMAT, "version": PERF_SET_VER,
-            "created_at": time.time(), "composition": composition, "decks": decks,
-            "effects": effects, "automation_settings": automation_settings,
+            "format": PERF_SET_FORMAT,
+            "version": PERF_SET_VER,
+            "created_at": time.time(),
+            "composition": composition,
+            "decks": decks,
+            "effects": effects,
+            "automation_settings": automation_settings,
             "performance_settings": performance_settings,
             "scenes": [item.to_dict() for item in (scenes or [])],
             "midi_mappings": [item.to_dict() for item in (midi_mappings or [])],
@@ -240,7 +272,9 @@ class PerformanceSetStore:
         data["version"] = PERF_SET_VER
         temporary = destination.with_name(destination.name + ".tmp")
         try:
-            temporary.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding='utf-8')
+            temporary.write_text(
+                json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
             temporary.replace(destination)
         finally:
             if temporary.exists():
@@ -249,28 +283,36 @@ class PerformanceSetStore:
 
     @staticmethod
     def load(path: str | Path) -> dict[str, Any]:
-        data = json.loads(Path(path).expanduser().resolve().read_text(encoding='utf-8'))
+        data = json.loads(Path(path).expanduser().resolve().read_text(encoding="utf-8"))
         if not isinstance(data, dict) or data.get("format") != PERF_SET_FORMAT:
             raise ValueError("This file is not an eli_lab performance set.")
-        version = int(data.get('version', 0))
+        version = int(data.get("version", 0))
         if version > PERF_SET_VER:
-            raise ValueError(f"Performance set version {version} is newer than supported.")
-        for key, expected in (('composition', dict), ('decks', list), ('effects', dict),
-                              ('automation_settings', dict), ('performance_settings', dict),
-                              ('scenes', list), ('midi_mappings', list)):
+            raise ValueError(
+                f"Performance set version {version} is newer than supported."
+            )
+        for key, expected in (
+            ("composition", dict),
+            ("decks", list),
+            ("effects", dict),
+            ("automation_settings", dict),
+            ("performance_settings", dict),
+            ("scenes", list),
+            ("midi_mappings", list),
+        ):
             if key in data and not isinstance(data[key], expected):
                 raise ValueError(f"Invalid performance set field: {key}")
         # Validate every persisted control definition before returning the payload.
-        data['midi_mappings'] = [
+        data["midi_mappings"] = [
             MIDIMapping.from_dict(item).to_dict()
-            for item in data.get('midi_mappings', [])
+            for item in data.get("midi_mappings", [])
         ]
         scenes = []
-        for raw in data.get('scenes', []):
+        for raw in data.get("scenes", []):
             item = PerformanceScene(**raw)
             item.normalize()
             scenes.append(item.to_dict())
-        data['scenes'] = scenes
+        data["scenes"] = scenes
         return data
 
 
@@ -313,6 +355,7 @@ class MIDIInputService:
         self.callback = callback
         self.queue_capacity = max(1, int(queue_capacity))
         from collections import deque
+
         self._events: deque[tuple[str, str, int, int, float]] = deque()
         self._lock = threading.Lock()
         self._port = None
@@ -325,6 +368,7 @@ class MIDIInputService:
     def discover() -> list[str]:
         try:
             import mido
+
             return list(mido.get_input_names())
         except ImportError:
             return []
@@ -335,6 +379,7 @@ class MIDIInputService:
         self.stop()
         try:
             import mido
+
             self._port = mido.open_input(
                 device_name,
                 callback=lambda message: self._receive(device_name, message),
@@ -351,12 +396,24 @@ class MIDIInputService:
         kind = getattr(message, "type", "")
         channel = int(getattr(message, "channel", 0))
         if kind == "control_change":
-            event = (device_name, "cc", channel, int(message.control), float(message.value) / 127)
+            event = (
+                device_name,
+                "cc",
+                channel,
+                int(message.control),
+                float(message.value) / 127,
+            )
         elif kind in {"note_on", "note_off"}:
             velocity = float(message.velocity) / 127 if kind == "note_on" else 0.0
             event = (device_name, "note", channel, int(message.note), velocity)
         elif kind == "pitchwheel":
-            event = (device_name, "pitch", channel, 0, (float(message.pitch) + 8192) / 16383)
+            event = (
+                device_name,
+                "pitch",
+                channel,
+                0,
+                (float(message.pitch) + 8192) / 16383,
+            )
         else:
             return
         with self._lock:
@@ -382,5 +439,5 @@ class MIDIInputService:
                 pass
         with self._lock:
             self._events.clear()
-        if self.state != 'error':
+        if self.state != "error":
             self.state = "stopped"

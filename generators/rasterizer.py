@@ -45,8 +45,8 @@ def raster_content_snapshot(raw_settings: dict[str, Any]) -> dict[str, Any]:
 
 
 def raster_content_settings(
-        generator_type: str,
-        raw_settings: dict[str, Any],
+    generator_type: str,
+    raw_settings: dict[str, Any],
 ) -> dict[str, Any]:
     """Return normalized settings that affect CPU-rasterized generator content."""
     settings = normalize_settings(generator_type, raw_settings)
@@ -56,8 +56,8 @@ def raster_content_settings(
 
 
 def _static_raster_settings(
-        generator_type: str,
-        raw_settings: dict[str, Any],
+    generator_type: str,
+    raw_settings: dict[str, Any],
 ) -> dict[str, Any]:
     """Return only settings that change the CPU-rasterized generator image."""
     return raster_content_settings(generator_type, raw_settings)
@@ -67,9 +67,9 @@ class GeneratorRasterizer:
     """Rasterizes static generator content once; animation stays in the GPU compositor."""
 
     def __init__(
-            self,
-            width: int = GEN_WIDTH,
-            height: int = GEN_HEIGHT,
+        self,
+        width: int = GEN_WIDTH,
+        height: int = GEN_HEIGHT,
     ) -> None:
         self.width = max(320, int(width))
         self.height = max(180, int(height))
@@ -86,17 +86,19 @@ class GeneratorRasterizer:
             "settings": settings,
             "size": [GEN_WIDTH, GEN_HEIGHT],
         }
-        encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
+        encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode(
+            "utf-8"
+        )
         return hashlib.sha1(encoded).hexdigest()
 
     def render_settings(
-            self,
-            layer_id: str,
-            generator_type: str,
-            raw_settings: dict[str, Any],
-            *,
-            width: int | None = None,
-            height: int | None = None,
+        self,
+        layer_id: str,
+        generator_type: str,
+        raw_settings: dict[str, Any],
+        *,
+        width: int | None = None,
+        height: int | None = None,
     ) -> tuple[str, np.ndarray]:
         """Render an immutable snapshot at its requested raster dimensions."""
         target_width = max(320, int(width or self.width))
@@ -135,9 +137,11 @@ class GeneratorRasterizer:
         finally:
             painter.end()
         rgba = image.bits().tobytes()
-        pixels = np.frombuffer(rgba, dtype=np.uint8).reshape(
-            target_height, target_width, 4
-        ).copy()
+        pixels = (
+            np.frombuffer(rgba, dtype=np.uint8)
+            .reshape(target_height, target_width, 4)
+            .copy()
+        )
 
         result = (fingerprint, pixels)
         self._cache[layer_id] = result
@@ -152,11 +156,11 @@ class GeneratorRasterizer:
 
     @staticmethod
     def fingerprint_settings(
-            generator_type: str,
-            raw_settings: dict[str, Any],
-            *,
-            width: int = GEN_WIDTH,
-            height: int = GEN_HEIGHT,
+        generator_type: str,
+        raw_settings: dict[str, Any],
+        *,
+        width: int = GEN_WIDTH,
+        height: int = GEN_HEIGHT,
     ) -> str:
         settings = _static_raster_settings(generator_type, raw_settings)
         payload = {
@@ -164,7 +168,9 @@ class GeneratorRasterizer:
             "settings": settings,
             "size": [int(width), int(height)],
         }
-        encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
+        encoded = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode(
+            "utf-8"
+        )
         return hashlib.sha1(encoded).hexdigest()
 
     def remove_missing(self, layer_ids: set[str]) -> None:
@@ -268,10 +274,12 @@ class GeneratorRasterizer:
                         path.moveTo(x, y)
                     else:
                         path.lineTo(x, y)
-                painter.setPen(self._pen(
-                    primary if spiral_index == 0 else secondary,
-                    line_width if spiral_index == 0 else line_width * 0.7,
-                ))
+                painter.setPen(
+                    self._pen(
+                        primary if spiral_index == 0 else secondary,
+                        line_width if spiral_index == 0 else line_width * 0.7,
+                    )
+                )
                 painter.drawPath(path)
         elif pattern == "radial":
             radius = math.hypot(width, height) * 0.56
@@ -304,27 +312,31 @@ class GeneratorRasterizer:
                     else:
                         path.lineTo(x, y)
                 path.closeSubpath()
-                painter.setPen(self._pen(
-                    primary if ring % 2 else secondary,
-                    line_width if ring % 2 else line_width * 0.7,
-                ))
+                painter.setPen(
+                    self._pen(
+                        primary if ring % 2 else secondary,
+                        line_width if ring % 2 else line_width * 0.7,
+                    )
+                )
                 painter.drawPath(path)
         else:  # rings
             max_radius = math.hypot(width, height) * 0.52
             for ring in range(count):
                 radius = max_radius * (ring + 1) / count
-                painter.setPen(self._pen(
-                    primary if ring % 2 == 0 else secondary,
-                    line_width if ring % 2 == 0 else line_width * 0.7,
-                ))
+                painter.setPen(
+                    self._pen(
+                        primary if ring % 2 == 0 else secondary,
+                        line_width if ring % 2 == 0 else line_width * 0.7,
+                    )
+                )
                 painter.drawEllipse(center, radius, radius)
         painter.restore()
 
     def _draw_text(self, painter: QPainter, settings: dict[str, Any]) -> None:
         if (
-                settings.get("text_runs")
-                or settings.get("text_writing_mode") != "horizontal"
-                or settings.get("text_path_mode") != "none"
+            settings.get("text_runs")
+            or settings.get("text_writing_mode") != "horizontal"
+            or settings.get("text_path_mode") != "none"
         ):
             from generators.typography import draw_typography
 
@@ -386,19 +398,16 @@ class GeneratorRasterizer:
                     self._pen(str(settings["stroke_color"]), stroke_width),
                 )
             fill_color = str(settings["primary_color"])
-            if (
-                    settings.get("text_color_mode") == "alternate"
-                    and line_index % 2 == 1
-            ):
+            if settings.get("text_color_mode") == "alternate" and line_index % 2 == 1:
                 fill_color = str(settings.get("secondary_color", fill_color))
             painter.fillPath(path, self._color(fill_color))
             y += line_height
 
     def _draw_text_collage(
-            self,
-            painter: QPainter,
-            settings: dict[str, Any],
-            text: str,
+        self,
+        painter: QPainter,
+        settings: dict[str, Any],
+        text: str,
     ) -> None:
         rng = random.Random(int(settings.get("collage_seed", 211)))
         words = [item.strip() for item in text.splitlines() if item.strip()]
@@ -436,10 +445,7 @@ class GeneratorRasterizer:
                 y = rng.uniform(size + 18.0, self.height - 18.0)
                 nx = x / max(1.0, self.width)
                 ny = y / max(1.0, self.height)
-                if (
-                        abs(nx - 0.5) > safe_half_width
-                        or abs(ny - 0.5) > safe_half_height
-                ):
+                if abs(nx - 0.5) > safe_half_width or abs(ny - 0.5) > safe_half_height:
                     break
             angle = rng.choice((0.0, 0.0, 0.0, 90.0, -90.0, rng.uniform(-22.0, 22.0)))
             path = QPainterPath()
@@ -523,47 +529,52 @@ class GeneratorRasterizer:
                 if pattern == "lissajous":
                     angle = progress * math.tau * max(1.0, frequency)
                     x = width / 2.0 + math.sin(angle + offset) * width * 0.42
-                    y = height / 2.0 + math.sin(
-                        angle * 1.5 + offset + phase
-                    ) * height * 0.38
+                    y = (
+                        height / 2.0
+                        + math.sin(angle * 1.5 + offset + phase) * height * 0.38
+                    )
                 elif pattern == "radial":
                     angle = progress * math.tau
                     radius = min(width, height) * (
-                            0.12 + 0.30 * (
-                            0.5 + 0.5 * math.sin(angle * frequency + offset)
-                    )
+                        0.12 + 0.30 * (0.5 + 0.5 * math.sin(angle * frequency + offset))
                     )
                     x = width / 2.0 + math.cos(angle + offset) * radius
                     y = height / 2.0 + math.sin(angle + offset) * radius
                 elif pattern == "rose":
                     angle = progress * math.tau * max(1.0, frequency)
                     radius = min(width, height) * (
-                            0.12 + 0.28 * (0.5 + 0.5 * math.cos(5.0 * angle + offset))
+                        0.12 + 0.28 * (0.5 + 0.5 * math.cos(5.0 * angle + offset))
                     )
                     x = width / 2.0 + math.cos(angle + offset) * radius
                     y = height / 2.0 + math.sin(angle + offset) * radius
                 elif pattern == "orbit":
                     angle = progress * math.tau
                     radius = min(width, height) * (
-                            0.12 + 0.28 * (0.5 + 0.5 * math.sin(angle * frequency + offset))
+                        0.12 + 0.28 * (0.5 + 0.5 * math.sin(angle * frequency + offset))
                     )
                     x = width / 2.0 + math.cos(angle + offset) * radius
                     y = height / 2.0 + math.sin(angle + offset) * radius
                 else:
                     x = width * progress
-                    envelope = 0.35 + 0.65 * (
-                            math.sin(math.pi * progress) ** 0.5
+                    envelope = 0.35 + 0.65 * (math.sin(math.pi * progress) ** 0.5)
+                    y = (
+                        center_y
+                        + math.sin(progress * math.tau * frequency + offset)
+                        * amplitude
+                        * envelope
                     )
-                    y = center_y + math.sin(
-                        progress * math.tau * frequency + offset
-                    ) * amplitude * envelope
                 if step == 0:
                     path.moveTo(x, y)
                 else:
                     path.lineTo(x, y)
-            painter.setPen(self._pen(
-                str(settings["primary_color"])
-                if band % 2 == 0 else str(settings["secondary_color"]),
-                line_width if band % 2 == 0 else line_width * 0.65,
-            ))
+            painter.setPen(
+                self._pen(
+                    (
+                        str(settings["primary_color"])
+                        if band % 2 == 0
+                        else str(settings["secondary_color"])
+                    ),
+                    line_width if band % 2 == 0 else line_width * 0.65,
+                )
+            )
             painter.drawPath(path)

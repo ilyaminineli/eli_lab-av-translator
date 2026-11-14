@@ -70,7 +70,9 @@ class EffectsPanel(QWidget):
 
     manual_parameter_changed = Signal(str)
 
-    def __init__(self, settings: EffectSettings, source_provider=None, parent=None) -> None:
+    def __init__(
+        self, settings: EffectSettings, source_provider=None, parent=None
+    ) -> None:
         super().__init__(parent)
         self.settings = settings
         self.source_provider = source_provider
@@ -108,8 +110,9 @@ class EffectsPanel(QWidget):
             value_label.setMinimumWidth(42)
             value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
             slider.valueChanged.connect(
-                lambda value, field=key, multiplier=scale, label=value_label:
-                self._value_changed(field, value, multiplier, label)
+                lambda value, field=key, multiplier=scale, label=value_label: self._value_changed(
+                    field, value, multiplier, label
+                )
             )
             row.addWidget(slider, 1)
             row.addWidget(value_label)
@@ -121,11 +124,11 @@ class EffectsPanel(QWidget):
         geometry_form = QFormLayout(geometry_group)
         self.transform_mode_combo = QComboBox()
         for label, value in (
-                ("Off", "none"),
-                ("Kaleidoscope", "kaleidoscope"),
-                ("Polar coordinates", "polar"),
-                ("Mosaic / tile", "mosaic"),
-                ("Directional scan displacement (approx.)", "pixel_sort"),
+            ("Off", "none"),
+            ("Kaleidoscope", "kaleidoscope"),
+            ("Polar coordinates", "polar"),
+            ("Mosaic / tile", "mosaic"),
+            ("Directional scan displacement (approx.)", "pixel_sort"),
         ):
             self.transform_mode_combo.addItem(label, value)
         geometry_form.addRow("Transform", self.transform_mode_combo)
@@ -137,8 +140,9 @@ class EffectsPanel(QWidget):
             value_label.setMinimumWidth(42)
             value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
             slider.valueChanged.connect(
-                lambda value, field=key, multiplier=scale, label=value_label:
-                self._value_changed(field, value, multiplier, label)
+                lambda value, field=key, multiplier=scale, label=value_label: self._value_changed(
+                    field, value, multiplier, label
+                )
             )
             row.addWidget(slider, 1)
             row.addWidget(value_label)
@@ -166,15 +170,18 @@ class EffectsPanel(QWidget):
             value_label.setMinimumWidth(42)
             value_label.setAlignment(Qt.AlignmentFlag.AlignRight)
             slider.valueChanged.connect(
-                lambda value, field=key, multiplier=scale, label=value_label:
-                self._value_changed(field, value, multiplier, label)
+                lambda value, field=key, multiplier=scale, label=value_label: self._value_changed(
+                    field, value, multiplier, label
+                )
             )
             row.addWidget(slider, 1)
             row.addWidget(value_label)
             feedback_form.addRow(title, row)
             self._sliders[key] = (slider, value_label, scale)
         self.feedback_blend_combo = QComboBox()
-        self.feedback_blend_combo.addItems(["normal", "add", "screen", "multiply", "difference"])
+        self.feedback_blend_combo.addItems(
+            ["normal", "add", "screen", "multiply", "difference"]
+        )
         feedback_form.addRow("Feedback blend", self.feedback_blend_combo)
         self.feedback_frozen_check = QCheckBox("FREEZE FEEDBACK")
         feedback_form.addRow("", self.feedback_frozen_check)
@@ -192,14 +199,18 @@ class EffectsPanel(QWidget):
         self.preset_combo.currentTextChanged.connect(self._preset_changed)
         self.enabled_check.toggled.connect(self._enabled_changed)
         self.reset_button.clicked.connect(self._reset)
-        self.transform_mode_combo.currentIndexChanged.connect(self._transform_mode_changed)
+        self.transform_mode_combo.currentIndexChanged.connect(
+            self._transform_mode_changed
+        )
         self.displacement_source_combo.currentIndexChanged.connect(
             self._displacement_source_changed
         )
         self.displacement_refresh_button.clicked.connect(self.sync_sources)
         self.displacement_luma_check.toggled.connect(self._displacement_luma_changed)
         self.feedback_enabled_check.toggled.connect(self._feedback_enabled_changed)
-        self.feedback_blend_combo.currentTextChanged.connect(self._feedback_blend_changed)
+        self.feedback_blend_combo.currentTextChanged.connect(
+            self._feedback_blend_changed
+        )
         self.feedback_frozen_check.toggled.connect(self._feedback_frozen_changed)
         self.feedback_reset_button.clicked.connect(self._reset_feedback)
         self.sync_from_settings()
@@ -214,15 +225,21 @@ class EffectsPanel(QWidget):
             source_id = str(getattr(layer, "source_id", "") or "")
             if source_id:
                 label = str(getattr(layer, "name", "") or source_id)
-                self.displacement_source_combo.addItem(f"{label} · {source_id}", source_id)
+                self.displacement_source_combo.addItem(
+                    f"{label} · {source_id}", source_id
+                )
         if selected and self.displacement_source_combo.findData(selected) < 0:
-            self.displacement_source_combo.addItem(f"{selected} · unavailable", selected)
+            self.displacement_source_combo.addItem(
+                f"{selected} · unavailable", selected
+            )
         index = self.displacement_source_combo.findData(selected)
         self.displacement_source_combo.setCurrentIndex(max(0, index))
         self.displacement_source_combo.blockSignals(False)
 
     def _transform_mode_changed(self, index: int) -> None:
-        self.settings.transform_mode = str(self.transform_mode_combo.itemData(index) or "none")
+        self.settings.transform_mode = str(
+            self.transform_mode_combo.itemData(index) or "none"
+        )
         self.manual_parameter_changed.emit("master.transform_mode")
 
     def _displacement_source_changed(self, index: int) -> None:
@@ -262,11 +279,11 @@ class EffectsPanel(QWidget):
         self.settings.enabled = bool(enabled)
 
     def _value_changed(
-            self,
-            field: str,
-            value: int,
-            scale: float,
-            label: QLabel,
+        self,
+        field: str,
+        value: int,
+        scale: float,
+        label: QLabel,
     ) -> None:
         numeric_value = value / scale
         if field in {"kaleidoscope_slices", "mosaic_tiles", "feedback_delay_frames"}:
@@ -297,7 +314,9 @@ class EffectsPanel(QWidget):
         self.preset_combo.blockSignals(False)
         self.sync_sources()
         self.transform_mode_combo.blockSignals(True)
-        transform_index = self.transform_mode_combo.findData(self.settings.transform_mode)
+        transform_index = self.transform_mode_combo.findData(
+            self.settings.transform_mode
+        )
         self.transform_mode_combo.setCurrentIndex(max(0, transform_index))
         self.transform_mode_combo.blockSignals(False)
         self.displacement_luma_check.blockSignals(True)

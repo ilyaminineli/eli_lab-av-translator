@@ -106,7 +106,9 @@ class PerformanceTimelinePanel(QWidget):
         header.addWidget(self.rewind_button)
         root.addLayout(header)
 
-        self.state_label = QLabel("IDLE · add events, arm the timeline, then start the transport.")
+        self.state_label = QLabel(
+            "IDLE · add events, arm the timeline, then start the transport."
+        )
         self.state_label.setWordWrap(True)
         self.state_label.setObjectName("mutedLabel")
         root.addWidget(self.state_label)
@@ -198,13 +200,12 @@ class PerformanceTimelinePanel(QWidget):
 
         control = self.application.performance_control
         internal_running = (
-                self.application.transport.running
-                and not self.application.transport.paused
+            self.application.transport.running and not self.application.transport.paused
         )
         external_running = (
-                control.source_id == "sonic_pi"
-                and control.transport_running
-                and not control.transport_paused
+            control.source_id == "sonic_pi"
+            and control.transport_running
+            and not control.transport_paused
         )
         if snapshot["armed"]:
             if internal_running or external_running:
@@ -228,7 +229,9 @@ class PerformanceTimelinePanel(QWidget):
         if snapshot["last_error"]:
             status += f"\nLAST ERROR · {snapshot['last_error']}"
         self.state_label.setText(status)
-        self.arm_button.setText("DISARM TIMELINE" if snapshot["armed"] else "ARM TIMELINE")
+        self.arm_button.setText(
+            "DISARM TIMELINE" if snapshot["armed"] else "ARM TIMELINE"
+        )
         self.update_button.setEnabled(self.event_list.currentItem() is not None)
         self.remove_button.setEnabled(self.event_list.currentItem() is not None)
 
@@ -237,7 +240,9 @@ class PerformanceTimelinePanel(QWidget):
         self.event_list.blockSignals(True)
         self.event_list.clear()
         for event in self.application.performance_timeline.list_events():
-            marker = "●" if event.event_type in {"scene_marker", "phrase_marker"} else "◆"
+            marker = (
+                "●" if event.event_type in {"scene_marker", "phrase_marker"} else "◆"
+            )
             label = event.label or TMLN_EVT_LABELS[event.event_type]
             item = QListWidgetItem(
                 f"{marker}  BAR {event.bar:03d} · BEAT {event.beat:02d}   "
@@ -265,7 +270,8 @@ class PerformanceTimelinePanel(QWidget):
         event_id = str(item.data(Qt.ItemDataRole.UserRole))
         return next(
             (
-                event for event in self.application.performance_timeline.list_events()
+                event
+                for event in self.application.performance_timeline.list_events()
                 if event.event_id == event_id
             ),
             None,
@@ -397,14 +403,16 @@ class PerformanceTimelinePanel(QWidget):
         )
         try:
             for bar, event_type, label in structure:
-                self.application.add_performance_timeline_event({
-                    "bar": bar,
-                    "beat": 1,
-                    "event_type": event_type,
-                    "label": label,
-                    "payload": {},
-                    "enabled": True,
-                })
+                self.application.add_performance_timeline_event(
+                    {
+                        "bar": bar,
+                        "beat": 1,
+                        "event_type": event_type,
+                        "label": label,
+                        "payload": {},
+                        "enabled": True,
+                    }
+                )
         except (TypeError, ValueError, KeyError) as exc:
             self.state_label.setText(f"STRUCTURE NOT INSERTED · {exc}")
             return

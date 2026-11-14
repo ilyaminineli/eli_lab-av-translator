@@ -135,10 +135,10 @@ class MediaBrowser(QWidget):
         target_row.addWidget(QLabel("Assign to"))
         self.deck_combo = QComboBox()
         for deck_id, label in (
-                ("deck_a", "Deck A"),
-                ("deck_b", "Deck B"),
-                ("deck_c", "Deck C"),
-                ("deck_d", "Deck D"),
+            ("deck_a", "Deck A"),
+            ("deck_b", "Deck B"),
+            ("deck_c", "Deck C"),
+            ("deck_d", "Deck D"),
         ):
             self.deck_combo.addItem(label, deck_id)
         target_row.addWidget(self.deck_combo, 1)
@@ -189,7 +189,9 @@ class MediaBrowser(QWidget):
 
     def _finish_scan(self) -> None:
         if self._scan_worker is not None:
-            self._scan_queued.discard(str(Path(self._scan_worker.folder).resolve()).casefold())
+            self._scan_queued.discard(
+                str(Path(self._scan_worker.folder).resolve()).casefold()
+            )
         self._scan_worker = None
         self._scan_active = False
         if self._scan_queue:
@@ -291,10 +293,14 @@ class MediaBrowser(QWidget):
                 str(item["id"]),
             )
         selected_index = self.collection_combo.findData(selected)
-        self.collection_combo.setCurrentIndex(selected_index if selected_index >= 0 else 0)
+        self.collection_combo.setCurrentIndex(
+            selected_index if selected_index >= 0 else 0
+        )
         self.collection_combo.blockSignals(False)
         self._refresh_asset_items()
-        self.remove_collection_action.setEnabled(bool(self.collection_combo.currentData()))
+        self.remove_collection_action.setEnabled(
+            bool(self.collection_combo.currentData())
+        )
 
     def _refresh_asset_items(self, *_args: object) -> None:
         self.asset_list.clear()
@@ -314,7 +320,9 @@ class MediaBrowser(QWidget):
         if assets:
             self.status_label.setText(f"{len(assets)} asset(s) in selected view.")
         else:
-            self.status_label.setText("No clips in this view. Add a folder or change the filter.")
+            self.status_label.setText(
+                "No clips in this view. Add a folder or change the filter."
+            )
         self.remove_collection_action.setEnabled(bool(collection_id))
 
     def remove_selected_collection(self) -> None:
@@ -339,7 +347,9 @@ class MediaBrowser(QWidget):
         removed = self.library.remove_collection(str(collection_id))
         self.refresh()
         self.library_updated.emit()
-        self.status_label.setText(f"Removed {removed} indexed clip(s). Source files were kept.")
+        self.status_label.setText(
+            f"Removed {removed} indexed clip(s). Source files were kept."
+        )
 
     def prune_missing_files(self) -> None:
         answer = QMessageBox.question(

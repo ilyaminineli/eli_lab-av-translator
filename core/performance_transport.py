@@ -94,12 +94,14 @@ class InternalTransport:
         self.started_at = stamp
         self.last_tick_at = stamp
         self.next_beat_at = stamp
-        return [ControlEvent(
-            "transport.start",
-            self.source,
-            {"bpm": self.bpm, "beats_per_bar": self.beats_per_bar},
-            received_at=stamp,
-        )]
+        return [
+            ControlEvent(
+                "transport.start",
+                self.source,
+                {"bpm": self.bpm, "beats_per_bar": self.beats_per_bar},
+                received_at=stamp,
+            )
+        ]
 
     def pause(self, now: float | None = None) -> list[ControlEvent]:
         if not self.running or self.paused:
@@ -116,12 +118,14 @@ class InternalTransport:
         self.paused = False
         self.last_tick_at = stamp
         self.next_beat_at = stamp + self.beat_duration
-        return [ControlEvent(
-            "transport.start",
-            self.source,
-            {"bpm": self.bpm, "beats_per_bar": self.beats_per_bar},
-            received_at=stamp,
-        )]
+        return [
+            ControlEvent(
+                "transport.start",
+                self.source,
+                {"bpm": self.bpm, "beats_per_bar": self.beats_per_bar},
+                received_at=stamp,
+            )
+        ]
 
     def stop(self, now: float | None = None, reset: bool = True) -> list[ControlEvent]:
         stamp = time.monotonic() if now is None else float(now)
@@ -134,11 +138,11 @@ class InternalTransport:
         return [ControlEvent("transport.stop", self.source, received_at=stamp)]
 
     def schedule_scene(
-            self,
-            scene_id: str,
-            intensity: float,
-            quantization: Quantization = "bar",
-            now: float | None = None,
+        self,
+        scene_id: str,
+        intensity: float,
+        quantization: Quantization = "bar",
+        now: float | None = None,
     ) -> ScheduledScene:
         stamp = time.monotonic() if now is None else float(now)
         value = float(intensity)
@@ -154,9 +158,7 @@ class InternalTransport:
             else:
                 bar_beats = self.beats_per_bar
                 unit = (
-                    bar_beats
-                    if quantization == "bar"
-                    else bar_beats * self.phrase_bars
+                    bar_beats if quantization == "bar" else bar_beats * self.phrase_bars
                 )
                 due = ((next_beat + unit - 1) // unit) * unit
         item = ScheduledScene(str(scene_id), value, due, stamp)
@@ -166,7 +168,9 @@ class InternalTransport:
             self._pending_scenes.append(item)
         return item
 
-    def tick(self, now: float | None = None, max_catch_up_beats: int = 8) -> list[ControlEvent]:
+    def tick(
+        self, now: float | None = None, max_catch_up_beats: int = 8
+    ) -> list[ControlEvent]:
         stamp = time.monotonic() if now is None else float(now)
         self.last_tick_at = stamp
         if not self.running or self.paused:
@@ -179,41 +183,48 @@ class InternalTransport:
             beat_index = self.total_beats % self.beats_per_bar
             bar_index = self.total_beats // self.beats_per_bar + 1
             if beat_index == 0:
-                events.append(ControlEvent(
-                    "clock.bar",
+                events.append(
+                    ControlEvent(
+                        "clock.bar",
+                        self.source,
+                        {
+                            "bar_index": bar_index,
+                            "bpm": self.bpm,
+                            "beats_per_bar": self.beats_per_bar,
+                        },
+                        received_at=beat_time,
+                    )
+                )
+            events.append(
+                ControlEvent(
+                    "clock.beat",
                     self.source,
-                    {
-                        "bar_index": bar_index,
-                        "bpm": self.bpm,
-                        "beats_per_bar": self.beats_per_bar,
-                    },
+                    {"beat_index": beat_index, "bar_index": bar_index},
                     received_at=beat_time,
-                ))
-            events.append(ControlEvent(
-                "clock.beat",
-                self.source,
-                {"beat_index": beat_index, "bar_index": bar_index},
-                received_at=beat_time,
-            ))
+                )
+            )
             self.total_beats += 1
             emitted += 1
             self.next_beat_at += self.beat_duration
 
             due_items = [
-                item for item in self._pending_scenes
+                item
+                for item in self._pending_scenes
                 if item.due_beat is None or item.due_beat <= self.total_beats - 1
             ]
             for item in due_items:
-                events.append(ControlEvent(
-                    "scene.select",
-                    self.source,
-                    {
-                        "scene_id": item.scene_id,
-                        "intensity": item.intensity,
-                        "bar_index": bar_index,
-                    },
-                    received_at=beat_time,
-                ))
+                events.append(
+                    ControlEvent(
+                        "scene.select",
+                        self.source,
+                        {
+                            "scene_id": item.scene_id,
+                            "intensity": item.intensity,
+                            "bar_index": bar_index,
+                        },
+                        received_at=beat_time,
+                    )
+                )
                 self._pending_scenes.remove(item)
 
         return events
@@ -228,4 +239,6 @@ class InternalTransport:
     def load_settings(self, values: dict[str, object]) -> None:
         self.set_tempo(float(values.get("bpm", self.bpm)))
         self.set_meter(int(values.get("beats_per_bar", self.beats_per_bar)))
-        self.phrase_bars = max(1, min(32, int(values.get("phrase_bars", self.phrase_bars))))
+        self.phrase_bars = max(
+            1, min(32, int(values.get("phrase_bars", self.phrase_bars)))
+        )

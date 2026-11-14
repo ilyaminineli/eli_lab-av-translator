@@ -44,12 +44,12 @@ class AutomationPanel(QWidget):
 
         self.duration_combo = QComboBox()
         for label, seconds in (
-                ("30 minutes", 1800),
-                ("45 minutes", 2700),
-                ("1 hour", 3600),
-                ("90 minutes", 5400),
-                ("2 hours", 7200),
-                ("Until stopped", None),
+            ("30 minutes", 1800),
+            ("45 minutes", 2700),
+            ("1 hour", 3600),
+            ("90 minutes", 5400),
+            ("2 hours", 7200),
+            ("Until stopped", None),
         ):
             self.duration_combo.addItem(label, seconds)
         self.duration_combo.setCurrentIndex(self.duration_combo.count() - 1)
@@ -213,8 +213,10 @@ class AutomationPanel(QWidget):
         self.collection_combo.clear()
         assets = self.library.list_assets()
         playable = [
-            asset for asset in assets
-            if asset.status not in {"error", "unsupported"} and Path(asset.path).is_file()
+            asset
+            for asset in assets
+            if asset.status not in {"error", "unsupported"}
+            and Path(asset.path).is_file()
         ]
         self.collection_combo.addItem(
             f"All playable footage · {len(playable)} clip(s)",
@@ -238,8 +240,12 @@ class AutomationPanel(QWidget):
                 "No playable video files. Import a video folder or choose a pool "
                 "with readable clips."
             )
-        elif playable and self.status_label.text().startswith("No playable video files"):
-            self.status_label.setText(f"Ready · {len(playable)} playable video clip(s) available.")
+        elif playable and self.status_label.text().startswith(
+            "No playable video files"
+        ):
+            self.status_label.setText(
+                f"Ready · {len(playable)} playable video clip(s) available."
+            )
 
     def _build_settings(self) -> AutomationSettings:
         cut_ranges = {
@@ -292,8 +298,8 @@ class AutomationPanel(QWidget):
     def sync_performance_plan(self, plan) -> None:
         settings = getattr(plan, "automation_settings", {}) or {}
         for combo, key, fallback in (
-                (self.performance_style_combo, "performance_style", "generative"),
-                (self.musical_sync_combo, "musical_sync", "phrase"),
+            (self.performance_style_combo, "performance_style", "generative"),
+            (self.musical_sync_combo, "musical_sync", "phrase"),
         ):
             index = combo.findData(settings.get(key, fallback))
             if index >= 0:
@@ -304,25 +310,25 @@ class AutomationPanel(QWidget):
         if duration_index >= 0:
             self.duration_combo.setCurrentIndex(duration_index)
         for control, key in (
-                (self.layout_check, "randomize_layout"),
-                (self.effects_check, "randomize_effects"),
-                (self.generator_check, "randomize_generators"),
-                (self.layer_fx_check, "randomize_layer_effects"),
-                (self.overlay_check, "randomize_overlays"),
-                (self.palette_check, "randomize_palette"),
-                (self.keep_anchor_check, "keep_visual_anchor"),
-                (self.preserve_background_check, "preserve_background_source"),
-                (self.effect_after_transition_check, "effect_after_transition"),
-                (self.slow_breakdown_check, "slow_breakdown_transitions"),
+            (self.layout_check, "randomize_layout"),
+            (self.effects_check, "randomize_effects"),
+            (self.generator_check, "randomize_generators"),
+            (self.layer_fx_check, "randomize_layer_effects"),
+            (self.overlay_check, "randomize_overlays"),
+            (self.palette_check, "randomize_palette"),
+            (self.keep_anchor_check, "keep_visual_anchor"),
+            (self.preserve_background_check, "preserve_background_source"),
+            (self.effect_after_transition_check, "effect_after_transition"),
+            (self.slow_breakdown_check, "slow_breakdown_transitions"),
         ):
             if key in settings:
                 control.setChecked(bool(settings[key]))
         for control, key in (
-                (self.palette_memory_spin, "palette_memory_phrases"),
-                (self.peak_particle_boost_spin, "peak_particle_boost"),
-                (self.layer_cooldown_spin, "layer_cooldown_seconds"),
-                (self.breakdown_min_spin, "breakdown_transition_min_seconds"),
-                (self.breakdown_max_spin, "breakdown_transition_max_seconds"),
+            (self.palette_memory_spin, "palette_memory_phrases"),
+            (self.peak_particle_boost_spin, "peak_particle_boost"),
+            (self.layer_cooldown_spin, "layer_cooldown_seconds"),
+            (self.breakdown_min_spin, "breakdown_transition_min_seconds"),
+            (self.breakdown_max_spin, "breakdown_transition_max_seconds"),
         ):
             if key in settings:
                 control.setValue(settings[key])

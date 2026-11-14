@@ -13,13 +13,29 @@ from core.performance_control import ControlEvent
 _LOG = logging.getLogger(__name__)
 _NAMESPACE = "/eli_lab/v1"
 _IDENTIFIER = re.compile(r"^[A-Za-z0-9_.:-]{1,64}$")
-_MACROS = frozenset({
-    "energy", "cutoff", "chaos", "density", "depth", "decay", "pressure", "fragment"
-})
-_SCENES = frozenset({
-    "in", "exp", "tm_a", "trns", "dev", "fr", "ssp", "rtrns",
-    "rc", "rc_w", "peak", "intd", "s_s", "rls", "c", "end",
-})
+_MACROS = frozenset(
+    {"energy", "cutoff", "chaos", "density", "depth", "decay", "pressure", "fragment"}
+)
+_SCENES = frozenset(
+    {
+        "in",
+        "exp",
+        "tm_a",
+        "trns",
+        "dev",
+        "fr",
+        "ssp",
+        "rtrns",
+        "rc",
+        "rc_w",
+        "peak",
+        "intd",
+        "s_s",
+        "rls",
+        "c",
+        "end",
+    }
+)
 
 
 def _identifier(value: object, field: str) -> str:
@@ -60,11 +76,13 @@ class OSCProtocolAdapter:
         with self._lock:
             return self._active_session
 
-    def decode(self, address: str, args: tuple[object, ...] | list[object]) -> ControlEvent:
+    def decode(
+        self, address: str, args: tuple[object, ...] | list[object]
+    ) -> ControlEvent:
         """Translate one OSC message into a validated, renderer-independent event."""
         if not isinstance(address, str) or not address.startswith(f"{_NAMESPACE}/"):
             raise ValueError("Unsupported OSC address or protocol namespace.")
-        parts = address[len(_NAMESPACE):].strip("/").split("/")
+        parts = address[len(_NAMESPACE) :].strip("/").split("/")
         route = "/".join(parts)
         values = tuple(args)
         if len(values) < 2:
@@ -103,7 +121,9 @@ class OSCProtocolAdapter:
             kind = "clock.bar"
         elif route == "scene/select":
             if len(payload_args) != 3:
-                raise ValueError("scene/select expects scene ID, intensity and bar index.")
+                raise ValueError(
+                    "scene/select expects scene ID, intensity and bar index."
+                )
             scene_id = _identifier(payload_args[0], "scene_id")
             if scene_id not in _SCENES:
                 raise ValueError(f"Unknown SONATA scene ID: {scene_id!r}.")
@@ -146,7 +166,9 @@ class OSCProtocolAdapter:
             previous = self._sessions.get(session_id)
             if kind == "transport.start":
                 if previous is not None:
-                    raise ValueError("A session ID cannot be reused; restart with a new ID.")
+                    raise ValueError(
+                        "A session ID cannot be reused; restart with a new ID."
+                    )
             else:
                 if session_id != self._active_session:
                     raise ValueError("Message does not belong to the active session.")
@@ -176,11 +198,11 @@ class OSCReceiver:
     """Single-worker UDP OSC receiver that only submits ControlEvents to a bounded queue."""
 
     def __init__(
-            self,
-            submit_event: Callable[[ControlEvent], bool],
-            *,
-            max_messages_per_second: int = 60,
-            freshness_seconds: float = 5.0,
+        self,
+        submit_event: Callable[[ControlEvent], bool],
+        *,
+        max_messages_per_second: int = 60,
+        freshness_seconds: float = 5.0,
     ) -> None:
         self._submit_event = submit_event
         self.adapter = OSCProtocolAdapter()
@@ -209,7 +231,9 @@ class OSCReceiver:
         try:
             parsed = ipaddress.ip_address(str(bind_address).strip())
             if parsed.version != 4:
-                raise ValueError("The current OSC bridge accepts IPv4 bind addresses only.")
+                raise ValueError(
+                    "The current OSC bridge accepts IPv4 bind addresses only."
+                )
             port = int(port)
             if not 0 <= port <= 65535:
                 raise ValueError("OSC port must be between 0 and 65535.")
@@ -244,7 +268,9 @@ class OSCReceiver:
 
                 def handle_error(self, request, client_address):
                     receiver._record_invalid()
-                    _LOG.debug("Discarded malformed OSC datagram from %s", client_address)
+                    _LOG.debug(
+                        "Discarded malformed OSC datagram from %s", client_address
+                    )
 
             try:
                 server = RecoverableServer((str(parsed), port), dispatcher)
@@ -347,7 +373,8 @@ class OSCReceiver:
         with self._lock:
             age = (
                 max(0.0, now - self._last_valid_message_at)
-                if self._last_valid_message_at else None
+                if self._last_valid_message_at
+                else None
             )
             if not self._running:
                 status = "ERROR" if self._last_error else "STOPPED"

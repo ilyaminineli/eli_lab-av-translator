@@ -50,9 +50,9 @@ MOD_KINDS = ("follower", "envelope", "lfo", "steps", "rhythm")
 
 
 def euclidean_pattern(
-        pulses: int,
-        steps: int,
-        rotation: int = 0,
+    pulses: int,
+    steps: int,
+    rotation: int = 0,
 ) -> list[float]:
     """Return an evenly distributed binary rhythm rotated across a fixed grid."""
     length = max(1, min(64, int(steps)))
@@ -105,9 +105,7 @@ class ModulatorDefinition:
     sustain: float = 0.2
     gate: float = 0.2
     release: float = 0.5
-    step_values: list[float] = field(
-        default_factory=lambda: [1.0, 0.0, 0.0, 0.0]
-    )
+    step_values: list[float] = field(default_factory=lambda: [1.0, 0.0, 0.0, 0.0])
     division_beats: float = 0.25
     step_rate_hz: float = 4.0
     interpolation: ModulatorInterpolation = "hold"
@@ -128,7 +126,13 @@ class ModulatorDefinition:
         self.rate_hz = max(0.005, min(30.0, float(self.rate_hz)))
         self.phase = float(self.phase) % 1.0
         if self.waveform not in {
-            "sine", "triangle", "saw_up", "saw_down", "square", "pulse", "sample_hold"
+            "sine",
+            "triangle",
+            "saw_up",
+            "saw_down",
+            "square",
+            "pulse",
+            "sample_hold",
         }:
             self.waveform = "sine"
         self.pulse_width = max(0.02, min(0.98, float(self.pulse_width)))
@@ -145,9 +149,7 @@ class ModulatorDefinition:
         self.input_release_ms = max(1.0, min(10000.0, float(self.input_release_ms)))
         if self.trigger_source not in TRIGGER_SOURCES:
             self.trigger_source = "transport.beat_pulse"
-        self.trigger_threshold = max(
-            0.0, min(1.0, float(self.trigger_threshold))
-        )
+        self.trigger_threshold = max(0.0, min(1.0, float(self.trigger_threshold)))
         if self.retrigger not in {"restart", "legato"}:
             self.retrigger = "restart"
         self.attack = max(0.0, min(64.0, float(self.attack)))
@@ -159,9 +161,8 @@ class ModulatorDefinition:
         if not isinstance(self.step_values, list):
             self.step_values = [1.0, 0.0, 0.0, 0.0]
         self.step_values = [
-                               max(0.0, min(1.0, float(value)))
-                               for value in self.step_values[:64]
-                           ] or [0.5]
+            max(0.0, min(1.0, float(value))) for value in self.step_values[:64]
+        ] or [0.5]
         self.division_beats = max(1.0 / 96.0, min(64.0, float(self.division_beats)))
         self.step_rate_hz = max(0.01, min(64.0, float(self.step_rate_hz)))
         if self.interpolation not in {"hold", "linear", "smooth"}:
@@ -208,10 +209,10 @@ class ModulatorPreset:
 
 
 def _preset(
-        preset_id: str,
-        preset_name: str,
-        description: str,
-        **definition: object,
+    preset_id: str,
+    preset_name: str,
+    description: str,
+    **definition: object,
 ) -> ModulatorPreset:
     item = ModulatorDefinition(**definition)
     item.normalize()
@@ -476,10 +477,10 @@ class ModulatorBank:
         return definition
 
     def save_preset(
-            self,
-            modulator_id: str,
-            name: str,
-            description: str = "",
+        self,
+        modulator_id: str,
+        name: str,
+        description: str = "",
     ) -> str:
         definition = self.get(modulator_id)
         if definition is None:
@@ -535,9 +536,7 @@ class ModulatorBank:
         payload = json.loads(source.read_text(encoding="utf-8"))
         if not isinstance(payload, dict):
             raise ValueError("Modulator preset file must contain a JSON object.")
-        if payload.get("format") not in {
-            None, "eli-lab-modulator-presets"
-        }:
+        if payload.get("format") not in {None, "eli-lab-modulator-presets"}:
             raise ValueError("This file is not an eli_lab modulator preset bank.")
         raw_presets = payload.get("presets")
         if not isinstance(raw_presets, list):
@@ -567,9 +566,7 @@ class ModulatorBank:
             except (TypeError, ValueError, KeyError):
                 continue
             modulators[item.modulator_id] = item
-        presets = {
-            preset.preset_id: preset for preset in builtin_modulator_presets()
-        }
+        presets = {preset.preset_id: preset for preset in builtin_modulator_presets()}
         for raw in values.get("presets", []):
             if not isinstance(raw, dict):
                 continue
@@ -614,25 +611,29 @@ class ModulatorBankEngine:
             f"{modulator_id}:{seed}:{index}".encode(),
             digest_size=8,
         ).digest()
-        return int.from_bytes(digest, "big") / float(2 ** 64 - 1)
+        return int.from_bytes(digest, "big") / float(2**64 - 1)
 
     @staticmethod
     def _reset_position(
-            definition: ModulatorDefinition,
-            sources: dict[str, float],
-            beat_position: float,
+        definition: ModulatorDefinition,
+        sources: dict[str, float],
+        beat_position: float,
     ) -> float:
         if definition.reset_mode == "bar":
-            return beat_position % max(1.0, float(sources.get("transport.beats_per_bar", 4.0)))
+            return beat_position % max(
+                1.0, float(sources.get("transport.beats_per_bar", 4.0))
+            )
         if definition.reset_mode == "phrase":
-            return beat_position % max(1.0, float(sources.get("transport.phrase_beats", 16.0)))
+            return beat_position % max(
+                1.0, float(sources.get("transport.phrase_beats", 16.0))
+            )
         return beat_position
 
     @staticmethod
     def _lfo_value(
-            definition: ModulatorDefinition,
-            phase: float,
-            cycle_index: int,
+        definition: ModulatorDefinition,
+        phase: float,
+        cycle_index: int,
     ) -> float:
         phase %= 1.0
         if definition.waveform == "sine":
@@ -653,10 +654,10 @@ class ModulatorBankEngine:
 
     @staticmethod
     def _sequence_index(
-            definition: ModulatorDefinition,
-            step_index: int,
-            sequence_length: int,
-            cycle_index: int,
+        definition: ModulatorDefinition,
+        step_index: int,
+        sequence_length: int,
+        cycle_index: int,
     ) -> int:
         if definition.direction == "reverse":
             return sequence_length - 1 - (step_index % sequence_length)
@@ -672,17 +673,18 @@ class ModulatorBankEngine:
                         definition.modulator_id,
                         definition.seed,
                         cycle_index * sequence_length + step_index,
-                    ) * sequence_length
+                    )
+                    * sequence_length
                 ),
             )
         return step_index % sequence_length
 
     @staticmethod
     def _sequence_value(
-            definition: ModulatorDefinition,
-            position: float,
-            cycle_beats: float,
-            cycle_index: int,
+        definition: ModulatorDefinition,
+        position: float,
+        cycle_beats: float,
+        cycle_index: int,
     ) -> float:
         values = definition.step_values
         length = len(values)
@@ -731,13 +733,13 @@ class ModulatorBankEngine:
         return max(0.0, min(1.0, value))
 
     def _envelope_value(
-            self,
-            definition: ModulatorDefinition,
-            runtime: _ModulatorRuntime,
-            sources: dict[str, float],
-            now: float,
-            transport_running: bool,
-            beat_position: float,
+        self,
+        definition: ModulatorDefinition,
+        runtime: _ModulatorRuntime,
+        sources: dict[str, float],
+        now: float,
+        transport_running: bool,
+        beat_position: float,
     ) -> float:
         attack = definition.attack
         decay = definition.decay
@@ -747,9 +749,9 @@ class ModulatorBankEngine:
         active = False
         if runtime.trigger_time is not None:
             if (
-                    definition.sync_mode == "transport"
-                    and transport_running
-                    and runtime.trigger_beat is not None
+                definition.sync_mode == "transport"
+                and transport_running
+                and runtime.trigger_beat is not None
             ):
                 previous_age = max(0.0, beat_position - runtime.trigger_beat)
             else:
@@ -757,8 +759,8 @@ class ModulatorBankEngine:
             active = previous_age < gate + release
 
         trigger_high = (
-                float(sources.get(definition.trigger_source, 0.0))
-                >= definition.trigger_threshold
+            float(sources.get(definition.trigger_source, 0.0))
+            >= definition.trigger_threshold
         )
         if trigger_high and not runtime.previous_trigger:
             if definition.retrigger == "restart" or not active:
@@ -787,10 +789,10 @@ class ModulatorBankEngine:
         return 0.0
 
     def evaluate(
-            self,
-            bank: ModulatorBank,
-            sources: dict[str, float],
-            now: float | None = None,
+        self,
+        bank: ModulatorBank,
+        sources: dict[str, float],
+        now: float | None = None,
     ) -> dict[str, float]:
         stamp = time.monotonic() if now is None else float(now)
         outputs: dict[str, float] = {}
@@ -814,9 +816,9 @@ class ModulatorBankEngine:
                     runtime.current = None
                     runtime.last_update = stamp
                     continue
-                normalized = (
-                                     float(raw_input) - definition.input_min
-                             ) / max(1e-9, definition.input_max - definition.input_min)
+                normalized = (float(raw_input) - definition.input_min) / max(
+                    1e-9, definition.input_max - definition.input_min
+                )
                 normalized = max(0.0, min(1.0, normalized))
                 if definition.input_curve == "smoothstep":
                     normalized = normalized * normalized * (3.0 - 2.0 * normalized)
@@ -833,9 +835,7 @@ class ModulatorBankEngine:
                         else definition.input_release_ms
                     )
                     dt = max(0.0, stamp - runtime.last_update)
-                    alpha = 1.0 - math.exp(
-                        -dt / max(0.001, tau / 1000.0)
-                    )
+                    alpha = 1.0 - math.exp(-dt / max(0.001, tau / 1000.0))
                     value = runtime.current + alpha * (normalized - runtime.current)
                 runtime.current = value
                 runtime.last_update = stamp
@@ -850,9 +850,7 @@ class ModulatorBankEngine:
                         0.0 if definition.kind == "envelope" else 0.5
                     )
                     continue
-                position = self._reset_position(
-                    definition, sources, beat_position
-                )
+                position = self._reset_position(definition, sources, beat_position)
             else:
                 position = max(0.0, stamp - runtime.started_at)
 
@@ -884,14 +882,16 @@ class ModulatorBankEngine:
                 if definition.sync_mode == "transport":
                     sequence_position = position
                     cycle_beats = definition.division_beats * sequence_steps
-                    cycle_index = int(math.floor(sequence_position / max(1e-9, cycle_beats)))
+                    cycle_index = int(
+                        math.floor(sequence_position / max(1e-9, cycle_beats))
+                    )
                     local_position = sequence_position % max(1e-9, cycle_beats)
                 else:
                     step_position = position * definition.step_rate_hz
                     cycle_index = int(step_position // sequence_steps)
                     local_position = (
-                                             step_position % sequence_steps
-                                     ) * definition.division_beats
+                        step_position % sequence_steps
+                    ) * definition.division_beats
                     cycle_beats = definition.division_beats * sequence_steps
                 value = self._sequence_value(
                     definition,

@@ -94,7 +94,9 @@ class AudioAnalyzer:
 
     def _smooth(self, key: str, value: float, dt: float) -> float:
         previous = self._smoothed.get(key, value)
-        tau_ms = self.settings.attack_ms if value > previous else self.settings.release_ms
+        tau_ms = (
+            self.settings.attack_ms if value > previous else self.settings.release_ms
+        )
         tau = max(0.001, tau_ms / 1000.0)
         alpha = 1.0 - math.exp(-max(0.0, dt) / tau)
         result = previous + alpha * (value - previous)
@@ -124,10 +126,10 @@ class AudioAnalyzer:
         return round(bpm, 1), confidence
 
     def process(
-            self,
-            samples: np.ndarray,
-            sample_rate: int,
-            now: float | None = None,
+        self,
+        samples: np.ndarray,
+        sample_rate: int,
+        now: float | None = None,
     ) -> AudioAnalysisFrame:
         stamp = time.monotonic() if now is None else float(now)
         rate = max(1, int(sample_rate))
@@ -169,28 +171,27 @@ class AudioAnalyzer:
         spectral_power = np.square(spectrum, dtype=np.float64)
         bands: dict[str, float] = {}
         for name, low_hz, high_hz in (
-                ("low", 20.0, 250.0),
-                ("mid", 250.0, 2000.0),
-                ("high", 2000.0, min(10000.0, rate / 2.0)),
+            ("low", 20.0, 250.0),
+            ("mid", 250.0, 2000.0),
+            ("high", 2000.0, min(10000.0, rate / 2.0)),
         ):
             mask = (frequencies >= low_hz) & (frequencies < high_hz)
             band_rms = (
-                float(
-                    np.sqrt(
-                        2.0 * np.sum(spectral_power[mask])
-                    ) / mono.size
-                )
-                if np.any(mask) else 0.0
+                float(np.sqrt(2.0 * np.sum(spectral_power[mask])) / mono.size)
+                if np.any(mask)
+                else 0.0
             )
             bands[name] = min(1.0, band_rms * sensitivity * 2.0)
 
-        raw_onset = max(0.0, (rms - self._previous_rms) / max(0.08, self._previous_rms + 0.02))
+        raw_onset = max(
+            0.0, (rms - self._previous_rms) / max(0.08, self._previous_rms + 0.02)
+        )
         onset = min(1.0, raw_onset)
         self._previous_rms = rms
 
         if (
-                onset >= self.settings.onset_threshold
-                and stamp - self._last_onset_at >= 0.22
+            onset >= self.settings.onset_threshold
+            and stamp - self._last_onset_at >= 0.22
         ):
             if self._last_beat_at is not None:
                 interval = stamp - self._last_beat_at

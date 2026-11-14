@@ -13,7 +13,9 @@ def _font(style: dict[str, Any], defaults: dict[str, Any]) -> QFont:
     font = QFont(str(style.get("font_family", defaults.get("font_family", "Arial"))))
     font_size = int(style.get("font_size", defaults.get("font_size", 148)))
     font.setPixelSize(max(12, min(420, font_size)))
-    weight = max(100, min(900, int(style.get("font_weight", defaults.get("font_weight", 700)))))
+    weight = max(
+        100, min(900, int(style.get("font_weight", defaults.get("font_weight", 700))))
+    )
     font.setWeight(QFont.Weight(round(weight / 100) * 100))
     font.setLetterSpacing(
         QFont.SpacingType.AbsoluteSpacing,
@@ -33,8 +35,14 @@ def _clusters(value: str) -> list[str]:
         variation = 0xFE00 <= codepoint <= 0xFE0F or 0xE0100 <= codepoint <= 0xE01EF
         modifier = 0x1F3FB <= codepoint <= 0x1F3FF
         regional = 0x1F1E6 <= codepoint <= 0x1F1FF
-        if not result or (not combining and not variation and not modifier and not join_next
-                          and codepoint != 0x200D and not (regional and regional_count % 2)):
+        if not result or (
+            not combining
+            and not variation
+            and not modifier
+            and not join_next
+            and codepoint != 0x200D
+            and not (regional and regional_count % 2)
+        ):
             result.append(character)
         else:
             result[-1] += character
@@ -85,9 +93,9 @@ def _pen(color: str, width: float) -> QPen:
 
 
 def _draw_path(
-        painter: QPainter,
-        path: QPainterPath,
-        style: dict[str, Any],
+    painter: QPainter,
+    path: QPainterPath,
+    style: dict[str, Any],
 ) -> None:
     stroke_width = max(0.0, float(style.get("stroke_width", 0.0)))
     stroke_color = str(style.get("stroke_color", "#211B2A"))
@@ -102,11 +110,11 @@ def _draw_path(
 
 
 def _draw_horizontal(
-        painter: QPainter,
-        settings: dict[str, Any],
-        styles: list[dict[str, Any]],
-        width: int,
-        height: int,
+    painter: QPainter,
+    settings: dict[str, Any],
+    styles: list[dict[str, Any]],
+    width: int,
+    height: int,
 ) -> None:
     margin = 96.0
     x = margin
@@ -120,7 +128,9 @@ def _draw_horizontal(
         metrics = QFontMetricsF(font)
         advance_height = metrics.height() * line_spacing
         line_height = max(line_height, advance_height)
-        for paragraph_index, paragraph in enumerate(str(style.get("text", "")).split("\n")):
+        for paragraph_index, paragraph in enumerate(
+            str(style.get("text", "")).split("\n")
+        ):
             if paragraph_index:
                 x = margin
                 y += max(line_height, advance_height)
@@ -147,7 +157,11 @@ def _draw_horizontal(
                     line_height = advance_height
                 if token_advance <= right - x:
                     path = QPainterPath()
-                    path.addText(QPointF(x, y + metrics.ascent()), font, token_text, )
+                    path.addText(
+                        QPointF(x, y + metrics.ascent()),
+                        font,
+                        token_text,
+                    )
                     _draw_path(painter, path, style)
                     x += token_advance
                 else:
@@ -172,17 +186,15 @@ def _vertical_rotated(cluster: str) -> bool:
 
 
 def _draw_vertical(
-        painter: QPainter,
-        settings: dict[str, Any],
-        styles: list[dict[str, Any]],
-        width: int,
-        height: int,
-        writing_mode: str,
+    painter: QPainter,
+    settings: dict[str, Any],
+    styles: list[dict[str, Any]],
+    width: int,
+    height: int,
+    writing_mode: str,
 ) -> None:
     direction = -1.0 if writing_mode == "vertical_rl" else 1.0
-    maximum_size = max(
-        _font(style, settings).pixelSize() for style in styles
-    )
+    maximum_size = max(_font(style, settings).pixelSize() for style in styles)
     column_step = max(18.0, float(maximum_size) * 1.35)
     cell_step = max(18.0, float(maximum_size) * 1.08)
     column = 0
@@ -216,7 +228,9 @@ def _draw_vertical(
                 painter.save()
                 painter.translate(x + cell_width * 0.5, y + cell_step * 0.5)
                 painter.rotate(90.0)
-                glyph.addText(QPointF(-advance * 0.5, metrics.ascent() * 0.35), font, cluster)
+                glyph.addText(
+                    QPointF(-advance * 0.5, metrics.ascent() * 0.35), font, cluster
+                )
                 _draw_path(painter, glyph, style)
                 painter.restore()
             else:
@@ -224,9 +238,10 @@ def _draw_vertical(
                     cell_width * 0.16 if cluster in {"、", "。", "，", "．"} else 0.0
                 )
                 glyph.addText(
-                    QPointF(x + max(0.0, (cell_width - advance) * 0.5)
-                            + punctuation_offset,
-                            y + metrics.ascent()),
+                    QPointF(
+                        x + max(0.0, (cell_width - advance) * 0.5) + punctuation_offset,
+                        y + metrics.ascent(),
+                    ),
                     font,
                     cluster,
                 )
@@ -235,10 +250,10 @@ def _draw_vertical(
 
 
 def _path_for_settings(
-        settings: dict[str, Any],
-        width: int,
-        height: int,
-        mode: str,
+    settings: dict[str, Any],
+    width: int,
+    height: int,
+    mode: str,
 ) -> QPainterPath:
     path = QPainterPath()
     if mode in {"circle", "arc"}:
@@ -258,10 +273,12 @@ def _path_for_settings(
         try:
             if len(point) < 2:
                 continue
-            valid.append((
-                max(0.0, min(1.0, float(point[0]))) * width,
-                max(0.0, min(1.0, float(point[1]))) * height,
-            ))
+            valid.append(
+                (
+                    max(0.0, min(1.0, float(point[0]))) * width,
+                    max(0.0, min(1.0, float(point[1]))) * height,
+                )
+            )
         except (TypeError, ValueError, OverflowError):
             continue
     if len(valid) < 2:
@@ -277,22 +294,25 @@ def _path_for_settings(
     return path
 
 
-def _path_samples(path: QPainterPath, count: int = 768) -> tuple[list[float], list[QPointF]]:
+def _path_samples(
+    path: QPainterPath, count: int = 768
+) -> tuple[list[float], list[QPointF]]:
     points = [path.pointAtPercent(index / count) for index in range(count + 1)]
     distances = [0.0]
     for previous, current in zip(points, points[1:]):
-        distances.append(distances[-1] + math.hypot(
-            current.x() - previous.x(), current.y() - previous.y()
-        ))
+        distances.append(
+            distances[-1]
+            + math.hypot(current.x() - previous.x(), current.y() - previous.y())
+        )
     return distances, points
 
 
 def _point_at_distance(
-        distance: float,
-        distances: list[float],
-        points: list[QPointF],
-        *,
-        wrap: bool,
+    distance: float,
+    distances: list[float],
+    points: list[QPointF],
+    *,
+    wrap: bool,
 ) -> tuple[QPointF, float]:
     total = distances[-1]
     if total <= 0.001:
@@ -312,12 +332,12 @@ def _point_at_distance(
 
 
 def _draw_on_path(
-        painter: QPainter,
-        settings: dict[str, Any],
-        styles: list[dict[str, Any]],
-        width: int,
-        height: int,
-        mode: str,
+    painter: QPainter,
+    settings: dict[str, Any],
+    styles: list[dict[str, Any]],
+    width: int,
+    height: int,
+    mode: str,
 ) -> None:
     path = _path_for_settings(settings, width, height, mode)
     distances, samples = _path_samples(path)
@@ -363,10 +383,10 @@ def _draw_on_path(
 
 
 def draw_typography(
-        painter: QPainter,
-        settings: dict[str, Any],
-        width: int,
-        height: int,
+    painter: QPainter,
+    settings: dict[str, Any],
+    width: int,
+    height: int,
 ) -> None:
     """Render the non-legacy typography layouts on the raster worker."""
     styles = _styles(settings)

@@ -63,11 +63,24 @@ class AssetLibraryPanel(QWidget):
         self.purpose_combo = QComboBox()
         self.purpose_combo.addItem("All purposes", "")
         for purpose in (
-                "overlay", "texture", "background", "postproduction", "surface",
-                "distress", "mask", "track matte", "material", "geometry",
-                "particles", "atmosphere", "environment", "normal map",
-                "roughness map", "displacement map", "ambient occlusion",
-                "specular map",
+            "overlay",
+            "texture",
+            "background",
+            "postproduction",
+            "surface",
+            "distress",
+            "mask",
+            "track matte",
+            "material",
+            "geometry",
+            "particles",
+            "atmosphere",
+            "environment",
+            "normal map",
+            "roughness map",
+            "displacement map",
+            "ambient occlusion",
+            "specular map",
         ):
             self.purpose_combo.addItem(purpose.title(), purpose)
         layout.addWidget(self.purpose_combo)
@@ -78,7 +91,9 @@ class AssetLibraryPanel(QWidget):
         layout.addWidget(self.kind_combo)
         self.asset_list = QListWidget()
         layout.addWidget(self.asset_list, 1)
-        self.detail_label = QLabel("Select an asset to inspect its tags and intended uses.")
+        self.detail_label = QLabel(
+            "Select an asset to inspect its tags and intended uses."
+        )
         self.detail_label.setWordWrap(True)
         layout.addWidget(self.detail_label)
         self.add_button = QPushButton("ADD AS OVERLAY")
@@ -159,7 +174,9 @@ class AssetLibraryPanel(QWidget):
         )
         self.asset_list.clear()
         for asset in assets:
-            item = QListWidgetItem(f"{asset.name}  ·  {asset.category}  ·  {asset.kind}")
+            item = QListWidgetItem(
+                f"{asset.name}  ·  {asset.category}  ·  {asset.kind}"
+            )
             item.setData(256, asset.id)
             self.asset_list.addItem(item)
             if asset.id == selected_id:
@@ -171,8 +188,14 @@ class AssetLibraryPanel(QWidget):
 
     def _selection_changed(self, current, _previous=None) -> None:
         asset_id = current.data(256) if current is not None else None
-        asset = next((item for item in self.application.visual_asset_index.assets
-                      if item.id == asset_id), None)
+        asset = next(
+            (
+                item
+                for item in self.application.visual_asset_index.assets
+                if item.id == asset_id
+            ),
+            None,
+        )
         self.add_button.setEnabled(asset is not None)
         if asset is not None:
             self.detail_label.setText(

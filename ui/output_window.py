@@ -54,8 +54,9 @@ class OutputWindowManager:
         window.raise_()
         QTimer.singleShot(
             0,
-            lambda target_window=window, target_screen=screen:
-            self._enforce_target_screen(target_window, target_screen),
+            lambda target_window=window, target_screen=screen: self._enforce_target_screen(
+                target_window, target_screen
+            ),
         )
         return window
 

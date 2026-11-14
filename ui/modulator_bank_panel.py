@@ -73,11 +73,13 @@ class ModulatorBankPanel(QWidget):
         self.new_steps_button = QPushButton("+ STEPS")
         self.new_rhythm_button = QPushButton("+ RHYTHM")
         self.new_follower_button = QPushButton("+ FOLLOWER")
-        for column, button in enumerate((
+        for column, button in enumerate(
+            (
                 self.new_lfo_button,
                 self.new_envelope_button,
                 self.new_steps_button,
-        )):
+            )
+        ):
             create_grid.addWidget(button, 0, column)
         create_grid.addWidget(self.new_rhythm_button, 1, 0)
         create_grid.addWidget(self.new_follower_button, 1, 1, 1, 2)
@@ -134,13 +136,13 @@ class ModulatorBankPanel(QWidget):
         lfo_form = QFormLayout(self.lfo_group)
         self.waveform_combo = QComboBox()
         for value, label in (
-                ("sine", "Sine"),
-                ("triangle", "Triangle"),
-                ("saw_up", "Saw up"),
-                ("saw_down", "Saw down"),
-                ("square", "Square"),
-                ("pulse", "Pulse width"),
-                ("sample_hold", "Sample & hold"),
+            ("sine", "Sine"),
+            ("triangle", "Triangle"),
+            ("saw_up", "Saw up"),
+            ("saw_down", "Saw down"),
+            ("square", "Square"),
+            ("pulse", "Pulse width"),
+            ("sample_hold", "Sample & hold"),
         ):
             self.waveform_combo.addItem(label, value)
         self.lfo_rate_beats = self._double_spin(0.0625, 256.0, 4.0, 4)
@@ -305,9 +307,7 @@ class ModulatorBankPanel(QWidget):
             lambda: self._create_modulator("envelope")
         )
         self.new_steps_button.clicked.connect(lambda: self._create_modulator("steps"))
-        self.new_rhythm_button.clicked.connect(
-            lambda: self._create_modulator("rhythm")
-        )
+        self.new_rhythm_button.clicked.connect(lambda: self._create_modulator("rhythm"))
         self.new_follower_button.clicked.connect(
             lambda: self._create_modulator("follower")
         )
@@ -328,17 +328,15 @@ class ModulatorBankPanel(QWidget):
         self.euclidean_steps.valueChanged.connect(
             lambda value: self.euclidean_pulses.setMaximum(value)
         )
-        self.euclidean_generate_button.clicked.connect(
-            self._generate_euclidean_pattern
-        )
+        self.euclidean_generate_button.clicked.connect(self._generate_euclidean_pattern)
         self.refresh()
 
     @staticmethod
     def _double_spin(
-            minimum: float,
-            maximum: float,
-            value: float,
-            decimals: int,
+        minimum: float,
+        maximum: float,
+        value: float,
+        decimals: int,
     ) -> QDoubleSpinBox:
         spin = QDoubleSpinBox()
         spin.setRange(minimum, maximum)
@@ -357,9 +355,7 @@ class ModulatorBankPanel(QWidget):
         self._loading = True
         self.modulator_list.clear()
         for definition in self.application.modulator_bank.list_modulators():
-            item = QListWidgetItem(
-                f"{definition.name}   ·   {definition.kind.upper()}"
-            )
+            item = QListWidgetItem(f"{definition.name}   ·   {definition.kind.upper()}")
             item.setData(Qt.ItemDataRole.UserRole, definition.modulator_id)
             self.modulator_list.addItem(item)
             if definition.modulator_id == selected_id:
@@ -411,22 +407,22 @@ class ModulatorBankPanel(QWidget):
         definition = self._selected_definition()
         active = definition is not None
         for widget in (
-                self.name_edit,
-                self.enabled_check,
-                self.sync_combo,
-                self.reset_combo,
-                self.lfo_group,
-                self.follower_group,
-                self.envelope_group,
-                self.sequence_group,
-                self.apply_button,
-                self.duplicate_button,
-                self.remove_button,
-                self.save_preset_button,
-                self.assignment_target_combo,
-                self.assignment_depth,
-                self.assignment_polarity_combo,
-                self.assign_button,
+            self.name_edit,
+            self.enabled_check,
+            self.sync_combo,
+            self.reset_combo,
+            self.lfo_group,
+            self.follower_group,
+            self.envelope_group,
+            self.sequence_group,
+            self.apply_button,
+            self.duplicate_button,
+            self.remove_button,
+            self.save_preset_button,
+            self.assignment_target_combo,
+            self.assignment_depth,
+            self.assignment_polarity_combo,
+            self.assign_button,
         ):
             widget.setEnabled(active)
         if definition is None:
@@ -478,9 +474,9 @@ class ModulatorBankPanel(QWidget):
         self.gate_spin.setValue(definition.gate)
         self.release_spin.setValue(definition.release)
         self.trigger_threshold_spin.setValue(definition.trigger_threshold)
-        self.steps_edit.setText(", ".join(
-            f"{value:g}" for value in definition.step_values
-        ))
+        self.steps_edit.setText(
+            ", ".join(f"{value:g}" for value in definition.step_values)
+        )
         self.division_spin.setValue(definition.division_beats)
         self.step_rate_spin.setValue(definition.step_rate_hz)
         self.interpolation_combo.setCurrentIndex(
@@ -622,43 +618,45 @@ class ModulatorBankPanel(QWidget):
                 if token.strip()
             ]
             values = definition.to_dict()
-            values.update({
-                "name": self.name_edit.text(),
-                "enabled": self.enabled_check.isChecked(),
-                "sync_mode": self.sync_combo.currentData(),
-                "reset_mode": self.reset_combo.currentData(),
-                "waveform": self.waveform_combo.currentData(),
-                "rate_beats": self.lfo_rate_beats.value(),
-                "rate_hz": self.lfo_rate_hz.value(),
-                "phase": self.lfo_phase.value(),
-                "pulse_width": (
-                    self.sequence_pulse_width.value()
-                    if definition.kind == "rhythm"
-                    else self.lfo_pulse_width.value()
-                ),
-                "input_source": self.input_source_combo.currentData(),
-                "input_min": self.input_min_spin.value(),
-                "input_max": self.input_max_spin.value(),
-                "input_invert": self.input_invert_check.isChecked(),
-                "input_curve": self.input_curve_combo.currentData(),
-                "input_attack_ms": self.input_attack_spin.value(),
-                "input_release_ms": self.input_release_spin.value(),
-                "trigger_source": self.trigger_combo.currentData(),
-                "trigger_threshold": self.trigger_threshold_spin.value(),
-                "retrigger": self.retrigger_combo.currentData(),
-                "attack": self.attack_spin.value(),
-                "decay": self.decay_spin.value(),
-                "sustain": self.sustain_spin.value(),
-                "gate": self.gate_spin.value(),
-                "release": self.release_spin.value(),
-                "step_values": step_values or definition.step_values,
-                "division_beats": self.division_spin.value(),
-                "step_rate_hz": self.step_rate_spin.value(),
-                "interpolation": self.interpolation_combo.currentData(),
-                "direction": self.direction_combo.currentData(),
-                "swing": self.swing_spin.value(),
-                "seed": self.seed_spin.value(),
-            })
+            values.update(
+                {
+                    "name": self.name_edit.text(),
+                    "enabled": self.enabled_check.isChecked(),
+                    "sync_mode": self.sync_combo.currentData(),
+                    "reset_mode": self.reset_combo.currentData(),
+                    "waveform": self.waveform_combo.currentData(),
+                    "rate_beats": self.lfo_rate_beats.value(),
+                    "rate_hz": self.lfo_rate_hz.value(),
+                    "phase": self.lfo_phase.value(),
+                    "pulse_width": (
+                        self.sequence_pulse_width.value()
+                        if definition.kind == "rhythm"
+                        else self.lfo_pulse_width.value()
+                    ),
+                    "input_source": self.input_source_combo.currentData(),
+                    "input_min": self.input_min_spin.value(),
+                    "input_max": self.input_max_spin.value(),
+                    "input_invert": self.input_invert_check.isChecked(),
+                    "input_curve": self.input_curve_combo.currentData(),
+                    "input_attack_ms": self.input_attack_spin.value(),
+                    "input_release_ms": self.input_release_spin.value(),
+                    "trigger_source": self.trigger_combo.currentData(),
+                    "trigger_threshold": self.trigger_threshold_spin.value(),
+                    "retrigger": self.retrigger_combo.currentData(),
+                    "attack": self.attack_spin.value(),
+                    "decay": self.decay_spin.value(),
+                    "sustain": self.sustain_spin.value(),
+                    "gate": self.gate_spin.value(),
+                    "release": self.release_spin.value(),
+                    "step_values": step_values or definition.step_values,
+                    "division_beats": self.division_spin.value(),
+                    "step_rate_hz": self.step_rate_spin.value(),
+                    "interpolation": self.interpolation_combo.currentData(),
+                    "direction": self.direction_combo.currentData(),
+                    "swing": self.swing_spin.value(),
+                    "seed": self.seed_spin.value(),
+                }
+            )
             updated = ModulatorDefinition.from_dict(values)
         except (TypeError, ValueError) as exc:
             QMessageBox.warning(self, "Modulator settings", str(exc))
@@ -698,9 +696,7 @@ class ModulatorBankPanel(QWidget):
         )
         if not accepted or not name.strip():
             return
-        self.application.apply_modulator_preset(
-            definition.modulator_id, name.strip()
-        )
+        self.application.apply_modulator_preset(definition.modulator_id, name.strip())
         self.refresh()
         self.bank_changed.emit()
 
@@ -762,44 +758,55 @@ class ModulatorBankPanel(QWidget):
 
     def _targets_for_layer(self, layer) -> list[str]:
         targets = [
-            target_id for target_id, spec in PERF_MODIFIER_TARGETS.items()
+            target_id
+            for target_id, spec in PERF_MODIFIER_TARGETS.items()
             if spec.category == "layer"
         ]
         if layer.source_type == "generator":
             compatible = {
                 "geometry": {
-                    "generator.animation_speed", "generator.animation_amount",
-                    "generator.density", "generator.rotation",
+                    "generator.animation_speed",
+                    "generator.animation_amount",
+                    "generator.density",
+                    "generator.rotation",
                 },
                 "text": {
-                    "generator.font_size", "generator.letter_spacing",
+                    "generator.font_size",
+                    "generator.letter_spacing",
                 },
                 "waveform": {
                     "generator.animation_speed",
-                    "generator.waveform_amplitude", "generator.waveform_frequency",
+                    "generator.waveform_amplitude",
+                    "generator.waveform_frequency",
                 },
                 "particles": {
-                    "generator.density", "generator.particle_speed",
-                    "generator.particle_size", "generator.particle_spread",
+                    "generator.density",
+                    "generator.particle_speed",
+                    "generator.particle_size",
+                    "generator.particle_spread",
                     "generator.particle_trail",
                 },
             }
             targets.extend(sorted(compatible.get(layer.generator_type, set())))
             if (
-                    layer.generator_type == "text"
-                    and layer.generator_settings.get("text_animation", "none") != "none"
+                layer.generator_type == "text"
+                and layer.generator_settings.get("text_animation", "none") != "none"
             ):
-                targets.extend((
-                    "generator.text_animation_speed",
-                    "generator.text_animation_amount",
-                ))
+                targets.extend(
+                    (
+                        "generator.text_animation_speed",
+                        "generator.text_animation_amount",
+                    )
+                )
         elif layer.source_type == "overlay":
             player = self.application._overlay_images.get(layer.id)
             if player is not None and player.animated:
-                targets.extend((
-                    "overlay.playback_speed",
-                    "overlay.frame_hold",
-                ))
+                targets.extend(
+                    (
+                        "overlay.playback_speed",
+                        "overlay.frame_hold",
+                    )
+                )
         return targets
 
     def _default_target(self, layer) -> str:
@@ -814,9 +821,10 @@ class ModulatorBankPanel(QWidget):
                 "waveform": "generator.waveform_amplitude",
                 "particles": "generator.particle_size",
             }.get(layer.generator_type, "layer.scale")
-        if layer.source_type == "overlay" and self.assignment_target_combo.findData(
-                "overlay.playback_speed"
-        ) >= 0:
+        if (
+            layer.source_type == "overlay"
+            and self.assignment_target_combo.findData("overlay.playback_speed") >= 0
+        ):
             return "overlay.playback_speed"
         return "layer.scale"
 
@@ -834,9 +842,7 @@ class ModulatorBankPanel(QWidget):
                 self.assignment_target_combo.addItem(spec.label, target_id)
         target = self.assignment_target_combo.findData(current)
         if target < 0 and layer is not None:
-            target = self.assignment_target_combo.findData(
-                self._default_target(layer)
-            )
+            target = self.assignment_target_combo.findData(self._default_target(layer))
         self.assignment_target_combo.setCurrentIndex(max(0, target))
         self.assignment_target_combo.blockSignals(False)
         if layer is None:
@@ -846,7 +852,9 @@ class ModulatorBankPanel(QWidget):
                 f"{layer.name} · {'LOCKED' if layer.locked else 'READY'}"
             )
         assignable = bool(
-            layer and not layer.locked and definition
+            layer
+            and not layer.locked
+            and definition
             and self.assignment_target_combo.count()
         )
         self.assign_button.setEnabled(assignable)
@@ -865,9 +873,7 @@ class ModulatorBankPanel(QWidget):
         polarity = self.assignment_polarity_combo.currentData()
         if polarity == "auto":
             polarity = (
-                "positive"
-                if definition.kind in {"envelope", "follower"}
-                else "bipolar"
+                "positive" if definition.kind in {"envelope", "follower"} else "bipolar"
             )
         target_label = PERF_MODIFIER_TARGETS[str(target_id)].label
         modifier = LayerPerformanceModifier(
@@ -900,9 +906,7 @@ class ModulatorBankPanel(QWidget):
                 definition.input_source, definition.input_source
             )
             if input_value is None:
-                self.input_live_label.setText(
-                    f"INPUT · {input_name} · NO SIGNAL"
-                )
+                self.input_live_label.setText(f"INPUT · {input_name} · NO SIGNAL")
             else:
                 self.input_live_label.setText(
                     f"INPUT · {input_name} · {float(input_value):.3f}"
@@ -915,9 +919,7 @@ class ModulatorBankPanel(QWidget):
                 definition.trigger_source, definition.trigger_source
             )
             if trigger_value is None:
-                self.input_live_label.setText(
-                    f"TRIGGER · {trigger_name} · NO SIGNAL"
-                )
+                self.input_live_label.setText(f"TRIGGER · {trigger_name} · NO SIGNAL")
             else:
                 self.input_live_label.setText(
                     f"TRIGGER · {trigger_name} · {float(trigger_value):.3f} "

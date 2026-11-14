@@ -21,7 +21,8 @@ class VisualActivity:
     @classmethod
     def measure(cls, layers: Iterable[object]) -> VisualActivity:
         eligible = [
-            layer for layer in layers
+            layer
+            for layer in layers
             if bool(getattr(layer, "visible", True))
             and not bool(getattr(layer, "locked", False))
         ]
@@ -54,11 +55,11 @@ class VisualActivity:
 
             scale_activity = min(
                 1.0,
-                0.5 * (
-                    abs(math.log(scale_x)) + abs(math.log(scale_y))
-                ) / math.log(4.0),
+                0.5 * (abs(math.log(scale_x)) + abs(math.log(scale_y))) / math.log(4.0),
             )
-            rotation_activity = min(1.0, abs(float(getattr(layer, "rotation", 0.0))) / 180.0)
+            rotation_activity = min(
+                1.0, abs(float(getattr(layer, "rotation", 0.0))) / 180.0
+            )
             translation_activity = min(
                 1.0,
                 math.hypot(center_x - 0.5, center_y - 0.5) / math.sqrt(0.5),
@@ -72,7 +73,9 @@ class VisualActivity:
             source_type = str(getattr(layer, "source_type", "unknown"))
             generator_type = str(getattr(layer, "generator_type", "") or "")
             source_kinds.add(
-                f"generator:{generator_type}" if source_type == "generator" else source_type
+                f"generator:{generator_type}"
+                if source_type == "generator"
+                else source_type
             )
 
             visible_width = max(0.0, min(1.0, right) - max(0.0, left))
@@ -84,7 +87,7 @@ class VisualActivity:
 
         overlap_values: list[float] = []
         for index, first in enumerate(boxes):
-            for second in boxes[index + 1:]:
+            for second in boxes[index + 1 :]:
                 intersection_width = max(
                     0.0,
                     min(first[2], second[2]) - max(first[0], second[0]),
@@ -153,9 +156,7 @@ class GenerativeVariationDirector:
 
     def reset(self, palette_memory_phrases: int | None = None) -> None:
         if palette_memory_phrases is not None:
-            self.palette_memory_phrases = max(
-                0, min(16, int(palette_memory_phrases))
-            )
+            self.palette_memory_phrases = max(0, min(16, int(palette_memory_phrases)))
         self._palette_history.clear()
         self._phrase_index = 0
         self._anchor_layer_id = None
@@ -174,11 +175,14 @@ class GenerativeVariationDirector:
     def transition_revision(self) -> int:
         return self._transition_revision
 
-    def choose_anchor(self, layers: Iterable[object], enabled: bool = True) -> str | None:
+    def choose_anchor(
+        self, layers: Iterable[object], enabled: bool = True
+    ) -> str | None:
         candidates = [layer for layer in layers if self._eligible(layer)]
         current = next(
             (
-                layer for layer in candidates
+                layer
+                for layer in candidates
                 if str(getattr(layer, "id", "")) == self._anchor_layer_id
             ),
             None,
@@ -216,19 +220,16 @@ class GenerativeVariationDirector:
         return self._anchor_layer_id
 
     def select_layers(
-            self,
-            layers: Iterable[object],
-            maximum: int,
-            rng: random.Random,
-            *,
-            keep_anchor: bool = False,
-            prefer_particles: bool = False,
-            anchor_persistence: float = 0.0,
+        self,
+        layers: Iterable[object],
+        maximum: int,
+        rng: random.Random,
+        *,
+        keep_anchor: bool = False,
+        prefer_particles: bool = False,
+        anchor_persistence: float = 0.0,
     ) -> tuple[str, ...]:
-        candidates = [
-            layer for layer in layers
-            if self._eligible(layer)
-        ]
+        candidates = [layer for layer in layers if self._eligible(layer)]
         anchor_id = self.choose_anchor(
             candidates,
             enabled=keep_anchor or anchor_persistence > 0.0,
@@ -237,24 +238,25 @@ class GenerativeVariationDirector:
             persistence = max(0.0, min(1.0, float(anchor_persistence)))
             if keep_anchor or rng.random() < persistence:
                 candidates = [
-                    layer for layer in candidates
+                    layer
+                    for layer in candidates
                     if str(getattr(layer, "id", "")) != anchor_id
                 ]
         rng.shuffle(candidates)
         if prefer_particles:
             particle_layers = [
-                layer for layer in candidates
+                layer
+                for layer in candidates
                 if (
-                        getattr(layer, "source_type", "") == "generator"
-                        and getattr(layer, "generator_type", "")
-                        in {"particles", "particle_system_2"}
+                    getattr(layer, "source_type", "") == "generator"
+                    and getattr(layer, "generator_type", "")
+                    in {"particles", "particle_system_2"}
                 )
             ]
-            particle_ids = {
-                str(getattr(layer, "id", "")) for layer in particle_layers
-            }
+            particle_ids = {str(getattr(layer, "id", "")) for layer in particle_layers}
             candidates = particle_layers + [
-                layer for layer in candidates
+                layer
+                for layer in candidates
                 if str(getattr(layer, "id", "")) not in particle_ids
             ]
         limit = max(0, min(len(candidates), int(maximum)))
@@ -272,7 +274,9 @@ class GenerativeVariationDirector:
             self._palette_history.popleft()
         return self._phrase_index
 
-    def choose_palette(self, palette_names: Iterable[str], rng: random.Random) -> str | None:
+    def choose_palette(
+        self, palette_names: Iterable[str], rng: random.Random
+    ) -> str | None:
         names = tuple(str(name) for name in palette_names if str(name))
         if not names:
             return None
@@ -284,7 +288,10 @@ class GenerativeVariationDirector:
         available = [name for name in names if name not in recent]
         selected = rng.choice(available or list(names))
         if self.palette_memory_phrases > 0:
-            if self._palette_history and self._palette_history[-1][0] == self._phrase_index:
+            if (
+                self._palette_history
+                and self._palette_history[-1][0] == self._phrase_index
+            ):
                 self._palette_history[-1] = (self._phrase_index, selected)
             else:
                 self._palette_history.append((self._phrase_index, selected))
@@ -296,7 +303,7 @@ class GenerativeVariationDirector:
 
     def effect_ready(self, enabled: bool = True) -> bool:
         return bool(enabled) and (
-                self._transition_revision > self._effect_transition_revision
+            self._transition_revision > self._effect_transition_revision
         )
 
     def mark_effect_applied(self) -> None:
@@ -304,11 +311,11 @@ class GenerativeVariationDirector:
 
     @staticmethod
     def particle_peak_factor(
-            section: str,
-            energy: float,
-            intensity: float,
-            density_macro: float = 0.0,
-            boost: float = 0.35,
+        section: str,
+        energy: float,
+        intensity: float,
+        density_macro: float = 0.0,
+        boost: float = 0.35,
     ) -> float:
         """Return a bounded multiplier for particle density/emission at peaks."""
         drive = max(float(energy), float(intensity), float(density_macro))
@@ -323,15 +330,15 @@ class GenerativeVariationDirector:
 
     @staticmethod
     def transition_duration(
-            section: str,
-            rng: random.Random,
-            *,
-            slow_breakdowns: bool = True,
-            normal_min: float = 0.65,
-            normal_max: float = 1.8,
-            breakdown_min: float = 5.0,
-            breakdown_max: float = 9.0,
-            depth: float = 0.0,
+        section: str,
+        rng: random.Random,
+        *,
+        slow_breakdowns: bool = True,
+        normal_min: float = 0.65,
+        normal_max: float = 1.8,
+        breakdown_min: float = 5.0,
+        breakdown_max: float = 9.0,
+        depth: float = 0.0,
     ) -> float:
         """Choose a smooth transition duration, extending breakdowns and DPTH."""
         if slow_breakdowns and section == "breakdown":

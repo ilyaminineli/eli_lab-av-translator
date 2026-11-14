@@ -38,20 +38,58 @@ TMLN_EVT_LABELS = {
     "transition_cue": "Transition cue",
 }
 
-EFFECT_SETTING_FLDS = frozenset({
-    "enabled", "mix", "brightness", "exposure", "contrast", "saturation", "gamma",
-    "temperature", "tint", "hue", "vignette", "grain", "scanlines", "chromatic",
-    "glitch", "pixelate", "posterize", "invert", "halftone", "solarize",
-    "transform_mode", "transform_mix", "kaleidoscope_slices",
-    "kaleidoscope_rotation", "kaleidoscope_zoom", "mosaic_tiles",
-    "pixel_sort_amount", "pixel_sort_threshold", "edge_amount", "dither",
-    "displacement_source_id", "displacement_amount", "displacement_scale",
-    "displacement_luma", "feedback_enabled", "feedback_amount", "feedback_decay",
-    "feedback_zoom", "feedback_rotation", "feedback_translate_x",
-    "feedback_translate_y", "feedback_color_shift", "feedback_distortion",
-    "feedback_motion_warp", "feedback_datamosh", "feedback_blend_mode",
-    "feedback_delay_frames", "feedback_frozen",
-})
+EFFECT_SETTING_FLDS = frozenset(
+    {
+        "enabled",
+        "mix",
+        "brightness",
+        "exposure",
+        "contrast",
+        "saturation",
+        "gamma",
+        "temperature",
+        "tint",
+        "hue",
+        "vignette",
+        "grain",
+        "scanlines",
+        "chromatic",
+        "glitch",
+        "pixelate",
+        "posterize",
+        "invert",
+        "halftone",
+        "solarize",
+        "transform_mode",
+        "transform_mix",
+        "kaleidoscope_slices",
+        "kaleidoscope_rotation",
+        "kaleidoscope_zoom",
+        "mosaic_tiles",
+        "pixel_sort_amount",
+        "pixel_sort_threshold",
+        "edge_amount",
+        "dither",
+        "displacement_source_id",
+        "displacement_amount",
+        "displacement_scale",
+        "displacement_luma",
+        "feedback_enabled",
+        "feedback_amount",
+        "feedback_decay",
+        "feedback_zoom",
+        "feedback_rotation",
+        "feedback_translate_x",
+        "feedback_translate_y",
+        "feedback_color_shift",
+        "feedback_distortion",
+        "feedback_motion_warp",
+        "feedback_datamosh",
+        "feedback_blend_mode",
+        "feedback_delay_frames",
+        "feedback_frozen",
+    }
+)
 
 _EFFECT_ENUMS = {
     "transform_mode": {"none", "kaleidoscope", "polar", "mosaic", "pixel_sort"},
@@ -82,7 +120,9 @@ def _sanitize_json_value(value: object, depth: int = 0) -> object:
         raise ValueError("Timeline event payload is nested too deeply.")
     if value is None or isinstance(value, (str, bool, int)):
         if isinstance(value, str) and len(value) > 1024:
-            raise ValueError("Timeline event text values are limited to 1024 characters.")
+            raise ValueError(
+                "Timeline event text values are limited to 1024 characters."
+            )
         return value
     if isinstance(value, float):
         if not math.isfinite(value):
@@ -99,7 +139,9 @@ def _sanitize_json_value(value: object, depth: int = 0) -> object:
         for key, item in value.items():
             name = str(key).strip()
             if not name or len(name) > 64:
-                raise ValueError("Timeline event payload contains an invalid field name.")
+                raise ValueError(
+                    "Timeline event payload contains an invalid field name."
+                )
             result[name] = _sanitize_json_value(item, depth + 1)
         return result
     raise ValueError("Timeline event payload must contain JSON-compatible values.")
@@ -156,15 +198,28 @@ class PerformanceTimelineEvent:
                 "Transition duration",
             )
             if not 0.0 <= duration <= 60.0:
-                raise ValueError("Transition duration must be between 0 and 60 seconds.")
+                raise ValueError(
+                    "Transition duration must be between 0 and 60 seconds."
+                )
             self.payload["morph_seconds"] = duration
 
         elif self.event_type == "clip_trigger":
             deck_id = str(self.payload.get("deck_id", "")).strip()
             if deck_id not in VID_DECK_IDS:
-                raise ValueError(f"Clip trigger deck must be one of {', '.join(VID_DECK_IDS)}.")
+                raise ValueError(
+                    f"Clip trigger deck must be one of {', '.join(VID_DECK_IDS)}."
+                )
             action = str(self.payload.get("action", "play")).strip().lower()
-            if action not in {"load", "play", "pause", "hold", "release", "restart", "stop", "seek"}:
+            if action not in {
+                "load",
+                "play",
+                "pause",
+                "hold",
+                "release",
+                "restart",
+                "stop",
+                "seek",
+            }:
                 raise ValueError("Unsupported clip trigger action.")
             self.payload["deck_id"] = deck_id
             self.payload["action"] = action
@@ -174,9 +229,13 @@ class PerformanceTimelineEvent:
             else:
                 self.payload.pop("asset_id", None)
             if action == "seek":
-                seconds = _finite_number(self.payload.get("seconds", 0.0), "Seek position")
+                seconds = _finite_number(
+                    self.payload.get("seconds", 0.0), "Seek position"
+                )
                 if not 0.0 <= seconds <= 86400.0:
-                    raise ValueError("Clip seek position must be between 0 and 86400 seconds.")
+                    raise ValueError(
+                        "Clip seek position must be between 0 and 86400 seconds."
+                    )
                 self.payload["seconds"] = seconds
             for name in ("segment_start", "segment_end"):
                 if name in self.payload and self.payload[name] is not None:
@@ -184,11 +243,9 @@ class PerformanceTimelineEvent:
                     if not 0.0 <= seconds <= 86400.0:
                         raise ValueError(f"{name} must be between 0 and 86400 seconds.")
                     self.payload[name] = seconds
-            if (
-                    self.payload.get("segment_end") is not None
-                    and float(self.payload["segment_end"])
-                    <= float(self.payload.get("segment_start", 0.0))
-            ):
+            if self.payload.get("segment_end") is not None and float(
+                self.payload["segment_end"]
+            ) <= float(self.payload.get("segment_start", 0.0)):
                 raise ValueError("Clip segment end must be later than its start.")
             loop_value = self.payload.get("loop", True)
             if not isinstance(loop_value, bool):
@@ -215,7 +272,10 @@ class PerformanceTimelineEvent:
                         raise ValueError(f"Unsupported {name} value: {value}")
                     clean_settings[name] = enum_value
                 elif name in {
-                    "enabled", "displacement_luma", "feedback_enabled", "feedback_frozen"
+                    "enabled",
+                    "displacement_luma",
+                    "feedback_enabled",
+                    "feedback_frozen",
                 }:
                     if not isinstance(value, bool):
                         raise ValueError(f"{name} must be true or false.")
@@ -225,7 +285,9 @@ class PerformanceTimelineEvent:
                 else:
                     clean_settings[name] = _finite_number(value, name)
             if not preset and not clean_settings:
-                raise ValueError("Effect change needs a preset name or one or more settings.")
+                raise ValueError(
+                    "Effect change needs a preset name or one or more settings."
+                )
             self.payload = {"preset_name": preset, "settings": clean_settings}
 
         elif self.event_type == "text_regenerate":
@@ -239,7 +301,9 @@ class PerformanceTimelineEvent:
                 if isinstance(seed, bool) or not isinstance(seed, int):
                     raise ValueError("Text regeneration seed must be an integer.")
                 if not 0 <= seed <= 2_147_483_647:
-                    raise ValueError("Text regeneration seed is outside its permitted range.")
+                    raise ValueError(
+                        "Text regeneration seed is outside its permitted range."
+                    )
 
         elif self.event_type == "palette_change":
             palette = str(self.payload.get("palette", "")).strip()
@@ -250,15 +314,17 @@ class PerformanceTimelineEvent:
         elif self.event_type == "modulation":
             macro_id = str(self.payload.get("macro_id", "")).strip()
             if macro_id not in PERF_MACRO_IDS:
-                raise ValueError(f"Modulation event macro must be one of {', '.join(PERF_MACRO_IDS)}.")
+                raise ValueError(
+                    f"Modulation event macro must be one of {', '.join(PERF_MACRO_IDS)}."
+                )
             value = _finite_number(self.payload.get("value"), "Macro value")
             if not 0.0 <= value <= 1.0:
                 raise ValueError("Macro value must be normalized between 0 and 1.")
             duration_bars = self.payload.get("duration_bars", 4)
             if (
-                    isinstance(duration_bars, bool)
-                    or not isinstance(duration_bars, int)
-                    or not 1 <= duration_bars <= 256
+                isinstance(duration_bars, bool)
+                or not isinstance(duration_bars, int)
+                or not 1 <= duration_bars <= 256
             ):
                 raise ValueError("Macro duration must be between 1 and 256 bars.")
             self.payload = {
@@ -309,11 +375,12 @@ class PerformanceTimeline:
         self.events.sort(key=lambda item: (item.bar, item.beat))
 
     def add_event(
-            self,
-            event: PerformanceTimelineEvent | dict[str, object],
+        self,
+        event: PerformanceTimelineEvent | dict[str, object],
     ) -> str:
         item = (
-            event if isinstance(event, PerformanceTimelineEvent)
+            event
+            if isinstance(event, PerformanceTimelineEvent)
             else PerformanceTimelineEvent.from_dict(event)
         )
         item.normalize()
@@ -328,9 +395,9 @@ class PerformanceTimeline:
         return item.event_id
 
     def update_event(
-            self,
-            event_id: str,
-            changes: PerformanceTimelineEvent | dict[str, object],
+        self,
+        event_id: str,
+        changes: PerformanceTimelineEvent | dict[str, object],
     ) -> None:
         index = next(
             (i for i, item in enumerate(self.events) if item.event_id == event_id),
@@ -373,10 +440,10 @@ class PerformanceTimeline:
         self.state_revision += 1
 
     def arm(
-            self,
-            current_bar: int = 1,
-            current_beat: int = 1,
-            transport_running: bool = False,
+        self,
+        current_bar: int = 1,
+        current_beat: int = 1,
+        transport_running: bool = False,
     ) -> None:
         bar = max(1, min(MAX_TMLN_BR, int(current_bar)))
         beat = max(1, min(16, int(current_beat)))
@@ -389,29 +456,29 @@ class PerformanceTimeline:
         self._fired_ids.clear()
         self.last_event_label = ""
         self.last_event_type = ""
-        self.last_event_result = "ARMED · waiting for transport" if not transport_running else "ARMED"
+        self.last_event_result = (
+            "ARMED · waiting for transport" if not transport_running else "ARMED"
+        )
         self.last_error = ""
         self.state_revision += 1
 
     def synchronize_position(
-            self,
-            bar: int,
-            beat: int,
-            beats_per_bar: int = 4,
+        self,
+        bar: int,
+        beat: int,
+        beats_per_bar: int = 4,
     ) -> None:
         """Prime a running show at a received clock position without replaying earlier bars."""
         bar_value = max(1, min(MAX_TMLN_BR, int(bar)))
         beat_value = max(1, min(max(1, min(16, int(beats_per_bar))), int(beat)))
         position = (bar_value, beat_value)
         self._fired_ids = {
-            event.event_id for event in self.events
-            if event.position < position
+            event.event_id for event in self.events if event.position < position
         }
         # Mark bars before the received clock as elapsed, but leave the exact
         # received position eligible so a marker on this bar/beat can still fire.
         self._fired_ids = {
-            event.event_id for event in self.events
-            if event.position < position
+            event.event_id for event in self.events if event.position < position
         }
         self._last_position = (
             (bar_value, beat_value - 1)
@@ -448,10 +515,10 @@ class PerformanceTimeline:
         self.state_revision += 1
 
     def tick(
-            self,
-            bar: int,
-            beat: int,
-            beats_per_bar: int = 4,
+        self,
+        bar: int,
+        beat: int,
+        beats_per_bar: int = 4,
     ) -> list[PerformanceTimelineEvent]:
         current = (
             max(1, min(MAX_TMLN_BR, int(bar))),
@@ -465,27 +532,37 @@ class PerformanceTimeline:
         if current < self._last_position:
             # A transport restart/rewind makes later events eligible again.
             self._fired_ids = {
-                event_id for event_id in self._fired_ids
+                event_id
+                for event_id in self._fired_ids
                 if (
-                        (item := next(
-                            (candidate for candidate in self.events
-                             if candidate.event_id == event_id),
+                    (
+                        item := next(
+                            (
+                                candidate
+                                for candidate in self.events
+                                if candidate.event_id == event_id
+                            ),
                             None,
-                        )) is not None
-                        and item.position < current
+                        )
+                    )
+                    is not None
+                    and item.position < current
                 )
             }
-            previous = (current[0], current[1] - 1) if current[1] > 1 else (
-                max(0, current[0] - 1), 16
+            previous = (
+                (current[0], current[1] - 1)
+                if current[1] > 1
+                else (max(0, current[0] - 1), 16)
             )
             self._last_position = previous
 
         due = [
-            item for item in self.events
+            item
+            for item in self.events
             if item.enabled
-               and item.event_id not in self._fired_ids
-               and self._last_position < item.position <= current
-               and item.beat <= max(1, min(16, int(beats_per_bar)))
+            and item.event_id not in self._fired_ids
+            and self._last_position < item.position <= current
+            and item.beat <= max(1, min(16, int(beats_per_bar)))
         ]
         for item in due:
             self._fired_ids.add(item.event_id)
@@ -495,10 +572,10 @@ class PerformanceTimeline:
         return due
 
     def record_result(
-            self,
-            event: PerformanceTimelineEvent,
-            success: bool,
-            message: str,
+        self,
+        event: PerformanceTimelineEvent,
+        success: bool,
+        message: str,
     ) -> None:
         self.last_event_label = event.label or TMLN_EVT_LABELS[event.event_type]
         self.last_event_type = event.event_type
@@ -516,10 +593,7 @@ class PerformanceTimeline:
         }
 
     def load_dict(self, values: object) -> None:
-        raw_events = (
-            values.get("events", [])
-            if isinstance(values, dict) else []
-        )
+        raw_events = values.get("events", []) if isinstance(values, dict) else []
         result: list[PerformanceTimelineEvent] = []
         seen: set[str] = set()
         if isinstance(raw_events, list):

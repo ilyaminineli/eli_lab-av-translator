@@ -127,19 +127,24 @@ def default_generator_settings(generator_type: str) -> dict[str, Any]:
     return deepcopy(_DEFAULTS[generator_type])
 
 
-def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> dict[str, Any]:
+def normalize_settings(
+    generator_type: str, settings: dict[str, Any] | None
+) -> dict[str, Any]:
     """Merge user settings with safe defaults and clamp resource/visual ranges."""
     result = default_generator_settings(generator_type)
     if settings:
-        result.update({
-            key: value for key, value in settings.items()
-            if key in result
-        })
+        result.update({key: value for key, value in settings.items() if key in result})
 
     if generator_type == "geometry":
         if result["pattern"] not in {
-            "rings", "grid", "radial", "crosshatch", "polygon",
-            "spiral", "moire", "hexgrid",
+            "rings",
+            "grid",
+            "radial",
+            "crosshatch",
+            "polygon",
+            "spiral",
+            "moire",
+            "hexgrid",
         }:
             result["pattern"] = "rings"
         result["density"] = max(2, min(80, int(result["density"])))
@@ -151,10 +156,18 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
             result["text_pool_language"] = "bilingual"
         result["text_pool_theme"] = result.get("text_pool_theme", "random")
         if result["text_pool_theme"] not in {
-            "random", "memory", "body", "signal", "ritual", "identity", "queer"
+            "random",
+            "memory",
+            "body",
+            "signal",
+            "ritual",
+            "identity",
+            "queer",
         }:
             result["text_pool_theme"] = "random"
-        result["text_pool_count"] = max(1, min(60, int(result.get("text_pool_count", 8))))
+        result["text_pool_count"] = max(
+            1, min(60, int(result.get("text_pool_count", 8)))
+        )
         result["text_pool_dictionary"] = bool(result.get("text_pool_dictionary", True))
         result["text_auto_regenerate"] = bool(result.get("text_auto_regenerate", True))
         result["font_size"] = max(12, min(420, int(result["font_size"])))
@@ -177,7 +190,9 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
         if result.get("text_layout") not in {"single", "collage"}:
             result["text_layout"] = "single"
         if result.get("text_writing_mode") not in {
-            "horizontal", "vertical_rl", "vertical_lr",
+            "horizontal",
+            "vertical_rl",
+            "vertical_lr",
         }:
             result["text_writing_mode"] = "horizontal"
         if result.get("text_path_mode") not in {"none", "circle", "arc", "custom"}:
@@ -189,10 +204,12 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
                 try:
                     if len(point) < 2:
                         continue
-                    path_points.append([
-                        max(0.0, min(1.0, float(point[0]))),
-                        max(0.0, min(1.0, float(point[1]))),
-                    ])
+                    path_points.append(
+                        [
+                            max(0.0, min(1.0, float(point[0]))),
+                            max(0.0, min(1.0, float(point[1]))),
+                        ]
+                    )
                 except (TypeError, ValueError, OverflowError):
                     continue
         if len(path_points) < 2:
@@ -212,41 +229,63 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
                 if total_run_characters > 8192:
                     break
                 run = {"text": run_text}
-                family = str(raw_run.get("font_family", result["font_family"]))[:128].strip()
+                family = str(raw_run.get("font_family", result["font_family"]))[
+                    :128
+                ].strip()
                 run["font_family"] = family or str(result["font_family"])
                 run["font_size"] = max(
                     12, min(420, int(raw_run.get("font_size", result["font_size"])))
                 )
                 requested_run_weight = max(
-                    100, min(900, int(raw_run.get("font_weight", result["font_weight"])))
+                    100,
+                    min(900, int(raw_run.get("font_weight", result["font_weight"]))),
                 )
                 run["font_weight"] = min(
                     (100, 200, 300, 400, 500, 600, 700, 800, 900),
                     key=lambda weight: abs(weight - requested_run_weight),
                 )
                 for key, fallback in (
-                        ("color", result["primary_color"]),
-                        ("stroke_color", result["stroke_color"]),
+                    ("color", result["primary_color"]),
+                    ("stroke_color", result["stroke_color"]),
                 ):
                     value = str(raw_run.get(key, fallback)).strip()
                     run[key] = value[:32] if value.startswith("#") else fallback
                 run["letter_spacing"] = max(
-                    -8.0, min(48.0, float(raw_run.get("letter_spacing", result["letter_spacing"])))
+                    -8.0,
+                    min(
+                        48.0,
+                        float(raw_run.get("letter_spacing", result["letter_spacing"])),
+                    ),
                 )
                 run["stroke_width"] = max(
-                    0.0, min(24.0, float(raw_run.get("stroke_width", result["stroke_width"])))
+                    0.0,
+                    min(
+                        24.0, float(raw_run.get("stroke_width", result["stroke_width"]))
+                    ),
                 )
                 run["shadow"] = bool(raw_run.get("shadow", result["shadow"]))
                 text_runs.append(run)
         result["text_runs"] = text_runs
-        result["collage_seed"] = max(0, min(2 ** 31 - 1, int(result["collage_seed"])))
+        result["collage_seed"] = max(0, min(2**31 - 1, int(result["collage_seed"])))
         result["collage_font_variation"] = max(
             0.0, min(1.0, float(result["collage_font_variation"]))
         )
         if result.get("text_animation") not in {
-            "none", "type_on", "word_reveal", "line_wave", "jitter", "crawl", "glitch",
-            "reverse_typewriter", "dissolve", "flicker", "character_displacement",
-            "vertical_reveal", "scattered_glyphs", "word_collisions", "mechanical_scroll",
+            "none",
+            "type_on",
+            "word_reveal",
+            "line_wave",
+            "jitter",
+            "crawl",
+            "glitch",
+            "reverse_typewriter",
+            "dissolve",
+            "flicker",
+            "character_displacement",
+            "vertical_reveal",
+            "scattered_glyphs",
+            "word_collisions",
+            "mechanical_scroll",
         }:
             result["text_animation"] = "none"
         result["text_animation_speed"] = max(
@@ -276,19 +315,28 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
             result["mode"] = "drift"
     elif generator_type == "particle_system_2":
         result["particle_count"] = max(128, min(8192, int(result["particle_count"])))
-        result["emission_rate"] = max(
-            0.0, min(3000.0, float(result["emission_rate"]))
-        )
+        result["emission_rate"] = max(0.0, min(3000.0, float(result["emission_rate"])))
         result["population_count"] = max(1, min(4, int(result["population_count"])))
         if result["emitter_type"] not in {
-            "point", "circle", "rectangle", "path", "video_luminance",
-            "image_silhouette", "contour",
+            "point",
+            "circle",
+            "rectangle",
+            "path",
+            "video_luminance",
+            "image_silhouette",
+            "contour",
         }:
             result["emitter_type"] = "point"
         if result["emitter_map_mode"] not in {"luminance", "alpha", "contour"}:
             result["emitter_map_mode"] = "luminance"
         if result["direction"] not in {
-            "radial", "random", "up", "down", "left", "right", "tangent",
+            "radial",
+            "random",
+            "up",
+            "down",
+            "left",
+            "right",
+            "tangent",
         }:
             result["direction"] = "radial"
         if result["force_type"] not in {"none", "attract", "repel", "orbit"}:
@@ -308,19 +356,13 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
             except (TypeError, ValueError, OverflowError):
                 return list(fallback)
 
-        result["emitter_center"] = pair(
-            result["emitter_center"], (0.5, 0.5), 0.0, 1.0
-        )
-        result["emitter_size"] = pair(
-            result["emitter_size"], (0.34, 0.24), 0.01, 1.0
-        )
-        result["acceleration"] = pair(
-            result["acceleration"], (0.0, 0.0), -2.0, 2.0
-        )
-        result["force_center"] = pair(
-            result["force_center"], (0.5, 0.5), 0.0, 1.0
-        )
-        result["emitter_source_id"] = str(result["emitter_source_id"] or "").strip()[:256]
+        result["emitter_center"] = pair(result["emitter_center"], (0.5, 0.5), 0.0, 1.0)
+        result["emitter_size"] = pair(result["emitter_size"], (0.34, 0.24), 0.01, 1.0)
+        result["acceleration"] = pair(result["acceleration"], (0.0, 0.0), -2.0, 2.0)
+        result["force_center"] = pair(result["force_center"], (0.5, 0.5), 0.0, 1.0)
+        result["emitter_source_id"] = str(result["emitter_source_id"] or "").strip()[
+            :256
+        ]
         result["emitter_threshold"] = max(
             0.0, min(1.0, float(result["emitter_threshold"]))
         )
@@ -338,7 +380,10 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
                 path_points.append(pair(point, (0.5, 0.5), 0.0, 1.0))
         if len(path_points) < 2:
             path_points = [
-                [0.12, 0.5], [0.34, 0.18], [0.66, 0.82], [0.88, 0.5],
+                [0.12, 0.5],
+                [0.34, 0.18],
+                [0.66, 0.82],
+                [0.88, 0.5],
             ]
         result["path_points"] = path_points
         result["emitter_radius"] = max(0.01, min(0.5, float(result["emitter_radius"])))
@@ -346,21 +391,25 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
         result["speed"] = max(0.0, min(1.5, float(result["speed"])))
         result["spread"] = max(0.0, min(2.0, float(result["spread"])))
         result["turbulence"] = max(0.0, min(1.5, float(result["turbulence"])))
-        result["turbulence_scale"] = max(0.1, min(24.0, float(result["turbulence_scale"])))
+        result["turbulence_scale"] = max(
+            0.1, min(24.0, float(result["turbulence_scale"]))
+        )
         result["force_strength"] = max(0.0, min(4.0, float(result["force_strength"])))
         result["force_radius"] = max(0.01, min(1.0, float(result["force_radius"])))
         result["drag"] = max(0.0, min(4.0, float(result["drag"])))
         result["trail"] = max(0.0, min(1.0, float(result["trail"])))
         result["particle_size"] = max(1.0, min(48.0, float(result["particle_size"])))
-        result["seed"] = max(0, min(2 ** 31 - 1, int(result["seed"])))
+        result["seed"] = max(0, min(2**31 - 1, int(result["seed"])))
 
     if result.get("animation") not in _ANIMATIONS:
         result["animation"] = "none"
     result["animation_speed"] = max(0.0, min(8.0, float(result["animation_speed"])))
     result["animation_amount"] = max(
         0.0,
-        min(360.0 if result["animation"] == "rotate" else 0.45,
-            float(result["animation_amount"])),
+        min(
+            360.0 if result["animation"] == "rotate" else 0.45,
+            float(result["animation_amount"]),
+        ),
     )
     return result
 

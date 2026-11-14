@@ -46,10 +46,30 @@ LY_EFFECT_PSETS: dict[str, dict[str, Any]] = {
     },
     "Bleach Bypass": {"contrast": 1.72, "saturation": 0.48, "brightness": -0.035},
     "Infrared": {"hue": -42.0, "saturation": 1.9, "contrast": 1.28, "brightness": 0.04},
-    "Cold Storage": {"hue": 22.0, "saturation": 0.72, "contrast": 1.18, "brightness": -0.025},
-    "Riso Print": {"monochrome": 0.28, "posterize": 0.72, "contrast": 1.4, "saturation": 1.45},
-    "Soft Ghost": {"monochrome": 0.18, "chromatic": 0.28, "saturation": 0.62, "contrast": 0.82},
-    "Hard Signal": {"threshold": 0.42, "posterize": 0.9, "scanlines": 0.62, "contrast": 1.9},
+    "Cold Storage": {
+        "hue": 22.0,
+        "saturation": 0.72,
+        "contrast": 1.18,
+        "brightness": -0.025,
+    },
+    "Riso Print": {
+        "monochrome": 0.28,
+        "posterize": 0.72,
+        "contrast": 1.4,
+        "saturation": 1.45,
+    },
+    "Soft Ghost": {
+        "monochrome": 0.18,
+        "chromatic": 0.28,
+        "saturation": 0.62,
+        "contrast": 0.82,
+    },
+    "Hard Signal": {
+        "threshold": 0.42,
+        "posterize": 0.9,
+        "scanlines": 0.62,
+        "contrast": 1.9,
+    },
 }
 
 
@@ -60,16 +80,18 @@ def default_layer_effects() -> dict[str, Any]:
 def normalize_layer_effects(settings: dict[str, Any] | None) -> dict[str, Any]:
     result = default_layer_effects()
     if isinstance(settings, dict):
-        result.update({
-            key: value for key, value in settings.items()
-            if key in result
-        })
+        result.update({key: value for key, value in settings.items() if key in result})
     result["enabled"] = bool(result["enabled"])
     raw_stages = result.get("stages", [])
     result["stages"] = normalize_effect_stages(raw_stages)
     for key in (
-            "mix", "monochrome", "invert", "threshold", "posterize",
-            "scanlines", "chromatic",
+        "mix",
+        "monochrome",
+        "invert",
+        "threshold",
+        "posterize",
+        "scanlines",
+        "chromatic",
     ):
         result[key] = max(0.0, min(1.0, float(result[key])))
     result["hue"] = max(-180.0, min(180.0, float(result["hue"])))
@@ -116,11 +138,13 @@ def normalize_effect_stages(stages: object) -> list[dict[str, Any]]:
             amount = float(item.get("amount", 1.0))
         except (TypeError, ValueError):
             amount = 1.0
-        normalized.append({
-            "type": kind,
-            "amount": max(0.0, min(1.0, amount)),
-            "enabled": bool(item.get("enabled", True)),
-        })
+        normalized.append(
+            {
+                "type": kind,
+                "amount": max(0.0, min(1.0, amount)),
+                "enabled": bool(item.get("enabled", True)),
+            }
+        )
     return normalized
 
 

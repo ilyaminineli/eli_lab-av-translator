@@ -86,9 +86,13 @@ class MainWindow(QMainWindow):
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.media_dock)
 
         self.asset_library_panel = AssetLibraryPanel(application, self)
-        self.asset_library_dock = self._make_dock("VISUAL ASSET LIBRARY", self.asset_library_panel)
+        self.asset_library_dock = self._make_dock(
+            "VISUAL ASSET LIBRARY", self.asset_library_panel
+        )
         self.asset_library_dock.setMinimumWidth(240)
-        self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.asset_library_dock)
+        self.addDockWidget(
+            Qt.DockWidgetArea.LeftDockWidgetArea, self.asset_library_dock
+        )
         self.tabifyDockWidget(self.media_dock, self.asset_library_dock)
 
         self.deck_panel = DeckPanel(application, self)
@@ -131,7 +135,9 @@ class MainWindow(QMainWindow):
             self.performance_control_panel,
         )
         self.performance_control_dock.setMinimumWidth(300)
-        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.performance_control_dock)
+        self.addDockWidget(
+            Qt.DockWidgetArea.RightDockWidgetArea, self.performance_control_dock
+        )
         self.tabifyDockWidget(self.preview_dock, self.performance_control_dock)
 
         self.modulator_bank_panel = ModulatorBankPanel(application, self)
@@ -140,7 +146,9 @@ class MainWindow(QMainWindow):
             self.modulator_bank_panel,
         )
         self.modulator_bank_dock.setMinimumWidth(320)
-        self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.modulator_bank_dock)
+        self.addDockWidget(
+            Qt.DockWidgetArea.RightDockWidgetArea, self.modulator_bank_dock
+        )
         self.tabifyDockWidget(self.performance_control_dock, self.modulator_bank_dock)
 
         self.performance_timeline_panel = PerformanceTimelinePanel(application, self)
@@ -190,7 +198,9 @@ class MainWindow(QMainWindow):
         self.performance_view.render_status_changed.connect(self.status_label.setText)
 
         self.media_browser.assign_requested.connect(self.assign_media)
-        self.media_browser.library_updated.connect(self.automation_panel.refresh_collections)
+        self.media_browser.library_updated.connect(
+            self.automation_panel.refresh_collections
+        )
         self.media_browser.library_updated.connect(self.refresh_automation_media_pool)
         self.deck_panel.action_requested.connect(self.deck_action)
         self.deck_panel.loop_changed.connect(self.set_deck_loop)
@@ -202,10 +212,18 @@ class MainWindow(QMainWindow):
         self.automation_panel.stop_requested.connect(self.stop_automation)
         self.generators_panel.composition_changed.connect(self.layer_panel.refresh)
         self.layer_panel.layers_changed.connect(self.generators_panel.refresh)
-        self.generators_panel.selected_layer_changed.connect(self.layer_panel.select_layer)
-        self.layer_panel.selected_layer_changed.connect(self.generators_panel.select_layer)
-        self.generators_panel.selected_layer_changed.connect(self.application.set_selected_layer_id)
-        self.layer_panel.selected_layer_changed.connect(self.application.set_selected_layer_id)
+        self.generators_panel.selected_layer_changed.connect(
+            self.layer_panel.select_layer
+        )
+        self.layer_panel.selected_layer_changed.connect(
+            self.generators_panel.select_layer
+        )
+        self.generators_panel.selected_layer_changed.connect(
+            self.application.set_selected_layer_id
+        )
+        self.layer_panel.selected_layer_changed.connect(
+            self.application.set_selected_layer_id
+        )
         self.layer_panel.selected_layer_changed.connect(
             self.modulator_bank_panel.refresh_assignment_targets
         )
@@ -224,7 +242,9 @@ class MainWindow(QMainWindow):
         self.modulator_bank_panel.assignment_created.connect(
             self.layer_panel.refresh_performance_modifiers
         )
-        self.generators_panel.layer_properties_changed.connect(self.layer_panel.sync_layer_row)
+        self.generators_panel.layer_properties_changed.connect(
+            self.layer_panel.sync_layer_row
+        )
         self.layer_panel.layer_properties_changed.connect(
             self.generators_panel.sync_layer_appearance
         )
@@ -238,7 +258,9 @@ class MainWindow(QMainWindow):
             self.application.notify_manual_override
         )
         self.asset_library_panel.composition_changed.connect(self.layer_panel.refresh)
-        self.asset_library_panel.composition_changed.connect(self.generators_panel.refresh)
+        self.asset_library_panel.composition_changed.connect(
+            self.generators_panel.refresh
+        )
 
         self._create_actions()
         self._sync_performance_macro_shortcuts()
@@ -248,9 +270,8 @@ class MainWindow(QMainWindow):
         saved_state = self._ui_settings.value("ui/main_window_state_v5")
         restored = False
         if saved_geometry and saved_state:
-            restored = (
-                    self.restoreGeometry(saved_geometry)
-                    and self.restoreState(saved_state, 4)
+            restored = self.restoreGeometry(saved_geometry) and self.restoreState(
+                saved_state, 4
             )
         self._responsive_layout_managed = not restored
         self._responsive_layout_ready = True
@@ -280,7 +301,9 @@ class MainWindow(QMainWindow):
         self._status_timer = QTimer(self)
         self._status_timer.setInterval(500)
         self._status_timer.timeout.connect(self._refresh_automation_status)
-        self._status_timer.timeout.connect(self.performance_control_panel.refresh_monitor)
+        self._status_timer.timeout.connect(
+            self.performance_control_panel.refresh_monitor
+        )
         self._status_timer.timeout.connect(self.performance_timeline_panel.refresh)
         self._status_timer.start()
 
@@ -324,8 +347,8 @@ class MainWindow(QMainWindow):
         # Put the six existing Performance Macros on the operator surface. The
         # widget is detached from the advanced control dock rather than copied,
         # so values, source mappings and shortcuts keep a single owner.
-        self.live_macro_strip = self.performance_control_panel.take_performance_macro_group(
-            perform_page
+        self.live_macro_strip = (
+            self.performance_control_panel.take_performance_macro_group(perform_page)
         )
 
         # Reuse the existing renderer instead of creating a second OpenGL view.
@@ -374,7 +397,9 @@ class MainWindow(QMainWindow):
             QLabel("MEDIA LIBRARY is available in the central PREPARE workspace.")
         )
         self.asset_library_dock.setWidget(
-            QLabel("VISUAL ASSET LIBRARY is available in the central PREPARE workspace.")
+            QLabel(
+                "VISUAL ASSET LIBRARY is available in the central PREPARE workspace."
+            )
         )
         self.media_dock.hide()
         self.asset_library_dock.hide()
@@ -412,9 +437,8 @@ class MainWindow(QMainWindow):
 
     def _sync_responsive_dock_constraints(self) -> None:
         """Relax dock minimums for 4:3 and compact projector workspaces."""
-        if (
-                not getattr(self, "_responsive_layout_ready", False)
-                or not hasattr(self, "media_dock")
+        if not getattr(self, "_responsive_layout_ready", False) or not hasattr(
+            self, "media_dock"
         ):
             return
         compact = self._is_compact_workspace()
@@ -426,13 +450,13 @@ class MainWindow(QMainWindow):
         for dock in (self.media_dock, self.asset_library_dock):
             dock.setMinimumWidth(side_minimum)
         for dock in (
-                self.layer_dock,
-                self.effects_dock,
-                self.automation_dock,
-                self.preview_dock,
-                self.performance_control_dock,
-                self.modulator_bank_dock,
-                self.performance_timeline_dock,
+            self.layer_dock,
+            self.effects_dock,
+            self.automation_dock,
+            self.preview_dock,
+            self.performance_control_dock,
+            self.modulator_bank_dock,
+            self.performance_timeline_dock,
         ):
             dock.setMinimumWidth(right_minimum)
         self.deck_dock.setMinimumHeight(140 if compact else 150)
@@ -448,9 +472,9 @@ class MainWindow(QMainWindow):
         was_compact = self._responsive_compact
         self._sync_responsive_dock_constraints()
         if (
-                was_compact is not None
-                and was_compact != self._responsive_compact
-                and self._responsive_layout_managed
+            was_compact is not None
+            and was_compact != self._responsive_compact
+            and self._responsive_layout_managed
         ):
             QTimer.singleShot(0, self._apply_default_dock_sizes)
 
@@ -476,15 +500,17 @@ class MainWindow(QMainWindow):
     def restore_default_layout(self) -> None:
         """Restore the built-in dock arrangement without changing the project."""
         if not self.restoreState(self._default_dock_state, 4):
-            _LOG.warning("Could not restore the built-in dock-state snapshot; rebuilding sizes.")
+            _LOG.warning(
+                "Could not restore the built-in dock-state snapshot; rebuilding sizes."
+            )
         for dock in (
-                self.deck_dock,
-                self.layer_dock,
-                self.effects_dock,
-                self.automation_dock,
-                self.performance_control_dock,
-                self.modulator_bank_dock,
-                self.performance_timeline_dock,
+            self.deck_dock,
+            self.layer_dock,
+            self.effects_dock,
+            self.automation_dock,
+            self.performance_control_dock,
+            self.modulator_bank_dock,
+            self.performance_timeline_dock,
         ):
             dock.show()
         self.media_dock.hide()
@@ -504,7 +530,9 @@ class MainWindow(QMainWindow):
 
     def _make_dock(self, title: str, widget) -> QDockWidget:
         dock = QDockWidget(title, self)
-        dock.setObjectName(title.lower().replace(" ", "_").replace("+", "plus").replace(" ", "_"))
+        dock.setObjectName(
+            title.lower().replace(" ", "_").replace("+", "plus").replace(" ", "_")
+        )
         dock.setWidget(widget)
         dock.setAllowedAreas(
             Qt.DockWidgetArea.LeftDockWidgetArea
@@ -604,18 +632,20 @@ class MainWindow(QMainWindow):
             action = QAction(label, self)
             action.setShortcut(QKeySequence(shortcut))
             action.triggered.connect(
-                lambda checked=False, target=index: self.workspace_tabs.setCurrentIndex(target)
+                lambda checked=False, target=index: self.workspace_tabs.setCurrentIndex(
+                    target
+                )
             )
             workspace_menu.addAction(action)
         view_menu.addSeparator()
         for dock in (
-                self.deck_dock,
-                self.layer_dock,
-                self.effects_dock,
-                self.automation_dock,
-                self.performance_control_dock,
-                self.modulator_bank_dock,
-                self.performance_timeline_dock,
+            self.deck_dock,
+            self.layer_dock,
+            self.effects_dock,
+            self.automation_dock,
+            self.performance_control_dock,
+            self.modulator_bank_dock,
+            self.performance_timeline_dock,
         ):
             view_menu.addAction(dock.toggleViewAction())
 
@@ -646,19 +676,19 @@ class MainWindow(QMainWindow):
             return
 
         try:
-            audio_source = self.performance_control_panel.audio_device_combo.currentData()
+            audio_source = (
+                self.performance_control_panel.audio_device_combo.currentData()
+            )
             audio_test_signal = audio_source == "test"
             audio_device_id = (
-                str(audio_source)
-                if audio_source not in {None, "test"}
-                else ""
+                str(audio_source) if audio_source not in {None, "test"} else ""
             )
             settings = self.automation_panel._build_settings()
             duration = self.automation_panel.duration_combo.currentData()
             plan = PerformanceModePlan(
                 osc_bind_address=(
-                        self.performance_control_panel.osc_bind_edit.text().strip()
-                        or "127.0.0.1"
+                    self.performance_control_panel.osc_bind_edit.text().strip()
+                    or "127.0.0.1"
                 ),
                 osc_port=self.performance_control_panel.osc_port_spin.value(),
                 audio_device_id=audio_device_id,
@@ -708,7 +738,9 @@ class MainWindow(QMainWindow):
 
     def save_performance_set(self) -> None:
         path, _ = QFileDialog.getSaveFileName(
-            self, "Save Performance Set", "performance.eliset",
+            self,
+            "Save Performance Set",
+            "performance.eliset",
             "eli_lab Performance Set (*.eliset)",
         )
         if not path:
@@ -724,7 +756,9 @@ class MainWindow(QMainWindow):
 
     def load_performance_set(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
-            self, "Load Performance Set", "",
+            self,
+            "Load Performance Set",
+            "",
             "eli_lab Performance Set (*.eliset)",
         )
         if not path:
@@ -733,7 +767,9 @@ class MainWindow(QMainWindow):
             self.application.load_performance_set(path)
             self._sync_performance_mode_button()
             self.performance_control_panel.sync_from_application()
-            self.automation_panel.sync_performance_plan(self.application.performance_mode.plan)
+            self.automation_panel.sync_performance_plan(
+                self.application.performance_mode.plan
+            )
         except Exception as exc:
             QMessageBox.critical(self, "Could Not Load Performance Set", str(exc))
             return
@@ -744,7 +780,9 @@ class MainWindow(QMainWindow):
         self.performance_control_panel.refresh_routes()
         self.modulator_bank_panel.refresh()
         self.performance_timeline_panel.refresh(force=True)
-        self.statusBar().showMessage(f"Performance set loaded · {Path(path).name}", 5000)
+        self.statusBar().showMessage(
+            f"Performance set loaded · {Path(path).name}", 5000
+        )
 
     def _populate_projector_menu(self, menu) -> None:
         menu.clear()
@@ -782,7 +820,9 @@ class MainWindow(QMainWindow):
         try:
             if self.output_manager.window is not None:
                 self.output_manager.close()
-            self._restore_local_preview_on_close = self.workspace_tabs.currentIndex() == 0
+            self._restore_local_preview_on_close = (
+                self.workspace_tabs.currentIndex() == 0
+            )
             window = self.output_manager.open_on_screen(screen)
             if self._restore_local_preview_on_close:
                 # Release the local preview surface while the projector is active.
@@ -799,7 +839,9 @@ class MainWindow(QMainWindow):
                     f"PROJECTOR ERROR · {window.performance_view._initialization_error}"
                 )
             else:
-                self.status_label.setText("PROJECTOR OPEN · waiting for its OpenGL context")
+                self.status_label.setText(
+                    "PROJECTOR OPEN · waiting for its OpenGL context"
+                )
             window.closed.connect(self._projector_output_closed)
             self.workspace_output_label.setText(
                 f"OUTPUT  ·  PROJECTOR  ·  {screen.name()}"
@@ -952,10 +994,10 @@ class MainWindow(QMainWindow):
         self.layer_panel.refresh()
 
     def start_automation(
-            self,
-            collection_id: str | None,
-            duration_seconds: float | None,
-            settings,
+        self,
+        collection_id: str | None,
+        duration_seconds: float | None,
+        settings,
     ) -> None:
         try:
             count = self.application.start_automation(
@@ -1045,9 +1087,7 @@ class MainWindow(QMainWindow):
             )
 
         changed = self.application.tick_automation()
-        musical_change = (
-                self.application.automation.last_action != previous_auto_action
-        )
+        musical_change = self.application.automation.last_action != previous_auto_action
         running = self.application.automation.running
         if not was_running and running:
             self.automation_panel.set_running(
@@ -1076,9 +1116,9 @@ class MainWindow(QMainWindow):
             phase = mode["phase"].upper()
             self.performance_mode_button.setText(f"■ STOP PERF MODE · {phase}")
             automation_state = (
-                "running" if mode["automation_running"]
-                else "armed" if mode["automation_armed"]
-                else "idle"
+                "running"
+                if mode["automation_running"]
+                else "armed" if mode["automation_armed"] else "idle"
             )
             self.performance_mode_button.setToolTip(
                 f"Phase: {mode['phase']}\n"
@@ -1099,7 +1139,9 @@ class MainWindow(QMainWindow):
             minutes = int(remaining // 60)
             seconds = int(remaining % 60)
             time_label = f"{minutes:02d}:{seconds:02d} remaining"
-        self.automation_panel.set_status(f"RUNNING · {director.last_action} · {time_label}")
+        self.automation_panel.set_status(
+            f"RUNNING · {director.last_action} · {time_label}"
+        )
 
     def new_project(self) -> None:
         answer = QMessageBox.question(
@@ -1112,7 +1154,9 @@ class MainWindow(QMainWindow):
         self.application.reset_project()
         self._sync_performance_mode_button()
         self.performance_control_panel.sync_from_application()
-        self.automation_panel.sync_performance_plan(self.application.performance_mode.plan)
+        self.automation_panel.sync_performance_plan(
+            self.application.performance_mode.plan
+        )
         self.deck_panel.refresh()
         self.layer_panel.refresh()
         self.modulator_bank_panel.refresh()
@@ -1139,7 +1183,9 @@ class MainWindow(QMainWindow):
             self.application.load_project(path)
             self._sync_performance_mode_button()
             self.performance_control_panel.sync_from_application()
-            self.automation_panel.sync_performance_plan(self.application.performance_mode.plan)
+            self.automation_panel.sync_performance_plan(
+                self.application.performance_mode.plan
+            )
             self.deck_panel.refresh()
             self.layer_panel.refresh()
             self.modulator_bank_panel.refresh()

@@ -55,19 +55,15 @@ class PerformanceView(QOpenGLWidget):
         self._timer.start()
 
     def _on_generator_raster_ready(
-            self, layer_id: str, revision: int, fingerprint: str, pixels
+        self, layer_id: str, revision: int, fingerprint: str, pixels
     ) -> None:
-        self.engine.accept_generator_raster(
-            layer_id, revision, fingerprint, pixels
-        )
+        self.engine.accept_generator_raster(layer_id, revision, fingerprint, pixels)
         self.update()
 
     def _on_generator_raster_failed(
-            self, layer_id: str, revision: int, fingerprint: str, message: str
+        self, layer_id: str, revision: int, fingerprint: str, message: str
     ) -> None:
-        self.engine.accept_generator_error(
-            layer_id, revision, fingerprint, message
-        )
+        self.engine.accept_generator_error(layer_id, revision, fingerprint, message)
         self.update()
 
     def initializeGL(self) -> None:
@@ -109,7 +105,9 @@ class PerformanceView(QOpenGLWidget):
         except Exception as exc:
             message = str(exc)
             if message != self._last_render_error:
-                _LOG.exception("Render frame failed; keeping the renderer alive for recovery")
+                _LOG.exception(
+                    "Render frame failed; keeping the renderer alive for recovery"
+                )
                 self.render_status_changed.emit(f"Render error · {message}")
             self._last_render_error = message
             self._paint_message("RENDER FRAME FAILED", message)
@@ -130,7 +128,7 @@ class PerformanceView(QOpenGLWidget):
             average_upload_ms = self._upload_time_sum_ms / max(1, self._frame_count)
             stats = self.application.performance_snapshot()
             upload_megabytes_per_second = (
-                    self._upload_bytes_sum / max(elapsed, 0.001) / (1024.0 * 1024.0)
+                self._upload_bytes_sum / max(elapsed, 0.001) / (1024.0 * 1024.0)
             )
             self._frame_count = 0
             self._render_time_sum_ms = 0.0
@@ -161,7 +159,9 @@ class PerformanceView(QOpenGLWidget):
             self._last_dropped_frames = int(stats["dropped_frames"])
 
             decode_ms_per_frame = decode_time_delta / max(1, decoded_frames_delta)
-            convert_ms_per_frame = conversion_time_delta / max(1, published_frames_delta)
+            convert_ms_per_frame = conversion_time_delta / max(
+                1, published_frames_delta
+            )
             status = (
                 f"{fps:0.1f} FPS · decode {decode_ms_per_frame:0.1f} "
                 f"ms/f · convert {convert_ms_per_frame:0.1f} ms/f · "
@@ -219,10 +219,10 @@ class AspectRatioPreview(QWidget):
     """Keep the local performance canvas at the project's 16:9 aspect ratio."""
 
     def __init__(
-            self,
-            view: PerformanceView,
-            parent=None,
-            aspect_ratio: float = 16.0 / 9.0,
+        self,
+        view: PerformanceView,
+        parent=None,
+        aspect_ratio: float = 16.0 / 9.0,
     ) -> None:
         super().__init__(parent)
         self.view = view
@@ -251,4 +251,3 @@ class AspectRatioPreview(QWidget):
         x = bounds.x() + (bounds.width() - width) // 2
         y = bounds.y() + (bounds.height() - height) // 2
         self.view.setGeometry(x, y, width, height)
-

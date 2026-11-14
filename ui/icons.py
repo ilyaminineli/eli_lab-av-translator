@@ -55,16 +55,19 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         painter.restore()
 
     def sparkle(cx: float, cy: float, radius: float) -> None:
-        path((
-            (cx, cy - radius),
-            (cx + radius * 0.22, cy - radius * 0.22),
-            (cx + radius, cy),
-            (cx + radius * 0.22, cy + radius * 0.22),
-            (cx, cy + radius),
-            (cx - radius * 0.22, cy + radius * 0.22),
-            (cx - radius, cy),
-            (cx - radius * 0.22, cy - radius * 0.22),
-        ), close=True)
+        path(
+            (
+                (cx, cy - radius),
+                (cx + radius * 0.22, cy - radius * 0.22),
+                (cx + radius, cy),
+                (cx + radius * 0.22, cy + radius * 0.22),
+                (cx, cy + radius),
+                (cx - radius * 0.22, cy + radius * 0.22),
+                (cx - radius, cy),
+                (cx - radius * 0.22, cy - radius * 0.22),
+            ),
+            close=True,
+        )
 
     if name == "play":
         filled_triangle(((8.0, 5.0), (19.0, 12.0), (8.0, 19.0)))
@@ -76,16 +79,18 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         painter.setBrush(QColor(color))
         painter.drawRoundedRect(6.0, 6.0, 12.0, 12.0, 1.5, 1.5)
     elif name == "load":
-        path((
-            (3.0, 8.0),
-            (3.0, 5.5),
-            (9.5, 5.5),
-            (12.0, 8.0),
-            (21.0, 8.0),
-            (21.0, 18.5),
-            (3.0, 18.5),
-            (3.0, 8.0),
-        ))
+        path(
+            (
+                (3.0, 8.0),
+                (3.0, 5.5),
+                (9.5, 5.5),
+                (12.0, 8.0),
+                (21.0, 8.0),
+                (21.0, 18.5),
+                (3.0, 18.5),
+                (3.0, 8.0),
+            )
+        )
         line((12.0, 10.0), (12.0, 16.0))
         line((9.5, 13.5), (12.0, 16.0), (14.5, 13.5))
     elif name == "restart":
@@ -129,7 +134,9 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         for index in range(32):
             angle = math.tau * index / 32.0 - math.pi / 2.0
             radius = 9.0 if index % 4 in {0, 1} else 7.2
-            points.append((12.0 + math.cos(angle) * radius, 12.0 + math.sin(angle) * radius))
+            points.append(
+                (12.0 + math.cos(angle) * radius, 12.0 + math.sin(angle) * radius)
+            )
         path(tuple(points), close=True)
         painter.drawEllipse(QPointF(12.0, 12.0), 3.0, 3.0)
     elif name == "warning":
@@ -199,11 +206,11 @@ def app_icon(name: str, size: int = 24, color: str = ICON_COLOR) -> QIcon:
 
 
 def icon_button(
-        parent: QWidget,
-        name: str,
-        tooltip: str,
-        size: int = 30,
-        checkable: bool = False,
+    parent: QWidget,
+    name: str,
+    tooltip: str,
+    size: int = 30,
+    checkable: bool = False,
 ) -> QToolButton:
     button = QToolButton(parent)
     button.setIcon(app_icon(name))

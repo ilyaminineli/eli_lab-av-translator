@@ -13,16 +13,22 @@ class PerformanceManager:
     """Randomized media assignment and freeform visual composition helpers."""
 
     BLEND_MODES = ("normal", "add", "screen", "multiply", "difference")
-    _LAYOUT_RELATIONSHIPS = ("independent", "shared_center", "orbit", "nested", "opposed")
+    _LAYOUT_RELATIONSHIPS = (
+        "independent",
+        "shared_center",
+        "orbit",
+        "nested",
+        "opposed",
+    )
 
     def __init__(self, seed: int | None = None) -> None:
         self.random = random.Random(seed)
         self._shuffle_bags: dict[str, list[MediaAsset]] = defaultdict(list)
 
     def randomize_decks(
-            self,
-            assets: Iterable[MediaAsset],
-            decks: Iterable[object],
+        self,
+        assets: Iterable[MediaAsset],
+        decks: Iterable[object],
     ) -> int:
         candidates = list(assets)
         unlocked = [deck for deck in decks if not getattr(deck, "locked", False)]
@@ -50,7 +56,8 @@ class PerformanceManager:
         layer (when present) becomes the foreground headline.
         """
         candidates = [
-            layer for layer in layers
+            layer
+            for layer in layers
             if layer.visible
             and not layer.locked
             and layer.source_type in {"video", "generator", "overlay"}
@@ -59,7 +66,8 @@ class PerformanceManager:
             return 0
 
         text_layers = [
-            layer for layer in candidates
+            layer
+            for layer in candidates
             if layer.source_type == "generator" and layer.generator_type == "text"
         ]
         headline = self.random.choice(text_layers) if text_layers else None

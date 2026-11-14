@@ -128,10 +128,18 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
         "master.feedback_rotation", "Feedback rotation", -180.0, 180.0, "master"
     ),
     "master.feedback_translate_x": ModulationTargetSpec(
-        "master.feedback_translate_x", "Feedback horizontal translation", -0.25, 0.25, "master"
+        "master.feedback_translate_x",
+        "Feedback horizontal translation",
+        -0.25,
+        0.25,
+        "master",
     ),
     "master.feedback_translate_y": ModulationTargetSpec(
-        "master.feedback_translate_y", "Feedback vertical translation", -0.25, 0.25, "master"
+        "master.feedback_translate_y",
+        "Feedback vertical translation",
+        -0.25,
+        0.25,
+        "master",
     ),
     "master.feedback_color_shift": ModulationTargetSpec(
         "master.feedback_color_shift", "Feedback colour shift", 0.0, 1.0, "master"
@@ -196,7 +204,6 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
     "layer_fx.saturation": ModulationTargetSpec(
         "layer_fx.saturation", "Layer FX saturation", 0.0, 2.5, "layer"
     ),
-
     "generator.animation_speed": ModulationTargetSpec(
         "generator.animation_speed", "Generator animation speed", 0.0, 8.0, "generator"
     ),
@@ -213,10 +220,18 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
         "generator.text_animation_speed", "Text animation speed", 0.0, 8.0, "generator"
     ),
     "generator.text_animation_amount": ModulationTargetSpec(
-        "generator.text_animation_amount", "Text animation amount", 0.0, 0.18, "generator"
+        "generator.text_animation_amount",
+        "Text animation amount",
+        0.0,
+        0.18,
+        "generator",
     ),
     "generator.text_animation_columns": ModulationTargetSpec(
-        "generator.text_animation_columns", "Text animation reveal steps", 2.0, 80.0, "generator"
+        "generator.text_animation_columns",
+        "Text animation reveal steps",
+        2.0,
+        80.0,
+        "generator",
     ),
     "generator.font_size": ModulationTargetSpec(
         "generator.font_size", "Text font size", 12.0, 420.0, "generator"
@@ -243,10 +258,18 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
         "generator.particle_trail", "Particle trail", 0.0, 1.0, "generator"
     ),
     "generator.particle_emission_rate": ModulationTargetSpec(
-        "generator.particle_emission_rate", "Particle emission rate", 0.0, 3000.0, "generator"
+        "generator.particle_emission_rate",
+        "Particle emission rate",
+        0.0,
+        3000.0,
+        "generator",
     ),
     "generator.particle_system_size": ModulationTargetSpec(
-        "generator.particle_system_size", "Particle System 2.0 size", 1.0, 48.0, "generator"
+        "generator.particle_system_size",
+        "Particle System 2.0 size",
+        1.0,
+        48.0,
+        "generator",
     ),
     "generator.particle_lifetime": ModulationTargetSpec(
         "generator.particle_lifetime", "Particle lifetime", 0.25, 60.0, "generator"
@@ -255,7 +278,11 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
         "generator.particle_turbulence", "Particle turbulence", 0.0, 1.5, "generator"
     ),
     "generator.particle_force_strength": ModulationTargetSpec(
-        "generator.particle_force_strength", "Particle force strength", 0.0, 4.0, "generator"
+        "generator.particle_force_strength",
+        "Particle force strength",
+        0.0,
+        4.0,
+        "generator",
     ),
     "generator.particle_reform_strength": ModulationTargetSpec(
         "generator.particle_reform_strength",
@@ -274,16 +301,28 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
         "automation.loop_probability", "Auto loop probability", 0.0, 1.0, "automation"
     ),
     "automation.clip_switch_probability": ModulationTargetSpec(
-        "automation.clip_switch_probability", "Auto clip switch probability", 0.0, 1.0, "automation"
+        "automation.clip_switch_probability",
+        "Auto clip switch probability",
+        0.0,
+        1.0,
+        "automation",
     ),
     "automation.cut_interval": ModulationTargetSpec(
         "automation.cut_interval", "Auto minimum cut interval", 1.0, 60.0, "automation"
     ),
     "automation.min_segment_seconds": ModulationTargetSpec(
-        "automation.min_segment_seconds", "Auto minimum segment length", 0.5, 30.0, "automation"
+        "automation.min_segment_seconds",
+        "Auto minimum segment length",
+        0.5,
+        30.0,
+        "automation",
     ),
     "automation.max_segment_seconds": ModulationTargetSpec(
-        "automation.max_segment_seconds", "Auto maximum segment length", 0.5, 60.0, "automation"
+        "automation.max_segment_seconds",
+        "Auto maximum segment length",
+        0.5,
+        60.0,
+        "automation",
     ),
     "automation.layout_interval": ModulationTargetSpec(
         "automation.layout_interval", "Auto layout interval", 2.0, 120.0, "automation"
@@ -292,7 +331,11 @@ TARGET_SPECS: dict[str, ModulationTargetSpec] = {
         "automation.effect_interval", "Auto look interval", 2.0, 120.0, "automation"
     ),
     "automation.generator_interval": ModulationTargetSpec(
-        "automation.generator_interval", "Auto generator / text interval", 3.0, 120.0, "automation"
+        "automation.generator_interval",
+        "Auto generator / text interval",
+        3.0,
+        120.0,
+        "automation",
     ),
 }
 
@@ -316,18 +359,16 @@ class ModulationRoute:
     enabled: bool = True
 
     def normalize(self) -> None:
-        is_bank_source = (
-                self.source_id.startswith("modulator.")
-                and bool(self.source_id.removeprefix("modulator.").strip())
+        is_bank_source = self.source_id.startswith("modulator.") and bool(
+            self.source_id.removeprefix("modulator.").strip()
         )
-        is_performance_macro = (
-                self.source_id.startswith("performance_macro.")
-                and bool(self.source_id.removeprefix("performance_macro.").strip())
+        is_performance_macro = self.source_id.startswith("performance_macro.") and bool(
+            self.source_id.removeprefix("performance_macro.").strip()
         )
         if (
-                self.source_id not in SOURCE_RANGES
-                and not is_bank_source
-                and not is_performance_macro
+            self.source_id not in SOURCE_RANGES
+            and not is_bank_source
+            and not is_performance_macro
         ):
             raise ValueError(f"Unknown modulation source: {self.source_id}")
         if self.target_id not in TARGET_SPECS:
@@ -338,16 +379,14 @@ class ModulationRoute:
             raise ValueError("Modulation input maximum must exceed input minimum.")
         spec = TARGET_SPECS[self.target_id]
         self.output_min = (
-            spec.minimum if self.output_min is None
-            else float(self.output_min)
+            spec.minimum if self.output_min is None else float(self.output_min)
         )
         self.output_max = (
-            spec.maximum if self.output_max is None
-            else float(self.output_max)
+            spec.maximum if self.output_max is None else float(self.output_max)
         )
         if not (
-                spec.minimum <= self.output_min <= spec.maximum
-                and spec.minimum <= self.output_max <= spec.maximum
+            spec.minimum <= self.output_min <= spec.maximum
+            and spec.minimum <= self.output_max <= spec.maximum
         ):
             raise ValueError(
                 f"Output range for {self.target_id} exceeds its registered safety range."
@@ -395,25 +434,30 @@ class ModulationMatrix:
         if any(item.route_id == route.route_id for item in self.routes):
             raise ValueError(f"Duplicate modulation route ID: {route.route_id}")
         if any(item.target_id == route.target_id for item in self.routes):
-            raise ValueError(f"Target already has a modulation route: {route.target_id}")
+            raise ValueError(
+                f"Target already has a modulation route: {route.target_id}"
+            )
         self.routes.append(route)
         self._runtime[route.route_id] = _RouteRuntime()
 
     def update_route(self, route_id: str, changes: dict[str, object]) -> None:
-        current = next((item for item in self.routes if item.route_id == route_id), None)
+        current = next(
+            (item for item in self.routes if item.route_id == route_id), None
+        )
         if current is None:
             raise KeyError(f"Unknown modulation route: {route_id}")
         values = current.to_dict()
         values.update(changes)
         updated = ModulationRoute.from_dict(values)
         if any(
-                item.route_id != route_id and item.target_id == updated.target_id
-                for item in self.routes
-        ):
-            raise ValueError(f"Target already has a modulation route: {updated.target_id}")
-        self.routes = [
-            updated if item.route_id == route_id else item
+            item.route_id != route_id and item.target_id == updated.target_id
             for item in self.routes
+        ):
+            raise ValueError(
+                f"Target already has a modulation route: {updated.target_id}"
+            )
+        self.routes = [
+            updated if item.route_id == route_id else item for item in self.routes
         ]
         self._runtime[route_id] = _RouteRuntime()
         self._last_active_targets.discard(current.target_id)
@@ -430,10 +474,10 @@ class ModulationMatrix:
                 return
 
     def manual_override(
-            self,
-            target_id: str,
-            duration_seconds: float = 3.0,
-            now: float | None = None,
+        self,
+        target_id: str,
+        duration_seconds: float = 3.0,
+        now: float | None = None,
     ) -> None:
         if target_id not in TARGET_SPECS:
             return
@@ -455,9 +499,9 @@ class ModulationMatrix:
         return route.output_min + value * (route.output_max - route.output_min)
 
     def evaluate(
-            self,
-            sources: dict[str, float],
-            now: float | None = None,
+        self,
+        sources: dict[str, float],
+        now: float | None = None,
     ) -> tuple[dict[str, float], set[str]]:
         stamp = time.monotonic() if now is None else float(now)
         outputs: dict[str, float] = {}
@@ -474,9 +518,9 @@ class ModulationMatrix:
             runtime = self._runtime.setdefault(route.route_id, _RouteRuntime())
             if raw is None:
                 if (
-                        runtime.last_output is not None
-                        and route.hold_ms > 0
-                        and stamp - runtime.last_seen <= route.hold_ms / 1000.0
+                    runtime.last_output is not None
+                    and route.hold_ms > 0
+                    and stamp - runtime.last_seen <= route.hold_ms / 1000.0
                 ):
                     mapped = runtime.last_output
                 else:
@@ -496,8 +540,10 @@ class ModulationMatrix:
                 if route.smoothing_ms > 0:
                     tau_ms = max(tau_ms, route.smoothing_ms)
                 dt = max(0.0, stamp - runtime.last_update)
-                alpha = 1.0 if tau_ms <= 0 else 1.0 - math.exp(
-                    -dt / max(0.001, tau_ms / 1000.0)
+                alpha = (
+                    1.0
+                    if tau_ms <= 0
+                    else 1.0 - math.exp(-dt / max(0.001, tau_ms / 1000.0))
                 )
                 smoothed = previous + alpha * (mapped - previous)
 

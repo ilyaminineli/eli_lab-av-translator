@@ -42,7 +42,8 @@ class Layer:
         self.opacity = min(1.0, max(0.0, float(self.opacity)))
         self.overlay_in = max(0.0, float(self.overlay_in))
         self.overlay_out = (
-            None if self.overlay_out is None
+            None
+            if self.overlay_out is None
             else max(self.overlay_in, float(self.overlay_out))
         )
         self.overlay_speed = max(0.1, min(4.0, float(self.overlay_speed)))
@@ -69,14 +70,34 @@ class Layer:
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> Layer:
         allowed = {
-            "id", "name", "source_type", "source_id", "visible", "locked",
-            "opacity", "blend_mode", "position", "scale", "rotation", "z_index",
-            "generator_type", "generator_settings", "performance_modifiers",
-            "layer_effects", "fx_manual_override_until",
+            "id",
+            "name",
+            "source_type",
+            "source_id",
+            "visible",
+            "locked",
+            "opacity",
+            "blend_mode",
+            "position",
+            "scale",
+            "rotation",
+            "z_index",
+            "generator_type",
+            "generator_settings",
+            "performance_modifiers",
+            "layer_effects",
+            "fx_manual_override_until",
             "overlay_manual_override_until",
-            "overlay_path", "overlay_kind", "overlay_in", "overlay_out",
-            "overlay_speed", "overlay_frame_hold", "overlay_loop",
-            "overlay_scene_sync", "overlay_mask_mode", "overlay_mask_source",
+            "overlay_path",
+            "overlay_kind",
+            "overlay_in",
+            "overlay_out",
+            "overlay_speed",
+            "overlay_frame_hold",
+            "overlay_loop",
+            "overlay_scene_sync",
+            "overlay_mask_mode",
+            "overlay_mask_source",
         }
         values = {key: value for key, value in data.items() if key in allowed}
         if not isinstance(values.get("generator_settings", {}), dict):
