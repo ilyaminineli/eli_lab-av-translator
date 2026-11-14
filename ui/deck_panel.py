@@ -49,12 +49,13 @@ class DeckCard(QGroupBox):
         self._thumbnail_source: str | None = None
         self._held = False
 
+        self.setMinimumHeight(140)
         layout = QVBoxLayout(self)
         layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(5)
 
         identity = QHBoxLayout()
-        self.thumbnail_label = QLabel("NO THUMBNAIL")
+        self.thumbnail_label = QLabel("NO MEDIA")
         self.thumbnail_label.setObjectName("deckThumbnail")
         self.thumbnail_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.thumbnail_label.setFixedSize(80, 45)
@@ -64,12 +65,13 @@ class DeckCard(QGroupBox):
         details.setSpacing(2)
         self.file_label = QLabel("No video loaded")
         self.file_label.setWordWrap(True)
-        self.file_label.setMinimumWidth(100)
+        self.file_label.setMinimumWidth(0)
         self.file_label.setObjectName("deckClipName")
         self.state_label = QLabel("EMPTY")
         self.state_label.setObjectName("mutedLabel")
         self.detail_label = QLabel("Load a clip from the Media Library")
         self.detail_label.setWordWrap(True)
+        self.detail_label.setMinimumWidth(0)
         self.detail_label.setObjectName("mutedLabel")
         details.addWidget(self.file_label)
         details.addWidget(self.state_label)
@@ -177,7 +179,7 @@ class DeckCard(QGroupBox):
         pixmap = QPixmap(source) if source else QPixmap()
         if pixmap.isNull():
             self.thumbnail_label.setPixmap(QPixmap())
-            self.thumbnail_label.setText("NO THUMBNAIL")
+            self.thumbnail_label.setText("NO MEDIA")
             return
         self.thumbnail_label.setText("")
         self.thumbnail_label.setPixmap(

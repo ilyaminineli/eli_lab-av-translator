@@ -97,7 +97,7 @@ class MainWindow(QMainWindow):
 
         self.deck_panel = DeckPanel(application, self)
         self.deck_dock = self._make_dock("DECKS", self.deck_panel)
-        self.deck_dock.setMinimumHeight(150)
+        self.deck_dock.setMinimumHeight(220)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.deck_dock)
 
         self.layer_panel = LayerPanel(application, self)
@@ -284,6 +284,10 @@ class MainWindow(QMainWindow):
         self.preview_dock.hide()
         if not restored:
             QTimer.singleShot(0, self._apply_default_dock_sizes)
+        else:
+            # Retain the user's dock arrangement, but upgrade the deck strip height
+            # so its transport and loop/lock controls are not clipped by old states.
+            QTimer.singleShot(0, self._apply_responsive_deck_size)
 
         self._runtime_timer = QTimer(self)
         # Refresh queues and automation at the configured render cadence.
@@ -459,7 +463,7 @@ class MainWindow(QMainWindow):
             self.performance_timeline_dock,
         ):
             dock.setMinimumWidth(right_minimum)
-        self.deck_dock.setMinimumHeight(140 if compact else 150)
+        self.deck_dock.setMinimumHeight(200 if compact else 220)
         self.preview_dock.setMinimumSize(
             190 if compact else 260,
             130 if compact else 180,
@@ -471,12 +475,32 @@ class MainWindow(QMainWindow):
             return
         was_compact = self._responsive_compact
         self._sync_responsive_dock_constraints()
-        if (
-            was_compact is not None
-            and was_compact != self._responsive_compact
-            and self._responsive_layout_managed
-        ):
-            QTimer.singleShot(0, self._apply_default_dock_sizes)
+        if was_compact is not None and was_compact != self._responsive_compact:
+            callback = (
+                self._apply_default_dock_sizes
+                if self._responsive_layout_managed
+                else self._apply_responsive_deck_size
+            )
+            QTimer.singleShot(0, callback)
+
+    def _responsive_deck_height(self) -> int:
+        """Return a usable deck-strip height for the current window geometry."""
+        compact = self._is_compact_workspace()
+        height = max(self.height(), self.minimumHeight())
+        if compact:
+            return max(220, min(340, round(height * 0.34)))
+        return max(220, min(320, round(height * 0.30)))
+
+    def _apply_responsive_deck_size(self) -> None:
+        """Resize only the deck strip, preserving the user's other dock sizes."""
+        if not getattr(self, "_responsive_layout_ready", False):
+            return
+        self._sync_responsive_dock_constraints()
+        self.resizeDocks(
+            [self.deck_dock],
+            [self._responsive_deck_height()],
+            Qt.Orientation.Vertical,
+        )
 
     def _apply_default_dock_sizes(self) -> None:
         # Rebalance dock widths against the available editor area. Portrait-ish
@@ -488,11 +512,11 @@ class MainWindow(QMainWindow):
         if compact:
             left_width = max(150, min(220, round(width * 0.17)))
             right_width = max(230, min(310, round(width * 0.29)))
-            deck_height = max(150, min(230, round(height * 0.26)))
+            deck_height = max(220, min(340, round(height * 0.34)))
         else:
             left_width = max(220, min(340, round(width * 0.19)))
             right_width = max(300, min(420, round(width * 0.27)))
-            deck_height = max(160, min(250, round(height * 0.23)))
+            deck_height = max(220, min(320, round(height * 0.30)))
         self.resizeDocks([self.media_dock], [left_width], Qt.Orientation.Horizontal)
         self.resizeDocks([self.layer_dock], [right_width], Qt.Orientation.Horizontal)
         self.resizeDocks([self.deck_dock], [deck_height], Qt.Orientation.Vertical)

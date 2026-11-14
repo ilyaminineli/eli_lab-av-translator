@@ -141,6 +141,14 @@ def test_video_deck_grid_reflows_at_compact_and_wide_widths() -> None:
     assert deck_columns_for_width(820) == 2
     assert deck_columns_for_width(1360) == 4
 
+    application = QApplication.instance() or QApplication([])
+    from ui.deck_panel import DeckCard
+
+    card = DeckCard("deck_a", "DECK A")
+    assert card.minimumHeight() >= 140
+    assert card.thumbnail_label.text() == "NO MEDIA"
+    assert application is not None
+
 
 
 def test_media_library_repairs_legacy_txt_columns_without_losing_indexed_data(
