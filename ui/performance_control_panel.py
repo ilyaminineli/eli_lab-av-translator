@@ -1100,11 +1100,11 @@ class PerformanceControlPanel(QWidget):
                 palette=self.scene_palette_combo.currentText(),
             )
         )
-        self.scene_save_button.setText("SAVED")
+        set_ui_text(self.scene_save_button, "SAVED")
         self.scene_save_button.setEnabled(False)
         self.scene_save_button.setToolTip("Scene profile saved in the current project.")
         self.scene_save_button.setEnabled(True)
-        self.scene_save_button.setText("SAVE PROFILE")
+        set_ui_text(self.scene_save_button, "SAVE PROFILE")
 
     def _apply_scene(self) -> None:
         self._save_scene_profile()
