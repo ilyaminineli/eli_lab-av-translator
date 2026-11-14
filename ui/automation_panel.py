@@ -123,7 +123,7 @@ class AutomationPanel(QWidget):
         self.director_active_label.setObjectName("mutedLabel")
         self.variation_scope_label = QLabel(
             "Adaptive scope · the director can select every visible, unlocked layer. "
-            "Musical energy and CHAOS / DNST / FRAG expand or focus each variation."
+            "Musical energy and CHAOS / DENSITY / FRAGMENT expand or focus each variation."
         )
         self.variation_scope_label.setWordWrap(True)
         self.variation_scope_label.setObjectName("mutedLabel")
