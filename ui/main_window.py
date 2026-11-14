@@ -7,6 +7,7 @@ from pathlib import Path
 from PySide6.QtCore import QSettings, Qt, QTimer
 from PySide6.QtGui import QAction, QGuiApplication, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
+    QApplication,
     QDockWidget,
     QFileDialog,
     QHBoxLayout,
@@ -36,7 +37,7 @@ from ui.automation_panel import AutomationPanel
 from ui.deck_panel import DeckPanel
 from ui.effects_panel import EffectsPanel
 from ui.generators_panel import GeneratorsPanel
-from ui.i18n import apply_widget_translations, tr, ui_text
+from ui.i18n import apply_widget_translations, set_ui_text, tr, ui_text
 from ui.layer_panel import LayerPanel
 from ui.media_browser import MediaBrowser
 from ui.modulator_bank_panel import ModulatorBankPanel
@@ -45,6 +46,7 @@ from ui.performance_control_panel import PerformanceControlPanel
 from ui.performance_timeline_panel import PerformanceTimelinePanel
 from ui.performance_view import AspectRatioPreview, PerformanceView
 from ui.settings_dialog import SettingsDialog
+from ui.theme import apply_application_language
 from ui.transport_bar import TransportBar
 
 _LOG = logging.getLogger(__name__)
@@ -213,7 +215,9 @@ class MainWindow(QMainWindow):
             ui_text("LOCAL PREVIEW · IDLE")
         )
         self.statusBar().addPermanentWidget(self.status_label)
-        self.performance_view.render_status_changed.connect(self.status_label.setText)
+        self.performance_view.render_status_changed.connect(
+            lambda value: set_ui_text(self.status_label, value, self._language)
+        )
 
         self.media_browser.assign_requested.connect(self.assign_media)
         self.media_browser.library_updated.connect(
@@ -732,7 +736,7 @@ class MainWindow(QMainWindow):
             except Exception as exc:
                 _LOG.exception("Could not stop Performance Mode")
                 QMessageBox.warning(self, "Performance Mode", str(exc))
-            self.performance_mode_button.setText("▶ PERF MODE")
+            set_ui_text(self.performance_mode_button, "▶ PERF MODE", self._language)
             self.performance_control_panel.refresh_monitor()
             self.statusBar().showMessage("Performance Mode stopped.", 5000)
             return
@@ -768,7 +772,7 @@ class MainWindow(QMainWindow):
                 self.performance_control_panel.osc_port_spin.setValue(
                     int(receiver["port"])
                 )
-            self.performance_mode_button.setText("■ STOP PERF MODE")
+            set_ui_text(self.performance_mode_button, "■ STOP PERF MODE", self._language)
             self.performance_control_panel.refresh_monitor()
             self.statusBar().showMessage(
                 "Performance Mode armed · run SONATA Expanded in Sonic Pi. "
@@ -794,8 +798,10 @@ class MainWindow(QMainWindow):
         self.performance_mode_button.blockSignals(True)
         self.performance_mode_button.setChecked(enabled)
         self.performance_mode_button.blockSignals(False)
-        self.performance_mode_button.setText(
-            "■ STOP PERF MODE" if enabled else "▶ PERF MODE"
+        set_ui_text(
+            self.performance_mode_button,
+            "■ STOP PERF MODE" if enabled else "▶ PERF MODE",
+            self._language,
         )
 
     def save_performance_set(self) -> None:
@@ -890,7 +896,7 @@ class MainWindow(QMainWindow):
                 # Release the local preview surface while the projector is active.
                 self.workspace_tabs.setCurrentIndex(1)
             window.performance_view.render_status_changed.connect(
-                self.status_label.setText
+                lambda value: set_ui_text(self.status_label, value, self._language)
             )
             if window.performance_view.engine.initialized:
                 self.status_label.setText(
@@ -1176,7 +1182,11 @@ class MainWindow(QMainWindow):
             self._sync_performance_mode_button()
         if mode["enabled"]:
             phase = mode["phase"].upper()
-            self.performance_mode_button.setText(f"■ STOP PERF MODE · {phase}")
+            set_ui_text(
+                self.performance_mode_button,
+                f"■ STOP PERF MODE · {phase}",
+                self._language,
+            )
             automation_state = (
                 "running"
                 if mode["automation_running"]
@@ -1304,10 +1314,18 @@ class MainWindow(QMainWindow):
             tooltip_filter = getattr(gui, "_eli_tooltip_filter", None)
             if tooltip_filter is not None:
                 tooltip_filter.set_enabled(self._show_hints)
-        message = (
-            "Language will apply after restart."
-            if language_changed
-            else "Settings saved."
+        if language_changed:
+            qt_application = QApplication.instance()
+            if qt_application is not None:
+                apply_application_language(qt_application, self._language)
+            apply_widget_translations(self, self._language)
+            self.performance_control_panel.sync_from_application()
+            self.performance_control_panel.refresh_monitor()
+            self.performance_timeline_panel.refresh(force=True)
+            self.generators_panel.refresh()
+        message = ui_text(
+            "Language changed." if language_changed else "Settings saved.",
+            self._language,
         )
         self.statusBar().showMessage(message, 3000)
 
