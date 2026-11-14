@@ -145,7 +145,7 @@ The current implementation uses **Jekyll** because GitHub Pages can build it dir
 - `docs/MANUAL.md`, `docs/WIKI.md`, `docs/ABOUT.md` and the corresponding `docs/ja/*.md` pages provide the artist-facing entry points.
 - Existing technical Markdown guides remain in `docs/` and are linked from the Wiki and Manual rather than copied into standalone HTML.
 
-The Pages workflow is `.github/workflows/pages.yml`. It builds the repository using the GitHub Pages Jekyll action and deploys the resulting artifact. Repository Pages settings and the first deployment still depend on GitHub's repository-level permissions and policy. The workflow requests Pages enablement; if the organization or repository settings prohibit that, an administrator must enable **Settings → Pages → Build and deployment → GitHub Actions**.
+The Pages workflow is `.github/workflows/pages.yml`. It builds the repository using the GitHub Pages Jekyll action and deploys the resulting artifact. Repository Pages settings and the first deployment still depend on GitHub's repository-level permissions and policy. An owner or administrator must enable **Settings → Pages → Build and deployment → GitHub Actions** once before the deployment workflow can configure the site. The workflow token in this repository cannot create the Pages site itself.
 
 Keep release downloads pointed at the GitHub Releases page. Do not hard-code version numbers or direct executable filenames. The release page remains the source for current binaries, dates and notes.
 
