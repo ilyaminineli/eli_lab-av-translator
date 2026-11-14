@@ -545,15 +545,6 @@ class GeneratorsPanel(QWidget):
         seed_row.addWidget(self.particle_seed_spin, 1)
         seed_row.addWidget(self.particle_random_seed_button)
         system_form.addRow("DETERMINISTIC SEED", seed_row)
-        self.particle_system_hint = QLabel(
-            "GPU simulation · fixed 60 Hz steps · max 8192 per layer / 16384 per output. "
-            "Continuous rate-based emission can react to beat, onset and energy via AUTO "
-            "PERF. Path, video luminance, image alpha and contour emitters sample "
-            "existing layer textures; source reform follows refreshed targets."
-        )
-        self.particle_system_hint.setWordWrap(True)
-        self.particle_system_hint.setObjectName("mutedLabel")
-        system_form.addRow(self.particle_system_hint)
         root.addWidget(self.particle_system_group)
         self.particle_system_group.setVisible(False)
 
@@ -633,21 +624,13 @@ class GeneratorsPanel(QWidget):
         overlay_form.addRow("MASK MODE", self.overlay_mask_mode)
         overlay_form.addRow("MASK SOURCE", self.overlay_mask_source)
         overlay_form.addRow(self.overlay_scene_sync_check)
-        self.overlay_hint = QLabel(
-            "Overlay playback settings apply to the selected image or video layer."
-        )
-        self.overlay_hint.setWordWrap(True)
-        self.overlay_hint.setObjectName("mutedLabel")
-        overlay_form.addRow(self.overlay_hint)
         root.addWidget(self.overlay_group)
         self.overlay_group.setVisible(False)
 
         self.apply_button = QPushButton("APPLY GENERATOR SETTINGS")
         self.apply_button.setDefault(True)
         root.addWidget(self.apply_button)
-        self.hint_label = QLabel(
-            "Select a generator or overlay above. Its settings are saved with the composition."
-        )
+        self.hint_label = QLabel("")
         self.hint_label.setWordWrap(True)
         self.hint_label.setObjectName("mutedLabel")
         root.addWidget(self.hint_label)
