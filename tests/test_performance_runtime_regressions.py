@@ -6,6 +6,7 @@ from core.application import Application
 from core.automation import AutomationDirector
 from generators.catalog import normalize_settings
 from generators.raster_service import GeneratorRasterService
+from rendering.compositor import canvas_fit_scale
 
 
 def test_timeline_arm_waiting_flag_uses_transport_position() -> None:
@@ -141,3 +142,8 @@ def test_waveform_content_changes_remain_part_of_raster_fingerprint() -> None:
     finally:
         service.shutdown()
         service._worker_thread.join(timeout=2.0)
+
+
+
+def test_project_canvas_is_letterboxed_as_16_by_9_on_a_4_by_3_output() -> None:
+    assert canvas_fit_scale(1024, 768, 1920, 1080) == (1.0, 0.75)
