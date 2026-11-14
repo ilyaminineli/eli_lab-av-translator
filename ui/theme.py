@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from PySide6.QtCore import QUrl
+from pathlib import Path
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
 from qt_material import apply_stylesheet
@@ -260,10 +260,12 @@ def configure_application_theme(app: QApplication) -> None:
     )
     app.setFont(QFont("Segoe UI", 9))
 
-    icon_directory = RESOURCE_DIR / "icons"
-    close_icon = QUrl.fromLocalFile(str(icon_directory / "dock-close.svg")).toString()
-    float_icon = QUrl.fromLocalFile(str(icon_directory / "dock-float.svg")).toString()
-    dock_icon = QUrl.fromLocalFile(str(icon_directory / "dock-dock.svg")).toString()
+    icon_directory = (RESOURCE_DIR / "icons").resolve()
+    # Qt style sheets expect a native filesystem path here, not a file: URL.
+    # On Windows, file: URLs are treated as relative paths by the QSS image loader.
+    close_icon = (icon_directory / "dock-close.svg").as_posix()
+    float_icon = (icon_directory / "dock-float.svg").as_posix()
+    dock_icon = (icon_directory / "dock-dock.svg").as_posix()
     dock_controls_style = f"""
 QDockWidget::close-button,
 QDockWidget::float-button {{
