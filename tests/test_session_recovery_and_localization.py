@@ -21,7 +21,7 @@ from PySide6.QtWidgets import (
 from core.application import Application
 from ui.generators_panel import GeneratorsPanel
 from ui.hints import ToolTipFilter
-from ui.i18n import apply_widget_translations, tr
+from ui.i18n import apply_widget_translations, set_ui_text, tr, ui_text
 from ui.performance_timeline_panel import PerformanceTimelinePanel
 from ui.settings_dialog import SettingsDialog
 from ui.theme import application_font_families, configure_application_theme
@@ -168,6 +168,52 @@ def test_overlay_format_note_is_hover_only_and_localized(tmp_path) -> None:
             panel.close()
         application.shutdown()
 
+
+
+
+def test_palette_combo_keeps_internal_key_when_japanese_label_is_shown() -> None:
+    qt_app = QApplication.instance() or QApplication([])
+    qt_app.setProperty("ui_language", "ja")
+    application = Application()
+    panel = None
+    try:
+        panel = GeneratorsPanel(application)
+        apply_widget_translations(panel, "ja")
+
+        assert panel.palette_combo.itemText(0) == "手動設定"
+        assert panel.palette_combo.itemData(0) == ""
+        panel.palette_combo.setCurrentIndex(0)
+        assert panel.palette_combo.itemData(1) == panel.palette_combo.itemText(1)
+
+        panel.palette_combo.setCurrentIndex(1)
+        assert panel.primary_color.text().startswith("#")
+        assert panel.secondary_color.text().startswith("#")
+    finally:
+        if panel is not None:
+            panel.close()
+        application.shutdown()
+
+
+def test_dynamic_text_can_switch_between_languages_without_losing_source() -> None:
+    qt_app = QApplication.instance() or QApplication([])
+    root = QWidget()
+    label = QLabel(root)
+
+    source = "Added {name} as a composition overlay."
+    rendered = source.format(name="Overlay · Rain")
+    set_ui_text(label, rendered, "ja")
+    assert label.text() == "Overlay · Rainを構成オーバーレイとして追加しました。"
+
+    apply_widget_translations(root, "en")
+    assert label.text() == rendered
+    apply_widget_translations(root, "ja")
+    assert label.text() == "Overlay · Rainを構成オーバーレイとして追加しました。"
+
+
+def test_japanese_dynamic_status_templates() -> None:
+    assert ui_text("Indexed 12 video file(s).", "ja") == "動画ファイルを12件索引化しました。"
+    assert ui_text("CONNECTED · USB MIDI", "ja") == "接続中 · USB MIDI"
+    assert ui_text("TEXT PIPELINE · READY", "ja") == "テキスト処理 · READY"
 
 
 def test_recovery_snapshot_does_not_auto_start_performance_or_decks(
