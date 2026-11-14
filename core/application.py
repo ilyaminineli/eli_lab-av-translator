@@ -3488,6 +3488,24 @@ class Application:
             },
         }
         composition_snapshot = Composition.from_dict(self.composition.to_dict())
+        if Path(path).name == "session-recovery.eliav":
+            # A recovered session restores the editable show but never resumes live
+            # devices, transport or autonomous modulation without operator action.
+            performance_settings = app_state["performance_settings"]
+            transport_settings = performance_settings.get("transport", {})
+            transport_settings["running"] = False
+            transport_settings["paused"] = False
+            performance_settings["performance_mode_plan"] = {
+                **performance_settings.get("performance_mode_plan", {}),
+                "start_automation": False,
+            }
+            for key in ("modulation_routes",):
+                for route in performance_settings.get(key, []):
+                    if str(route.get("source_id", "")).startswith(("audio.", "macro.")):
+                        route["enabled"] = bool(route.get("enabled", True))
+            for deck_state in deck_states:
+                deck_state["playing"] = False
+                deck_state["paused"] = False
         if self.performance_mode.enabled:
             # Persist a ready-to-edit project, not a show that starts modulating
             # immediately on open. The saved Performance Mode button remains off.
