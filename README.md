@@ -2,7 +2,7 @@
 
 **Windows-first audiovisual performance environment for live video collage, procedural visuals, typography, audio reactivity and Sonic Pi-controlled shows.**
 
-**Website source:** [English homepage](index.html) · [Japanese homepage](ja/index.html) · [Field manual](docs/MANUAL.md) · [Wiki](docs/WIKI.md). The site is Markdown-driven with Jekyll; the intended project-page address is `https://ilyaminineli.github.io/eli_lab-av-translator/` once GitHub Pages is enabled for the repository. Source pages and design/implementation notes are in [docs/WEBSITE_PLAN.md](docs/WEBSITE_PLAN.md). Artist-facing product details remain available in [Product overview](docs/PRODUCT_OVERVIEW.md) and [Japanese product overview](docs/ja/PRODUCT_OVERVIEW.md).
+**Static website:** [English homepage](index.html) · [Japanese homepage](ja/index.html) · [Field manual](manual.html) · [Wiki](wiki.html) · [Downloads](downloads.html). The site is plain HTML/CSS with a `.nojekyll` marker and is ready for GitHub Pages **Deploy from a branch → main → /(root)**. Once Pages is enabled, the project URL is `https://ilyaminineli.github.io/eli_lab-av-translator/`. Source documentation and website implementation notes are in [docs/](docs/) and [docs/WEBSITE_PLAN.md](docs/WEBSITE_PLAN.md).
 
 ## Project status — 14 November 2026
 
