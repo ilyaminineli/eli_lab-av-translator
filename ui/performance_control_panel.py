@@ -190,8 +190,7 @@ class PerformanceControlPanel(QWidget):
         self.performance_macro_group = QGroupBox("PERF MACROS · NORMALIZED 0–1")
         macro_layout = QVBoxLayout(self.performance_macro_group)
         macro_hint = QLabel(
-            "One control can move several parameters across compatible layers and master effects. "
-            "Assign an input source, a keyboard toggle, MIDI CC/note or OSC."
+            "One control can drive multiple parameters across layers and effects, assigned via keyboard, MIDI or OSC."
         )
         macro_hint.setWordWrap(True)
         macro_hint.setObjectName("mutedLabel")
