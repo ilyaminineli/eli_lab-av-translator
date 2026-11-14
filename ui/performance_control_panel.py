@@ -60,7 +60,7 @@ class PerformanceControlPanel(QWidget):
         root.setContentsMargins(8, 8, 8, 8)
         root.setSpacing(8)
 
-        self.autonomous_mode_group = QGroupBox("AUTONOMOUS PERF MODE")
+        self.autonomous_mode_group = QGroupBox("AUTO PERFORMANCE MODE")
         mode_layout = QVBoxLayout(self.autonomous_mode_group)
         self.performance_mode_status_label = QLabel(
             "OFF · arm the show from the main Performance toolbar."
@@ -108,7 +108,7 @@ class PerformanceControlPanel(QWidget):
         transport_form.addRow("CLOCK", self.transport_status)
         root.addWidget(self.transport_group)
 
-        self.midi_group = QGroupBox("MIDI CTRLLERS · OPTIONAL")
+        self.midi_group = QGroupBox("MIDI CONTROLLERS · OPTIONAL")
         midi_form = QFormLayout(self.midi_group)
         self.midi_device_combo = QComboBox()
         self.midi_refresh_button = QPushButton("DISCOVER DEVICES")
@@ -120,7 +120,7 @@ class PerformanceControlPanel(QWidget):
         self.midi_start_button = QPushButton("CONNECT")
         self.midi_stop_button = QPushButton("DISCONNECT")
         self.midi_stop_button.setEnabled(False)
-        self.midi_learn_button = QPushButton("LEARN NEXT CTRLLER")
+        self.midi_learn_button = QPushButton("LEARN NEXT CONTROLLER")
         midi_buttons.addWidget(self.midi_start_button)
         midi_buttons.addWidget(self.midi_stop_button)
         midi_form.addRow(midi_buttons)
@@ -228,7 +228,7 @@ class PerformanceControlPanel(QWidget):
         macro_layout.addWidget(self.macro_status_label)
         root.addWidget(self.performance_macro_group)
 
-        self.performance_scene_group = QGroupBox("VJ SCENE BANK · COMPS")
+        self.performance_scene_group = QGroupBox("VJ SCENE BANK")
         scene_form = QFormLayout(self.performance_scene_group)
         self.performance_scene_name = QLineEdit("Scene 01")
         self.performance_scene_cue = QLineEdit()
@@ -354,7 +354,7 @@ class PerformanceControlPanel(QWidget):
         scene_form.addRow(self.scene_buttons)
         root.addWidget(self.scene_group)
 
-        self.audio_group = QGroupBox("AUD INPUT / SYS LOOPBACK")
+        self.audio_group = QGroupBox("AUDIO INPUT / SYSTEM LOOPBACK")
         audio_layout = QVBoxLayout(self.audio_group)
         device_row = QHBoxLayout()
         self.audio_device_combo = QComboBox()
@@ -483,7 +483,7 @@ class PerformanceControlPanel(QWidget):
         self.route_list.setMaximumHeight(140)
         modulation_layout.addWidget(self.route_list)
         preset_buttons = QHBoxLayout()
-        self.audio_reactive_button = QPushButton("ADD AUD-REACTIVE ROUTES")
+        self.audio_reactive_button = QPushButton("ADD AUDIO-REACTIVE ROUTES")
         self.sonic_pi_reactive_button = QPushButton("ADD SONIC PI ROUTES")
         preset_buttons.addWidget(self.audio_reactive_button)
         preset_buttons.addWidget(self.sonic_pi_reactive_button)
@@ -1525,7 +1525,7 @@ class PerformanceControlPanel(QWidget):
             phrase = (max(0, control.bar_index - 1) // transport.phrase_bars) + 1
             self.transport_status.setText(
                 f"{transport_state} · SONIC PI · {control.bpm:g} BPM · "
-                f"BR {control.bar_index} · PHRASE {phrase}"
+                f"BAR {control.bar_index} · PHRASE {phrase}"
             )
         else:
             transport_state = (
@@ -1535,7 +1535,7 @@ class PerformanceControlPanel(QWidget):
             )
             self.transport_status.setText(
                 f"{transport_state} · {transport.bpm:g} BPM · BR {transport.bar_index} · "
-                f"BT {transport.beat_index + 1}/{transport.beats_per_bar} · "
+                f"BEAT {transport.beat_index + 1}/{transport.beats_per_bar} · "
                 f"PHRASE {transport.phrase_index}"
             )
         state = self.application.audio_capture.state
