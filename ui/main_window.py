@@ -182,7 +182,7 @@ class MainWindow(QMainWindow):
         )
         self.statusBar().addPermanentWidget(self.control_status_label)
         self.status_label = QLabel(
-            "LOCAL PREVIEW IDLE · open the preview tab to initialise OpenGL"
+            "LOCAL PREVIEW IDLE · select PERFORM to initialise OpenGL"
         )
         self.statusBar().addPermanentWidget(self.status_label)
         self.performance_view.render_status_changed.connect(self.status_label.setText)
@@ -252,6 +252,11 @@ class MainWindow(QMainWindow):
         self._responsive_layout_managed = not restored
         self._responsive_layout_ready = True
         self._sync_responsive_dock_constraints()
+        # Saved pre-M7 dock states may contain the old preview/media tabs.
+        # Those widgets now live in central workspaces and their placeholder docks
+        # must remain hidden after a legacy state restore.
+        self.media_dock.hide()
+        self.preview_dock.hide()
         if not restored:
             QTimer.singleShot(0, self._apply_default_dock_sizes)
 
@@ -546,7 +551,7 @@ class MainWindow(QMainWindow):
 
         file_menu.addSeparator()
         import_action = QAction("Add Media &Folder…", self)
-        import_action.triggered.connect(self.media_browser.choose_folder)
+        import_action.triggered.connect(self._choose_media_folder)
         file_menu.addAction(import_action)
 
         overlay_action = QAction("Add Image / Video Overlay…", self)
@@ -564,16 +569,27 @@ class MainWindow(QMainWindow):
         restore_layout_action.setShortcut(QKeySequence("Ctrl+Shift+0"))
         restore_layout_action.triggered.connect(self.restore_default_layout)
         view_menu.addAction(restore_layout_action)
+        workspace_menu = view_menu.addMenu("WORKSPACE")
+        for index, label, shortcut in (
+            (0, "01 · PERFORM", "Ctrl+1"),
+            (1, "02 · COMPOSE", "Ctrl+2"),
+            (2, "03 · PREPARE", "Ctrl+3"),
+        ):
+            action = QAction(label, self)
+            action.setShortcut(QKeySequence(shortcut))
+            action.triggered.connect(
+                lambda checked=False, target=index: self.workspace_tabs.setCurrentIndex(target)
+            )
+            workspace_menu.addAction(action)
         view_menu.addSeparator()
         for dock in (
-                self.media_dock,
                 self.asset_library_dock,
                 self.deck_dock,
                 self.layer_dock,
                 self.effects_dock,
                 self.automation_dock,
-                self.preview_dock,
                 self.performance_control_dock,
+                self.modulator_bank_dock,
                 self.performance_timeline_dock,
         ):
             view_menu.addAction(dock.toggleViewAction())
@@ -817,6 +833,10 @@ class MainWindow(QMainWindow):
             _LOG.exception("Could not add overlay media")
             QMessageBox.warning(self, "Overlay load failed", str(exc))
 
+    def _choose_media_folder(self) -> None:
+        self.workspace_tabs.setCurrentIndex(2)
+        self.media_browser.choose_folder()
+
     def assign_media(self, asset: object, deck_id: str) -> None:
         try:
             self.application.assign_media_to_deck(asset, deck_id)
@@ -836,8 +856,7 @@ class MainWindow(QMainWindow):
                 deck_index = self.media_browser.deck_combo.findData(deck_id)
                 if deck_index >= 0:
                     self.media_browser.deck_combo.setCurrentIndex(deck_index)
-                self.media_dock.show()
-                self.media_dock.raise_()
+                self.workspace_tabs.setCurrentIndex(2)
                 self.media_browser.asset_list.setFocus()
                 self.statusBar().showMessage(
                     f"Choose a clip to load into {deck_id.upper()}. "
