@@ -19,7 +19,7 @@ class VisualActivity:
     score: float
 
     @classmethod
-    def measure(cls, layers: Iterable[object]) -> "VisualActivity":
+    def measure(cls, layers: Iterable[object]) -> VisualActivity:
         eligible = [
             layer for layer in layers
             if bool(getattr(layer, "visible", True))
