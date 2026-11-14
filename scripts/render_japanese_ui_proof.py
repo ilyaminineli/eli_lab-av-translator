@@ -6,7 +6,7 @@ from pathlib import Path
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtCore import QPoint, Qt
-from PySide6.QtGui import QColor, QImage, QPainter
+from PySide6.QtGui import QColor, QFont, QFontDatabase, QFontMetrics, QImage, QPainter
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -26,6 +26,46 @@ from ui.theme import configure_application_theme
 def render_preview(destination: Path) -> None:
     application = QApplication.instance() or QApplication([])
     configure_application_theme(application, show_hints=True, language="ja")
+
+    # The Windows GitHub runner may not have Japanese optional language fonts.
+    # Load a test-only font supplied by CI, without bundling it with the app.
+    proof_font_path = os.environ.get("ELI_JP_PROOF_FONT", "").strip()
+    if proof_font_path:
+        font_id = QFontDatabase.addApplicationFont(proof_font_path)
+        if font_id < 0:
+            raise RuntimeError(f"Could not load Japanese proof font: {proof_font_path}")
+        font_families = QFontDatabase.applicationFontFamilies(font_id)
+        if not font_families:
+            raise RuntimeError("Japanese proof font did not expose a font family.")
+        font_family = str(font_families[0])
+    else:
+        installed = set(QFontDatabase.families())
+        font_family = next(
+            (
+                family
+                for family in ("Yu Gothic UI", "Meiryo UI", "BIZ UDGothic", "Noto Sans JP")
+                if family in installed
+            ),
+            "",
+        )
+    if not font_family:
+        raise RuntimeError(
+            "No Japanese font is available. Install a Windows Japanese font or "
+            "set ELI_JP_PROOF_FONT to a test font file."
+        )
+
+    proof_font = QFont(font_family)
+    proof_font.setPointSizeF(10)
+    application.setFont(proof_font)
+    font_metrics = QFontMetrics(proof_font)
+    sample = "映像を、演奏する。日本語タイポグラフィ"
+    missing_glyphs = [character for character in sample if not font_metrics.inFontUcs4(ord(character))]
+    if missing_glyphs:
+        raise RuntimeError(
+            f"Japanese proof font {font_family!r} is missing glyphs: "
+            + "".join(sorted(set(missing_glyphs)))
+        )
+    print(f"Japanese UI proof font: {font_family}")
 
     window = QWidget()
     window.setWindowTitle("eli_lab AV Translator — 日本語 UI")
