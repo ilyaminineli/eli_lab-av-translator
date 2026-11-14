@@ -182,6 +182,7 @@ class AutomationDirector:
         self._director = GenerativeVariationDirector()
         self._last_layout_relationship = "independent"
         self._last_visual_activity = self._director.measure_visual_activity(())
+        self._last_visual_activity_at = 0.0
         self.generator_settings_changed = None
         self.palette_changed = None
 
@@ -396,7 +397,10 @@ class AutomationDirector:
             self._performance_cutoff * 0.55,
             float(strength or 0.0),
         )
-        self._last_visual_activity = self._director.measure_visual_activity(self._layers)
+        activity_now = time.monotonic()
+        if activity_now - self._last_visual_activity_at >= 0.25:
+            self._last_visual_activity = self._director.measure_visual_activity(self._layers)
+            self._last_visual_activity_at = activity_now
         underactivity = 1.0 - self._last_visual_activity.score
         drive = max(
             0.0,
@@ -422,6 +426,7 @@ class AutomationDirector:
     def visual_activity_snapshot(self) -> dict[str, object]:
         """Return the latest composition-only activity estimate for diagnostics/UI."""
         self._last_visual_activity = self._director.measure_visual_activity(self._layers)
+        self._last_visual_activity_at = time.monotonic()
         return asdict(self._last_visual_activity)
 
     def _select_variation_layers(
