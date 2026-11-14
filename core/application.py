@@ -3702,6 +3702,8 @@ class Application:
                     segment_end=state.get("segment_end"),
                     loop=bool(state.get("loop", True)),
                 )
+                if not bool(state.get("playing", True)):
+                    deck.pause()
             elif media_path:
                 _LOG.warning("Project media is missing: %s", media_path)
 
