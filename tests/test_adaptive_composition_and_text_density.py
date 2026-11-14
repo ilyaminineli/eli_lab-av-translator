@@ -17,6 +17,7 @@ from generators.text_pools import random_text_sample
 from media.library import MediaLibrary
 from ui.deck_panel import deck_columns_for_width
 from ui.icons import app_icon, icon_button
+from ui.theme import configure_application_theme
 
 
 def test_manual_layout_randomizer_uses_video_generator_and_overlay_layers() -> None:
@@ -241,6 +242,12 @@ def test_media_library_repairs_legacy_txt_columns_without_losing_indexed_data(
 
 def test_monochrome_icon_set_renders_and_keeps_accessible_actions() -> None:
     application = QApplication.instance() or QApplication([])
+    configure_application_theme(application)
+    stylesheet = application.styleSheet()
+    assert "QDockWidget::close-button" in stylesheet
+    assert "QDockWidget::float-button" in stylesheet
+    assert "dock-close.svg" in stylesheet
+    assert "dock-float.svg" in stylesheet
     parent = QWidget()
     icon_names = (
         "play", "pause", "stop", "load", "restart", "shuffle", "layout",
