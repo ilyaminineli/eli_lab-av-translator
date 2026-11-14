@@ -1029,7 +1029,7 @@ class Application:
             "performance.timeline.armed",
             bar=bar,
             beat=beat,
-            waiting_for_transport=not running,
+            waiting_for_transport=not position_known,
         )
 
     def disarm_performance_timeline(self) -> None:
@@ -2517,6 +2517,7 @@ class Application:
             cutoff=cutoff,
             intensity=float(self.performance_control.intensity),
             bar_index=int(self.performance_control.bar_index),
+            macro_values=self.performance_macro_values(),
         )
         self.apply_modulation()
         self._monitor_performance_mode()
