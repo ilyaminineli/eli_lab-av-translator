@@ -219,6 +219,19 @@ def test_visual_activity_detects_off_canvas_and_transform_activity() -> None:
     assert activity.score > 0.0
 
 
+def test_automation_exposes_visual_activity_snapshot() -> None:
+    director = AutomationDirector(seed=19)
+    director._layers = make_layers(5)
+
+    snapshot = director.visual_activity_snapshot()
+
+    assert snapshot["layer_count"] == 5
+    assert 0.0 <= snapshot["overlap"] <= 1.0
+    assert 0.0 <= snapshot["transform"] <= 1.0
+    assert 0.0 <= snapshot["offscreen"] <= 1.0
+    assert 0.0 <= snapshot["score"] <= 1.0
+
+
 def test_layout_director_selects_relationship_aware_patterns() -> None:
     relationships: set[str] = set()
     valid = {"independent", "shared_center", "opposed", "nested", "orbit"}
