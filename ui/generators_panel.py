@@ -1191,7 +1191,7 @@ class GeneratorsPanel(QWidget):
     def add_overlay_media(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Add image or video overlay",
+            ui_text("Add image or video overlay"),
             "",
             (
                 "Overlay media (*.png *.apng *.gif *.webp *.jpg *.jpeg *.bmp "
@@ -1849,14 +1849,14 @@ class GeneratorsPanel(QWidget):
 
     def import_palette(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
-            self, "Import Japanese colour palette", "", "Adobe Colour Swatch (*.aco)"
+            self, ui_text("Import Japanese colour palette"), "", "Adobe Colour Swatch (*.aco)"
         )
         if not path:
             return
         try:
             imported = import_aco_palette(path)
         except (OSError, ValueError) as exc:
-            QMessageBox.warning(self, "Palette import failed", str(exc))
+            QMessageBox.warning(self, ui_text("Palette import failed"), ui_text(str(exc)))
             return
         self.palette_combo.blockSignals(True)
         self.palette_combo.clear()
