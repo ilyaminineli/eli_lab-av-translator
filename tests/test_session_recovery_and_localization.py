@@ -131,6 +131,9 @@ def test_language_font_fallback_order_is_readable() -> None:
     assert japanese[0] == "Yu Gothic UI"
     assert "Noto Sans JP" in japanese
     assert "Noto Sans" in english
+    assert "Newsreader" in __import__("ui.theme", fromlist=["_typography_stylesheet"])._typography_stylesheet("en")
+    assert "DM Mono" in __import__("ui.theme", fromlist=["_typography_stylesheet"])._typography_stylesheet("en")
+    assert "Noto Serif JP" in __import__("ui.theme", fromlist=["_typography_stylesheet"])._typography_stylesheet("ja")
 
 
 def test_timeline_payload_explanation_is_japanese_hover_help_only() -> None:
@@ -277,3 +280,20 @@ def test_recovery_snapshot_does_not_auto_start_performance_or_decks(
         assert all(not deck["playing"] for deck in payload["decks"])
     finally:
         application.shutdown()
+
+
+
+def test_japanese_application_mark_is_available() -> None:
+    from ui.icons import app_icon
+
+    icon = app_icon("japanese_mark")
+    assert not icon.isNull()
+
+
+def test_theme_uses_responsive_group_and_control_metrics() -> None:
+    from ui.theme import APP_STYLE, _typography_stylesheet
+
+    assert "QSplitter::handle" in APP_STYLE
+    assert "min-height: 20px" in APP_STYLE
+    assert "Newsreader" in _typography_stylesheet("en")
+    assert "DM Mono" in _typography_stylesheet("en")
