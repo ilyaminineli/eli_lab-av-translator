@@ -113,7 +113,11 @@ class AssetLibraryPanel(QWidget):
         try:
             self.application.add_visual_asset_root(folder)
         except (OSError, ValueError) as exc:
-            QMessageBox.warning(self, ui_text("Asset folder could not be indexed"), ui_text(str(exc)))
+            QMessageBox.warning(
+                self,
+                ui_text("Asset folder could not be indexed"),
+                ui_text(str(exc)),
+            )
             return
         self._index_loaded = False
         self._start_index_scan()
