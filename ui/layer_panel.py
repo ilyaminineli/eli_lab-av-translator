@@ -758,11 +758,14 @@ class LayerPanel(QWidget):
                 row.adjustSize()
                 item.setSizeHint(row.sizeHint())
                 self.modifier_list.addItem(item)
-                enabled.toggled.connect(
-                    lambda state, owner=layer.id, mid=modifier_id: self._toggle_performance_modifier(
-                        owner, mid, state
-                    )
-                )
+                def toggle_modifier(
+                    state: bool,
+                    owner: str = layer.id,
+                    mid: str = modifier_id,
+                ) -> None:
+                    self._toggle_performance_modifier(owner, mid, state)
+
+                enabled.toggled.connect(toggle_modifier)
                 self.modifier_list.setItemWidget(item, row)
                 self._modifier_widgets[modifier_id] = (enabled, detail, meter)
             self._modifier_signature = signature
