@@ -427,8 +427,8 @@ class PerformanceTimelinePanel(QWidget):
             return
         answer = QMessageBox.question(
             self,
-            "Clear performance timeline",
-            "Remove every event from this timeline?",
+            ui_text("Clear performance timeline"),
+            ui_text("Remove every event from this timeline?"),
         )
         if answer != QMessageBox.StandardButton.Yes:
             return
