@@ -81,7 +81,7 @@ class AssetLibraryPanel(QWidget):
         self.detail_label = QLabel("Select an asset to inspect its tags and intended uses.")
         self.detail_label.setWordWrap(True)
         layout.addWidget(self.detail_label)
-        self.add_button = QPushButton("ADD SELECTED AS OVL")
+        self.add_button = QPushButton("ADD AS OVERLAY")
         self.add_button.setEnabled(False)
         layout.addWidget(self.add_button)
         self.search_edit.textChanged.connect(self.refresh)
