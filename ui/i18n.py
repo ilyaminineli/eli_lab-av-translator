@@ -867,6 +867,8 @@ _JA_FORMATS: tuple[tuple[str, str], ...] = (
     ("Remove '{name}' and its assignments from all layers?", "'{name}'とすべてのレイヤーへの割り当てを削除しますか？"),
     ("Delete user preset '{name}'?", "ユーザープリセット'{name}'を削除しますか？"),
     ("Imported {count} modulator preset(s).", "モジュレータープリセットを{count}件インポートしました。"),
+    ("Remove {name} from the library index?\n\nThis removes its entries and cached thumbnails only. Your original video files and folders will NOT be deleted. Clips already loaded into decks continue playing.", "{name}をライブラリの索引から削除しますか？\n\n索引エントリーとキャッシュ済みサムネイルのみを削除します。元の動画ファイルやフォルダーは削除されません。デッキで読み込み済みのクリップは再生を続けます。"),
+    ("Remove every indexed folder and clip from the media library?\n\nThis does NOT delete original source videos. Clips already loaded into decks continue playing.", "メディアライブラリ内のすべてのフォルダーとクリップを削除しますか？\n\n元の動画ファイルは削除されません。デッキで読み込み済みのクリップは再生を続けます。"),
     ("Could not start · {error}", "開始できませんでした · {error}"),
     ("Stopped · video decks keep their current playback.", "停止しました · 動画デッキは現在の再生状態を維持します。"),
     ("{path}\nTags: {tags}\nPurposes: {purposes}", "{path}\nタグ: {tags}\n用途: {purposes}"),
