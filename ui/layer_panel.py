@@ -637,7 +637,7 @@ class LayerPanel(QWidget):
         layer = self._selected_layer()
         sources = self.application._modulation_sources()
         self.modifier_rhythm_status.setText(
-            "BT {beat:.2f} · DOWNBT {downbeat:.2f} · PHRASE {phrase:.2f}".format(
+            "BEAT {beat:.2f} · DOWNBEAT {downbeat:.2f} · PHRASE {phrase:.2f}".format(
                 beat=sources.get("transport.beat_pulse", 0.0),
                 downbeat=sources.get("transport.downbeat_pulse", 0.0),
                 phrase=sources.get("transport.phrase_pulse", 0.0),
