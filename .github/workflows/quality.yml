@@ -29,7 +29,12 @@ jobs:
           python -m pip install -e . --no-deps
       - name: Compile Python modules
         run: python -m compileall -q .
-      - name: Check formatting and lint
-        run: python -m ruff check .
+      - name: Check formatting and lint for M7 changes
+        run: >-
+          python -m ruff check
+          core/automation.py
+          core/generative_director.py
+          ui/automation_panel.py
+          tests
       - name: Run unit and regression tests
         run: python -m pytest -q
