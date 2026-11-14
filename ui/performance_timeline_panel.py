@@ -41,15 +41,42 @@ _PAYLOAD_TEMPLATES = {
 }
 
 _PAYLOAD_HINTS = {
-    "scene_marker": "A named section marker. It records INTRO / PEAK / BREAKDOWN etc. and does not recall a scene by itself.",
-    "phrase_marker": "A descriptive musical phrase marker. Use the same bar/beat grid as the transport.",
-    "scene_recall": "Recall a saved VJ Scene Bank scene. Use morph_seconds 0 for an immediate cut.",
-    "clip_trigger": "Trigger a loaded deck, or include asset_id to load a media-library asset. Actions: load, play, pause, hold, release, restart, stop, seek.",
-    "effect_change": "Apply a master look preset and/or override selected EffectSettings fields. Preset names come from the FX dock.",
-    "text_regenerate": "Regenerate a Text Art layer using its saved language/theme/dictionary settings. Omit layer_id to use the first unlocked Text Art layer.",
-    "palette_change": "Apply a named palette to unlocked generator layers. Choose a palette from the current palette library.",
-    "modulation": "Set a normalized Performance Macro (0–1). The manual value takes priority for duration_bars, then its assigned live source resumes.",
-    "transition_cue": "Recall a saved VJ Scene with a numeric morph. Discrete media/text changes retain the scene bank's cut policy.",
+    "scene_marker": (
+        "A named section marker. It records INTRO / PEAK / BREAKDOWN "
+        "and does not recall a scene by itself."
+    ),
+    "phrase_marker": (
+        "A descriptive musical phrase marker. Use the same bar/beat "
+        "grid as the transport."
+    ),
+    "scene_recall": (
+        "Recall a saved VJ Scene Bank scene. Use morph_seconds 0 "
+        "for an immediate cut."
+    ),
+    "clip_trigger": (
+        "Trigger a loaded deck, or include asset_id to load a media-library "
+        "asset. Actions: load, play, pause, hold, release, restart, stop, seek."
+    ),
+    "effect_change": (
+        "Apply a master look preset and/or override selected EffectSettings "
+        "fields. Preset names come from the FX dock."
+    ),
+    "text_regenerate": (
+        "Regenerate a Text Art layer using its saved language/theme/dictionary "
+        "settings. Omit layer_id to use the first unlocked Text Art layer."
+    ),
+    "palette_change": (
+        "Apply a named palette to unlocked generator layers. Choose a palette "
+        "from the current palette library."
+    ),
+    "modulation": (
+        "Set a normalized Performance Macro (0–1). The manual value takes "
+        "priority for duration_bars, then its assigned live source resumes."
+    ),
+    "transition_cue": (
+        "Recall a saved VJ Scene with a numeric morph. Discrete media/text "
+        "changes retain the scene bank's cut policy."
+    ),
 }
 
 
@@ -382,7 +409,9 @@ class PerformanceTimelinePanel(QWidget):
             self.state_label.setText(f"STRUCTURE NOT INSERTED · {exc}")
             return
         self.refresh(force=True)
-        self.state_label.setText("INSERTED · 8 structure markers · add action events on the same bars")
+        self.state_label.setText(
+            "INSERTED · 8 structure markers · add action events on the same bars"
+        )
 
     def _clear_events(self) -> None:
         if not self.application.performance_timeline.list_events():
