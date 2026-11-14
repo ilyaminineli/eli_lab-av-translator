@@ -250,13 +250,6 @@ class ModulatorBankPanel(QWidget):
         sequence_form.addRow("RANDOM SEED", self.seed_spin)
         editor.addWidget(self.sequence_group)
 
-        self.editor_hint = QLabel(
-            "LFOs and step values are normalized 0–1 signals. "
-            "Use bipolar assignment to make 0.5 the neutral point."
-        )
-        self.editor_hint.setWordWrap(True)
-        self.editor_hint.setObjectName("mutedLabel")
-        editor.addWidget(self.editor_hint)
         self.apply_button = QPushButton("APPLY MOD CHANGES")
         editor.addWidget(self.apply_button)
         root.addWidget(editor_group)
@@ -500,33 +493,6 @@ class ModulatorBankPanel(QWidget):
         self.follower_group.setVisible(definition.kind == "follower")
         self.envelope_group.setVisible(definition.kind == "envelope")
         self.sequence_group.setVisible(definition.kind in {"steps", "rhythm"})
-        if definition.kind == "follower":
-            self.editor_hint.setText(
-                "A reusable follower for Sonic Pi energy/cutoff, scene intensity, transport "
-                "signals or audio bands. SONATA macros update once per bar; stale macro "
-                "inputs disappear after the OSC freshness window so assigned targets release."
-            )
-        elif definition.kind == "envelope":
-            self.editor_hint.setText(
-                "ADSR stages use beats when transport-synced and seconds in free-run mode. "
-                "The trigger can be a beat, downbeat, phrase, audio onset or Sonic Pi energy."
-            )
-        elif definition.kind == "lfo":
-            self.editor_hint.setText(
-                "Transport-synced LFO period is measured in beats. Free-run uses Hz. "
-                "LFO output is centered at 0.5; use bipolar assignment for movement "
-                "around baseline."
-            )
-        elif definition.kind == "rhythm":
-            self.editor_hint.setText(
-                "Rhythm values are gates: 0 is silent and 1 is a full accent. "
-                "The off-step value is centered at 0.5 so bipolar assignments return to baseline."
-            )
-        else:
-            self.editor_hint.setText(
-                "Enter 1–64 normalized step values. Choose hold, linear or smooth interpolation, "
-                "sequence direction and swing. Seeded random direction repeats deterministically."
-            )
         self._loading = False
         self._sync_timebase_controls()
         self.refresh_assignment_targets()
