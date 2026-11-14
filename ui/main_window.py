@@ -975,14 +975,14 @@ class MainWindow(QMainWindow):
             )
             self._refresh_automation_status()
         except ValueError as exc:
-            # Empty or unavailable FPOOLs are expected operator errors,
+            # Empty or unavailable footage pools are expected operator errors,
             # not application faults; keep the log useful without a traceback.
             _LOG.warning("Auto Performance unavailable: %s", exc)
             message = str(exc)
             if "No playable video files" in message:
                 message = (
-                    "No playable video files are available in this FPOOL. "
-                    "Import a video folder in MDL, wait for scanning to finish, "
+                    "No playable video files are available in this footage pool. "
+                    "Import a video folder in the MEDIA workspace, wait for scanning to finish, "
                     "then retry."
                 )
             self.automation_panel.set_running(False, message)
