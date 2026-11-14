@@ -14,6 +14,59 @@ from media.scanner import MediaScanner
 class MediaLibrary:
     """SQLite-backed media index. Cleanup operations never delete source footage."""
 
+    _TEXT_SCHEMA = {
+        "assets": (
+            "id TEXT PRIMARY KEY",
+            "path TEXT NOT NULL UNIQUE",
+            "collection_id TEXT NOT NULL",
+            "name TEXT NOT NULL",
+            "duration REAL",
+            "width INTEGER",
+            "height INTEGER",
+            "fps REAL",
+            "codec TEXT",
+            "thumbnail_path TEXT",
+            "status TEXT NOT NULL",
+            "file_size INTEGER NOT NULL",
+            "modified_at REAL NOT NULL",
+        ),
+        "collections": (
+            "id TEXT PRIMARY KEY",
+            "root_path TEXT NOT NULL",
+            "name TEXT NOT NULL",
+            "imported_at REAL NOT NULL",
+        ),
+    }
+
+    @classmethod
+    def _repair_legacy_txt_affinity(cls, connection: sqlite3.Connection) -> None:
+        """Repair 0.6.0 databases created while SQL TEXT types were abbreviated to TXT."""
+        for table_name, definitions in cls._TEXT_SCHEMA.items():
+            info = connection.execute(f"PRAGMA table_info({table_name})").fetchall()
+            if not any(str(column["type"]).strip().upper() == "TXT" for column in info):
+                continue
+
+            expected_columns = [definition.split()[0] for definition in definitions]
+            actual_columns = [str(column["name"]) for column in info]
+            if set(actual_columns) != set(expected_columns):
+                # Do not risk dropping data from a database with an unknown extension.
+                continue
+
+            temporary_name = f"{table_name}__text_affinity_fix"
+            connection.execute(f"DROP TABLE IF EXISTS {temporary_name}")
+            connection.execute(
+                f"CREATE TABLE {temporary_name} ({', '.join(definitions)})"
+            )
+            columns = ", ".join(expected_columns)
+            connection.execute(
+                f"INSERT INTO {temporary_name} ({columns}) "
+                f"SELECT {columns} FROM {table_name}"
+            )
+            connection.execute(f"DROP TABLE {table_name}")
+            connection.execute(
+                f"ALTER TABLE {temporary_name} RENAME TO {table_name}"
+            )
+
     def __init__(
             self,
             database_path: str | Path | None = None,
@@ -78,6 +131,14 @@ class MediaLibrary:
                     imported_at REAL NOT NULL
                 )
                 """
+            )
+
+            # Earlier 0.6.0 builds accidentally declared text columns as TXT, which
+            # SQLite treats as BLOB affinity. Rebuild only those known tables while
+            # preserving their rows and the canonical TEXT/REAL/INTEGER declarations.
+            self._repair_legacy_txt_affinity(connection)
+            connection.execute(
+                "CREATE INDEX IF NOT EXISTS idx_assets_collection ON assets(collection_id)"
             )
 
             # Upgrade older media databases which only stored collection IDs on assets.
