@@ -219,7 +219,7 @@ def _cached_dictionary_candidates(
 def random_text_sample(
         language: str = "bilingual",
         theme: str = "random",
-        count: int = 16,
+        count: int = 8,
         seed: int | None = None,
         dictionary_path: str | Path | None = None,
         use_dictionary: bool = True,
