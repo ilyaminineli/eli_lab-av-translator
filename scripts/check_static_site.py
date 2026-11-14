@@ -98,7 +98,7 @@ def main() -> int:
         html = source.read_text(encoding="utf-8")
         inspector = PageInspector()
         inspector.feed(html)
-        expected_lang = "ja" if relative_path.startswith("ja/") else "en"
+        expected_lang = "ja" if "/ja/" in f"/{relative_path}" else "en"
         checks = (
             (html.lstrip().lower().startswith("<!doctype html>"), "HTML5 doctype"),
             (inspector.has_head, "head element"),
