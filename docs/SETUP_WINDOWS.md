@@ -32,7 +32,20 @@ The target computer does not need Python, pip, PyInstaller or FFmpeg. The execut
 
 Sonic Pi, graphics/audio drivers, user video files and user-added asset folders are not part of the EXE.
 
-## 3. Prepare footage and projects
+## 3. Japanese interface fonts
+
+The application supports English and Japanese interface copy. In Japanese mode, its font stack prefers **Yu Gothic UI**, **Meiryo UI / Meiryo**, **MS UI Gothic / MS PGothic / MS Gothic**, **BIZ UDGothic**, then Noto Sans JP and normal system fallbacks.
+
+Some Windows installations do not include the Japanese supplemental fonts by default. If Japanese characters appear as empty squares or boxes:
+
+1. Open **Settings → System → Optional features**.
+2. Choose **View features** beside Add an optional feature.
+3. Search for and install **Japanese Supplemental Fonts**.
+4. Close and restart AV Translator so Qt can refresh the available system font list.
+
+You can open the Optional features page directly with `ms-settings:optionalfeatures`. Installing these fonts does not require changing the Windows display language. Microsoft lists Meiryo, Meiryo UI, MS Gothic, MS PGothic, MS UI Gothic and Yu Mincho among the Japanese supplemental families. [Microsoft's Windows font guidance](https://learn.microsoft.com/en-us/windows/deployment/windows-missing-fonts) explains the optional-font installation path.
+
+## 4. Prepare footage and projects
 
 A `.eliav` project and an `.eliset` performance set store composition state and source paths; they do not embed the original video files.
 
