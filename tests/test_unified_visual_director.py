@@ -263,7 +263,10 @@ def test_layout_director_selects_relationship_aware_patterns() -> None:
 
 def test_layer_cooldown_is_adaptive_and_can_be_disabled() -> None:
     director = AutomationDirector(seed=21)
-    director.settings = AutomationSettings(layer_cooldown_seconds=2.0)
+    director.settings = AutomationSettings(
+        layer_cooldown_seconds=2.0,
+        spatial_chaos=0.0,
+    )
     director.settings.normalize()
 
     calm = director._effective_layer_cooldown()
@@ -283,7 +286,10 @@ def test_layer_cooldown_is_adaptive_and_can_be_disabled() -> None:
 def test_layer_cooldown_excludes_recently_varied_layers_then_releases_them() -> None:
     director = AutomationDirector(seed=22)
     director._layers = make_layers(3)
-    director.settings = AutomationSettings(layer_cooldown_seconds=2.0)
+    director.settings = AutomationSettings(
+        layer_cooldown_seconds=2.0,
+        spatial_chaos=0.0,
+    )
     director.settings.normalize()
     director._mark_layer_varied("layer-0", now=10.0)
 
