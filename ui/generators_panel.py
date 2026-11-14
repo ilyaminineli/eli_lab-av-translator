@@ -63,31 +63,49 @@ class GeneratorsPanel(QWidget):
         body = QWidget()
         body.setMinimumWidth(0)
         root = QVBoxLayout(body)
-        root.setContentsMargins(8, 8, 8, 8)
-        root.setSpacing(7)
+        root.setContentsMargins(12, 12, 12, 14)
+        root.setSpacing(12)
 
         add_group = QGroupBox("ADD GENERATOR / OVERLAY")
         add_layout = QVBoxLayout(add_group)
+        add_layout.setContentsMargins(12, 16, 12, 12)
+        add_layout.setSpacing(7)
         row_one = QHBoxLayout()
+        row_one.setSpacing(8)
         self.add_geometry_button = QPushButton("+ GEOMETRY")
         self.add_text_button = QPushButton("+ TEXT ART")
         row_one.addWidget(self.add_geometry_button)
         row_one.addWidget(self.add_text_button)
         row_two = QHBoxLayout()
+        row_two.setSpacing(8)
         self.add_waveform_button = QPushButton("+ WAVEFORM")
         self.add_particles_button = QPushButton("+ PARTICLE FIELD")
         row_two.addWidget(self.add_waveform_button)
         row_two.addWidget(self.add_particles_button)
         row_three = QHBoxLayout()
+        row_three.setSpacing(8)
         self.add_particle_system_button = QPushButton("+ PARTICLE SYSTEM 2.0")
         row_three.addWidget(self.add_particle_system_button)
         row_four = QHBoxLayout()
+        row_four.setSpacing(8)
         self.add_overlay_button = QPushButton("+ IMAGE / VIDEO OVERLAY")
         self.remove_button = icon_button(
             self, "trash", "Remove selected visual layer", size=30
         )
         row_four.addWidget(self.add_overlay_button)
         row_four.addWidget(self.remove_button)
+        for action_button in (
+            self.add_geometry_button,
+            self.add_text_button,
+            self.add_waveform_button,
+            self.add_particles_button,
+            self.add_particle_system_button,
+            self.add_overlay_button,
+        ):
+            action_button.setMinimumHeight(34)
+            action_button.setSizePolicy(
+                QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
+            )
         add_layout.addLayout(row_one)
         add_layout.addLayout(row_two)
         add_layout.addLayout(row_three)
@@ -98,6 +116,7 @@ class GeneratorsPanel(QWidget):
         selected_heading.setObjectName("sectionHeading")
         root.addWidget(selected_heading)
         self.layer_combo = QComboBox()
+        self.layer_combo.setMinimumHeight(34)
         root.addWidget(self.layer_combo)
 
         self.text_group = QGroupBox("TEXT ART")
@@ -107,8 +126,8 @@ class GeneratorsPanel(QWidget):
         self.text_edit.setPlaceholderText(
             "Enter multiline text or regenerate from the bilingual pool…"
         )
-        self.text_edit.setMinimumHeight(84)
-        self.text_edit.setMaximumHeight(120)
+        self.text_edit.setMinimumHeight(104)
+        self.text_edit.setMaximumHeight(150)
         text_form.addRow("CONTENT · EDIT BUFFER", self.text_edit)
         self.rich_runs_edit = QPlainTextEdit()
         self.rich_runs_edit.setPlaceholderText(
