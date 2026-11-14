@@ -206,8 +206,9 @@ class DeckCard(QGroupBox):
         has_frame: bool,
         layer_name: str | None,
     ) -> None:
-        self.file_label.setText(
-            asset.name if asset else (Path(path).name if path else "EMPTY")
+        set_ui_text(
+            self.file_label,
+            asset.name if asset else (Path(path).name if path else "EMPTY"),
         )
         self._held = bool(held)
         if error:
@@ -241,7 +242,7 @@ class DeckCard(QGroupBox):
             else:
                 details.append("—")
             self._set_thumbnail(None)
-        self.detail_label.setText(" · ".join(details))
+        set_ui_text(self.detail_label, " · ".join(details))
 
         duration = (
             max(0.0, float(duration_seconds))
