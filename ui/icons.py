@@ -106,11 +106,11 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         sparkle(5.0, 19.0, 2.5)
     elif name == "lock":
         painter.drawRoundedRect(5.0, 10.0, 14.0, 10.0, 1.8, 1.8)
-        painter.drawArc(8.0, 3.0, 8.0, 12.0, 0, 180 * 16)
+        painter.drawArc(QRectF(8.0, 3.0, 8.0, 12.0), 0, 180 * 16)
         line((12.0, 14.0), (12.0, 16.5))
     elif name == "unlock":
         painter.drawRoundedRect(5.0, 10.0, 14.0, 10.0, 1.8, 1.8)
-        painter.drawArc(8.0, 3.0, 8.0, 12.0, 0, 115 * 16)
+        painter.drawArc(QRectF(8.0, 3.0, 8.0, 12.0), 0, 115 * 16)
         line((16.0, 5.0), (18.5, 7.0))
         line((12.0, 14.0), (12.0, 16.5))
     elif name == "trash":
