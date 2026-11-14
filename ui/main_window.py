@@ -102,14 +102,14 @@ class MainWindow(QMainWindow):
 
         self.media_browser = MediaBrowser(application.media_library, self)
         self.media_dock = self._make_dock("MEDIA", self.media_browser)
-        self.media_dock.setMinimumWidth(240)
+        self.media_dock.setMinimumWidth(190)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.media_dock)
 
         self.asset_library_panel = AssetLibraryPanel(application, self)
         self.asset_library_dock = self._make_dock(
             "VISUAL ASSET LIBRARY", self.asset_library_panel
         )
-        self.asset_library_dock.setMinimumWidth(240)
+        self.asset_library_dock.setMinimumWidth(190)
         self.addDockWidget(
             Qt.DockWidgetArea.LeftDockWidgetArea, self.asset_library_dock
         )
@@ -122,7 +122,7 @@ class MainWindow(QMainWindow):
 
         self.layer_panel = LayerPanel(application, self)
         self.layer_dock = self._make_dock("LAYERS", self.layer_panel)
-        self.layer_dock.setMinimumWidth(280)
+        self.layer_dock.setMinimumWidth(230)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.layer_dock)
 
         self.effects_panel = EffectsPanel(
@@ -154,7 +154,7 @@ class MainWindow(QMainWindow):
             "AUDIO / CTRL",
             self.performance_control_panel,
         )
-        self.performance_control_dock.setMinimumWidth(300)
+        self.performance_control_dock.setMinimumWidth(250)
         self.addDockWidget(
             Qt.DockWidgetArea.RightDockWidgetArea, self.performance_control_dock
         )
@@ -165,7 +165,7 @@ class MainWindow(QMainWindow):
             "MOD BANK",
             self.modulator_bank_panel,
         )
-        self.modulator_bank_dock.setMinimumWidth(320)
+        self.modulator_bank_dock.setMinimumWidth(250)
         self.addDockWidget(
             Qt.DockWidgetArea.RightDockWidgetArea, self.modulator_bank_dock
         )
@@ -176,7 +176,7 @@ class MainWindow(QMainWindow):
             "LIVE TIMELINE",
             self.performance_timeline_panel,
         )
-        self.performance_timeline_dock.setMinimumWidth(320)
+        self.performance_timeline_dock.setMinimumWidth(250)
         self.addDockWidget(
             Qt.DockWidgetArea.RightDockWidgetArea,
             self.performance_timeline_dock,
@@ -193,9 +193,10 @@ class MainWindow(QMainWindow):
         brand_layout = QHBoxLayout(brand_widget)
         brand_layout.setContentsMargins(2, 0, 12, 0)
         brand_layout.setSpacing(8)
-        brand_mark = QLabel("e·", brand_widget)
+        brand_mark = QLabel("絵", brand_widget)
         brand_mark.setObjectName("brandMark")
         brand_mark.setAlignment(Qt.AlignmentFlag.AlignVCenter)
+        brand_mark.setToolTip("絵 · visual composition")
         brand_name = QLabel("eli_lab\nAV TRANSLATOR", brand_widget)
         brand_name.setObjectName("brandName")
         brand_name.setAlignment(Qt.AlignmentFlag.AlignVCenter)
@@ -504,8 +505,8 @@ class MainWindow(QMainWindow):
         if compact == self._responsive_compact:
             return
         self._responsive_compact = compact
-        side_minimum = 150 if compact else 220
-        right_minimum = 220 if compact else 280
+        side_minimum = 150 if compact else 190
+        right_minimum = 205 if compact else 245
         for dock in (self.media_dock, self.asset_library_dock):
             dock.setMinimumWidth(side_minimum)
         for dock in (
@@ -520,8 +521,8 @@ class MainWindow(QMainWindow):
             dock.setMinimumWidth(right_minimum)
         self.deck_dock.setMinimumHeight(200 if compact else 220)
         self.preview_dock.setMinimumSize(
-            190 if compact else 260,
-            130 if compact else 180,
+            180 if compact else 230,
+            125 if compact else 160,
         )
 
     def resizeEvent(self, event) -> None:
