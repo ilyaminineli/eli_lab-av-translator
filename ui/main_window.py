@@ -256,6 +256,7 @@ class MainWindow(QMainWindow):
         # Those widgets now live in central workspaces and their placeholder docks
         # must remain hidden after a legacy state restore.
         self.media_dock.hide()
+        self.asset_library_dock.hide()
         self.preview_dock.hide()
         if not restored:
             QTimer.singleShot(0, self._apply_default_dock_sizes)
@@ -357,12 +358,22 @@ class MainWindow(QMainWindow):
         prepare_header = QLabel("MEDIA PREPARATION")
         prepare_header.setObjectName("sectionHeading")
         prepare_layout.addWidget(prepare_header)
+        prepare_tabs = QTabWidget(prepare_page)
+        prepare_tabs.setObjectName("prepareAssetTabs")
+        prepare_tabs.setDocumentMode(True)
         self.media_browser.setParent(None)
+        self.asset_library_panel.setParent(None)
         self.media_dock.setWidget(
-            QLabel("MEDIA LIBRARY is now available in the central PREPARE workspace.")
+            QLabel("MEDIA LIBRARY is available in the central PREPARE workspace.")
+        )
+        self.asset_library_dock.setWidget(
+            QLabel("VISUAL ASSET LIBRARY is available in the central PREPARE workspace.")
         )
         self.media_dock.hide()
-        prepare_layout.addWidget(self.media_browser, 1)
+        self.asset_library_dock.hide()
+        prepare_tabs.addTab(self.media_browser, "MEDIA LIBRARY")
+        prepare_tabs.addTab(self.asset_library_panel, "VISUAL ASSETS")
+        prepare_layout.addWidget(prepare_tabs, 1)
 
         tabs.addTab(perform_page, "01  PERFORM")
         tabs.addTab(compose_page, "02  COMPOSE")
@@ -460,7 +471,6 @@ class MainWindow(QMainWindow):
         if not self.restoreState(self._default_dock_state, 4):
             _LOG.warning("Could not restore the built-in dock-state snapshot; rebuilding sizes.")
         for dock in (
-                self.asset_library_dock,
                 self.deck_dock,
                 self.layer_dock,
                 self.effects_dock,
@@ -471,6 +481,7 @@ class MainWindow(QMainWindow):
         ):
             dock.show()
         self.media_dock.hide()
+        self.asset_library_dock.hide()
         self.preview_dock.hide()
         self.workspace_tabs.setCurrentIndex(0)
         self.layer_dock.raise_()
@@ -591,7 +602,6 @@ class MainWindow(QMainWindow):
             workspace_menu.addAction(action)
         view_menu.addSeparator()
         for dock in (
-                self.asset_library_dock,
                 self.deck_dock,
                 self.layer_dock,
                 self.effects_dock,
