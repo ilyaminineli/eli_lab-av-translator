@@ -60,6 +60,16 @@ jobs:
           scripts/render_japanese_ui_proof.py
       - name: Run unit and regression tests
         run: python -m pytest -q
+      - name: Prepare a test-only Japanese font
+        shell: pwsh
+        run: |
+          $fontDirectory = Join-Path $env:RUNNER_TEMP "japanese-proof-font"
+          New-Item -ItemType Directory -Force -Path $fontDirectory | Out-Null
+          $fontPath = Join-Path $fontDirectory "NotoSansJP-wght.ttf"
+          $licensePath = Join-Path $fontDirectory "OFL.txt"
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansjp/NotoSansJP%5Bwght%5D.ttf" -OutFile $fontPath
+          Invoke-WebRequest -Uri "https://raw.githubusercontent.com/google/fonts/main/ofl/notosansjp/OFL.txt" -OutFile $licensePath
+          "ELI_JP_PROOF_FONT=$fontPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
       - name: Render Japanese UI typography proof
         run: python scripts/render_japanese_ui_proof.py
         env:
