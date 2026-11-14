@@ -8,13 +8,13 @@ import sysconfig
 from PyInstaller.utils.hooks import collect_all
 
 ROOT = Path(SPECPATH).resolve()
-ICON = ROOT / "resources" / "icons" / "Icon.ico"
+ICON = ROOT / "resources" / "icons" / "eli-lab-mark.ico"
 
 required_paths = (
     ROOT / "main.py",
     ROOT / "config.py",
     ROOT / "resources",
-    ROOT / "resources" / "icons" / "Icon.ico",
+    ROOT / "resources" / "icons" / "eli-lab-mark.ico",
     ROOT / "dictionary",
     ROOT / "THIRD_PARTY_NOTICES.md",
 )
