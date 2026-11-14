@@ -36,7 +36,7 @@ from ui.automation_panel import AutomationPanel
 from ui.deck_panel import DeckPanel
 from ui.effects_panel import EffectsPanel
 from ui.generators_panel import GeneratorsPanel
-from ui.i18n import tr
+from ui.i18n import apply_widget_translations, tr
 from ui.layer_panel import LayerPanel
 from ui.media_browser import MediaBrowser
 from ui.modulator_bank_panel import ModulatorBankPanel
@@ -295,6 +295,7 @@ class MainWindow(QMainWindow):
             signal.connect(self._schedule_session_autosave)
 
         self._create_actions()
+        apply_widget_translations(self, self._language)
         self._sync_performance_macro_shortcuts()
         # Keep a pristine Qt dock-state snapshot for the View → Restore Default Layout action.
         self._default_dock_state = self.saveState(4)
