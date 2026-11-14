@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
+
 _ENGLISH: dict[str, str] = {
     "menu.file": "File",
     "menu.view": "View",
@@ -38,6 +39,7 @@ _ENGLISH: dict[str, str] = {
     "about.created": "Created by",
     "status.recovered": "Last session restored.",
 }
+
 _JAPANESE: dict[str, str] = {
     "menu.file": "ファイル",
     "menu.view": "表示",
@@ -75,6 +77,631 @@ _JAPANESE: dict[str, str] = {
     "status.recovered": "前回のセッションを復元しました。",
 }
 
+# UI copy is keyed by its original English text so existing panels can be
+# localized without duplicating their widget construction or changing data IDs.
+_JA_TEXT: dict[str, str] = {
+    # Main workspaces and shared controls
+    "COMPOSE": "構成",
+    "MEDIA PREPARATION": "メディア準備",
+    "MEDIA": "メディア",
+    "ASSETS": "素材",
+    "OUTPUT  ·  LOCAL": "出力 · ローカル",
+    "OUTPUT · LOCAL": "出力 · ローカル",
+    "LOCAL PREVIEW IDLE · select PERF to initialise OpenGL": "ローカルプレビュー · 待機中",
+    "LOCAL PREVIEW is now displayed in the central PERF workspace.": "ローカルプレビューは PERF ワークスペースに表示されます。",
+    "MEDIA LIBRARY is available in the central PREPARE workspace.": "メディアライブラリは PREPARE ワークスペースにあります。",
+    "VISUAL ASSET LIBRARY is available in the central PREPARE workspace.": "ビジュアル素材ライブラリは PREPARE ワークスペースにあります。",
+    "▶ PERF MODE": "▶ PERF モード",
+    "■ STOP PERF MODE": "■ PERF モード停止",
+    "▶ OPEN PERF": "▶ PERFを開く",
+    "VISUAL ASSET LIBRARY": "ビジュアル素材ライブラリ",
+    "FX + OVERLAYS": "FX・オーバーレイ",
+    "AUTO PERF": "自動パフォーマンス",
+    "LOCAL PREVIEW": "ローカルプレビュー",
+    "AUDIO / CTRL": "オーディオ／操作",
+    "MOD BANK": "モジュレーター",
+    "LIVE TIMELINE": "ライブタイムライン",
+    "DECKS": "デッキ",
+    "LAYERS": "レイヤー",
+    "OUTPUT · PROJECTOR": "出力 · プロジェクター",
+    "LIVE PERF": "ライブパフォーマンス",
+    "OPEN PERF": "PERFを開く",
+    "SETTINGS": "設定",
+    "ABOUT": "このアプリについて",
+
+    # Asset library
+    "Search textures, materials, masks…": "テクスチャ、マテリアル、マスクを検索…",
+    "ADD ASSET FOLDER…": "素材フォルダーを追加…",
+    "All purposes": "すべての用途",
+    "All media": "すべてのメディア",
+    "Images": "画像",
+    "Videos": "動画",
+    "ADD AS OVERLAY": "オーバーレイとして追加",
+    "Add visual asset folder": "ビジュアル素材フォルダーを追加",
+    "Asset folder could not be indexed": "素材フォルダーを索引化できませんでした",
+    "Indexing bundled and user visual assets…": "内蔵素材とユーザー素材を索引化中…",
+    "No indexed assets match this search.": "検索条件に一致する素材はありません。",
+    "Asset could not be added": "素材を追加できませんでした",
+
+    # Automation and visual director
+    "30 minutes": "30分",
+    "45 minutes": "45分",
+    "1 hour": "1時間",
+    "90 minutes": "90分",
+    "2 hours": "2時間",
+    "Until stopped": "停止するまで",
+    "Unified · Chaotic / Generative / Structured": "統合 · カオス／生成／構成",
+    "More exploratory": "探索的",
+    "More composed": "構成的",
+    "FOOTAGE": "映像素材",
+    "SESSION": "セッション",
+    "DIRECTOR CHARACTER": "ディレクターの傾向",
+    "Time-based": "時間基準",
+    "Bar-synchronised": "小節同期",
+    "Phrase-synchronised": "フレーズ同期",
+    "Hybrid": "ハイブリッド",
+    "MUSICAL SYNC": "音楽との同期",
+    "Slow cuts · 18–38 sec": "長めのカット · 18–38秒",
+    "Balanced · 8–24 sec": "標準 · 8–24秒",
+    "Fast cuts · 3–10 sec": "短めのカット · 3–10秒",
+    "CUT RHYTHM": "カットのリズム",
+    "Short fragments · 2–6 sec": "短い断片 · 2–6秒",
+    "Mixed fragments · 4–16 sec": "混合 · 4–16秒",
+    "Long fragments · 12–30 sec": "長い断片 · 12–30秒",
+    "IN / OUT LENGTH": "イン／アウトの長さ",
+    "Occasional loops · 25%": "ループ少なめ · 25%",
+    "Mixed loops · 58%": "標準 · 58%",
+    "Frequent loops · 85%": "ループ多め · 85%",
+    "SEGMENT LOOP CHANCE": "区間ループの確率",
+    "Periodically change collage layout": "コラージュのレイアウトを定期的に変更",
+    "Periodically change overlay / filter look": "オーバーレイ／フィルターを定期的に変更",
+    "Periodically vary generators + text": "ジェネレーターとテキストを定期的に変化",
+    "Vary enabled per-layer FX": "有効なレイヤーFXを変化",
+    "Vary overlay transforms + blend": "オーバーレイの変形と合成方法を変化",
+    "Vary colours · Japanese palette looks": "色彩を変化 · 日本の配色",
+    "UNIFIED MUSICAL / GENERATIVE DIRECTOR": "音楽・生成表現の統合ディレクター",
+    "Prefer a recognizable visual anchor": "認識しやすい視覚的な基準を残す",
+    "Protect background source from clip switching": "背景ソースをクリップ切替から保護",
+    "Introduce master / layer FX only after a transition": "トランジション後にマスター／レイヤーFXを適用",
+    "VARIATION SCOPE": "変化の対象",
+    "PALETTE MEMORY · PHRASES": "配色の記憶 · フレーズ数",
+    "PEAK PARTICLE BOOST · 0–1": "ピーク時のパーティクル強度 · 0–1",
+    "PER-LAYER AUTOMATION COOLDOWN": "レイヤー別オートメーション待機時間",
+    "BREAKDOWN TRANSITION MIN": "ブレイクの最短トランジション",
+    "BREAKDOWN TRANSITION MAX": "ブレイクの最長トランジション",
+    "START AUTOMATIC SESSION": "自動セッションを開始",
+    "STOP AUTOMATION": "オートメーションを停止",
+    "Ready · import a footage folder to begin.": "準備完了 · 映像フォルダーを読み込んでください。",
+    "Use slower layout transitions during breakdowns": "ブレイク中はレイアウト変化をゆっくりにする",
+
+    # Decks and media
+    "NO MEDIA": "メディアなし",
+    "EMPTY": "空",
+    "Loop": "ループ",
+    "Lock": "ロック",
+    "DECK A": "デッキ A",
+    "DECK B": "デッキ B",
+    "DECK C": "デッキ C",
+    "DECK D": "デッキ D",
+    "ADD FOLDER": "フォルダーを追加",
+    "Remove selected folder from library…": "選択したフォルダーをライブラリから削除…",
+    "Remove missing files…": "見つからないファイルを削除…",
+    "Clean unused thumbnails": "未使用のサムネイルを整理",
+    "Clear entire media library…": "メディアライブラリをすべて消去…",
+    "Assign to": "割り当て先",
+    "All folders · {total} clips": "すべてのフォルダー · {total}クリップ",
+    "No clips in this view. Add a folder or change the filter.": "表示できるクリップはありません。フォルダーを追加するか、フィルターを変更してください。",
+    "Remove folder from media library": "メディアライブラリからフォルダーを削除",
+    "Remove missing files": "見つからないファイルを削除",
+    "Clear media library": "メディアライブラリを消去",
+
+    # Effects and compositing
+    "LOOK": "ルック",
+    "RESET": "リセット",
+    "ENABLE MASTER FILTERS": "マスターフィルターを有効化",
+    "MASTER FILTERS + OVERLAYS": "マスターフィルターとオーバーレイ",
+    "GEOMETRY + DISPLACEMENT": "ジオメトリと変位",
+    "Off": "オフ",
+    "Kaleidoscope": "万華鏡",
+    "Polar coordinates": "極座標",
+    "Mosaic / tile": "モザイク／タイル",
+    "Transform": "変形",
+    "Displacement source": "変位マップのソース",
+    "Use luma as a two-axis map": "輝度を2軸マップとして使用",
+    "GPU FEEDBACK ENGINE": "GPUフィードバックエンジン",
+    "ENABLE TEMPORAL FEEDBACK": "時間方向のフィードバックを有効化",
+    "Feedback blend": "フィードバックの合成",
+    "FREEZE FEEDBACK": "フィードバックを固定",
+    "RESET BUFFER": "バッファをリセット",
+    "Brightness": "明るさ",
+    "Exposure": "露出",
+    "Contrast": "コントラスト",
+    "Saturation": "彩度",
+    "Gamma": "ガンマ",
+    "Temperature": "色温度",
+    "Tint": "色かぶり",
+    "Hue shift": "色相シフト",
+    "Vignette": "ビネット",
+    "Film grain": "フィルムグレイン",
+    "Scanlines": "走査線",
+    "RGB split": "RGB分離",
+    "Signal glitch": "信号グリッチ",
+    "Pixelation": "ピクセル化",
+    "Posterize": "ポスタライズ",
+    "Invert": "反転",
+    "Halftone print": "網点印刷",
+    "Solarization": "ソラリゼーション",
+    "Transform mix": "変形ミックス",
+    "Kaleidoscope slices": "万華鏡の分割数",
+    "Kaleidoscope rotation": "万華鏡の回転",
+    "Kaleidoscope zoom": "万華鏡の拡大",
+    "Mosaic tile count": "モザイクのタイル数",
+    "Scan displacement amount": "走査変位量",
+    "Sort brightness threshold": "輝度ソートのしきい値",
+    "Displacement amount": "変位量",
+    "Displacement map scale": "変位マップの倍率",
+    "Edge extraction": "エッジ抽出",
+    "Ordered dithering": "規則的ディザリング",
+    "Feedback amount": "フィードバック量",
+    "Feedback decay": "フィードバック減衰",
+    "Feedback zoom": "フィードバックの拡大",
+    "Feedback rotation": "フィードバックの回転",
+    "Feedback X offset": "フィードバック X オフセット",
+    "Feedback Y offset": "フィードバック Y オフセット",
+    "Feedback colour shift": "フィードバックの色相変化",
+    "Feedback distortion": "フィードバックの歪み",
+    "Motion-driven warp": "動きに連動するワープ",
+    "Datamosh block displacement": "データモッシュのブロック変位",
+    "Temporal delay (frames)": "時間遅延（フレーム）",
+
+    # Generator and typography controls
+    "ADD GENERATOR / OVERLAY": "ジェネレーター／オーバーレイを追加",
+    "+ GEOMETRY": "+ ジオメトリ",
+    "+ TEXT ART": "+ テキストアート",
+    "+ WAVEFORM": "+ 波形",
+    "+ PARTICLE FIELD": "+ パーティクルフィールド",
+    "+ PARTICLE SYSTEM 2.0": "+ パーティクルシステム 2.0",
+    "+ IMAGE / VIDEO OVERLAY": "+ 画像／動画オーバーレイ",
+    "SELECTED GENERATOR / OVERLAY": "選択中のジェネレーター／オーバーレイ",
+    "TEXT ART": "テキストアート",
+    "CONTENT · EDIT BUFFER": "内容 · 編集バッファ",
+    "RICH TEXT RUNS · JSON": "リッチテキスト · JSON",
+    "TEXT RASTER": "テキストのラスタライズ",
+    "Live preview": "ライブプレビュー",
+    "Commit after typing pause": "入力停止後に確定",
+    "PREVIEW": "プレビュー",
+    "COMMIT": "確定",
+    "Draft · 25%": "下書き · 25%",
+    "Balanced · 50%": "標準 · 50%",
+    "High · 75%": "高品質 · 75%",
+    "Maximum · 100%": "最高品質 · 100%",
+    "PREVIEW QUALITY": "プレビュー品質",
+    "Use full resolution for Apply Immediately": "即時適用時にフル解像度を使用",
+    "FINAL RENDER": "最終レンダー",
+    "MAX RASTER RATE": "最大ラスタライズ頻度",
+    "Freeze current text texture": "現在のテキストテクスチャを固定",
+    "TEXTURE": "テクスチャ",
+    "Keep last valid texture if rasterization fails": "ラスタライズ失敗時に最後の有効なテクスチャを保持",
+    "RECOVERY": "復元",
+    "TEXT PIPELINE · READY": "テキスト処理 · 準備完了",
+    "STATUS": "状態",
+    "STATIC TYPOGRAPHY · CPU RASTER": "静的タイポグラフィ · CPUラスタライズ",
+    "Single text block": "単一テキストブロック",
+    "Typographic word collage": "文字によるコラージュ",
+    "LAYOUT": "レイアウト",
+    "Horizontal": "横書き",
+    "Vertical · right to left": "縦書き · 右から左",
+    "Vertical · left to right": "縦書き · 左から右",
+    "WRITING MODE": "文字の方向",
+    "Straight layout": "直線",
+    "Circular": "円形",
+    "Arc": "円弧",
+    "Custom polyline": "カスタム折れ線",
+    "TEXT ON PATH": "パス上に配置",
+    "PATH POINTS · 0–1": "パス座標 · 0–1",
+    "TYPEFACE": "書体",
+    "WEIGHT": "太さ",
+    "Single colour": "単色",
+    "Alternate line colours": "行ごとに色を変更",
+    "COLOUR MODE": "色のモード",
+    "FONT SIZE": "文字サイズ",
+    "LETTER TRACKING": "字間",
+    "LINE SPACING": "行間",
+    "ALIGNMENT": "配置",
+    "VERTICAL ALIGNMENT": "垂直方向の配置",
+    "OUTLINE COLOUR": "輪郭の色",
+    "OUTLINE WIDTH": "輪郭の太さ",
+    "Soft offset shadow": "柔らかなオフセット影",
+    "SHADOW": "影",
+    "ANIMATED TYPOGRAPHY · GPU SHADER": "アニメーション文字 · GPUシェーダー",
+    "None": "なし",
+    "Type-on": "タイプオン",
+    "Word / column reveal": "単語／列の出現",
+    "Line wave": "行の波",
+    "Glyph jitter": "字形のジッター",
+    "Text scrolling": "テキストスクロール",
+    "Signal glitch": "信号グリッチ",
+    "Reverse typewriter": "逆タイプライター",
+    "Dissolve": "ディゾルブ",
+    "Flicker": "明滅",
+    "Character displacement": "文字の変位",
+    "Vertical writing reveal": "縦書きの出現",
+    "Scattered glyph field": "散らばる文字",
+    "Word collision bands": "単語の衝突帯",
+    "Mechanical scroll": "機械的スクロール",
+    "MOTION": "動き",
+    "MOTION SPEED": "動きの速度",
+    "MOTION AMOUNT": "動きの量",
+    "REVEAL STEPS": "表示ステップ数",
+    "RANDOM TEXT POOL · ENGLISH / 日本語": "ランダムテキスト · 英語／日本語",
+    "Bilingual": "二言語",
+    "English": "英語",
+    "日本語": "日本語",
+    "Random mix": "ランダム",
+    "Memory / 記憶": "記憶",
+    "Body / 身体": "身体",
+    "Signal / 信号": "信号",
+    "Ritual / 儀式": "儀式",
+    "Identity / 自己": "自己",
+    "Queer / クィア": "クィア",
+    "Use repository dictionaries": "リポジトリ内の辞書を使用",
+    "Auto-regenerate during Auto Performance": "自動パフォーマンス中に再生成",
+    "AUTO TEXT": "自動テキスト",
+    "Regenerate Text Art": "テキストアートを再生成",
+    "FIELD MODE": "フィールドモード",
+    "GPU PARTICLE FIELD · LEGACY": "GPUパーティクルフィールド · 旧方式",
+    "PARTICLE SYSTEM 2.0 · GPU PHYSICS": "パーティクルシステム 2.0 · GPU物理演算",
+    "PARTICLES · HARD CAP 8192": "パーティクル数 · 上限 8192",
+    "CONTINUOUS EMISSION · PARTICLES / SEC": "連続放出 · 個／秒",
+    "INDEPENDENT POPULATIONS": "独立した集団",
+    "VIDEO / IMAGE SOURCE": "動画／画像ソース",
+    "Brightness / luminance": "明るさ／輝度",
+    "Image alpha silhouette": "画像のアルファ形状",
+    "Contour / edge strength": "輪郭／エッジ強度",
+    "SOURCE MAP": "ソースマップ",
+    "EMISSION THRESHOLD": "放出しきい値",
+    "SOURCE SAMPLES / PARTICLE": "パーティクルあたりのソースサンプル",
+    "SOURCE RESAMPLE · 0.1 SEC": "ソース再サンプリング · 0.1秒",
+    "REFORM TO SOURCE": "ソース形状に再構成",
+    "CIRCLE RADIUS": "円の半径",
+    "RECTANGLE WIDTH": "矩形の幅",
+    "RECTANGLE HEIGHT": "矩形の高さ",
+    "EMISSION DIRECTION": "放出方向",
+    "LIFETIME · 0.01 SEC": "寿命 · 0.01秒",
+    "INITIAL SPEED": "初速",
+    "VELOCITY SPREAD": "速度の広がり",
+    "ACCELERATION X": "X加速度",
+    "ACCELERATION Y": "Y加速度",
+    "FORCE FIELD": "力場",
+    "FORCE STRENGTH": "力の強さ",
+    "FORCE RADIUS": "力の半径",
+    "VELOCITY DRAG": "速度抵抗",
+    "TRAIL PERSISTENCE": "軌跡の残留",
+    "PARTICLE RADIUS · PX": "パーティクル半径 · px",
+    "SIZE OVER LIFETIME": "寿命に応じたサイズ",
+    "DETERMINISTIC SEED": "決定論的シード",
+    "RANDOMIZE": "ランダム化",
+    "REFRESH": "更新",
+    "COLOUR AND ANIMATION": "色とアニメーション",
+    "PRIMARY COLOUR": "メインカラー",
+    "ACCENT COLOUR": "アクセントカラー",
+    "BACKGROUND COLOUR": "背景色",
+    "Manual colours": "手動設定",
+    "JAPANESE PALETTE LOOK": "日本の配色",
+    "IMPORT ACO PALETTE…": "ACOパレットを読み込む…",
+    "ANIMATION": "アニメーション",
+    "ANIMATION SPEED": "アニメーション速度",
+    "ANIMATION AMOUNT": "アニメーション量",
+    "LAYER APPEARANCE": "レイヤーの外観",
+    "BLEND MODE": "合成モード",
+    "IMAGE / VIDEO OVERLAY": "画像／動画オーバーレイ",
+    "Loop playback": "再生をループ",
+    "Sync to scene changes": "シーン変更に同期",
+    "No matte": "マットなし",
+    "Alpha matte": "アルファマット",
+    "Luma matte": "輝度マット",
+    "IN POINT": "開始位置",
+    "OUT POINT": "終了位置",
+    "PLAYBACK SPEED": "再生速度",
+    "FRAME HOLD": "フレーム保持",
+    "MASK MODE": "マスクモード",
+    "MASK SOURCE": "マスクソース",
+    "APPLY GENERATOR SETTINGS": "ジェネレーター設定を適用",
+    "No source": "ソースなし",
+
+    # Layers and performance modifiers
+    "Visible": "表示",
+    "Layer": "レイヤー",
+    "Opacity": "不透明度",
+    "Blend": "合成",
+    "LOCK LAYER": "レイヤーをロック",
+    "LAYER TRANSFORM": "レイヤー変形",
+    "X POSITION": "X位置",
+    "Y POSITION": "Y位置",
+    "UNIFORM SCALE": "縦横比を維持して拡大縮小",
+    "PER-LAYER PERFORMANCE MODIFIERS": "レイヤー別パフォーマンスモディファイア",
+    "SOURCE": "ソース",
+    "TARGET": "対象",
+    "RESPONSE": "応答",
+    "DEPTH · %": "深度 · %",
+    "ADD MODIFIER": "モディファイアを追加",
+    "BEAT": "ビート",
+    "DOWNBEAT": "ダウンビート",
+    "PHRASE": "フレーズ",
+    "REMOVE SELECTED MODIFIER": "選択したモディファイアを削除",
+    "LAYER EFFECT STACK": "レイヤーエフェクトスタック",
+    "ENABLE LAYER EFFECTS": "レイヤーエフェクトを有効化",
+    "STAGE ORDER · TOP TO BOTTOM": "処理順 · 上から下",
+    "ADD": "追加",
+    "REMOVE": "削除",
+    "SAVE CHAIN…": "チェーンを保存…",
+    "EXPORT PRESETS…": "プリセットを書き出す…",
+    "IMPORT PRESETS…": "プリセットを読み込む…",
+    "FX MIX": "FXミックス",
+    "REMOVE LAYER": "レイヤーを削除",
+    "Smoothstep": "スムーズステップ",
+    "Linear": "リニア",
+    "Exponential": "指数",
+    "Positive": "正方向",
+    "Bipolar": "双極",
+    "SAVE AS PRESET…": "プリセットとして保存…",
+
+    # Modulator bank
+    "MOD BANK · REUSABLE SOURCES": "モジュレーター · 再利用可能なソース",
+    "+ LFO": "+ LFO",
+    "+ ENVELOPE": "+ エンベロープ",
+    "+ STEPS": "+ ステップ",
+    "+ RHYTHM": "+ リズム",
+    "+ FOLLOWER": "+ フォロワー",
+    "DUPLICATE": "複製",
+    "PRESET LIBRARY": "プリセットライブラリ",
+    "LOAD PRESET": "プリセットを読み込む",
+    "DELETE USER PRESET": "ユーザープリセットを削除",
+    "EXPORT USER PRESETS…": "ユーザープリセットを書き出す…",
+    "IMPORT PRESETS…": "プリセットを読み込む…",
+    "MODULATOR EDITOR": "モジュレーター編集",
+    "ENABLED": "有効",
+    "SYNC TO TRANSPORT": "トランスポートに同期",
+    "FREE RUN": "フリーラン",
+    "CONTINUOUS": "連続",
+    "RESET EVERY BAR": "毎小節リセット",
+    "RESET EVERY PHRASE": "毎フレーズリセット",
+    "PHASE RESET": "位相リセット",
+    "LFO · CYCLIC WAVEFORM": "LFO · 周期波形",
+    "Sine": "サイン波",
+    "Triangle": "三角波",
+    "Saw up": "上昇ノコギリ波",
+    "Saw down": "下降ノコギリ波",
+    "Square": "矩形波",
+    "Pulse width": "パルス幅",
+    "Sample & hold": "サンプル＆ホールド",
+    "NAME": "名前",
+    "TIMEBASE": "時間基準",
+    "PERIOD · BEATS": "周期 · ビート",
+    "RATE · HZ (FREE)": "レート · Hz（非同期）",
+    "CONTROL FOLLOWER · SONIC PI / AUDIO": "コントロールフォロワー · Sonic Pi／音声",
+    "INVERT INPUT": "入力を反転",
+    "INPUT SOURCE": "入力ソース",
+    "INPUT MIN": "入力最小値",
+    "INPUT MAX": "入力最大値",
+    "RESPONSE CURVE": "応答カーブ",
+    "ATTACK · ms": "アタック · ms",
+    "RELEASE · ms": "リリース · ms",
+    "ENVELOPE · ADSR": "エンベロープ · ADSR",
+    "TRIGGER": "トリガー",
+    "TRIGGER THRESHOLD": "トリガーしきい値",
+    "RETRIGGER": "再トリガー",
+    "RESTART": "再スタート",
+    "LEGATO": "レガート",
+    "DECAY": "ディケイ",
+    "SUSTAIN": "サステイン",
+    "GATE / HOLD": "ゲート／ホールド",
+    "STEP SEQUENCER / RHYTHM GRID": "ステップシーケンサー／リズムグリッド",
+    "HOLD / QUANTIZED": "ホールド／クオンタイズ",
+    "LINEAR": "リニア",
+    "SMOOTH": "スムーズ",
+    "FORWARD": "順方向",
+    "REVERSE": "逆方向",
+    "PING-PONG": "ピンポン",
+    "SEEDED RANDOM": "シード付きランダム",
+    "EUCLIDEAN RHYTHM GENERATOR": "ユークリッドリズムジェネレーター",
+    "GENERATE EUCLIDEAN PATTERN": "ユークリッドパターンを生成",
+    "PULSES": "パルス数",
+    "GRID STEPS": "グリッドステップ数",
+    "ROTATION": "回転",
+    "STEP VALUES · 0–1": "ステップ値 · 0–1",
+    "DIVISION · BEATS": "分割 · ビート",
+    "STEP RATE · HZ (FREE)": "ステップレート · Hz（非同期）",
+    "SWING · 0.50 = STRAIGHT": "スウィング · 0.50 = ストレート",
+    "GATE / PULSE WIDTH": "ゲート／パルス幅",
+    "RANDOM SEED": "乱数シード",
+    "APPLY MOD CHANGES": "モジュレーターの変更を適用",
+    "ASSIGN TO SELECTED LAYER": "選択したレイヤーに割り当て",
+    "No layer selected": "レイヤーが選択されていません",
+    "AUTO · TYPE DEFAULT": "自動 · 種類の既定値",
+    "BIPOLAR · CENTRED": "双極 · 中央基準",
+    "POSITIVE · ONE WAY": "正方向 · 一方向",
+    "ASSIGN MODULATOR TO LAYER": "モジュレーターをレイヤーに割り当て",
+    "LIVE OUTPUT": "ライブ出力",
+    "INPUT · —": "入力 · —",
+    "OUTPUT · 0.50": "出力 · 0.50",
+    "BUILT-IN": "内蔵",
+    "TRANSPORT CLOCK": "トランスポートクロック",
+    "FREE-RUN CLOCK": "フリーランクロック",
+    "OUTPUT · —": "出力 · —",
+    "OUTPUT · NO INPUT": "出力 · 入力なし",
+
+    # Performance controls
+    "AUTO PERFORMANCE MODE": "自動パフォーマンスモード",
+    "OFF · arm the show from the main Performance toolbar.": "OFF",
+    "OFF": "OFF",
+    "INTERNAL TRANSPORT / TEST CLOCK": "内部トランスポート／テストクロック",
+    "TEMPO": "テンポ",
+    "METER": "拍子",
+    "START": "開始",
+    "PAUSE": "一時停止",
+    "RESUME": "再開",
+    "STOP": "停止",
+    "CLOCK": "クロック",
+    "MIDI CONTROLLERS · OPTIONAL": "MIDIコントローラー · 任意",
+    "SCAN": "スキャン",
+    "INPUT DEVICE": "入力デバイス",
+    "CONNECT": "接続",
+    "DISCONNECT": "切断",
+    "LEARN NEXT CONTROLLER": "次のコントローラーを学習",
+    "MIN": "最小",
+    "MAX": "最大",
+    "CURVE": "カーブ",
+    "Pickup": "ピックアップ",
+    "MAPPINGS": "マッピング",
+    "UPDATE": "更新",
+    "STATUS": "状態",
+    "PERF MACROS · NORMALIZED 0–1": "PERFマクロ · 正規化 0–1",
+    "VJ SCENE BANK": "VJシーンバンク",
+    "SCENE NAME": "シーン名",
+    "OSC CUE": "OSCキュー",
+    "RECALL QUANTIZATION": "呼び出しのクオンタイズ",
+    "TRANSITION DURATION": "トランジション時間",
+    "NUMERIC CURVE": "数値カーブ",
+    "DISCRETE POLICY": "離散値の扱い",
+    "CUT · B1": "カット · B1",
+    "CAPTURE SCENE": "シーンを登録",
+    "RECALL / MORPH": "呼び出し／モーフ",
+    "RANDOM COMPATIBLE": "互換シーンをランダム選択",
+    "SONIC PI CONNECTION · OSC /eli_lab/v1": "Sonic Pi接続 · OSC /eli_lab/v1",
+    "RECEIVER ADDRESS": "受信アドレス",
+    "UDP PORT": "UDPポート",
+    "COPY SONATA SETTINGS": "SONATA設定をコピー",
+    "SCENE PROFILES": "シーンプロファイル",
+    "APPLY SCENE": "シーンを適用",
+    "SAVE PROFILE": "プロファイルを保存",
+    "MASTER LOOK": "マスタールック",
+    "COLOUR PALETTE": "カラーパレット",
+    "AUDIO INPUT / SYSTEM LOOPBACK": "音声入力／システムループバック",
+    "START INPUT": "入力を開始",
+    "STOP INPUT": "入力を停止",
+    "SENSITIVITY": "感度",
+    "RMS / ENERGY": "RMS／エネルギー",
+    "Tempo estimate · —": "テンポ推定 · —",
+    "MODULATION MATRIX": "モジュレーションマトリクス",
+    "SOURCE": "ソース",
+    "TARGET": "対象",
+    "INTENSITY CEILING": "強度の上限",
+    "SMOOTHING · ms": "平滑化 · ms",
+    "HOLD · ms": "ホールド · ms",
+    "NEW": "新規",
+    "ADD / UPDATE": "追加／更新",
+    "AUDIO ROUTES": "音声ルート",
+    "SONIC PI ROUTES": "Sonic Piルート",
+    "No MIDI input devices found": "MIDI入力デバイスが見つかりません",
+    "Select a MIDI input first.": "先にMIDI入力を選択してください。",
+    "DISCONNECTED": "切断",
+    "Immediate": "即時",
+    "Next beat": "次のビート",
+    "Next bar": "次の小節",
+    "Next phrase": "次のフレーズ",
+    "Ease in": "イーズイン",
+    "Ease out": "イーズアウト",
+
+    # Timeline
+    "BAR / BEAT SHOW PLAN": "小節／ビートのショープラン",
+    "ARM TIMELINE": "タイムラインをアーム",
+    "IDLE · add events, arm the timeline, then start the transport.": "待機中",
+    "IDLE": "待機中",
+    "TIMELINE EVENT": "タイムラインイベント",
+    "BAR": "小節",
+    "BEAT": "ビート",
+    "POSITION": "位置",
+    "EVENT TYPE": "イベントの種類",
+    "LABEL": "ラベル",
+    "INTRO / TEXT APPEARS / FIRST PEAK …": "イントロ／テキスト表示／最初のピーク…",
+    "PAYLOAD · JSON": "ペイロード · JSON",
+    "Event enabled": "イベントを有効化",
+    "ADD EVENT": "イベントを追加",
+    "UPDATE SELECTED": "選択項目を更新",
+    "INSERT EXAMPLE STRUCTURE": "サンプル構成を挿入",
+    "CLEAR EVENTS": "イベントを消去",
+    "DISARM TIMELINE": "タイムラインを解除",
+    "JSON event payload.": "JSONイベントペイロード。",
+    "TEXT APPEARS": "テキスト表示",
+    "VIDEO CUT": "ビデオカット",
+    "FEEDBACK ACTIVATED": "フィードバック開始",
+    "FIRST PEAK": "最初のピーク",
+    "PARTICLE TRANSFORMATION": "パーティクル変形",
+    "FINAL RECAPITULATION": "最終リプライズ",
+    "Clear performance timeline": "パフォーマンスタイムラインを消去",
+
+    # Tooltips: explanatory copy remains available only on hover.
+    "Reset the master look to its default values": "マスタールックを初期値に戻します",
+    "Clear the temporal feedback buffer": "時間フィードバックのバッファを消去します",
+    "Discover available MIDI input devices": "利用可能なMIDI入力デバイスを検出します",
+    "Update the selected MIDI mapping": "選択したMIDIマッピングを更新します",
+    "Remove the selected MIDI mapping": "選択したMIDIマッピングを削除します",
+    "Start the OSC receiver": "OSC受信機を開始します",
+    "Stop the OSC receiver": "OSC受信機を停止します",
+    "Create a new modulation route": "新しいモジュレーションルートを作成します",
+    "Add or update the selected route": "選択したルートを追加または更新します",
+    "Remove the selected modulation route": "選択したモジュレーションルートを削除します",
+    "Add the recommended audio-reactive routes": "推奨される音声反応ルートを追加します",
+    "Add the recommended Sonic Pi routes": "推奨されるSonic Piルートを追加します",
+    "Protect this deck from autonomous source replacement": "自動ソース切替からこのデッキを保護します",
+    "Start or resume this deck": "このデッキを開始または再開します",
+    "Pause playback at the current position": "現在位置で再生を一時停止します",
+    "Freeze the currently presented frame": "現在表示中のフレームを固定します",
+    "Restart playback from the segment in-point": "区間の開始位置から再生し直します",
+    "Stop playback and clear the displayed frame": "再生を停止して表示フレームを消去します",
+    "Resume playback from the held frame": "固定したフレームから再生を再開します",
+    "Optional JSON array of styled text runs. Each run can set text, font_family, font_size, font_weight, color, letter_spacing, stroke_color, stroke_width and shadow.": "スタイル付きテキストのJSON配列（任意）。各要素で文字列、書体、サイズ、太さ、色、字間、輪郭、影を指定できます。",
+    "When off, edits still commit to the composition but raster updates wait until Live Preview is enabled or Apply Immediately is pressed.": "オフの場合も編集内容は構成に反映されますが、ラスタライズはライブプレビューを有効にするか「即時適用」を押すまで保留されます。",
+    "Automatically commit the editor buffer after the short typing debounce.": "短い入力待ち時間の後に編集内容を自動確定します。",
+    "Maximum start rate for CPU text raster jobs. Newer pending snapshots replace older ones.": "CPUテキストラスタライズの最大開始頻度です。新しい保留スナップショットは古いものを置き換えます。",
+    "Hold the last uploaded text texture. Edits are coalesced and rasterized when unfrozen.": "最後にアップロードしたテキストテクスチャを保持します。解除後に編集をまとめてラスタライズします。",
+    "When enabled, renderers retain their last successful texture after a raster error.": "有効にすると、ラスタライズエラー後も最後に成功したテクスチャを保持します。",
+    "EDITING → RASTERIZING → READY. A failed render preserves the last valid texture when recovery is enabled.": "編集中 → ラスタライズ中 → 準備完了。復元が有効な場合、失敗後も最後の有効なテクスチャを保持します。",
+    "Apply text and typography immediately": "テキストとタイポグラフィをすぐに適用します",
+    "Commit current text and typography now, bypassing the pause debounce and using final resolution when enabled.": "入力待ちを省略して現在のテキストと書体設定を確定します。最終解像度が有効ならそれを使用します。",
+    "Allow Auto Performance to regenerate this text layer on its generator cycle.": "自動パフォーマンスの生成サイクルに合わせて、このテキストレイヤーを再生成します。",
+}
+
+_HINTS = {
+    "scene_marker": (
+        "A named section marker. It records INTRO / PEAK / BREAKDOWN "
+        "and does not recall a scene by itself."
+    ),
+    "phrase_marker": (
+        "A descriptive musical phrase marker. Use the same bar/beat "
+        "grid as the transport."
+    ),
+    "scene_recall": (
+        "Recall a saved VJ Scene Bank scene. Use morph_seconds 0 "
+        "for an immediate cut."
+    ),
+    "clip_trigger": (
+        "Trigger a loaded deck, or include asset_id to load a media-library "
+        "asset. Actions: load, play, pause, hold, release, restart, stop, seek."
+    ),
+    "effect_change": (
+        "Apply a master look preset and/or override selected EffectSettings "
+        "fields. Preset names come from the FX dock."
+    ),
+    "text_regenerate": (
+        "Regenerate a Text Art layer using its saved language/theme/dictionary "
+        "settings. Omit layer_id to use the first unlocked Text Art layer."
+    ),
+    "palette_change": (
+        "Apply a named palette to unlocked generator layers. Choose a palette "
+        "from the current palette library."
+    ),
+    "modulation": (
+        "Set a normalized Performance Macro (0–1). The manual value takes "
+        "priority for duration_bars, then its assigned live source resumes."
+    ),
+    "transition_cue": (
+        "Recall a saved VJ Scene with a numeric morph. Discrete media/text "
+        "changes retain the scene bank's cut policy."
+    ),
+}
+
 
 def tr(key: str, language: str = "en", **values: Any) -> str:
     catalog = _JAPANESE if language == "ja" else _ENGLISH
@@ -83,3 +710,124 @@ def tr(key: str, language: str = "en", **values: Any) -> str:
         return template.format(**values)
     except (KeyError, ValueError):
         return template
+
+
+def ui_text(text: str, language: str | None = None) -> str:
+    """Translate a visible English UI phrase while leaving user data untouched."""
+    if language is None:
+        try:
+            from PySide6.QtWidgets import QApplication
+
+            application = QApplication.instance()
+            language = (
+                str(application.property("ui_language") or "en")
+                if application is not None
+                else "en"
+            )
+        except ImportError:
+            language = "en"
+    if language != "ja":
+        return text
+    return _JA_TEXT.get(text, text)
+
+
+def apply_widget_translations(root: Any, language: str = "en") -> None:
+    """Translate static Qt widget copy while preserving user-entered text and IDs."""
+    try:
+        from PySide6.QtGui import QAction
+        from PySide6.QtWidgets import (
+            QAbstractButton,
+            QComboBox,
+            QGroupBox,
+            QLabel,
+            QLineEdit,
+            QMenu,
+            QPlainTextEdit,
+            QTabWidget,
+            QTextEdit,
+            QWidget,
+        )
+    except ImportError:
+        return
+
+    application = root.window().windowHandle() if False else None
+    del application
+    try:
+        from PySide6.QtWidgets import QApplication
+
+        qt_application = QApplication.instance()
+        if qt_application is not None:
+            qt_application.setProperty("ui_language", language)
+    except ImportError:
+        pass
+
+    def original(obj: Any, property_name: str, current: Any) -> Any:
+        stored = obj.property(property_name)
+        if stored is None:
+            obj.setProperty(property_name, current)
+            return current
+        return stored
+
+    widgets = [root, *root.findChildren(QWidget)]
+    for widget in widgets:
+        if widget.windowTitle():
+            source_title = original(
+                widget, "_eli_i18n_window_title", widget.windowTitle()
+            )
+            widget.setWindowTitle(ui_text(str(source_title), language))
+        if isinstance(widget, QMenu):
+            source_menu_title = original(widget, "_eli_i18n_menu_title", widget.title())
+            widget.setTitle(ui_text(str(source_menu_title), language))
+        if isinstance(widget, QLabel):
+            source = original(widget, "_eli_i18n_text", widget.text())
+            widget.setText(ui_text(str(source), language))
+        if isinstance(widget, QAbstractButton):
+            source = original(widget, "_eli_i18n_text", widget.text())
+            widget.setText(ui_text(str(source), language))
+        if isinstance(widget, QGroupBox):
+            source = original(widget, "_eli_i18n_group_title", widget.title())
+            widget.setTitle(ui_text(str(source), language))
+        if isinstance(widget, QLineEdit):
+            source = original(
+                widget, "_eli_i18n_placeholder", widget.placeholderText()
+            )
+            widget.setPlaceholderText(ui_text(str(source), language))
+        if isinstance(widget, (QPlainTextEdit, QTextEdit)):
+            source = original(
+                widget, "_eli_i18n_placeholder", widget.placeholderText()
+            )
+            widget.setPlaceholderText(ui_text(str(source), language))
+        if isinstance(widget, QComboBox):
+            current_items = [widget.itemText(i) for i in range(widget.count())]
+            source_items = original(
+                widget, "_eli_i18n_items", current_items
+            )
+            for index, source in enumerate(source_items):
+                if index < widget.count():
+                    widget.setItemText(index, ui_text(str(source), language))
+        if isinstance(widget, QTabWidget):
+            current_tabs = [widget.tabText(i) for i in range(widget.count())]
+            source_tabs = original(
+                widget, "_eli_i18n_tabs", current_tabs
+            )
+            for index, source in enumerate(source_tabs):
+                if index < widget.count():
+                    widget.setTabText(index, ui_text(str(source), language))
+
+        source_tooltip = original(
+            widget, "_eli_i18n_tooltip", widget.toolTip()
+        )
+        if source_tooltip:
+            widget.setToolTip(ui_text(str(source_tooltip), language))
+
+    for action in root.findChildren(QAction):
+        source_text = original(action, "_eli_i18n_text", action.text())
+        action.setText(ui_text(str(source_text), language))
+        source_tip = original(action, "_eli_i18n_tooltip", action.toolTip())
+        if source_tip:
+            action.setToolTip(ui_text(str(source_tip), language))
+        source_status = original(
+            action, "_eli_i18n_status_tip", action.statusTip()
+        )
+        if source_status:
+            action.setStatusTip(ui_text(str(source_status), language))
