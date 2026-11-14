@@ -1,0 +1,36 @@
+---
+layout: default
+---
+<div class="document-shell">
+  <aside class="document-rail" aria-label="Documentation index">
+    {% if page.lang == "ja" %}
+      <p class="rail-heading">案内</p>
+      <a href="{{ '/ja/' | relative_url }}">ホーム</a>
+      <a href="{{ '/docs/ja/PRODUCT_OVERVIEW/' | relative_url }}">ソフトウェアについて</a>
+      <a href="{{ '/docs/ja/MANUAL/' | relative_url }}">操作マニュアル</a>
+      <a href="{{ '/docs/ja/WIKI/' | relative_url }}">Wiki / リファレンス</a>
+      <a href="{{ '/docs/SETUP_WINDOWS/' | relative_url }}">Windows セットアップ <span>EN</span></a>
+      <a href="{{ '/docs/SONIC_PI_SONATA_INTEGRATION/' | relative_url }}">Sonic Pi / OSC <span>EN</span></a>
+    {% else %}
+      <p class="rail-heading">DOCUMENTS / 00—</p>
+      <a href="{{ '/docs/PRODUCT_OVERVIEW/' | relative_url }}">Product overview</a>
+      <a href="{{ '/docs/MANUAL/' | relative_url }}">Field manual</a>
+      <a href="{{ '/docs/WIKI/' | relative_url }}">Wiki / reference</a>
+      <a href="{{ '/docs/SETUP_WINDOWS/' | relative_url }}">Windows setup</a>
+      <a href="{{ '/docs/ROADMAP/' | relative_url }}">Development index</a>
+      <a href="{{ '/docs/SONIC_PI_SONATA_INTEGRATION/' | relative_url }}">Sonic Pi / OSC</a>
+      <a href="{{ '/docs/PROJECT_FORMAT/' | relative_url }}">Project format</a>
+    {% endif %}
+    <div class="rail-rule"></div>
+    <a class="rail-release" href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">LATEST RELEASE ↗</a>
+  </aside>
+  <article class="document-content">
+    <div class="document-topline">
+      <span>{% if page.lang == "ja" %}ドキュメント{% else %}DOCUMENTATION{% endif %}</span>
+      <span class="document-topline-rule"></span>
+      <span>{{ page.path | split: "/" | last | replace: ".md", "" | replace: "_", " " | upcase }}</span>
+    </div>
+    {{ content }}
+    <div class="document-endmark"><span>e·</span> END OF ENTRY</div>
+  </article>
+</div>
