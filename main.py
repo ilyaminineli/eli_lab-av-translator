@@ -125,6 +125,7 @@ def main() -> int:
     configure_application_theme(
         qt_app,
         show_hints=settings.value("ui/show_hints_v1", True, type=bool),
+        language=str(settings.value("ui/language_v1", "en")),
     )
 
     if ICON_PATH.exists():
