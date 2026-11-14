@@ -27,7 +27,7 @@ from core.performance_timeline import (
     TMLN_EVT_TYPES,
     PerformanceTimelineEvent,
 )
-from ui.i18n import ui_text
+from ui.i18n import set_ui_text, ui_text
 
 _PAYLOAD_TEMPLATES = {
     "scene_marker": "{}",
@@ -225,9 +225,10 @@ class PerformanceTimelinePanel(QWidget):
             status += f"\n{snapshot['last_event_result']}"
         if snapshot["last_error"]:
             status += f"\nLAST ERROR · {snapshot['last_error']}"
-        self.state_label.setText(status)
-        self.arm_button.setText(
-            "DISARM TIMELINE" if snapshot["armed"] else "ARM TIMELINE"
+        set_ui_text(self.state_label, status)
+        set_ui_text(
+            self.arm_button,
+            "DISARM TIMELINE" if snapshot["armed"] else "ARM TIMELINE",
         )
         self.update_button.setEnabled(self.event_list.currentItem() is not None)
         self.remove_button.setEnabled(self.event_list.currentItem() is not None)
@@ -339,11 +340,11 @@ class PerformanceTimelinePanel(QWidget):
             event = PerformanceTimelineEvent(**self._read_editor())
             event_id = self.application.add_performance_timeline_event(event)
         except (json.JSONDecodeError, TypeError, ValueError, KeyError) as exc:
-            self.state_label.setText(f"EVENT NOT ADDED · {exc}")
+            set_ui_text(self.state_label, f"EVENT NOT ADDED · {exc}")
             return
         self._populate_events(event_id)
         self.refresh(force=True)
-        self.state_label.setText(f"ADDED · BAR {event.bar:03d} · {event.label}")
+        set_ui_text(self.state_label, f"ADDED · BAR {event.bar:03d} · {event.label}")
 
     def _update_event(self) -> None:
         event = self._selected_event()
@@ -353,10 +354,10 @@ class PerformanceTimelinePanel(QWidget):
             values = self._read_editor()
             self.application.update_performance_timeline_event(event.event_id, values)
         except (json.JSONDecodeError, TypeError, ValueError, KeyError) as exc:
-            self.state_label.setText(f"EVENT NOT UPDATED · {exc}")
+            set_ui_text(self.state_label, f"EVENT NOT UPDATED · {exc}")
             return
         self.refresh(force=True)
-        self.state_label.setText(f"UPDATED · BAR {self.bar_spin.value():03d}")
+        set_ui_text(self.state_label, f"UPDATED · BAR {self.bar_spin.value():03d}")
 
     def _remove_event(self) -> None:
         event = self._selected_event()
@@ -375,7 +376,7 @@ class PerformanceTimelinePanel(QWidget):
                 {"enabled": item.checkState() == Qt.CheckState.Checked},
             )
         except (KeyError, TypeError, ValueError) as exc:
-            self.state_label.setText(f"COULD NOT UPDATE EVENT · {exc}")
+            set_ui_text(self.state_label, f"COULD NOT UPDATE EVENT · {exc}")
         self.refresh()
 
     def _toggle_arm(self) -> None:
@@ -413,11 +414,12 @@ class PerformanceTimelinePanel(QWidget):
                     }
                 )
         except (TypeError, ValueError, KeyError) as exc:
-            self.state_label.setText(f"STRUCTURE NOT INSERTED · {exc}")
+            set_ui_text(self.state_label, f"STRUCTURE NOT INSERTED · {exc}")
             return
         self.refresh(force=True)
-        self.state_label.setText(
-            "INSERTED · 8 structure markers · add action events on the same bars"
+        set_ui_text(
+            self.state_label,
+            "INSERTED · 8 structure markers · add action events on the same bars",
         )
 
     def _clear_events(self) -> None:
