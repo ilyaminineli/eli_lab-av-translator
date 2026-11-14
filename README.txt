@@ -15,4 +15,4 @@ Current milestone state and target-machine acceptance gates:
 
     docs/ROADMAP.md
     docs/M5_COMPLETION_HANDOFF.md
-    docs/M6_ADV_VJ_ENVIRONMENT.md
+    docs/M6_ADVANCED_VJ_ENVIRONMENT.md
