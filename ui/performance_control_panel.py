@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
     QProgressBar,
     QPushButton,
     QScrollArea,
+    QSizePolicy,
     QSlider,
     QSpinBox,
     QVBoxLayout,
@@ -49,13 +50,24 @@ class PerformanceControlPanel(QWidget):
         super().__init__(parent)
         self.application = application
         self._loading = False
+        self.setMinimumWidth(0)
+        self.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Preferred,
+        )
 
         outer = QVBoxLayout(self)
         outer.setContentsMargins(0, 0, 0, 0)
         self.scroll = QScrollArea(self)
+        self.scroll.setMinimumWidth(0)
         self.scroll.setWidgetResizable(True)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         body = QWidget()
+        body.setMinimumWidth(0)
+        body.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Preferred,
+        )
         root = QVBoxLayout(body)
         root.setContentsMargins(8, 8, 8, 8)
         root.setSpacing(8)
@@ -80,6 +92,10 @@ class PerformanceControlPanel(QWidget):
 
         self.transport_group = QGroupBox("INTERNAL TRANSPORT / TEST CLOCK")
         transport_form = QFormLayout(self.transport_group)
+        transport_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        transport_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.bpm_spin = QDoubleSpinBox()
         self.bpm_spin.setRange(20.0, 300.0)
         self.bpm_spin.setDecimals(1)
@@ -93,15 +109,15 @@ class PerformanceControlPanel(QWidget):
         )
         transport_form.addRow("TEMPO", self.bpm_spin)
         transport_form.addRow("METER", self.meter_combo)
-        transport_buttons = QHBoxLayout()
+        transport_buttons = QGridLayout()
         self.transport_start_button = QPushButton("START")
         self.transport_pause_button = QPushButton("PAUSE")
         self.transport_resume_button = QPushButton("RESUME")
         self.transport_stop_button = QPushButton("STOP")
-        transport_buttons.addWidget(self.transport_start_button)
-        transport_buttons.addWidget(self.transport_pause_button)
-        transport_buttons.addWidget(self.transport_resume_button)
-        transport_buttons.addWidget(self.transport_stop_button)
+        transport_buttons.addWidget(self.transport_start_button, 0, 0)
+        transport_buttons.addWidget(self.transport_pause_button, 0, 1)
+        transport_buttons.addWidget(self.transport_resume_button, 1, 0)
+        transport_buttons.addWidget(self.transport_stop_button, 1, 1)
         transport_form.addRow(transport_buttons)
         self.transport_status = QLabel("STOP · INTERNAL · 120 BPM")
         self.transport_status.setWordWrap(True)
@@ -110,8 +126,14 @@ class PerformanceControlPanel(QWidget):
 
         self.midi_group = QGroupBox("MIDI CONTROLLERS · OPTIONAL")
         midi_form = QFormLayout(self.midi_group)
+        midi_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        midi_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.midi_device_combo = QComboBox()
-        self.midi_refresh_button = QPushButton("DISCOVER DEVICES")
+        self.midi_device_combo.setMinimumWidth(0)
+        self.midi_refresh_button = QPushButton("SCAN")
+        self.midi_refresh_button.setToolTip("Discover available MIDI input devices")
         midi_device_row = QHBoxLayout()
         midi_device_row.addWidget(self.midi_device_combo, 1)
         midi_device_row.addWidget(self.midi_refresh_button)
@@ -132,8 +154,10 @@ class PerformanceControlPanel(QWidget):
         self.midi_curve_combo.addItem("Linear", "linear")
         self.midi_curve_combo.addItem("Smoothstep", "smoothstep")
         self.midi_curve_combo.addItem("Exponential", "exponential")
-        self.midi_pickup_check = QCheckBox(
-            "Pickup · wait until physical control reaches current value"
+        self.midi_pickup_check = QCheckBox("Pickup")
+        self.midi_pickup_check.setToolTip(
+            "Wait until the physical control reaches the current value before "
+            "applying MIDI input."
         )
         self.midi_pickup_check.setChecked(True)
         midi_form.addRow("TARGET", self.midi_target_combo)
@@ -149,8 +173,10 @@ class PerformanceControlPanel(QWidget):
         self.midi_mapping_list.setMaximumHeight(130)
         midi_form.addRow("MAPPINGS", self.midi_mapping_list)
         midi_mapping_buttons = QHBoxLayout()
-        self.midi_update_button = QPushButton("UPDATE SELECTED")
-        self.midi_remove_button = QPushButton("REMOVE SELECTED")
+        self.midi_update_button = QPushButton("UPDATE")
+        self.midi_update_button.setToolTip("Update the selected MIDI mapping")
+        self.midi_remove_button = QPushButton("REMOVE")
+        self.midi_remove_button.setToolTip("Remove the selected MIDI mapping")
         midi_mapping_buttons.addWidget(self.midi_update_button)
         midi_mapping_buttons.addWidget(self.midi_remove_button)
         midi_form.addRow(midi_mapping_buttons)
@@ -235,6 +261,10 @@ class PerformanceControlPanel(QWidget):
 
         self.performance_scene_group = QGroupBox("VJ SCENE BANK")
         scene_form = QFormLayout(self.performance_scene_group)
+        scene_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        scene_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.performance_scene_name = QLineEdit("Scene 01")
         self.performance_scene_cue = QLineEdit()
         self.performance_scene_cue.setPlaceholderText(
@@ -296,6 +326,10 @@ class PerformanceControlPanel(QWidget):
 
         self.osc_group = QGroupBox("SONIC PI CONNECTION · OSC /eli_lab/v1")
         osc_form = QFormLayout(self.osc_group)
+        osc_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        osc_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.osc_bind_edit = QLineEdit("127.0.0.1")
         self.osc_port_spin = QSpinBox()
         self.osc_port_spin.setRange(1024, 65535)
@@ -303,8 +337,10 @@ class PerformanceControlPanel(QWidget):
         osc_form.addRow("RECEIVER ADDRESS", self.osc_bind_edit)
         osc_form.addRow("UDP PORT", self.osc_port_spin)
         osc_buttons = QHBoxLayout()
-        self.osc_start_button = QPushButton("START OSC RECEIVER")
-        self.osc_stop_button = QPushButton("STOP RECEIVER")
+        self.osc_start_button = QPushButton("START")
+        self.osc_start_button.setToolTip("Start the OSC receiver")
+        self.osc_stop_button = QPushButton("STOP")
+        self.osc_stop_button.setToolTip("Stop the OSC receiver")
         self.osc_stop_button.setEnabled(False)
         self.osc_copy_button = QPushButton("COPY SONATA SETTINGS")
         osc_buttons.addWidget(self.osc_start_button)
@@ -330,6 +366,10 @@ class PerformanceControlPanel(QWidget):
 
         self.scene_group = QGroupBox("SCENE PROFILES")
         scene_form = QFormLayout(self.scene_group)
+        scene_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        scene_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.scene_combo = QComboBox()
         for profile in self.application.scene_profiles.all():
             self.scene_combo.addItem(
@@ -379,6 +419,10 @@ class PerformanceControlPanel(QWidget):
         audio_layout.addLayout(audio_buttons)
 
         analysis_form = QFormLayout()
+        analysis_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        analysis_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         audio_settings = self.application.audio_capture.settings
         self.sensitivity_spin = self._float_spin(
             0.1, 12.0, 0.1, audio_settings.sensitivity
@@ -425,6 +469,10 @@ class PerformanceControlPanel(QWidget):
         self.modulation_group = QGroupBox("MODULATION MATRIX")
         modulation_layout = QVBoxLayout(self.modulation_group)
         route_form = QFormLayout()
+        route_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        route_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.source_combo = QComboBox()
         self.source_labels = {
             "audio.rms": "Audio · RMS",
@@ -481,20 +529,25 @@ class PerformanceControlPanel(QWidget):
         route_form.addRow("HOLD · ms", self.hold_spin)
         route_form.addRow(self.invert_check)
         modulation_layout.addLayout(route_form)
-        route_buttons = QHBoxLayout()
-        self.new_route_button = QPushButton("NEW ROUTE")
-        self.add_route_button = QPushButton("ADD / UPDATE ROUTE")
-        self.remove_route_button = QPushButton("REMOVE ROUTE")
-        route_buttons.addWidget(self.new_route_button)
-        route_buttons.addWidget(self.add_route_button)
-        route_buttons.addWidget(self.remove_route_button)
+        route_buttons = QGridLayout()
+        self.new_route_button = QPushButton("NEW")
+        self.new_route_button.setToolTip("Create a new modulation route")
+        self.add_route_button = QPushButton("ADD / UPDATE")
+        self.add_route_button.setToolTip("Add or update the selected route")
+        self.remove_route_button = QPushButton("REMOVE")
+        self.remove_route_button.setToolTip("Remove the selected modulation route")
+        route_buttons.addWidget(self.new_route_button, 0, 0)
+        route_buttons.addWidget(self.add_route_button, 0, 1)
+        route_buttons.addWidget(self.remove_route_button, 1, 0, 1, 2)
         modulation_layout.addLayout(route_buttons)
         self.route_list = QListWidget()
         self.route_list.setMaximumHeight(140)
         modulation_layout.addWidget(self.route_list)
-        preset_buttons = QHBoxLayout()
-        self.audio_reactive_button = QPushButton("ADD AUDIO-REACTIVE ROUTES")
-        self.sonic_pi_reactive_button = QPushButton("ADD SONIC PI ROUTES")
+        preset_buttons = QVBoxLayout()
+        self.audio_reactive_button = QPushButton("AUDIO ROUTES")
+        self.audio_reactive_button.setToolTip("Add the recommended audio-reactive routes")
+        self.sonic_pi_reactive_button = QPushButton("SONIC PI ROUTES")
+        self.sonic_pi_reactive_button.setToolTip("Add the recommended Sonic Pi routes")
         preset_buttons.addWidget(self.audio_reactive_button)
         preset_buttons.addWidget(self.sonic_pi_reactive_button)
         modulation_layout.addLayout(preset_buttons)
