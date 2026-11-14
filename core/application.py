@@ -227,8 +227,17 @@ class Application:
         )
 
     def _create_default_layers(self) -> None:
-        positions = ((0.25, 0.25), (0.75, 0.25), (0.25, 0.75), (0.75, 0.75))
-        for index, deck_id in enumerate(VIDEO_DECK_IDS):
+        # Start with an asymmetric collage, not four equal tiles. The first deck
+        # establishes a full-canvas image while the others behave as overlapping
+        # inserts; RANDOMIZE LAYOUT can then take the composition somewhere new.
+        layouts = (
+            ((0.50, 0.50), (1.08, 1.08), 0.0, "normal", 1.00),
+            ((0.77, 0.34), (0.64, 0.64), -13.0, "screen", 0.92),
+            ((0.29, 0.74), (0.56, 0.56), 12.0, "add", 0.88),
+            ((0.69, 0.72), (0.38, 0.38), -19.0, "difference", 0.82),
+        )
+        for index, (deck_id, layout) in enumerate(zip(VIDEO_DECK_IDS, layouts)):
+            position, scale, rotation, blend_mode, opacity = layout
             self.composition.add_layer(
                 Layer(
                     id=f"layer_{deck_id}",
@@ -236,8 +245,11 @@ class Application:
                     source_type="video",
                     source_id=deck_id,
                     visible=True,
-                    position=positions[index],
-                    scale=(0.5, 0.5),
+                    position=position,
+                    scale=scale,
+                    rotation=rotation,
+                    blend_mode=blend_mode,
+                    opacity=opacity,
                     z_index=index,
                 )
             )
