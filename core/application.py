@@ -1273,7 +1273,7 @@ class Application:
                 layer_id=layer.id,
                 seed=seed,
             )
-            return True, f"TXT · {layer.name} · SEED {seed}"
+            return True, f"TEXT · {layer.name} · SEED {seed}"
 
         if event.event_type == "palette_change":
             palette = str(payload["palette"])
