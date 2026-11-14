@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 
-from PySide6.QtCore import QPointF, QSize, Qt
+from PySide6.QtCore import QPointF, QRectF, QSize, Qt
 from PySide6.QtGui import (
     QColor,
     QIcon,
@@ -89,7 +89,7 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         line((12.0, 10.0), (12.0, 16.0))
         line((9.5, 13.5), (12.0, 16.0), (14.5, 13.5))
     elif name == "restart":
-        painter.drawArc(5.0, 5.0, 14.0, 14.0, 45 * 16, 290 * 16)
+        painter.drawArc(QRectF(5.0, 5.0, 14.0, 14.0), 45 * 16, 290 * 16)
         filled_triangle(((17.2, 4.0), (21.0, 9.4), (14.5, 9.0)))
     elif name == "shuffle":
         path(((4.0, 7.0), (7.0, 7.0), (16.5, 17.0), (20.0, 17.0)))
@@ -122,7 +122,7 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
     elif name == "apply":
         line((4.0, 12.5), (9.0, 17.5), (20.0, 6.0))
     elif name == "reset":
-        painter.drawArc(4.5, 4.5, 15.0, 15.0, 55 * 16, 290 * 16)
+        painter.drawArc(QRectF(4.5, 4.5, 15.0, 15.0), 55 * 16, 290 * 16)
         line((5.0, 4.5), (5.5, 9.0), (10.0, 8.0))
     elif name == "settings":
         points = []
