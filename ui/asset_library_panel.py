@@ -18,7 +18,7 @@ from PySide6.QtWidgets import (
 
 from core.application import Application
 from media.asset_index import VisualAsset, VisualAssetIndex
-from ui.i18n import set_ui_text
+from ui.i18n import set_ui_text, ui_text
 
 
 class _AssetScanSignals(QObject):
@@ -107,13 +107,13 @@ class AssetLibraryPanel(QWidget):
         self.refresh()
 
     def add_folder(self) -> None:
-        folder = QFileDialog.getExistingDirectory(self, "Add visual asset folder")
+        folder = QFileDialog.getExistingDirectory(self, ui_text("Add visual asset folder"))
         if not folder:
             return
         try:
             self.application.add_visual_asset_root(folder)
         except (OSError, ValueError) as exc:
-            QMessageBox.warning(self, "Asset folder could not be indexed", str(exc))
+            QMessageBox.warning(self, ui_text("Asset folder could not be indexed"), ui_text(str(exc)))
             return
         self._index_loaded = False
         self._start_index_scan()
@@ -211,7 +211,7 @@ class AssetLibraryPanel(QWidget):
         try:
             layer = self.application.add_library_asset_overlay(item.data(256))
         except Exception as exc:
-            QMessageBox.warning(self, "Asset could not be added", str(exc))
+            QMessageBox.warning(self, ui_text("Asset could not be added"), ui_text(str(exc)))
             return
         self.composition_changed.emit()
         set_ui_text(self.detail_label, f"Added {layer.name} as a composition overlay.")
