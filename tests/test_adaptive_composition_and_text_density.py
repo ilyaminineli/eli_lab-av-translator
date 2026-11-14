@@ -5,6 +5,7 @@ from core.composition import Layer
 from core.performance_manager import PerformanceManager
 from generators.catalog import default_generator_settings, normalize_settings
 from generators.text_pools import random_text_sample
+from ui.deck_panel import deck_columns_for_width
 
 
 def test_manual_layout_randomizer_uses_video_generator_and_overlay_layers() -> None:
@@ -120,3 +121,10 @@ def test_default_text_pool_sample_contains_eight_fragments() -> None:
     sample = random_text_sample(seed=8, use_dictionary=False)
 
     assert len([line for line in sample.splitlines() if line.strip()]) == 8
+
+
+
+def test_video_deck_grid_reflows_at_compact_and_wide_widths() -> None:
+    assert deck_columns_for_width(420) == 1
+    assert deck_columns_for_width(820) == 2
+    assert deck_columns_for_width(1360) == 4
