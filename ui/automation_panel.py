@@ -11,8 +11,8 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QLabel,
     QPushButton,
-    QSpinBox,
     QScrollArea,
+    QSpinBox,
     QVBoxLayout,
     QWidget,
 )
@@ -56,7 +56,10 @@ class AutomationPanel(QWidget):
         form.addRow("SESSION LENGTH", self.duration_combo)
 
         self.performance_style_combo = QComboBox()
-        self.performance_style_combo.addItem("Unified · Chaotic / Generative / Structured", "generative")
+        self.performance_style_combo.addItem(
+            "Unified · Chaotic / Generative / Structured",
+            "generative",
+        )
         self.performance_style_combo.addItem("More exploratory", "random")
         self.performance_style_combo.addItem("More composed", "structured")
         self.performance_style_combo.setCurrentIndex(0)
