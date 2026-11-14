@@ -1,6 +1,6 @@
 # Website content and design plan
 
-> **Implementation status — 14 November 2026:** The first website implementation is committed to `main`. The live structure uses Jekyll with Markdown pages, a shared editorial layout, a responsive monochrome stylesheet, English/Japanese homepage and documentation entry points, and a GitHub Pages Actions workflow. This document remains the content/design specification; the implementation notes at the end record what is now live in the repository.
+> **Implementation status — 15 November 2026:** The website is plain static HTML/CSS. The root `index.html` is the actual English homepage; all other pages, localized pages, guides and the stylesheet live under `site/`. A `.nojekyll` marker allows direct branch hosting. There is no Jekyll runtime or generated-site deployment workflow.
 
 ## Purpose
 
@@ -135,19 +135,20 @@ Noto Sans JP is an open-font option with Japanese and Latin coverage and an SIL 
 
 ## Site implementation
 
-The current implementation uses **Jekyll** because GitHub Pages can build it directly from the repository and the existing `docs/*.md` files can remain the canonical documentation source.
+The site is organized for **GitHub Pages → Deploy from a branch → main → /(root)**.
 
-- `_config.yml` configures the site, relative Markdown links and page defaults.
-- `_layouts/default.html` provides the shared masthead, language navigation and footer.
-- `_layouts/doc.html` presents Markdown documentation in a consistent reader with a document rail.
-- `index.html` and `ja/index.html` are separate English and Japanese homepage entry points.
-- `style.css` defines the shared typography, grid, monochrome palette and responsive layouts.
-- `docs/MANUAL.md`, `docs/WIKI.md`, `docs/ABOUT.md` and the corresponding `docs/ja/*.md` pages provide the artist-facing entry points.
-- Existing technical Markdown guides remain in `docs/` and are linked from the Wiki and Manual rather than copied into standalone HTML.
+- `index.html` is the only website HTML page in the repository root and is the real English homepage.
+- `site/style.css` is the shared responsive stylesheet.
+- `site/features.html`, `site/manual.html`, `site/wiki.html`, `site/downloads.html` and `site/about.html` are English pages.
+- `site/ja/` contains the equivalent Japanese pages.
+- `site/guides/` contains the Windows setup and Sonic Pi / SONATA guides.
+- `site/ja/guides/` contains localized Japanese versions of both guides.
+- `.nojekyll` tells GitHub Pages to serve the checked-in files directly.
+- `docs/` remains the Markdown source corpus for LLM and development use. Public site links resolve to HTML pages and do not point visitors to raw Markdown files.
 
-The Pages workflow is `.github/workflows/pages.yml`. It builds the repository using the GitHub Pages Jekyll action and deploys the resulting artifact. Repository Pages settings and the first deployment still depend on GitHub's repository-level permissions and policy. An owner or administrator must enable **Settings → Pages → Build and deployment → GitHub Actions** once before the deployment workflow can configure the site. The workflow token in this repository cannot create the Pages site itself.
+To publish, enable repository **Settings → Pages → Build and deployment**, select **Deploy from a branch**, branch **main**, folder **/(root)**, then save. The project URL is `https://ilyaminineli.github.io/eli_lab-av-translator/`. No Actions deployment artifact is needed.
 
-Keep release downloads pointed at the GitHub Releases page. Do not hard-code version numbers or direct executable filenames. The release page remains the source for current binaries, dates and notes.
+Release links should always point to GitHub Releases rather than a hard-coded version or executable filename.
 
 ## Screenshots and media
 
@@ -183,4 +184,4 @@ The first pass intentionally uses a schematic HTML/CSS plate in place of a scree
 
 The initial English and Japanese homepages, Features, Manuals, Wiki, Downloads and About pages are present. The technical reference corpus is predominantly English; Japanese navigation marks English-only guides explicitly. Keep the two languages semantically aligned as translations are expanded.
 
-Before treating the website as published, verify the first successful Pages deployment and inspect the generated home, representative Markdown guide, Japanese pages, responsive mobile layout and all internal links. GitHub Actions code checks do not verify the website's appearance in a real browser.
+Before treating the website as published, select the root branch source in Settings → Pages and inspect the English/Japanese homepages, guide pages, responsive mobile layout and all internal links in a browser. The site is committed and statically hostable, but it should not be described as publicly published until GitHub reports the deployment URL.
