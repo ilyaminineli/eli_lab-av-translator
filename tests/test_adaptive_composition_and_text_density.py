@@ -248,6 +248,10 @@ def test_monochrome_icon_set_renders_and_keeps_accessible_actions() -> None:
     assert "QDockWidget::float-button" in stylesheet
     assert "dock-close.svg" in stylesheet
     assert "dock-float.svg" in stylesheet
+    assert 'url("file:' not in stylesheet
+    for icon_name in ("dock-close.svg", "dock-float.svg", "dock-dock.svg"):
+        icon_path = (RESOURCE_DIR / "icons" / icon_name).resolve().as_posix()
+        assert f'url("{icon_path}")' in stylesheet
     parent = QWidget()
     icon_names = (
         "play", "pause", "stop", "load", "restart", "shuffle", "layout",
