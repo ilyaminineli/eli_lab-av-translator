@@ -26,7 +26,7 @@ _DEFAULTS: dict[str, dict[str, Any]] = {
         "text_path_points": [[0.12, 0.68], [0.34, 0.28], [0.66, 0.72], [0.88, 0.32]],
         "text_pool_language": "bilingual",
         "text_pool_theme": "random",
-        "text_pool_count": 16,
+        "text_pool_count": 8,
         "text_pool_dictionary": True,
         "text_auto_regenerate": True,
         "font_family": "Arial",
@@ -154,7 +154,7 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
             "random", "memory", "body", "signal", "ritual", "identity", "queer"
         }:
             result["text_pool_theme"] = "random"
-        result["text_pool_count"] = max(1, min(60, int(result.get("text_pool_count", 16))))
+        result["text_pool_count"] = max(1, min(60, int(result.get("text_pool_count", 8))))
         result["text_pool_dictionary"] = bool(result.get("text_pool_dictionary", True))
         result["text_auto_regenerate"] = bool(result.get("text_auto_regenerate", True))
         result["font_size"] = max(12, min(420, int(result["font_size"])))
