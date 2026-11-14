@@ -8,17 +8,21 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 PAGES = (
     "index.html",
-    "features.html",
-    "manual.html",
-    "wiki.html",
-    "downloads.html",
-    "about.html",
-    "ja/index.html",
-    "ja/features.html",
-    "ja/manual.html",
-    "ja/wiki.html",
-    "ja/downloads.html",
-    "ja/about.html",
+    "site/features.html",
+    "site/manual.html",
+    "site/wiki.html",
+    "site/downloads.html",
+    "site/about.html",
+    "site/guides/windows-setup.html",
+    "site/guides/sonic-pi.html",
+    "site/ja/index.html",
+    "site/ja/features.html",
+    "site/ja/manual.html",
+    "site/ja/wiki.html",
+    "site/ja/downloads.html",
+    "site/ja/about.html",
+    "site/ja/guides/windows-setup.html",
+    "site/ja/guides/sonic-pi.html",
 )
 
 
@@ -82,8 +86,8 @@ def main() -> int:
     problems: list[str] = []
     if not (ROOT / ".nojekyll").is_file():
         problems.append("Missing .nojekyll; GitHub Pages may invoke Jekyll.")
-    if not (ROOT / "style.css").is_file():
-        problems.append("Missing root style.css.")
+    if not (ROOT / "site/style.css").is_file():
+        problems.append("Missing site/style.css.")
 
     for relative_path in PAGES:
         source = ROOT / relative_path
