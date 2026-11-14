@@ -6,13 +6,24 @@ import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtCore import QEvent
-from PySide6.QtWidgets import QApplication
+from PySide6.QtGui import QAction
+from PySide6.QtWidgets import (
+    QApplication,
+    QComboBox,
+    QGroupBox,
+    QLabel,
+    QLineEdit,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 from core.application import Application
 from ui.hints import ToolTipFilter
-from ui.i18n import tr
+from ui.i18n import apply_widget_translations, tr, ui_text
+from ui.performance_timeline_panel import PerformanceTimelinePanel
 from ui.settings_dialog import SettingsDialog
-from ui.theme import configure_application_theme
+from ui.theme import application_font_families, configure_application_theme
 
 
 def test_theme_accepts_hover_hint_preference() -> None:
@@ -58,6 +69,75 @@ def test_japanese_catalog_and_english_fallback() -> None:
     assert tr("about.tagline", "ja") == "映像・生成表現・音楽をつなぐライブ映像制作ツール。"
     assert tr("menu.settings", "en") == "Settings"
     assert tr("missing.key", "ja") == "missing.key"
+
+
+
+def test_widget_translation_covers_controls_and_preserves_user_input() -> None:
+    application = QApplication.instance() or QApplication([])
+    root = QWidget()
+    layout = QVBoxLayout(root)
+
+    group = QGroupBox("TEXT ART", root)
+    group_layout = QVBoxLayout(group)
+    label = QLabel("CONTENT · EDIT BUFFER", group)
+    combo = QComboBox(group)
+    combo.addItem("English", "english")
+    edit = QLineEdit(group)
+    edit.setText("Do not translate my content.")
+    edit.setPlaceholderText("Search textures, materials, masks…")
+    edit.setToolTip("Reset the master look to its default values")
+    group_layout.addWidget(label)
+    group_layout.addWidget(combo)
+    group_layout.addWidget(edit)
+    layout.addWidget(group)
+
+    tabs = QTabWidget(root)
+    tabs.addTab(QWidget(), "COMPOSE")
+    layout.addWidget(tabs)
+    action = QAction("REMOVE", root)
+
+    apply_widget_translations(root, "ja")
+
+    assert group.title() == "テキストアート"
+    assert label.text() == "内容 · 編集バッファ"
+    assert combo.itemText(0) == "英語"
+    assert edit.placeholderText() == "テクスチャ、マテリアル、マスクを検索…"
+    assert edit.text() == "Do not translate my content."
+    assert edit.toolTip() == "マスタールックを初期値に戻します"
+    assert tabs.tabText(0) == "構成"
+
+    root.addAction(action)
+    apply_widget_translations(root, "ja")
+    assert action.text() == "削除"
+    assert application.property("ui_language") == "ja"
+
+
+def test_language_font_fallback_order_is_readable() -> None:
+    english = application_font_families("en")
+    japanese = application_font_families("ja")
+
+    assert english[0] == "Segoe UI"
+    assert japanese[0] == "Yu Gothic UI"
+    assert "Noto Sans JP" in japanese
+    assert "Noto Sans" in english
+
+
+def test_timeline_payload_explanation_is_japanese_hover_help_only() -> None:
+    qt_app = QApplication.instance() or QApplication([])
+    qt_app.setProperty("ui_language", "ja")
+    application = Application()
+    panel = None
+    try:
+        panel = PerformanceTimelinePanel(application)
+        assert not hasattr(panel, "payload_hint")
+        assert panel.payload_edit.toolTip() == (
+            "音楽フレーズの説明用マーカーです。トランスポートと同じ小節／ビート位置を使用します。"
+        )
+    finally:
+        if panel is not None:
+            panel.close()
+        application.shutdown()
+
 
 
 def test_recovery_snapshot_does_not_auto_start_performance_or_decks(
