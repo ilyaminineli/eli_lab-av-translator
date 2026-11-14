@@ -119,4 +119,4 @@ M5 **implementation** is complete and merged. M5 **live-performance acceptance**
 
 M6 can begin from the merged M5 baseline while the target-machine validation is completed. Carry the outstanding M5 checks into the performance release checklist and record actual results before claiming hardware readiness.
 
-See [M6 Advanced VJ Environment](M6_ADV_VJ_ENVIRONMENT.md) for the next milestone's initial live-mixer scope.
+See [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md) for the next milestone's initial live-mixer scope.

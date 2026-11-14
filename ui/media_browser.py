@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
 from media.library import MediaLibrary
 from media.models import MediaAsset
 from media.thumbnails import generate_thumbnail
+from ui.icons import app_icon
 
 _LOG = logging.getLogger(__name__)
 
@@ -96,7 +97,14 @@ class MediaBrowser(QWidget):
         self.add_folder_button.clicked.connect(self.choose_folder)
         top.addWidget(self.add_folder_button, 1)
         self.library_tools_button = QToolButton()
-        self.library_tools_button.setText("LIBRARY ▾")
+        self.library_tools_button.setText("LIBRARY")
+        self.library_tools_button.setIcon(app_icon("settings"))
+        self.library_tools_button.setIconSize(QSize(15, 15))
+        self.library_tools_button.setToolButtonStyle(
+            Qt.ToolButtonStyle.ToolButtonTextBesideIcon
+        )
+        self.library_tools_button.setToolTip("Media library tools")
+        self.library_tools_button.setAccessibleName("Media library tools")
         self.library_tools_button.setPopupMode(
             QToolButton.ToolButtonPopupMode.InstantPopup
         )

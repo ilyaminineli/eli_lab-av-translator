@@ -322,7 +322,7 @@ class PerformanceControlState:
             else "STOP"
         )
         return (
-            f"CTRL · {self.source_id.upper()} · {state} · "
-            f"{self.bpm:g} BPM · BR {self.bar_index} · "
+            f"CONTROL · {self.source_id.upper()} · {state} · "
+            f"{self.bpm:g} BPM · BAR {self.bar_index} · "
             f"{self.scene_id.upper()} · INT {self.intensity:.2f}"
         )

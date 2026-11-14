@@ -41,15 +41,42 @@ _PAYLOAD_TEMPLATES = {
 }
 
 _PAYLOAD_HINTS = {
-    "scene_marker": "A named section marker. It records INTRO / PEAK / BREAKDOWN etc. and does not recall a scene by itself.",
-    "phrase_marker": "A descriptive musical phrase marker. Use the same bar/beat grid as the transport.",
-    "scene_recall": "Recall a saved VJ Scene Bank scene. Use morph_seconds 0 for an immediate cut.",
-    "clip_trigger": "Trigger a loaded deck, or include asset_id to load a media-library asset. Actions: load, play, pause, hold, release, restart, stop, seek.",
-    "effect_change": "Apply a master look preset and/or override selected EffectSettings fields. Preset names come from the FX dock.",
-    "text_regenerate": "Regenerate a Text Art layer using its saved language/theme/dictionary settings. Omit layer_id to use the first unlocked Text Art layer.",
-    "palette_change": "Apply a named palette to unlocked generator layers. Choose a palette from the current palette library.",
-    "modulation": "Set a normalized Performance Macro (0–1). The manual value takes priority for duration_bars, then its assigned live source resumes.",
-    "transition_cue": "Recall a saved VJ Scene with a numeric morph. Discrete media/text changes retain the scene bank's cut policy.",
+    "scene_marker": (
+        "A named section marker. It records INTRO / PEAK / BREAKDOWN "
+        "and does not recall a scene by itself."
+    ),
+    "phrase_marker": (
+        "A descriptive musical phrase marker. Use the same bar/beat "
+        "grid as the transport."
+    ),
+    "scene_recall": (
+        "Recall a saved VJ Scene Bank scene. Use morph_seconds 0 "
+        "for an immediate cut."
+    ),
+    "clip_trigger": (
+        "Trigger a loaded deck, or include asset_id to load a media-library "
+        "asset. Actions: load, play, pause, hold, release, restart, stop, seek."
+    ),
+    "effect_change": (
+        "Apply a master look preset and/or override selected EffectSettings "
+        "fields. Preset names come from the FX dock."
+    ),
+    "text_regenerate": (
+        "Regenerate a Text Art layer using its saved language/theme/dictionary "
+        "settings. Omit layer_id to use the first unlocked Text Art layer."
+    ),
+    "palette_change": (
+        "Apply a named palette to unlocked generator layers. Choose a palette "
+        "from the current palette library."
+    ),
+    "modulation": (
+        "Set a normalized Performance Macro (0–1). The manual value takes "
+        "priority for duration_bars, then its assigned live source resumes."
+    ),
+    "transition_cue": (
+        "Recall a saved VJ Scene with a numeric morph. Discrete media/text "
+        "changes retain the scene bank's cut policy."
+    ),
 }
 
 
@@ -67,11 +94,11 @@ class PerformanceTimelinePanel(QWidget):
         root.setSpacing(8)
 
         header = QHBoxLayout()
-        title = QLabel("BR / BT SHOW PLAN")
+        title = QLabel("BAR / BEAT SHOW PLAN")
         title.setObjectName("sectionHeading")
         header.addWidget(title)
         header.addStretch(1)
-        self.arm_button = QPushButton("ARM TMLN")
+        self.arm_button = QPushButton("ARM TIMELINE")
         self.arm_button.clicked.connect(self._toggle_arm)
         header.addWidget(self.arm_button)
         self.rewind_button = QPushButton("REWIND")
@@ -91,7 +118,7 @@ class PerformanceTimelinePanel(QWidget):
         self.event_list.itemChanged.connect(self._event_enabled_changed)
         root.addWidget(self.event_list)
 
-        self.editor_group = QGroupBox("TMLN EVT")
+        self.editor_group = QGroupBox("TIMELINE EVENT")
         form = QFormLayout(self.editor_group)
         self.bar_spin = QSpinBox()
         self.bar_spin.setRange(1, 1_000_000)
@@ -100,9 +127,9 @@ class PerformanceTimelinePanel(QWidget):
         self.beat_spin.setRange(1, 16)
         self.beat_spin.setValue(1)
         position_row = QHBoxLayout()
-        position_row.addWidget(QLabel("BR"))
+        position_row.addWidget(QLabel("BAR"))
         position_row.addWidget(self.bar_spin, 1)
-        position_row.addWidget(QLabel("BT"))
+        position_row.addWidget(QLabel("BEAT"))
         position_row.addWidget(self.beat_spin, 1)
         form.addRow("POSITION", position_row)
 
@@ -112,10 +139,10 @@ class PerformanceTimelinePanel(QWidget):
                 TMLN_EVT_LABELS[event_type],
                 event_type,
             )
-        form.addRow("EVT TYPE", self.type_combo)
+        form.addRow("EVENT TYPE", self.type_combo)
 
         self.label_edit = QLineEdit()
-        self.label_edit.setPlaceholderText("INTRO / TXT APPEARS / FIRST PEAK …")
+        self.label_edit.setPlaceholderText("INTRO / TEXT APPEARS / FIRST PEAK …")
         form.addRow("LABEL", self.label_edit)
 
         self.payload_hint = QLabel(_PAYLOAD_HINTS["phrase_marker"])
@@ -134,7 +161,7 @@ class PerformanceTimelinePanel(QWidget):
         root.addWidget(self.editor_group)
 
         buttons = QHBoxLayout()
-        self.add_button = QPushButton("ADD EVT")
+        self.add_button = QPushButton("ADD EVENT")
         self.update_button = QPushButton("UPDATE SELECTED")
         self.remove_button = QPushButton("REMOVE")
         buttons.addWidget(self.add_button)
@@ -143,8 +170,8 @@ class PerformanceTimelinePanel(QWidget):
         root.addLayout(buttons)
 
         structure_row = QHBoxLayout()
-        self.structure_button = QPushButton("INSERT EXM STRC")
-        self.clear_button = QPushButton("CLEAR EVTS")
+        self.structure_button = QPushButton("INSERT EXAMPLE STRUCTURE")
+        self.clear_button = QPushButton("CLEAR EVENTS")
         structure_row.addWidget(self.structure_button, 1)
         structure_row.addWidget(self.clear_button)
         root.addLayout(structure_row)
@@ -183,16 +210,16 @@ class PerformanceTimelinePanel(QWidget):
             if internal_running or external_running:
                 transport = "SONIC PI" if external_running else "INTERNAL"
                 position = (
-                    f"BR {int(snapshot['current_bar']):03d} · "
-                    f"BT {int(snapshot['current_beat']):02d}"
+                    f"BAR {int(snapshot['current_bar']):03d} · "
+                    f"BEAT {int(snapshot['current_beat']):02d}"
                 )
                 status = f"ARMED · {transport} · {position}"
             else:
                 status = "ARMED · WAITING FOR TRANSPORT"
         else:
             status = (
-                f"DISARMED · BR {int(snapshot['current_bar']):03d} · "
-                f"BT {int(snapshot['current_beat']):02d}"
+                f"DISARMED · BAR {int(snapshot['current_bar']):03d} · "
+                f"BEAT {int(snapshot['current_beat']):02d}"
             )
         if snapshot["current_marker"]:
             status += f" · {snapshot['current_marker']}"
@@ -201,7 +228,7 @@ class PerformanceTimelinePanel(QWidget):
         if snapshot["last_error"]:
             status += f"\nLAST ERROR · {snapshot['last_error']}"
         self.state_label.setText(status)
-        self.arm_button.setText("DISARM TMLN" if snapshot["armed"] else "ARM TMLN")
+        self.arm_button.setText("DISARM TIMELINE" if snapshot["armed"] else "ARM TIMELINE")
         self.update_button.setEnabled(self.event_list.currentItem() is not None)
         self.remove_button.setEnabled(self.event_list.currentItem() is not None)
 
@@ -213,7 +240,7 @@ class PerformanceTimelinePanel(QWidget):
             marker = "●" if event.event_type in {"scene_marker", "phrase_marker"} else "◆"
             label = event.label or TMLN_EVT_LABELS[event.event_type]
             item = QListWidgetItem(
-                f"{marker}  BR {event.bar:03d} · BT {event.beat:02d}   "
+                f"{marker}  BAR {event.bar:03d} · BEAT {event.beat:02d}   "
                 f"{TMLN_EVT_LABELS[event.event_type].upper()}   {label}"
             )
             item.setData(Qt.ItemDataRole.UserRole, event.event_id)
@@ -307,11 +334,11 @@ class PerformanceTimelinePanel(QWidget):
             event = PerformanceTimelineEvent(**self._read_editor())
             event_id = self.application.add_performance_timeline_event(event)
         except (json.JSONDecodeError, TypeError, ValueError, KeyError) as exc:
-            self.state_label.setText(f"EVT NOT ADDED · {exc}")
+            self.state_label.setText(f"EVENT NOT ADDED · {exc}")
             return
         self._populate_events(event_id)
         self.refresh(force=True)
-        self.state_label.setText(f"ADDED · BR {event.bar:03d} · {event.label}")
+        self.state_label.setText(f"ADDED · BAR {event.bar:03d} · {event.label}")
 
     def _update_event(self) -> None:
         event = self._selected_event()
@@ -321,10 +348,10 @@ class PerformanceTimelinePanel(QWidget):
             values = self._read_editor()
             self.application.update_performance_timeline_event(event.event_id, values)
         except (json.JSONDecodeError, TypeError, ValueError, KeyError) as exc:
-            self.state_label.setText(f"EVT NOT UPDATED · {exc}")
+            self.state_label.setText(f"EVENT NOT UPDATED · {exc}")
             return
         self.refresh(force=True)
-        self.state_label.setText(f"UPDATED · BR {self.bar_spin.value():03d}")
+        self.state_label.setText(f"UPDATED · BAR {self.bar_spin.value():03d}")
 
     def _remove_event(self) -> None:
         event = self._selected_event()
@@ -343,7 +370,7 @@ class PerformanceTimelinePanel(QWidget):
                 {"enabled": item.checkState() == Qt.CheckState.Checked},
             )
         except (KeyError, TypeError, ValueError) as exc:
-            self.state_label.setText(f"COULD NOT UPDATE EVT · {exc}")
+            self.state_label.setText(f"COULD NOT UPDATE EVENT · {exc}")
         self.refresh()
 
     def _toggle_arm(self) -> None:
@@ -360,12 +387,12 @@ class PerformanceTimelinePanel(QWidget):
     def _insert_example_structure(self) -> None:
         structure = (
             (1, "scene_marker", "INTRO"),
-            (17, "phrase_marker", "TXT APPEARS"),
-            (33, "phrase_marker", "VID CUT"),
+            (17, "phrase_marker", "TEXT APPEARS"),
+            (33, "phrase_marker", "VIDEO CUT"),
             (49, "phrase_marker", "FEEDBACK ACTIVATED"),
             (65, "scene_marker", "FIRST PEAK"),
             (81, "phrase_marker", "BREAKDOWN"),
-            (97, "phrase_marker", "PRTL TRANSFORMATION"),
+            (97, "phrase_marker", "PARTICLE TRANSFORMATION"),
             (113, "scene_marker", "FINAL RECAPITULATION"),
         )
         try:
@@ -379,10 +406,12 @@ class PerformanceTimelinePanel(QWidget):
                     "enabled": True,
                 })
         except (TypeError, ValueError, KeyError) as exc:
-            self.state_label.setText(f"STRC NOT INSERTED · {exc}")
+            self.state_label.setText(f"STRUCTURE NOT INSERTED · {exc}")
             return
         self.refresh(force=True)
-        self.state_label.setText("INSERTED · 8 structure markers · add action events on the same bars")
+        self.state_label.setText(
+            "INSERTED · 8 structure markers · add action events on the same bars"
+        )
 
     def _clear_events(self) -> None:
         if not self.application.performance_timeline.list_events():

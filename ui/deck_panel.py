@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
-from PySide6.QtCore import QSize, Qt, Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -14,14 +14,13 @@ from PySide6.QtWidgets import (
     QLabel,
     QProgressBar,
     QScrollArea,
-    QStyle,
-    QToolButton,
     QVBoxLayout,
     QWidget,
 )
 
 from core.application import Application
 from media.models import MediaAsset
+from ui.icons import app_icon, icon_button
 
 
 def _format_time(seconds: float | None) -> str:
@@ -55,7 +54,7 @@ class DeckCard(QGroupBox):
         layout.setSpacing(5)
 
         identity = QHBoxLayout()
-        self.thumbnail_label = QLabel("NO THUMB")
+        self.thumbnail_label = QLabel("NO THUMBNAIL")
         self.thumbnail_label.setObjectName("deckThumbnail")
         self.thumbnail_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.thumbnail_label.setFixedSize(80, 45)
@@ -67,7 +66,7 @@ class DeckCard(QGroupBox):
         self.file_label.setWordWrap(True)
         self.file_label.setMinimumWidth(100)
         self.file_label.setObjectName("deckClipName")
-        self.state_label = QLabel("NN")
+        self.state_label = QLabel("EMPTY")
         self.state_label.setObjectName("mutedLabel")
         self.detail_label = QLabel("Load a clip from the Media Library")
         self.detail_label.setWordWrap(True)
@@ -96,30 +95,24 @@ class DeckCard(QGroupBox):
 
         controls = QHBoxLayout()
         controls.setSpacing(3)
-        self.load_button = self._action_button(
-            QStyle.StandardPixmap.SP_DialogOpenButton,
-            "Load a clip from the Media Library",
+        self.load_button = icon_button(
+            self, "load", "Load a clip from the Media Library", size=28
         )
-        self.play_button = self._action_button(
-            QStyle.StandardPixmap.SP_MediaPlay,
-            "Start or resume this deck",
+        self.play_button = icon_button(
+            self, "play", "Start or resume this deck", size=28
         )
-        self.pause_button = self._action_button(
-            QStyle.StandardPixmap.SP_MediaPause,
-            "Pause playback at the current position",
+        self.pause_button = icon_button(
+            self, "pause", "Pause playback at the current position", size=28
         )
-        self.hold_button = self._action_button(
-            QStyle.StandardPixmap.SP_MediaPause,
-            "Freeze the currently presented frame",
+        self.hold_button = icon_button(
+            self, "pause", "Freeze the currently presented frame",
+            size=28, checkable=True,
         )
-        self.hold_button.setCheckable(True)
-        self.restart_button = self._action_button(
-            QStyle.StandardPixmap.SP_MediaSkipBackward,
-            "Restart playback from the segment in-point",
+        self.restart_button = icon_button(
+            self, "restart", "Restart playback from the segment in-point", size=28
         )
-        self.stop_button = self._action_button(
-            QStyle.StandardPixmap.SP_MediaStop,
-            "Stop playback and clear the displayed frame",
+        self.stop_button = icon_button(
+            self, "stop", "Stop playback and clear the displayed frame", size=28
         )
         self.load_button.clicked.connect(
             lambda: self.action_requested.emit(deck_id, "load")
@@ -167,16 +160,6 @@ class DeckCard(QGroupBox):
         options.addStretch(1)
         layout.addLayout(options)
 
-    def _action_button(self, icon: QStyle.StandardPixmap, tooltip: str) -> QToolButton:
-        button = QToolButton(self)
-        button.setIcon(self.style().standardIcon(icon))
-        button.setToolTip(tooltip)
-        button.setAccessibleName(tooltip)
-        button.setAutoRaise(True)
-        button.setFixedSize(28, 26)
-        button.setIconSize(QSize(15, 15))
-        return button
-
     def _toggle_hold(self) -> None:
         self.action_requested.emit(
             self.deck_id,
@@ -191,7 +174,7 @@ class DeckCard(QGroupBox):
         pixmap = QPixmap(source) if source else QPixmap()
         if pixmap.isNull():
             self.thumbnail_label.setPixmap(QPixmap())
-            self.thumbnail_label.setText("NO THUMB")
+            self.thumbnail_label.setText("NO THUMBNAIL")
             return
         self.thumbnail_label.setText("")
         self.thumbnail_label.setPixmap(
@@ -234,10 +217,10 @@ class DeckCard(QGroupBox):
         elif path:
             state = "STOPPED / READY"
         else:
-            state = "NN"
+            state = "EMPTY"
         self.state_label.setText(state)
 
-        details = [f"LY · {layer_name}"] if layer_name else ["LY · NOT ATTACHED"]
+        details = [f"LAYER · {layer_name}"] if layer_name else ["LAYER · NOT ATTACHED"]
         if asset:
             if asset.width and asset.height:
                 details.append(f"{asset.width}×{asset.height}")
@@ -279,10 +262,13 @@ class DeckCard(QGroupBox):
         self.pause_button.setEnabled(bool(playing))
         self.hold_button.setEnabled(bool(loaded and has_frame))
         self.hold_button.setChecked(bool(held))
-        self.hold_button.setIcon(self.style().standardIcon(
-            QStyle.StandardPixmap.SP_MediaPlay
-            if held else QStyle.StandardPixmap.SP_MediaPause
-        ))
+        self.hold_button.setIcon(app_icon("play" if held else "pause"))
+        hold_action = (
+            "Resume playback from the held frame"
+            if held else "Freeze the currently presented frame"
+        )
+        self.hold_button.setToolTip(hold_action)
+        self.hold_button.setAccessibleName(hold_action)
         self.restart_button.setEnabled(loaded)
         self.stop_button.setEnabled(loaded)
 
@@ -324,10 +310,10 @@ class DeckPanel(QWidget):
         outer.addWidget(self.scroll, 1)
         self.cards: dict[str, DeckCard] = {}
         titles = {
-            "deck_a": "VD A",
-            "deck_b": "VD B",
-            "deck_c": "VD C",
-            "deck_d": "VD D",
+            "deck_a": "DECK A",
+            "deck_b": "DECK B",
+            "deck_c": "DECK C",
+            "deck_d": "DECK D",
         }
         for deck_id, deck in application.decks.items():
             card = DeckCard(deck_id, titles.get(deck_id, deck_id.upper()), self.body)

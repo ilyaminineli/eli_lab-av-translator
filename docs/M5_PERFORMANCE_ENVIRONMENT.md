@@ -23,7 +23,7 @@ Audio bands, onset/beat confidence, normalized transport phases/pulses, scene in
 
 ## Autonomous Performance Mode
 
-See [M5 Autonomous Performance](M5_AUTONOMOUS_PERF.md) for the operator sequence. The mode starts or reuses OSC, optionally starts loopback capture, enables generated default routes/modulators/layer curves, and waits for Sonic Pi. Sonic Pi energy/cutoff and scene/phrase events can drive the visual performance even when no audio device is selected. A system-loopback device adds real audio-band/onset analysis.
+See [M5 Autonomous Performance](M5_AUTONOMOUS_PERFORMANCE.md) for the operator sequence. The mode starts or reuses OSC, optionally starts loopback capture, enables generated default routes/modulators/layer curves, and waits for Sonic Pi. Sonic Pi energy/cutoff and scene/phrase events can drive the visual performance even when no audio device is selected. A system-loopback device adds real audio-band/onset analysis.
 
 The default global routes cover master look, clip switching, cut timing, segment length and automation intervals. Per-layer AUTO curves cover video, geometry, text, waveform, particles and animated overlays. Defaults use stable IDs and are non-destructive: custom routes are kept, generated mappings are disabled when the mode stops, and saving an active show stores those generated mappings disabled.
 
@@ -53,7 +53,7 @@ Master-output recording and audio muxing are not implemented. If added later, re
 
 ## M6 relationship
 
-M5 provides the performance-control, generator, rendering and diagnostics foundation. M6 — Advanced VJ Environment — will add the operator-facing live mixer and media-bin triggering model. A compact show surface, coordinated multi-clip triggering, mixing and transitions are tracked in [M6 Advanced VJ Environment](M6_ADV_VJ_ENVIRONMENT.md); they are not claimed as existing M5 features.
+M5 provides the performance-control, generator, rendering and diagnostics foundation. M6 — Advanced VJ Environment — will add the operator-facing live mixer and media-bin triggering model. A compact show surface, coordinated multi-clip triggering, mixing and transitions are tracked in [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md); they are not claimed as existing M5 features.
 
 ## Verification
 

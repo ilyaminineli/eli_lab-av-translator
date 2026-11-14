@@ -105,4 +105,4 @@ The GitHub Windows Onefile Build workflow is manual-dispatch only. The normal Qu
 
 ## M6 direction
 
-M6 — Advanced VJ Environment — is in active development. The current four video decks remain the playback foundation; M6 builds operator controls on the existing decode, composition and GPU ownership boundaries. The Performance Macro follow-up adds a shared 0–1 control layer above modulation and per-layer targets. See [M6 Advanced VJ Environment](M6_ADV_VJ_ENVIRONMENT.md) and [M6 Advanced Performance Controls](M6_ADV_PERF_CTRLS.md).
+M6 — Advanced VJ Environment — is in active development. The current four video decks remain the playback foundation; M6 builds operator controls on the existing decode, composition and GPU ownership boundaries. The Performance Macro follow-up adds a shared 0–1 control layer above modulation and per-layer targets. See [M6 Advanced VJ Environment](M6_ADVANCED_VJ_ENVIRONMENT.md) and [M6 Advanced Performance Controls](M6_ADVANCED_PERFORMANCE_CONTROLS.md).

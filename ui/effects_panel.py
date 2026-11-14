@@ -83,11 +83,11 @@ class EffectsPanel(QWidget):
         self.preset_combo = QComboBox()
         self.preset_combo.addItems(list(PSETS) + ["Custom"])
         preset_row.addWidget(self.preset_combo, 1)
-        self.reset_button = QPushButton("RE LOOK")
+        self.reset_button = QPushButton("RESET LOOK")
         preset_row.addWidget(self.reset_button)
         root.addLayout(preset_row)
 
-        self.enabled_check = QCheckBox("ON MASTER FILTERS")
+        self.enabled_check = QCheckBox("ENABLE MASTER FILTERS")
         self.enabled_check.setChecked(settings.enabled)
         root.addWidget(self.enabled_check)
 
@@ -98,7 +98,7 @@ class EffectsPanel(QWidget):
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(8)
 
-        group = QGroupBox("MASTER FILTERS + OVLS")
+        group = QGroupBox("MASTER FILTERS + OVERLAYS")
         form = QFormLayout(group)
         for key, title, low, high, scale in _SLIDERS:
             row = QHBoxLayout()
@@ -117,7 +117,7 @@ class EffectsPanel(QWidget):
             self._sliders[key] = (slider, value_label, scale)
         content_layout.addWidget(group)
 
-        geometry_group = QGroupBox("GEO + DISPLACEMENT")
+        geometry_group = QGroupBox("GEOMETRY + DISPLACEMENT")
         geometry_form = QFormLayout(geometry_group)
         self.transform_mode_combo = QComboBox()
         for label, value in (
@@ -156,7 +156,7 @@ class EffectsPanel(QWidget):
 
         feedback_group = QGroupBox("GPU FEEDBACK ENGINE")
         feedback_form = QFormLayout(feedback_group)
-        self.feedback_enabled_check = QCheckBox("ON TEMPORAL FEEDBACK")
+        self.feedback_enabled_check = QCheckBox("ENABLE TEMPORAL FEEDBACK")
         feedback_form.addRow("", self.feedback_enabled_check)
         for key, title, low, high, scale in _ADV_SLIDERS[11:]:
             row = QHBoxLayout()
@@ -176,10 +176,10 @@ class EffectsPanel(QWidget):
         self.feedback_blend_combo = QComboBox()
         self.feedback_blend_combo.addItems(["normal", "add", "screen", "multiply", "difference"])
         feedback_form.addRow("Feedback blend", self.feedback_blend_combo)
-        self.feedback_frozen_check = QCheckBox("FREEZE FEEDBACK MEM")
+        self.feedback_frozen_check = QCheckBox("FREEZE FEEDBACK")
         feedback_form.addRow("", self.feedback_frozen_check)
         feedback_buttons = QHBoxLayout()
-        self.feedback_reset_button = QPushButton("RE FEEDBACK BUFFER")
+        self.feedback_reset_button = QPushButton("RESET FEEDBACK BUFFER")
         feedback_buttons.addWidget(self.feedback_reset_button)
         feedback_buttons.addStretch(1)
         feedback_form.addRow("", feedback_buttons)

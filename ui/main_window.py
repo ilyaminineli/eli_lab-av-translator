@@ -81,7 +81,7 @@ class MainWindow(QMainWindow):
         self.performance_view = PerformanceView(application, self)
 
         self.media_browser = MediaBrowser(application.media_library, self)
-        self.media_dock = self._make_dock("MDL", self.media_browser)
+        self.media_dock = self._make_dock("MEDIA", self.media_browser)
         self.media_dock.setMinimumWidth(240)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, self.media_dock)
 
@@ -92,12 +92,12 @@ class MainWindow(QMainWindow):
         self.tabifyDockWidget(self.media_dock, self.asset_library_dock)
 
         self.deck_panel = DeckPanel(application, self)
-        self.deck_dock = self._make_dock("VDS", self.deck_panel)
+        self.deck_dock = self._make_dock("DECKS", self.deck_panel)
         self.deck_dock.setMinimumHeight(150)
         self.addDockWidget(Qt.DockWidgetArea.BottomDockWidgetArea, self.deck_dock)
 
         self.layer_panel = LayerPanel(application, self)
-        self.layer_dock = self._make_dock("LYS", self.layer_panel)
+        self.layer_dock = self._make_dock("LAYERS", self.layer_panel)
         self.layer_dock.setMinimumWidth(280)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.layer_dock)
 
@@ -106,7 +106,7 @@ class MainWindow(QMainWindow):
             source_provider=lambda: application.composition.layers,
             parent=self,
         )
-        self.effects_dock = self._make_dock("FX + OVLS", self.effects_panel)
+        self.effects_dock = self._make_dock("FX + OVERLAYS", self.effects_panel)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, self.effects_dock)
         self.tabifyDockWidget(self.layer_dock, self.effects_dock)
 
@@ -127,7 +127,7 @@ class MainWindow(QMainWindow):
             self._sync_performance_macro_shortcuts
         )
         self.performance_control_dock = self._make_dock(
-            "AUD / CTRL",
+            "AUDIO / CTRL",
             self.performance_control_panel,
         )
         self.performance_control_dock.setMinimumWidth(300)
@@ -145,7 +145,7 @@ class MainWindow(QMainWindow):
 
         self.performance_timeline_panel = PerformanceTimelinePanel(application, self)
         self.performance_timeline_dock = self._make_dock(
-            "LIVE PERF TMLN",
+            "LIVE TIMELINE",
             self.performance_timeline_panel,
         )
         self.performance_timeline_dock.setMinimumWidth(320)
@@ -316,7 +316,7 @@ class MainWindow(QMainWindow):
         perform_title.setObjectName("sectionHeading")
         perform_header.addWidget(perform_title)
         perform_header.addStretch(1)
-        self.workspace_output_label = QLabel("OUTPUT  ·  LOCWS")
+        self.workspace_output_label = QLabel("OUTPUT  ·  LOCAL")
         self.workspace_output_label.setObjectName("mutedLabel")
         perform_header.addWidget(self.workspace_output_label)
         perform_layout.addLayout(perform_header)
@@ -347,11 +347,11 @@ class MainWindow(QMainWindow):
         compose_layout.setContentsMargins(10, 8, 10, 8)
         compose_layout.setSpacing(8)
         compose_header = QHBoxLayout()
-        compose_title = QLabel("COMP ED")
+        compose_title = QLabel("COMPOSE")
         compose_title.setObjectName("sectionHeading")
         compose_header.addWidget(compose_title)
         compose_header.addStretch(1)
-        self.show_preview_button = QPushButton("OPEN PERF WS")
+        self.show_preview_button = QPushButton("OPEN PERF")
         self.show_preview_button.clicked.connect(self.show_local_preview)
         compose_header.addWidget(self.show_preview_button)
         compose_layout.addLayout(compose_header)
@@ -371,15 +371,15 @@ class MainWindow(QMainWindow):
         self.media_browser.setParent(None)
         self.asset_library_panel.setParent(None)
         self.media_dock.setWidget(
-            QLabel("MDL is available in the central PREPARE workspace.")
+            QLabel("MEDIA LIBRARY is available in the central PREPARE workspace.")
         )
         self.asset_library_dock.setWidget(
             QLabel("VISUAL ASSET LIBRARY is available in the central PREPARE workspace.")
         )
         self.media_dock.hide()
         self.asset_library_dock.hide()
-        prepare_tabs.addTab(self.media_browser, "MDL")
-        prepare_tabs.addTab(self.asset_library_panel, "VA")
+        prepare_tabs.addTab(self.media_browser, "MEDIA")
+        prepare_tabs.addTab(self.asset_library_panel, "ASSETS")
         prepare_layout.addWidget(prepare_tabs, 1)
 
         tabs.addTab(perform_page, "01  PERF")
@@ -595,7 +595,7 @@ class MainWindow(QMainWindow):
         restore_layout_action.setShortcut(QKeySequence("Ctrl+Shift+0"))
         restore_layout_action.triggered.connect(self.restore_default_layout)
         view_menu.addAction(restore_layout_action)
-        workspace_menu = view_menu.addMenu("WS")
+        workspace_menu = view_menu.addMenu("WORKSPACE")
         for index, label, shortcut in (
             (0, "01 · PERF", "Ctrl+1"),
             (1, "02 · COMPOSE", "Ctrl+2"),
@@ -816,7 +816,7 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Projector output failed", str(exc))
 
     def _projector_output_closed(self) -> None:
-        self.workspace_output_label.setText("OUTPUT  ·  LOCWS")
+        self.workspace_output_label.setText("OUTPUT  ·  LOCAL")
         if self.performance_view.engine.initialized:
             self.status_label.setText(
                 f"LOCAL PREVIEW READY · {self.performance_view.engine.renderer_name}"
@@ -975,14 +975,14 @@ class MainWindow(QMainWindow):
             )
             self._refresh_automation_status()
         except ValueError as exc:
-            # Empty or unavailable FPOOLs are expected operator errors,
+            # Empty or unavailable footage pools are expected operator errors,
             # not application faults; keep the log useful without a traceback.
             _LOG.warning("Auto Performance unavailable: %s", exc)
             message = str(exc)
             if "No playable video files" in message:
                 message = (
-                    "No playable video files are available in this FPOOL. "
-                    "Import a video folder in MDL, wait for scanning to finish, "
+                    "No playable video files are available in this footage pool. "
+                    "Import a video folder in the MEDIA workspace, wait for scanning to finish, "
                     "then retry."
                 )
             self.automation_panel.set_running(False, message)
