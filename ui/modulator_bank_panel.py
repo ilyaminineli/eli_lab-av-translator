@@ -36,7 +36,7 @@ from core.performance_modifiers import (
     PERF_MODIFIER_TARGETS,
     LayerPerformanceModifier,
 )
-from ui.i18n import set_ui_text
+from ui.i18n import set_ui_text, ui_text
 
 
 class ModulatorBankPanel(QWidget):
@@ -564,8 +564,8 @@ class ModulatorBankPanel(QWidget):
             return
         answer = QMessageBox.question(
             self,
-            "Remove modulator",
-            f"Remove '{definition.name}' and its assignments from all layers?",
+            ui_text("Remove modulator"),
+            ui_text(f"Remove '{definition.name}' and its assignments from all layers?"),
         )
         if answer != QMessageBox.StandardButton.Yes:
             return
@@ -626,7 +626,7 @@ class ModulatorBankPanel(QWidget):
             )
             updated = ModulatorDefinition.from_dict(values)
         except (TypeError, ValueError) as exc:
-            QMessageBox.warning(self, "Modulator settings", str(exc))
+            QMessageBox.warning(self, ui_text("Modulator settings"), ui_text(str(exc)))
             return
         self.application.update_modulator(updated)
         self.refresh()
@@ -641,7 +641,7 @@ class ModulatorBankPanel(QWidget):
                 str(preset_id)
             )
         except (KeyError, TypeError, ValueError) as exc:
-            QMessageBox.warning(self, "Modulator preset", str(exc))
+            QMessageBox.warning(self, ui_text("Modulator preset"), ui_text(str(exc)))
             return
         self._selected_id = definition.modulator_id
         self.application.events.publish(
@@ -674,8 +674,8 @@ class ModulatorBankPanel(QWidget):
             return
         answer = QMessageBox.question(
             self,
-            "Delete preset",
-            f"Delete user preset '{preset.name}'?",
+            ui_text("Delete preset"),
+            ui_text(f"Delete user preset '{preset.name}'?"),
         )
         if answer != QMessageBox.StandardButton.Yes:
             return
@@ -686,7 +686,7 @@ class ModulatorBankPanel(QWidget):
     def _export_presets(self) -> None:
         path, _ = QFileDialog.getSaveFileName(
             self,
-            "Export modulator presets",
+            ui_text("Export modulator presets"),
             "modulator-presets.json",
             "Modulator Presets (*.json)",
         )
@@ -697,14 +697,14 @@ class ModulatorBankPanel(QWidget):
         try:
             destination = self.application.export_modulator_presets(path)
         except OSError as exc:
-            QMessageBox.warning(self, "Export presets", str(exc))
+            QMessageBox.warning(self, ui_text("Export presets"), ui_text(str(exc)))
             return
         self.setToolTip(f"Exported presets to {destination}")
 
     def _import_presets(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Import modulator presets",
+            ui_text("Import modulator presets"),
             "",
             "Modulator Presets (*.json)",
         )
@@ -713,13 +713,13 @@ class ModulatorBankPanel(QWidget):
         try:
             imported = self.application.import_modulator_presets(path)
         except (OSError, TypeError, ValueError) as exc:
-            QMessageBox.warning(self, "Import presets", str(exc))
+            QMessageBox.warning(self, ui_text("Import presets"), ui_text(str(exc)))
             return
         self.refresh()
         QMessageBox.information(
             self,
-            "Import presets",
-            f"Imported {imported} modulator preset(s).",
+            ui_text("Import presets"),
+            ui_text(f"Imported {imported} modulator preset(s)."),
         )
         self.bank_changed.emit()
 
@@ -854,7 +854,7 @@ class ModulatorBankPanel(QWidget):
         try:
             self.application.add_layer_performance_modifier(layer.id, modifier)
         except (TypeError, ValueError, KeyError) as exc:
-            QMessageBox.warning(self, "Modulator assignment", str(exc))
+            QMessageBox.warning(self, ui_text("Modulator assignment"), ui_text(str(exc)))
             return
         self.assignment_created.emit(layer.id)
 
