@@ -257,6 +257,10 @@ def application_font_families(language: str = "en") -> list[str]:
         return [
             "Yu Gothic UI",
             "Meiryo UI",
+            "Meiryo",
+            "MS UI Gothic",
+            "MS PGothic",
+            "MS Gothic",
             "BIZ UDGothic",
             "Noto Sans JP",
             "Noto Sans CJK JP",
