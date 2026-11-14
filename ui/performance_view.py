@@ -6,7 +6,7 @@ import time
 from PySide6.QtCore import QTimer, Signal
 from PySide6.QtGui import QColor, QFont, QPainter
 from PySide6.QtOpenGLWidgets import QOpenGLWidget
-from PySide6.QtWidgets import QSizePolicy
+from PySide6.QtWidgets import QSizePolicy, QWidget
 
 from config import RENDER_TARGET_FPS
 from core.application import Application
@@ -213,3 +213,42 @@ class PerformanceView(QOpenGLWidget):
                 self.engine.release()
             finally:
                 self.doneCurrent()
+
+
+class AspectRatioPreview(QWidget):
+    """Keep the local performance canvas at the project's 16:9 aspect ratio."""
+
+    def __init__(
+            self,
+            view: PerformanceView,
+            parent=None,
+            aspect_ratio: float = 16.0 / 9.0,
+    ) -> None:
+        super().__init__(parent)
+        self.view = view
+        self.aspect_ratio = max(0.1, float(aspect_ratio))
+        self.setMinimumSize(0, 0)
+        self.setSizePolicy(
+            QSizePolicy.Policy.Expanding,
+            QSizePolicy.Policy.Expanding,
+        )
+        self.setStyleSheet("background-color: #000000;")
+        self.view.setParent(self)
+        self.view.setMinimumSize(0, 0)
+        self._fit_view()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._fit_view()
+
+    def _fit_view(self) -> None:
+        bounds = self.contentsRect()
+        width = max(1, bounds.width())
+        height = max(1, round(width / self.aspect_ratio))
+        if height > bounds.height():
+            height = max(1, bounds.height())
+            width = max(1, round(height * self.aspect_ratio))
+        x = bounds.x() + (bounds.width() - width) // 2
+        y = bounds.y() + (bounds.height() - height) // 2
+        self.view.setGeometry(x, y, width, height)
+

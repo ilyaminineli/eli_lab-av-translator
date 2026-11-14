@@ -55,7 +55,9 @@ Static generator rasterization is owned by one `GeneratorRasterService` created 
 - The service uses a single condition-driven background worker. It creates CPU pixel arrays only.
 - Requests carry a copied settings snapshot, dimensions, fingerprint and monotonically increasing per-layer revision.
 - An ordered pending map holds at most one waiting snapshot per layer. A newer request replaces that layer's pending snapshot instead of adding an obsolete keystroke to a backlog.
-- There is at most one active raster job globally. Text jobs have a configurable start-rate limit; non-text generator jobs are not blocked by that text-only limiter.
+- There is at most one active raster job globally. Starts are throttled per layer (8 Hz by default), waveform rerasterization is capped at 4 Hz, and text retains an additional global 4 Hz limit. Newer settings replace pending work while a layer is waiting for its next slot.
+- Geometry and waveform live previews rasterize at 75% of the canonical dimensions (1200×675); text preview remains at 50% (800×450). The service API can still request canonical 1600×900 output.
+- The renderer caches each layer's static-content fingerprint. GPU-only animation changes skip both fingerprint hashing and raster requests; a changed static setting recomputes the fingerprint and replaces the pending snapshot.
 - Completion or failure is accepted only when the job's revision and fingerprint still match the newest request. Renderers validate again when receiving the signal and before uploading.
 - The service caches the latest completed CPU snapshot. Each renderer performs its own upload only while its own GL context is current.
 - Deleting layers, project reset/load and application shutdown invalidate pending/completed work. The previous valid texture can remain displayed while a replacement is generated or when a replacement fails.

@@ -172,7 +172,7 @@ class RenderEngine:
                     fingerprint = self.raster_service.fingerprint_for(
                         layer.id,
                         layer.generator_type or "geometry",
-                        dict(layer.generator_settings),
+                        layer.generator_settings,
                     )
                 else:
                     fingerprint = GeneratorRasterizer.fingerprint(layer)
@@ -215,7 +215,7 @@ class RenderEngine:
                 requested, revision = self.raster_service.request(
                     layer.id,
                     layer.generator_type or "geometry",
-                    dict(layer.generator_settings),
+                    layer.generator_settings,
                 )
                 self._generator_requested[layer.id] = requested
                 self._generator_requested_revisions[layer.id] = revision

@@ -52,7 +52,7 @@ The main Qt workspace now distinguishes compact layouts by window width and aspe
 
 The initial window geometry and minimum size are bounded by the available primary-screen area. User-saved dock arrangements are preserved; responsive rebalancing is applied to the built-in default layout and after the operator restores that default.
 
-This changes the editor workspace, not the saved composition dimensions. The compositor's existing `canvas_fit_scale` keeps the project canvas at its configured aspect ratio and letterboxes it into an output whose aspect differs. It does not stretch content or silently rewrite a 16:9 project to 4:3. A separate per-project canvas-aspect selector remains future work.
+This changes the editor workspace, not the saved composition dimensions. The central PERFORM preview is framed at 16:9 even when the surrounding editor uses a compact or 4:3 layout. The compositor's existing `canvas_fit_scale` keeps the project canvas at its configured aspect ratio and letterboxes it into an output whose aspect differs. It does not stretch content or silently rewrite a 16:9 project to 4:3. Fullscreen output on a 4:3 display therefore keeps a 16:9 image with letterboxing. A separate per-project canvas-aspect selector remains future work.
 
 ## D. Queer text pool and dictionary hygiene
 
