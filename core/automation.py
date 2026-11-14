@@ -710,7 +710,8 @@ class AutomationDirector:
                     text_modes = (
                         "type_on", "word_reveal", "line_wave", "jitter", "crawl", "glitch",
                         "reverse_typewriter", "dissolve", "flicker", "character_displacement",
-                        "vertical_reveal", "scattered_glyphs", "word_collisions", "mechanical_scroll",
+                        "vertical_reveal", "scattered_glyphs", "word_collisions",
+                        "mechanical_scroll",
                     )
                     if fragment >= 0.55:
                         text_modes = (
