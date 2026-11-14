@@ -317,6 +317,13 @@ class MainWindow(QMainWindow):
         perform_header.addWidget(self.workspace_output_label)
         perform_layout.addLayout(perform_header)
 
+        # Put the six existing Performance Macros on the operator surface. The
+        # widget is detached from the advanced control dock rather than copied,
+        # so values, source mappings and shortcuts keep a single owner.
+        self.live_macro_strip = self.performance_control_panel.take_performance_macro_group(
+            perform_page
+        )
+
         # Reuse the existing renderer instead of creating a second OpenGL view.
         # The projector and local preview retain their existing independent contexts.
         self.performance_view.setParent(None)
@@ -325,6 +332,7 @@ class MainWindow(QMainWindow):
         )
         self.preview_dock.hide()
         perform_layout.addWidget(self.performance_view, 1)
+        perform_layout.addWidget(self.live_macro_strip, 0)
 
         compose_page = QWidget(tabs)
         compose_layout = QVBoxLayout(compose_page)
