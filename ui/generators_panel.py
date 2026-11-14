@@ -4,7 +4,7 @@ import json
 import random
 import time
 
-from PySide6.QtCore import QSize, Qt, QTimer, Signal
+from PySide6.QtCore import Qt, QTimer, Signal
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -23,8 +23,6 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QSlider,
     QSpinBox,
-    QStyle,
-    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -33,17 +31,7 @@ from core.application import Application
 from generators.catalog import normalize_settings
 from generators.palettes import import_aco_palette, palette_look, palette_names
 from generators.text_pools import random_text_sample
-
-
-def _icon_action(parent: QWidget, icon: QStyle.StandardPixmap, tooltip: str) -> QToolButton:
-    button = QToolButton(parent)
-    button.setIcon(parent.style().standardIcon(icon))
-    button.setIconSize(QSize(16, 16))
-    button.setToolTip(tooltip)
-    button.setAccessibleName(tooltip)
-    button.setAutoRaise(False)
-    button.setFixedSize(30, 28)
-    return button
+from ui.icons import icon_button
 
 
 class GeneratorsPanel(QWidget):
@@ -94,10 +82,8 @@ class GeneratorsPanel(QWidget):
         row_three.addWidget(self.add_particle_system_button)
         row_four = QHBoxLayout()
         self.add_overlay_button = QPushButton("+ IMG / VID OVL")
-        self.remove_button = _icon_action(
-            self,
-            QStyle.StandardPixmap.SP_TrashIcon,
-            "Remove selected visual layer",
+        self.remove_button = icon_button(
+            self, "trash", "Remove selected visual layer", size=30
         )
         row_four.addWidget(self.add_overlay_button)
         row_four.addWidget(self.remove_button)
@@ -194,10 +180,8 @@ class GeneratorsPanel(QWidget):
             "A failed render preserves the last valid texture when recovery is enabled."
         )
         raster_form.addRow("STATUS", self.text_raster_status)
-        self.apply_text_now_button = _icon_action(
-            self,
-            QStyle.StandardPixmap.SP_DialogApplyButton,
-            "Apply text and typography immediately",
+        self.apply_text_now_button = icon_button(
+            self, "apply", "Apply text and typography immediately", size=30
         )
         self.apply_text_now_button.setToolTip(
             "Commit current text and typography now, bypassing the pause debounce "
@@ -351,10 +335,8 @@ class GeneratorsPanel(QWidget):
         )
         self.auto_text_check.setChecked(True)
         random_form.addRow("AUTO TXT", self.auto_text_check)
-        self.random_text_button = _icon_action(
-            self,
-            QStyle.StandardPixmap.SP_BrowserReload,
-            "Regenerate Text Art",
+        self.random_text_button = icon_button(
+            self, "reset", "Regenerate Text Art", size=30
         )
         random_form.addRow(self.random_text_button)
         text_form.addRow(random_group)
