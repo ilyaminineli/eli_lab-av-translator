@@ -1299,8 +1299,9 @@ class GeneratorsPanel(QWidget):
         self.layer_appearance_group.setVisible(enabled)
         self.overlay_group.setVisible(is_overlay)
         self.apply_button.setVisible(enabled)
-        self.apply_button.setText(
-            "APPLY OVERLAY SETTINGS" if is_overlay else "APPLY GENERATOR SETTINGS"
+        set_ui_text(
+            self.apply_button,
+            "APPLY OVERLAY SETTINGS" if is_overlay else "APPLY GENERATOR SETTINGS",
         )
         self.apply_button.setEnabled(bool(layer and not layer.locked))
         self.remove_button.setEnabled(enabled)
