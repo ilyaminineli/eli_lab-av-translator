@@ -2,7 +2,7 @@
 
 **Windows-first audiovisual performance environment for live video collage, procedural visuals, typography, audio reactivity and Sonic Pi-controlled shows.**
 
-Artist-facing introduction, practical audience fit and the product's boundaries: [Product overview](docs/PRODUCT_OVERVIEW.md). The planned archival-style bilingual website, including its manual/wiki structure and Markdown content map, is documented in [Website plan](docs/WEBSITE_PLAN.md).
+**Website:** [English homepage](https://ilyaminineli.github.io/eli_lab-av-translator/) · [Japanese homepage](https://ilyaminineli.github.io/eli_lab-av-translator/ja/) · [Field manual](docs/MANUAL.md) · [Wiki](docs/WIKI.md). The site is Markdown-driven with Jekyll; source pages and design/implementation notes are in [docs/WEBSITE_PLAN.md](docs/WEBSITE_PLAN.md). Artist-facing product details remain available in [Product overview](docs/PRODUCT_OVERVIEW.md) and [Japanese product overview](docs/ja/PRODUCT_OVERVIEW.md).
 
 ## Project status — 14 November 2026
 
