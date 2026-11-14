@@ -462,6 +462,9 @@ class MainWindow(QMainWindow):
         self.workspace_tabs = tabs
         return tabs
 
+    def _show_status_message(self, message: str, timeout: int = 0) -> None:
+        self.statusBar().showMessage(ui_text(str(message), self._language), timeout)
+
     def _on_workspace_changed(self, index: int) -> None:
         self._ui_settings.setValue("ui/active_workspace_v1", int(index))
         self._ui_settings.sync()
@@ -470,7 +473,7 @@ class MainWindow(QMainWindow):
             1: "COMPOSE · edit layers, generators and effects",
             2: "PREPARE · organise footage and visual assets",
         }
-        self.statusBar().showMessage(messages.get(index, "Workspace changed"), 1800)
+        self._show_status_message(messages.get(index, "Workspace changed"), 1800)
 
     def _is_compact_workspace(self) -> bool:
         width = max(1, self.width())
@@ -584,7 +587,7 @@ class MainWindow(QMainWindow):
         QTimer.singleShot(0, self._apply_default_dock_sizes)
         self._ui_settings.setValue("ui/main_window_state_v5", self._default_dock_state)
         self._ui_settings.sync()
-        self.statusBar().showMessage("Default workspace layout restored.", 4000)
+        self._show_status_message("Default workspace layout restored.", 4000)
 
     def show_local_preview(self) -> None:
         """Focus the central live canvas instead of opening a secondary preview dock."""
@@ -629,7 +632,7 @@ class MainWindow(QMainWindow):
             )
             self.application.apply_modulation()
             self.performance_control_panel.sync_performance_macros()
-            self.statusBar().showMessage(
+            self._show_status_message(
                 f"{macro_id.upper()} · {value:.2f}",
                 1400,
             )
@@ -738,7 +741,7 @@ class MainWindow(QMainWindow):
                 QMessageBox.warning(self, "Performance Mode", str(exc))
             set_ui_text(self.performance_mode_button, "▶ PERF MODE", self._language)
             self.performance_control_panel.refresh_monitor()
-            self.statusBar().showMessage("Performance Mode stopped.", 5000)
+            self._show_status_message("Performance Mode stopped.", 5000)
             return
 
         try:
@@ -774,13 +777,13 @@ class MainWindow(QMainWindow):
                 )
             set_ui_text(self.performance_mode_button, "■ STOP PERF MODE", self._language)
             self.performance_control_panel.refresh_monitor()
-            self.statusBar().showMessage(
+            self._show_status_message(
                 "Performance Mode armed · run SONATA Expanded in Sonic Pi. "
                 "AUTO PERF starts on transport/start or the first clock/bar.",
                 9000,
             )
             if state["phase"] == "degraded":
-                self.statusBar().showMessage(
+                self._show_status_message(
                     f"Performance Mode degraded · {state['error']}",
                     10000,
                 )
@@ -820,7 +823,7 @@ class MainWindow(QMainWindow):
         except Exception as exc:
             QMessageBox.critical(self, "Could Not Save Performance Set", str(exc))
             return
-        self.statusBar().showMessage(f"Performance set saved · {saved}", 5000)
+        self._show_status_message(f"Performance set saved · {saved}", 5000)
 
     def load_performance_set(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
@@ -848,7 +851,7 @@ class MainWindow(QMainWindow):
         self.performance_control_panel.refresh_routes()
         self.modulator_bank_panel.refresh()
         self.performance_timeline_panel.refresh(force=True)
-        self.statusBar().showMessage(
+        self._show_status_message(
             f"Performance set loaded · {Path(path).name}", 5000
         )
 
@@ -879,7 +882,7 @@ class MainWindow(QMainWindow):
         menu.addAction(close_output_action)
 
     def _display_configuration_changed(self, *_args) -> None:
-        self.statusBar().showMessage(
+        self._show_status_message(
             f"Display configuration changed · {len(QGuiApplication.screens())} display(s) detected",
             5000,
         )
@@ -914,7 +917,7 @@ class MainWindow(QMainWindow):
             self.workspace_output_label.setText(
                 f"OUTPUT  ·  PROJECTOR  ·  {screen.name()}"
             )
-            self.statusBar().showMessage(
+            self._show_status_message(
                 (
                     f"Projector output opened on {screen.name()}. "
                     "Press Escape on the output to close it."
@@ -963,7 +966,7 @@ class MainWindow(QMainWindow):
             layer = self.application.add_media_overlay(path)
             self.layer_panel.refresh()
             self.generators_panel.refresh(select_id=layer.id)
-            self.statusBar().showMessage(f"Added overlay {layer.name}", 4000)
+            self._show_status_message(f"Added overlay {layer.name}", 4000)
         except Exception as exc:
             _LOG.exception("Could not add overlay media")
             QMessageBox.warning(self, "Overlay load failed", str(exc))
@@ -976,7 +979,7 @@ class MainWindow(QMainWindow):
         try:
             self.application.assign_media_to_deck(asset, deck_id)
             self.deck_panel.refresh()
-            self.statusBar().showMessage(
+            self._show_status_message(
                 f"Loaded {getattr(asset, 'name', 'video')} into {deck_id.upper()}",
                 4000,
             )
@@ -993,7 +996,7 @@ class MainWindow(QMainWindow):
                     self.media_browser.deck_combo.setCurrentIndex(deck_index)
                 self.workspace_tabs.setCurrentIndex(2)
                 self.media_browser.asset_list.setFocus()
-                self.statusBar().showMessage(
+                self._show_status_message(
                     f"Choose a clip to load into {deck_id.upper()}. "
                     "The current source remains active until you choose one.",
                     5000,
@@ -1004,7 +1007,7 @@ class MainWindow(QMainWindow):
                 deck.pause()
             elif action == "hold":
                 if not deck.hold():
-                    self.statusBar().showMessage(
+                    self._show_status_message(
                         "Wait for the first decoded frame before holding this deck.",
                         3000,
                     )
@@ -1029,7 +1032,7 @@ class MainWindow(QMainWindow):
             self.application.decks.values(),
         )
         self.deck_panel.refresh()
-        self.statusBar().showMessage(f"Assigned {count} video deck(s).", 3000)
+        self._show_status_message(f"Assigned {count} video deck(s).", 3000)
 
     def randomize_layout(self) -> None:
         count = self.application.performance_manager.randomize_layout(
@@ -1038,7 +1041,7 @@ class MainWindow(QMainWindow):
         self.application.composition.sort_layers()
         self.layer_panel.refresh()
         self.generators_panel.refresh()
-        self.statusBar().showMessage(
+        self._show_status_message(
             f"Generated a new freeform collage · {count} visual layer(s).",
             3500,
         )
@@ -1051,7 +1054,7 @@ class MainWindow(QMainWindow):
         self.application.effects.apply_preset(preset)
         self.effects_panel.sync_from_settings()
         self.effects_panel.manual_parameter_changed.emit("master.*")
-        self.statusBar().showMessage(f"MASTER LOOK · {preset}", 3500)
+        self._show_status_message(f"MASTER LOOK · {preset}", 3500)
 
     def lock_all(self, locked: bool) -> None:
         for deck in self.application.decks.values():
@@ -1096,7 +1099,7 @@ class MainWindow(QMainWindow):
                     "then retry."
                 )
             self.automation_panel.set_running(False, message)
-            self.statusBar().showMessage(message, 8000)
+            self._show_status_message(message, 8000)
             QMessageBox.information(self, "Auto Performance not started", message)
         except Exception as exc:
             _LOG.exception("Could not start automation")
@@ -1137,7 +1140,7 @@ class MainWindow(QMainWindow):
             elif event_type == "modulation":
                 self.performance_control_panel.sync_performance_macros()
             if timeline_snapshot["last_event_result"]:
-                self.statusBar().showMessage(
+                self._show_status_message(
                     str(timeline_snapshot["last_event_result"]),
                     2600,
                 )
@@ -1240,7 +1243,7 @@ class MainWindow(QMainWindow):
         self.effects_panel.sync_from_settings()
         self.generators_panel.refresh()
         self.automation_panel.set_running(False, ui_text("READY"))
-        self.statusBar().showMessage(ui_text("New composition created."), 3000)
+        self._show_status_message(ui_text("New composition created."), 3000)
 
     def open_project(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
@@ -1254,7 +1257,7 @@ class MainWindow(QMainWindow):
         try:
             self.application.load_project(path)
             self._refresh_after_project_load()
-            self.statusBar().showMessage(f"Opened {Path(path).name}", 4000)
+            self._show_status_message(f"Opened {Path(path).name}", 4000)
         except Exception as exc:
             _LOG.exception("Could not open project %s", path)
             QMessageBox.critical(self, "Project open failed", str(exc))
@@ -1265,7 +1268,7 @@ class MainWindow(QMainWindow):
             return
         try:
             path = self.application.save_project(self.application.current_project_path)
-            self.statusBar().showMessage(f"Saved {path.name}", 3000)
+            self._show_status_message(f"Saved {path.name}", 3000)
         except Exception as exc:
             QMessageBox.critical(self, "Project save failed", str(exc))
 
@@ -1282,7 +1285,7 @@ class MainWindow(QMainWindow):
             path += ".eliav"
         try:
             saved = self.application.save_project(path)
-            self.statusBar().showMessage(f"Saved {saved.name}", 3000)
+            self._show_status_message(f"Saved {saved.name}", 3000)
         except Exception as exc:
             QMessageBox.critical(self, "Project save failed", str(exc))
 
@@ -1327,7 +1330,7 @@ class MainWindow(QMainWindow):
             "Language changed." if language_changed else "Settings saved.",
             self._language,
         )
-        self.statusBar().showMessage(message, 3000)
+        self._show_status_message(message, 3000)
 
     def _refresh_after_project_load(self) -> None:
         self._sync_performance_mode_button()
@@ -1354,10 +1357,10 @@ class MainWindow(QMainWindow):
             self.application.load_project(self._recovery_path)
             self.application.current_project_path = None
             self._refresh_after_project_load()
-            self.statusBar().showMessage(tr("status.recovered", self._language), 4000)
+            self._show_status_message(tr("status.recovered", self._language), 4000)
         except Exception:
             _LOG.exception("Could not restore previous session")
-            self.statusBar().showMessage("Session recovery failed.", 5000)
+            self._show_status_message("Session recovery failed.", 5000)
         finally:
             self._restoring_session = False
 
