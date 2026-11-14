@@ -5,6 +5,7 @@ import json
 import logging
 import sys
 
+from PySide6.QtCore import QSettings
 from PySide6.QtGui import QIcon, QSurfaceFormat
 from PySide6.QtWidgets import QApplication
 
@@ -120,7 +121,11 @@ def main() -> int:
     qt_app.setApplicationName(APP_NAME)
     qt_app.setApplicationVersion(APP_VER)
     qt_app.setOrganizationName("eli_lab")
-    configure_application_theme(qt_app)
+    settings = QSettings()
+    configure_application_theme(
+        qt_app,
+        show_hints=settings.value("ui/show_hints_v1", True, type=bool),
+    )
 
     if ICON_PATH.exists():
         qt_app.setWindowIcon(QIcon(str(ICON_PATH)))
