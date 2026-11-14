@@ -1,5 +1,7 @@
 # Website content and design plan
 
+> **Implementation status — 14 November 2026:** The first website implementation is committed to `main`. The live structure uses Jekyll with Markdown pages, a shared editorial layout, a responsive monochrome stylesheet, English/Japanese homepage and documentation entry points, and a GitHub Pages Actions workflow. This document remains the content/design specification; the implementation notes at the end record what is now live in the repository.
+
 ## Purpose
 
 The website should explain the software in the language of artists and performers, then lead visitors to a download, a first-session guide or the technical reference. It should feel like an old printed instrument manual or a small archival catalogue, not a generic SaaS landing page.
@@ -131,11 +133,21 @@ A good visual reference is a dark technical field manual: the page is nearly bla
 
 Noto Sans JP is an open-font option with Japanese and Latin coverage and an SIL Open Font License entry in the Google Fonts repository. If font files are ever bundled with the application or website, include the required licence and copyright notices.
 
-## Site implementation recommendation
+## Site implementation
 
-Use a Markdown-first static site so documentation remains the canonical content source. MkDocs is a suitable candidate: existing Markdown documents can be included in the Manual and Wiki, while a small custom theme and CSS layer can provide the archival design. Keep the content in `docs/`, configure navigation explicitly, and publish the generated site through GitHub Pages or another static host.
+The current implementation uses **Jekyll** because GitHub Pages can build it directly from the repository and the existing `docs/*.md` files can remain the canonical documentation source.
 
-The exact generator and hosting target can be chosen when the website implementation begins. The content structure should not depend on a specific theme or hosting service.
+- `_config.yml` configures the site, relative Markdown links and page defaults.
+- `_layouts/default.html` provides the shared masthead, language navigation and footer.
+- `_layouts/doc.html` presents Markdown documentation in a consistent reader with a document rail.
+- `index.html` and `ja/index.html` are separate English and Japanese homepage entry points.
+- `style.css` defines the shared typography, grid, monochrome palette and responsive layouts.
+- `docs/MANUAL.md`, `docs/WIKI.md`, `docs/ABOUT.md` and the corresponding `docs/ja/*.md` pages provide the artist-facing entry points.
+- Existing technical Markdown guides remain in `docs/` and are linked from the Wiki and Manual rather than copied into standalone HTML.
+
+The Pages workflow is `.github/workflows/pages.yml`. It builds the repository using the GitHub Pages Jekyll action and deploys the resulting artifact. Repository Pages settings and the first deployment still depend on GitHub's repository-level permissions and policy. The workflow requests Pages enablement; if the organization or repository settings prohibit that, an administrator must enable **Settings → Pages → Build and deployment → GitHub Actions**.
+
+Keep release downloads pointed at the GitHub Releases page. Do not hard-code version numbers or direct executable filenames. The release page remains the source for current binaries, dates and notes.
 
 ## Screenshots and media
 
@@ -163,3 +175,12 @@ Do not label the application production-stable until the target Windows/GPU, pro
 - Do not claim that the application records a finished master, replaces a DAW, or edits video like a traditional NLE.
 - Keep current capabilities, active development and future ideas clearly separate.
 - Keep English and Japanese versions aligned in meaning and update them together.
+
+
+## Implementation boundary and remaining work
+
+The first pass intentionally uses a schematic HTML/CSS plate in place of a screenshot. It is labelled as a schematic, not a capture of the application. Real screenshots and short, optimized demonstrations should be added only after they can be captured from the running Windows application and validated for accuracy.
+
+The initial English and Japanese homepages, product overviews, Manuals and Wiki indexes are present. The technical reference corpus is predominantly English; Japanese navigation marks English-only guides explicitly. Keep the two languages semantically aligned as translations are expanded.
+
+Before treating the website as published, verify the first successful Pages deployment and inspect the generated home, representative Markdown guide, Japanese pages, responsive mobile layout and all internal links. GitHub Actions code checks do not verify the website's appearance in a real browser.
