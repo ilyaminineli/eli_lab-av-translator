@@ -419,6 +419,11 @@ class AutomationDirector:
         fraction = 0.25 + 0.75 * drive
         return min(eligible, max(1, round(eligible * fraction)))
 
+    def visual_activity_snapshot(self) -> dict[str, object]:
+        """Return the latest composition-only activity estimate for diagnostics/UI."""
+        self._last_visual_activity = self._director.measure_visual_activity(self._layers)
+        return asdict(self._last_visual_activity)
+
     def _select_variation_layers(
             self,
             prefer_particles: bool = False,
