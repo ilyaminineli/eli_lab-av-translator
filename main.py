@@ -11,6 +11,7 @@ from PySide6.QtWidgets import QApplication
 from config import APP_NAME, APP_VERSION, ICON_PATH, configure_logging
 from core.application import Application
 from ui.main_window import MainWindow
+from ui.theme import configure_application_theme
 
 
 def configure_opengl() -> None:
@@ -112,6 +113,7 @@ def main() -> int:
     qt_app.setApplicationName(APP_NAME)
     qt_app.setApplicationVersion(APP_VERSION)
     qt_app.setOrganizationName("eli_lab")
+    configure_application_theme(qt_app)
 
     if ICON_PATH.exists():
         qt_app.setWindowIcon(QIcon(str(ICON_PATH)))
