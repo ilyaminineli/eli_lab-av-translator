@@ -4,7 +4,6 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
 from qt_material import apply_stylesheet
 
-
 DEFAULT_THEME = "dark_red.xml"
 DENSITY_SCALE = "-1"
 
