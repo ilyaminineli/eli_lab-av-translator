@@ -1,8 +1,11 @@
 from __future__ import annotations
 
+from PySide6.QtCore import QUrl
 from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
 from qt_material import apply_stylesheet
+
+from config import RESOURCE_DIR
 
 # Neutral Material base; all application accents are overridden to grayscale below.
 DEFAULT_THEME = "dark_teal.xml"
@@ -141,10 +144,12 @@ QToolButton:hover {
     border-color: #858585;
 }
 QToolButton:pressed {
-    background: #e8e8e8;
+    background: #3b3b3b;
+    border-color: #b0b0b0;
 }
 QToolButton:checked {
     background: #ededed;
+    color: #101010;
     border-color: #ededed;
 }
 QToolButton:disabled {
@@ -254,4 +259,34 @@ def configure_application_theme(app: QApplication) -> None:
         extra=MATERIAL_COLORS,
     )
     app.setFont(QFont("Segoe UI", 9))
-    app.setStyleSheet(f"{app.styleSheet()}\n{APP_STYLE}")
+
+    icon_directory = RESOURCE_DIR / "icons"
+    close_icon = QUrl.fromLocalFile(str(icon_directory / "dock-close.svg")).toString()
+    float_icon = QUrl.fromLocalFile(str(icon_directory / "dock-float.svg")).toString()
+    dock_icon = QUrl.fromLocalFile(str(icon_directory / "dock-dock.svg")).toString()
+    dock_controls_style = f"""
+QDockWidget::close-button,
+QDockWidget::float-button {{
+    background: transparent;
+    border: 0;
+    width: 15px;
+    height: 15px;
+    margin: 0 4px;
+}}
+QDockWidget::close-button {{
+    image: url("{close_icon}");
+}}
+QDockWidget::float-button {{
+    image: url("{float_icon}");
+}}
+QDockWidget::float-button:checked {{
+    image: url("{dock_icon}");
+}}
+QDockWidget::close-button:hover,
+QDockWidget::float-button:hover {{
+    background: #303030;
+    border: 1px solid #666666;
+    border-radius: 3px;
+}}
+"""
+    app.setStyleSheet(f"{app.styleSheet()}\n{APP_STYLE}\n{dock_controls_style}")
