@@ -214,7 +214,7 @@ def test_dynamic_text_can_switch_between_languages_without_losing_source() -> No
 def test_japanese_dynamic_status_templates() -> None:
     assert ui_text("Indexed 12 video file(s).", "ja") == "動画ファイルを12件索引化しました。"
     assert ui_text("CONNECTED · USB MIDI", "ja") == "接続中 · USB MIDI"
-    assert ui_text("TEXT PIPELINE · READY", "ja") == "テキスト処理 · READY"
+    assert ui_text("TEXT PIPELINE · READY", "ja") == "テキスト処理 · 準備完了"
 
 
 def test_recovery_snapshot_does_not_auto_start_performance_or_decks(
