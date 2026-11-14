@@ -210,7 +210,7 @@ class MainWindow(QMainWindow):
         )
         self.statusBar().addPermanentWidget(self.control_status_label)
         self.status_label = QLabel(
-            "LOCAL PREVIEW · IDLE"
+            ui_text("LOCAL PREVIEW · IDLE")
         )
         self.statusBar().addPermanentWidget(self.status_label)
         self.performance_view.render_status_changed.connect(self.status_label.setText)
@@ -931,7 +931,7 @@ class MainWindow(QMainWindow):
             )
         else:
             self.status_label.setText(
-                "LOCAL PREVIEW · IDLE"
+                ui_text("LOCAL PREVIEW · IDLE")
             )
         if self._restore_local_preview_on_close:
             self.workspace_tabs.setCurrentIndex(0)
