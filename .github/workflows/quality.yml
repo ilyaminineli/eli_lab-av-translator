@@ -35,15 +35,24 @@ jobs:
           core/application.py
           core/automation.py
           core/generative_director.py
+          core/performance_control.py
           core/performance_manager.py
           generators/catalog.py
           generators/rasterizer.py
           generators/text_pools.py
+          media/library.py
+          ui/asset_library_panel.py
           ui/automation_panel.py
           ui/deck_panel.py
+          ui/effects_panel.py
           ui/generators_panel.py
+          ui/icons.py
+          ui/layer_panel.py
           ui/main_window.py
+          ui/media_browser.py
+          ui/modulator_bank_panel.py
           ui/performance_control_panel.py
+          ui/performance_timeline_panel.py
           ui/theme.py
           ui/transport_bar.py
           main.py
