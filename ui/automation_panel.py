@@ -172,7 +172,7 @@ class AutomationPanel(QWidget):
         director_form.addRow(self.keep_anchor_check)
         director_form.addRow(self.preserve_background_check)
         director_form.addRow(self.effect_after_transition_check)
-        director_form.addRow("PALETTE MEM · PHRASES", self.palette_memory_spin)
+        director_form.addRow("PALETTE MEMORY · PHRASES", self.palette_memory_spin)
         director_form.addRow("PEAK PARTICLE BOOST · 0–1", self.peak_particle_boost_spin)
         director_form.addRow("PER-LAYER AUTOMATION COOLDOWN", self.layer_cooldown_spin)
         director_form.addRow(self.slow_breakdown_check)
