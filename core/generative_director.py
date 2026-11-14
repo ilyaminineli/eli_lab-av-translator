@@ -6,7 +6,7 @@ from typing import Iterable
 
 
 class GenerativeVariationDirector:
-    """Rule state and deterministic decisions for constrained generative variation."""
+    """Musical visual director: composition memory, variation selection and pacing."""
 
     def __init__(self, palette_memory_phrases: int = 4) -> None:
         self.palette_memory_phrases = max(0, min(16, int(palette_memory_phrases)))
@@ -92,19 +92,25 @@ class GenerativeVariationDirector:
             maximum: int,
             rng: random.Random,
             *,
-            keep_anchor: bool = True,
+            keep_anchor: bool = False,
             prefer_particles: bool = False,
+            anchor_persistence: float = 0.0,
     ) -> tuple[str, ...]:
         candidates = [
             layer for layer in layers
             if self._eligible(layer)
         ]
-        anchor_id = self.choose_anchor(candidates, enabled=keep_anchor)
-        if keep_anchor and anchor_id:
-            candidates = [
-                layer for layer in candidates
-                if str(getattr(layer, "id", "")) != anchor_id
-            ]
+        anchor_id = self.choose_anchor(
+            candidates,
+            enabled=keep_anchor or anchor_persistence > 0.0,
+        )
+        if anchor_id:
+            persistence = max(0.0, min(1.0, float(anchor_persistence)))
+            if keep_anchor or rng.random() < persistence:
+                candidates = [
+                    layer for layer in candidates
+                    if str(getattr(layer, "id", "")) != anchor_id
+                ]
         rng.shuffle(candidates)
         if prefer_particles:
             particle_layers = [
@@ -122,7 +128,7 @@ class GenerativeVariationDirector:
                 layer for layer in candidates
                 if str(getattr(layer, "id", "")) not in particle_ids
             ]
-        limit = max(0, min(2, int(maximum)))
+        limit = max(0, min(len(candidates), int(maximum)))
         return tuple(
             str(getattr(layer, "id", ""))
             for layer in candidates[:limit]
