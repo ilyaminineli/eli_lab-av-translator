@@ -2,6 +2,8 @@
 
 **Windows-first audiovisual performance environment for live video collage, procedural visuals, typography, audio reactivity and Sonic Pi-controlled shows.**
 
+Artist-facing introduction, practical audience fit and the product's boundaries: [Product overview](docs/PRODUCT_OVERVIEW.md). The planned archival-style bilingual website, including its manual/wiki structure and Markdown content map, is documented in [Website plan](docs/WEBSITE_PLAN.md).
+
 ## Project status — 14 November 2026
 
 The `main` branch contains the M0–M6 rendering, video, generator, performance-control and live-workspace foundations, plus the first M7 implementation increments. [PR #34](https://github.com/ilyaminineli/eli_lab-av-translator/pull/34) merged the unified visual director and the initial PERF / COMPOSE / PREPARE workspace shell. [PR #35](https://github.com/ilyaminineli/eli_lab-av-translator/pull/35) hardened timeline/macro runtime handling, bounded generator raster work, and introduced the monochrome workspace theme and 16:9 local preview frame.
@@ -24,7 +26,7 @@ The Quality workflow performs Python compilation, Ruff and regression tests. Tho
 - **M7-A — Unified visual director:** composition-aware variation across video, generators and overlays; dynamic all-layer variation budgets, spatial relationships, optional anchors, activity feedback, per-layer cooldowns and manual-override precedence.
 - **M7-B — Operator workspace foundation:** central PERF / COMPOSE / PREPARE workspaces, a shared macro strip, compact/responsive workspace constraints and the monochrome Qt Material base theme.
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for milestone state and remaining acceptance gates. Implementation detail is in the [M5 Autonomous Performance guide](docs/M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance Environment](docs/M5_PERFORMANCE_ENVIRONMENT.md), [Architecture](docs/ARCHITECTURE.md) and [M5 Completion Handoff](docs/M5_COMPLETION_HANDOFF.md).
+See [docs/PRODUCT_OVERVIEW.md](docs/PRODUCT_OVERVIEW.md) for a non-technical explanation and target audiences, [docs/WEBSITE_PLAN.md](docs/WEBSITE_PLAN.md) for the website content architecture, and [docs/ROADMAP.md](docs/ROADMAP.md) for milestone state and remaining acceptance gates. Implementation detail is in the [M5 Autonomous Performance guide](docs/M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance Environment](docs/M5_PERFORMANCE_ENVIRONMENT.md), [Architecture](docs/ARCHITECTURE.md) and [M5 Completion Handoff](docs/M5_COMPLETION_HANDOFF.md).
 
 ## Build and run on Windows
 
