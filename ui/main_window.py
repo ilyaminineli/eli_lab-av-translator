@@ -1285,6 +1285,7 @@ class MainWindow(QMainWindow):
         )
         if dialog.exec() != dialog.DialogCode.Accepted:
             return
+        language_changed = dialog.language != self._language
         self._language = dialog.language
         self._show_hints = dialog.show_hints
         self._restore_session_enabled = dialog.restore_session
@@ -1303,9 +1304,12 @@ class MainWindow(QMainWindow):
             tooltip_filter = getattr(gui, "_eli_tooltip_filter", None)
             if tooltip_filter is not None:
                 tooltip_filter.set_enabled(self._show_hints)
-        self.statusBar().showMessage(
-            "Settings saved · restart to apply language changes.", 3500
+        message = (
+            "Language will apply after restart."
+            if language_changed
+            else "Settings saved."
         )
+        self.statusBar().showMessage(message, 3000)
 
     def _refresh_after_project_load(self) -> None:
         self._sync_performance_mode_button()
