@@ -36,7 +36,7 @@ from ui.automation_panel import AutomationPanel
 from ui.deck_panel import DeckPanel
 from ui.effects_panel import EffectsPanel
 from ui.generators_panel import GeneratorsPanel
-from ui.i18n import apply_widget_translations, tr
+from ui.i18n import apply_widget_translations, tr, ui_text
 from ui.layer_panel import LayerPanel
 from ui.media_browser import MediaBrowser
 from ui.modulator_bank_panel import ModulatorBankPanel
@@ -210,7 +210,7 @@ class MainWindow(QMainWindow):
         )
         self.statusBar().addPermanentWidget(self.control_status_label)
         self.status_label = QLabel(
-            "LOCAL PREVIEW IDLE · select PERF to initialise OpenGL"
+            "LOCAL PREVIEW · IDLE"
         )
         self.statusBar().addPermanentWidget(self.status_label)
         self.performance_view.render_status_changed.connect(self.status_label.setText)
@@ -393,7 +393,7 @@ class MainWindow(QMainWindow):
         # The projector and local preview retain their existing independent contexts.
         self.performance_view.setParent(None)
         self.preview_dock.setWidget(
-            QLabel("LOCAL PREVIEW is now displayed in the central PERF workspace.")
+            QLabel("LOCAL PREVIEW")
         )
         self.preview_dock.hide()
         self.performance_aspect_preview = AspectRatioPreview(
@@ -432,11 +432,11 @@ class MainWindow(QMainWindow):
         self.media_browser.setParent(None)
         self.asset_library_panel.setParent(None)
         self.media_dock.setWidget(
-            QLabel("MEDIA LIBRARY is available in the central PREPARE workspace.")
+            QLabel("MEDIA LIBRARY")
         )
         self.asset_library_dock.setWidget(
             QLabel(
-                "VISUAL ASSET LIBRARY is available in the central PREPARE workspace."
+                "VISUAL ASSET LIBRARY"
             )
         )
         self.media_dock.hide()
@@ -931,7 +931,7 @@ class MainWindow(QMainWindow):
             )
         else:
             self.status_label.setText(
-                "LOCAL PREVIEW IDLE · select PERF to initialise OpenGL"
+                "LOCAL PREVIEW · IDLE"
             )
         if self._restore_local_preview_on_close:
             self.workspace_tabs.setCurrentIndex(0)
@@ -1229,8 +1229,8 @@ class MainWindow(QMainWindow):
         self.performance_timeline_panel.refresh(force=True)
         self.effects_panel.sync_from_settings()
         self.generators_panel.refresh()
-        self.automation_panel.set_running(False, "Ready · import footage to begin.")
-        self.statusBar().showMessage("New composition created.", 3000)
+        self.automation_panel.set_running(False, ui_text("READY"))
+        self.statusBar().showMessage(ui_text("New composition created."), 3000)
 
     def open_project(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
