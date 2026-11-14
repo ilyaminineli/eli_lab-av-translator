@@ -266,6 +266,17 @@ def application_font_families(language: str = "en") -> list[str]:
     return ["Segoe UI", "Noto Sans", "Arial", "sans-serif"]
 
 
+def apply_application_language(app: QApplication, language: str) -> None:
+    """Apply the selected UI language and its system-first typeface stack."""
+    normalized = language if language in {"en", "ja"} else "en"
+    font = QFont()
+    font.setFamilies(application_font_families(normalized))
+    font.setPointSizeF(9.5)
+    font.setStyleHint(QFont.StyleHint.SansSerif)
+    app.setFont(font)
+    app.setProperty("ui_language", normalized)
+
+
 def configure_application_theme(
     app: QApplication,
     show_hints: bool = True,
@@ -277,12 +288,7 @@ def configure_application_theme(
         theme=DEFAULT_THEME,
         extra=MATERIAL_COLORS,
     )
-    font = QFont()
-    font.setFamilies(application_font_families(language))
-    font.setPointSizeF(9.5)
-    font.setStyleHint(QFont.StyleHint.SansSerif)
-    app.setFont(font)
-    app.setProperty("ui_language", language)
+    apply_application_language(app, language)
     tooltip_filter = ToolTipFilter(show_hints, app)
     app.installEventFilter(tooltip_filter)
     app._eli_tooltip_filter = tooltip_filter
