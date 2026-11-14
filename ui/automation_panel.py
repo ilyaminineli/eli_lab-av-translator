@@ -40,7 +40,7 @@ class AutomationPanel(QWidget):
         form = QFormLayout()
 
         self.collection_combo = QComboBox()
-        form.addRow("FPOOL", self.collection_combo)
+        form.addRow("FOOTAGE", self.collection_combo)
 
         self.duration_combo = QComboBox()
         for label, seconds in (
@@ -53,7 +53,7 @@ class AutomationPanel(QWidget):
         ):
             self.duration_combo.addItem(label, seconds)
         self.duration_combo.setCurrentIndex(self.duration_combo.count() - 1)
-        form.addRow("SESSL", self.duration_combo)
+        form.addRow("SESSION", self.duration_combo)
 
         self.performance_style_combo = QComboBox()
         self.performance_style_combo.addItem(
@@ -85,7 +85,7 @@ class AutomationPanel(QWidget):
         self.segment_combo.addItem("Mixed fragments · 4–16 sec", "mixed")
         self.segment_combo.addItem("Long fragments · 12–30 sec", "long")
         self.segment_combo.setCurrentIndex(1)
-        form.addRow("IN / OUT LEN", self.segment_combo)
+        form.addRow("IN / OUT LENGTH", self.segment_combo)
 
         self.loop_combo = QComboBox()
         self.loop_combo.addItem("Occasional loops · 25%", 0.25)
@@ -117,7 +117,7 @@ class AutomationPanel(QWidget):
         self.director_group = QGroupBox("UNIFIED MUSICAL / GENERATIVE DIRECTOR")
         director_form = QFormLayout(self.director_group)
         self.director_active_label = QLabel(
-            "UNIFIED DIRECTOR ACTIVE · CHAOTIC / GENERATIVE / STRCD"
+            "UNIFIED DIRECTOR ACTIVE · CHAOTIC / GENERATIVE / STRUCTURED"
         )
         self.director_active_label.setWordWrap(True)
         self.director_active_label.setObjectName("mutedLabel")
@@ -173,8 +173,8 @@ class AutomationPanel(QWidget):
         director_form.addRow(self.preserve_background_check)
         director_form.addRow(self.effect_after_transition_check)
         director_form.addRow("PALETTE MEM · PHRASES", self.palette_memory_spin)
-        director_form.addRow("PEAK PRTL BOOST · 0–1", self.peak_particle_boost_spin)
-        director_form.addRow("PER-LY AUTOMATION COOLDOWN", self.layer_cooldown_spin)
+        director_form.addRow("PEAK PARTICLE BOOST · 0–1", self.peak_particle_boost_spin)
+        director_form.addRow("PER-LAYER AUTOMATION COOLDOWN", self.layer_cooldown_spin)
         director_form.addRow(self.slow_breakdown_check)
         director_form.addRow("BREAKDOWN TRANSITION MIN", self.breakdown_min_spin)
         director_form.addRow("BREAKDOWN TRANSITION MAX", self.breakdown_max_spin)
