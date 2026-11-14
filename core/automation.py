@@ -409,8 +409,10 @@ class AutomationDirector:
                 + 0.13 * underactivity,
             ),
         )
-        # Strong musical/macro peaks occasionally open the variation scope fully.
-        # This is a weighted global burst, not a fixed maximum-layer setting.
+        # At a genuinely maximal musical peak, allow a deterministic global event.
+        # Outside that case, global bursts remain probabilistic and activity-aware.
+        if self._performance_section == "peak" and drive >= 0.90:
+            return eligible
         global_burst_probability = max(0.0, min(1.0, (drive - 0.72) / 0.28))
         if self.rng.random() < global_burst_probability:
             return eligible
