@@ -3,8 +3,8 @@ from __future__ import annotations
 import logging
 import threading
 import time
-from copy import deepcopy
 from collections import OrderedDict
+from copy import deepcopy
 from typing import Any
 
 from PySide6.QtCore import QObject, Signal
