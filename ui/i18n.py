@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from PySide6.QtCore import Qt
+
 
 _ENGLISH: dict[str, str] = {
     "menu.file": "File",
@@ -708,6 +710,7 @@ _JA_TEXT: dict[str, str] = {
     "New composition created.": "新しい構成を作成しました。",
     "Language will apply after restart.": "言語設定は再起動後に適用されます。",
     "Video overlays support looping and local in/out timing. Playback speed and frame hold are not available for video sources yet.": "動画オーバーレイはループ再生と開始／終了位置を指定できます。再生速度とフレーム保持には対応していません。",
+    "Manual colours": "手動設定",
     "Animated images support playback speed, frame hold and looping.": "アニメーション画像では再生速度、フレーム保持、ループ再生を使用できます。",
     "Still images use local in/out timing, opacity, blend and matte. Playback speed, frame hold and looping do not apply.": "静止画像では開始／終了位置、不透明度、合成モード、マットを設定できます。再生速度、フレーム保持、ループ再生は適用されません。",
 }
@@ -739,6 +742,13 @@ def ui_text(text: str, language: str | None = None) -> str:
     if language != "ja":
         return text
     return _JA_TEXT.get(text, text)
+
+
+def set_ui_text(widget: Any, source_text: str, language: str | None = None) -> None:
+    """Set a translatable QLabel-like string while retaining its source copy."""
+    if hasattr(widget, "setProperty"):
+        widget.setProperty("_eli_i18n_text", str(source_text))
+    widget.setText(ui_text(str(source_text), language))
 
 
 def apply_widget_translations(root: Any, language: str = "en") -> None:
@@ -806,13 +816,15 @@ def apply_widget_translations(root: Any, language: str = "en") -> None:
             )
             widget.setPlaceholderText(ui_text(str(source), language))
         if isinstance(widget, QComboBox):
-            current_items = [widget.itemText(i) for i in range(widget.count())]
-            source_items = original(
-                widget, "_eli_i18n_items", current_items
-            )
-            for index, source in enumerate(source_items):
-                if index < widget.count():
-                    widget.setItemText(index, ui_text(str(source), language))
+            # Store each item's source label in a private item-data role.
+            # This survives language changes and combo clears/repopulation.
+            source_role = int(Qt.ItemDataRole.UserRole) + 173
+            for index in range(widget.count()):
+                source = widget.itemData(index, source_role)
+                if source is None:
+                    source = widget.itemText(index)
+                    widget.setItemData(index, str(source), source_role)
+                widget.setItemText(index, ui_text(str(source), language))
         if isinstance(widget, QTabWidget):
             current_tabs = [widget.tabText(i) for i in range(widget.count())]
             source_tabs = original(
