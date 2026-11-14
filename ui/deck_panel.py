@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 
 from core.application import Application
 from media.models import MediaAsset
+from ui.i18n import set_ui_text
 from ui.icons import app_icon, icon_button
 
 
@@ -223,7 +224,7 @@ class DeckCard(QGroupBox):
             state = "STOPPED / READY"
         else:
             state = "EMPTY"
-        self.state_label.setText(state)
+        set_ui_text(self.state_label, state)
 
         details = [f"LAYER · {layer_name}"] if layer_name else ["LAYER · NOT ATTACHED"]
         if asset:
