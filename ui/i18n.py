@@ -701,7 +701,6 @@ _JA_TEXT: dict[str, str] = {
     "DRIFT / SPREAD": "ドリフト／拡散",
     "TURBULENCE SCALE · 0.1": "乱流スケール · 0.1",
     "PULSE WIDTH": "パルス幅",
-    "PULSE WIDTH": "パルス幅",
     "Digital Damage": "デジタルダメージ",
     "Fuji · 藤": "富士 · 藤",
 }
