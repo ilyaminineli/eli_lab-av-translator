@@ -56,6 +56,7 @@ CACHE_DIR = DATA_DIR / "cache"
 THUMB_DIR = CACHE_DIR / "thumbnails"
 MEDIA_DB_PATH = DATA_DIR / "media-library.sqlite3"
 LOG_DIR = DATA_DIR / "logs"
+SESSION_RECOVERY_PATH = DATA_DIR / "session-recovery.eliav"
 
 
 def ensure_data_directories() -> None:
