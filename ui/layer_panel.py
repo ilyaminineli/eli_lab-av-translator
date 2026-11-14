@@ -92,12 +92,6 @@ class LayerPanel(QWidget):
 
         self.performance_modifiers_group = QGroupBox("PER-LAYER PERFORMANCE MODIFIERS")
         modifier_layout = QVBoxLayout(self.performance_modifiers_group)
-        self.modifier_help_label = QLabel(
-            "Give this layer its own rhythmic, audio or Sonic Pi movement. "
-            "Modifiers are saved with the layer."
-        )
-        self.modifier_help_label.setWordWrap(True)
-        modifier_layout.addWidget(self.modifier_help_label)
         self.modifier_rhythm_status = QLabel("BEAT — · DOWNBEAT — · PHRASE —")
         self.modifier_rhythm_status.setObjectName("mutedLabel")
         modifier_layout.addWidget(self.modifier_rhythm_status)
