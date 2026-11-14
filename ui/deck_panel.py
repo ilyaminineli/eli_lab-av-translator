@@ -263,6 +263,12 @@ class DeckCard(QGroupBox):
         self.hold_button.setEnabled(bool(loaded and has_frame))
         self.hold_button.setChecked(bool(held))
         self.hold_button.setIcon(app_icon("play" if held else "pause"))
+        hold_action = (
+            "Resume playback from the held frame"
+            if held else "Freeze the currently presented frame"
+        )
+        self.hold_button.setToolTip(hold_action)
+        self.hold_button.setAccessibleName(hold_action)
         self.restart_button.setEnabled(loaded)
         self.stop_button.setEnabled(loaded)
 
