@@ -1105,6 +1105,7 @@ class AutomationDirector:
         return changed
 
     def tick(self, now: float | None = None) -> bool:
+        """Advance the unified director once, independent of the sync source."""
         if not self.running:
             return False
         current = time.monotonic() if now is None else float(now)
@@ -1114,10 +1115,11 @@ class AutomationDirector:
             return True
 
         changed = self._tick_layout_transitions(current)
-        run_time_events = self.settings.musical_sync in {"time", "hybrid"}
-        if run_time_events:
-            changed = self._tick_constrained_generative(current) or changed
+        if self.settings.musical_sync in {"time", "hybrid"}:
+            changed = self._tick_unified_time_events(current) or changed
         else:
+            # Musical modes are event-driven; retain bounded section/peak response
+            # between phrase/bar/scene cues without running a second scheduler.
             selected = self._select_variation_layers(
                 prefer_particles=(
                     self._performance_section == "peak"
@@ -1127,85 +1129,73 @@ class AutomationDirector:
             changed = self._apply_peak_particle_density(selected) or changed
         return changed
 
-        if run_time_events:
-            for deck_id, deck in self._decks.items():
-                if getattr(deck, "locked", False):
-                    continue
-                due = self._deck_due.get(deck_id)
-                if due is None:
-                    self._deck_due[deck_id] = current + self._interval(
-                        self.rng,
-                        self.settings.min_cut_interval,
-                        self.settings.max_cut_interval,
-                    )
-                    continue
-                if current < due:
-                    continue
-                asset_id = getattr(deck, "asset_id", None)
-                loaded = self._load_random_segment(deck, asset_id, current)
-                if loaded:
-                    self.last_action = f"Random cut · {deck_id.upper()}"
-                changed = changed or loaded
+    def _tick_unified_time_events(self, current: float) -> bool:
+        """Run interval-driven actions through the same musical variation director."""
+        peak_context = (
+            self._performance_section == "peak"
+            or self._performance_energy >= 0.78
+            or self._performance_intensity >= 0.82
+            or self._macro_values.get("density", 0.0) >= 0.78
+        )
+        strength = (
+            0.16
+            + 0.44 * max(self._performance_energy, self._performance_intensity)
+            + 0.25 * {
+                "intro": 0.46,
+                "development": 0.68,
+                "peak": 0.96,
+                "breakdown": 0.38,
+                "outro": 0.30,
+            }.get(self._performance_section, 0.58)
+            + 0.15 * self._macro_values.get("density", 0.0)
+        )
+        strength *= 1.0 + (
+            0.22 * self._macro_values.get("chaos", self.settings.spatial_chaos)
+            + 0.12 * self._macro_values.get("pressure", 0.0)
+        )
+        strength = max(0.05, min(0.98, strength))
 
-        if (
-                run_time_events
-                and self.settings.randomize_layout
-                and self._layout_due is not None
-                and current >= self._layout_due
-        ):
-            self._randomize_layout(now=current)
-            self._layout_due = current + self._interval(
-                self.rng,
-                self.settings.min_layout_interval,
-                self.settings.max_layout_interval,
-            )
-            self.last_action = "Collage layout changed"
-            changed = True
+        # Initialise per-deck timers lazily. Each eligible deck remains independent.
+        due_decks: list[str] = []
+        for deck_id, deck in self._decks.items():
+            if getattr(deck, "locked", False):
+                continue
+            if deck_id not in self._deck_due:
+                self._deck_due[deck_id] = current + self._interval(
+                    self.rng,
+                    self.settings.min_cut_interval,
+                    self.settings.max_cut_interval,
+                )
+            elif current >= self._deck_due[deck_id]:
+                due_decks.append(deck_id)
 
-        if (
-                run_time_events
-                and self.settings.randomize_effects
-                and self._effects_due is not None
-                and current >= self._effects_due
-        ):
-            self._randomize_effects()
-            self._effects_due = current + self._interval(
-                self.rng,
-                self.settings.min_effect_interval,
-                self.settings.max_effect_interval,
-            )
-            self.last_action = f"Overlay look · {self._effects.preset_name}"
-            changed = True
-
-        if (
-                run_time_events
-                and (
+        layout_due = (
+            self.settings.randomize_layout
+            and self._layout_due is not None
+            and current >= self._layout_due
+        )
+        effects_due = (
+            self.settings.randomize_effects
+            and self._effects_due is not None
+            and current >= self._effects_due
+        )
+        generators_due = (
+            (
                 self.settings.randomize_generators
                 or self.settings.randomize_palette
                 or self.settings.randomize_layer_effects
                 or self.settings.randomize_overlays
-        )
-                and self._generators_due is not None
-                and current >= self._generators_due
-        ):
-            count = self._randomize_generators()
-            self._generators_due = current + self._interval(
-                self.rng,
-                self.settings.min_generator_interval,
-                self.settings.max_generator_interval,
             )
-            if count:
-                self.last_action = f"Generators / text / layer FX varied · {count} change(s)"
-                changed = True
-        return changed
-
-    def _tick_constrained_generative(self, current: float) -> bool:
-        peak_context = (
-                self._performance_section == "peak"
-                or self._performance_energy >= 0.78
-                or self._performance_intensity >= 0.82
-                or self._macro_values.get("density", 0.0) >= 0.78
+            and self._generators_due is not None
+            and current >= self._generators_due
         )
+
+        budget = self._select_variation_layers(
+            prefer_particles=peak_context,
+            strength=strength,
+        )
+        allowed = set(budget)
+        self._active_variation_layer_ids = tuple(budget)
         video_layers = {
             layer.source_id: layer
             for layer in self._layers
@@ -1214,69 +1204,54 @@ class AutomationDirector:
         anchor_id = self._director.choose_anchor(
             self._layers,
             enabled=(
-                    self.settings.keep_visual_anchor
-                    or self.settings.preserve_background_source
+                self.settings.keep_visual_anchor
+                or self.settings.preserve_background_source
             ),
         )
-        due_deck_ids = {
-            deck_id
-            for deck_id, deck in self._decks.items()
-            if (
-                    not getattr(deck, "locked", False)
-                    and self._deck_due.get(deck_id) is not None
-                    and current >= self._deck_due[deck_id]
-                    and (
-                            not self.settings.preserve_background_source
-                            or video_layers.get(deck_id) is None
-                            or video_layers[deck_id].id != anchor_id
-                    )
-            )
-        }
-        layout_due = (
-                self.settings.randomize_layout
-                and self._layout_due is not None
-                and current >= self._layout_due
-        )
-        generators_due = (
-                (
-                        self.settings.randomize_generators
-                        or self.settings.randomize_palette
-                        or self.settings.randomize_layer_effects
-                        or self.settings.randomize_overlays
-                )
-                and self._generators_due is not None
-                and current >= self._generators_due
-        )
-        peak_context_changed = peak_context != self._last_peak_context
-        new_variation_due = bool(
-            due_deck_ids or layout_due or generators_due or peak_context_changed
-        )
-        if new_variation_due:
-            self._active_variation_layer_ids = self._select_variation_layers(
-                prefer_particles=peak_context
-            ) or ()
-        self._last_peak_context = peak_context
-        layer_ids = self._active_variation_layer_ids
-        allowed = set(layer_ids)
+
         changed = False
         transition_happened = False
-
-        for deck_id in due_deck_ids:
+        for deck_id in due_decks:
             deck = self._decks[deck_id]
             layer = video_layers.get(deck_id)
             if layer is None or layer.id not in allowed:
+                self._deck_due[deck_id] = current + self._interval(
+                    self.rng,
+                    self.settings.min_cut_interval,
+                    self.settings.max_cut_interval,
+                )
                 continue
-            if self._load_random_segment(
+            if (
+                self.settings.preserve_background_source
+                and layer.id == anchor_id
+            ):
+                self._deck_due[deck_id] = current + self._interval(
+                    self.rng,
+                    self.settings.min_cut_interval,
+                    self.settings.max_cut_interval,
+                )
+                continue
+            if self.rng.random() < min(
+                0.98,
+                strength * self.settings.clip_switch_probability,
+            ):
+                loaded = self._load_random_segment(
                     deck,
                     getattr(deck, "asset_id", None),
                     current,
-            ):
-                self._director.mark_transition()
-                transition_happened = True
-                changed = True
+                )
+                if loaded:
+                    self._director.mark_transition()
+                    transition_happened = True
+                    changed = True
+            self._deck_due[deck_id] = current + self._interval(
+                self.rng,
+                self.settings.min_cut_interval,
+                self.settings.max_cut_interval,
+            )
 
         if layout_due:
-            layout_count = self._randomize_layout(layer_ids, now=current)
+            layout_count = self._randomize_layout(budget, now=current)
             changed = bool(layout_count) or changed
             transition_happened = transition_happened or bool(layout_count)
             self._layout_due = current + self._interval(
@@ -1286,15 +1261,10 @@ class AutomationDirector:
             )
 
         effect_ready = (
-                not self.settings.effect_after_transition
-                or self._director.effect_ready()
+            not self.settings.effect_after_transition
+            or self._director.effect_ready()
         )
-        if (
-                self.settings.randomize_effects
-                and self._effects_due is not None
-                and current >= self._effects_due
-                and effect_ready
-        ):
+        if effects_due and effect_ready:
             self._randomize_effects()
             self._effects_due = current + self._interval(
                 self.rng,
@@ -1305,7 +1275,7 @@ class AutomationDirector:
 
         if generators_due:
             count = self._randomize_generators(
-                layer_ids,
+                budget,
                 allow_effect_change=effect_ready,
             )
             if effect_ready and self._last_layer_fx_variation:
@@ -1317,13 +1287,19 @@ class AutomationDirector:
             )
             changed = bool(count) or changed
 
-        changed = self._apply_peak_particle_density(layer_ids) or changed
+        changed = self._apply_peak_particle_density(budget) or changed
         if transition_happened:
             self.last_action = (
-                f"transition · {self._performance_section} · "
-                f"{len(layer_ids)} varied layer(s)"
+                f"unified variation · {self._performance_section} · "
+                f"{len(budget)} varied layer(s)"
             )
+        elif changed:
+            self.last_action = f"visual variation · {len(budget)} eligible layer(s)"
         return changed
+
+    def _tick_constrained_generative(self, current: float) -> bool:
+        """Compatibility wrapper for older internal call sites."""
+        return self._tick_unified_time_events(current)
 
     def stop(self) -> None:
         """Finish active morphs and restore temporary peak-only particle boosts."""
