@@ -5,7 +5,7 @@ from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import Qt
+from PySide6.QtCore import QPoint, Qt
 from PySide6.QtGui import QColor, QImage, QPainter
 from PySide6.QtWidgets import (
     QApplication,
@@ -86,7 +86,7 @@ def render_preview(destination: Path) -> None:
     image = QImage(1280, 720, QImage.Format.Format_ARGB32_Premultiplied)
     image.fill(QColor("#090909"))
     painter = QPainter(image)
-    window.render(painter)
+    window.render(painter, QPoint())
     painter.end()
 
     destination.parent.mkdir(parents=True, exist_ok=True)
