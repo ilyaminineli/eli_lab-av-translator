@@ -793,7 +793,7 @@ class MainWindow(QMainWindow):
             self.performance_mode_button.blockSignals(True)
             self.performance_mode_button.setChecked(False)
             self.performance_mode_button.blockSignals(False)
-            self.performance_mode_button.setText("▶ PERF MODE")
+            set_ui_text(self.performance_mode_button, "▶ PERF MODE", self._language)
             QMessageBox.critical(self, "Performance Mode could not start", str(exc))
 
     def _sync_performance_mode_button(self) -> None:
