@@ -404,45 +404,105 @@ class GeneratorRasterizer:
         words = [item.strip() for item in text.splitlines() if item.strip()]
         if not words:
             return
+
+        # The first generated fragment is the headline, not simply another tile.
+        # Draw secondary material first, keeping the central title zone readable.
+        headline = words[0]
+        secondary = words[1:]
         variation = float(settings.get("collage_font_variation", 0.65))
         base_size = int(settings["font_size"])
         family = str(settings.get("font_family", "Arial"))
         primary = str(settings.get("primary_color", "#F2EEE6"))
-        secondary = str(settings.get("secondary_color", "#C35C75"))
+        secondary_color = str(settings.get("secondary_color", "#C35C75"))
         stroke_width = float(settings.get("stroke_width", 0.0))
-        for index, word in enumerate(words):
-            ratio = rng.uniform(1.0 - variation * 0.62, 1.0 + variation * 0.78)
-            size = max(18, min(560, round(base_size * ratio)))
+        safe_half_width = min(0.43, max(0.22, len(headline) * 0.018))
+        safe_half_height = 0.18
+
+        for index, word in enumerate(secondary):
+            ratio = rng.uniform(0.40, max(0.60, 0.72 + variation * 0.25))
+            size = max(18, min(420, round(base_size * ratio)))
             font = QFont(family)
             font.setPixelSize(size)
-            weights = (500, 600, 700, 800, 900)
-            font.setWeight(QFont.Weight(rng.choice(weights)))
+            font.setWeight(QFont.Weight(rng.choice((500, 600, 700, 800, 900))))
             font.setLetterSpacing(
                 QFont.SpacingType.AbsoluteSpacing,
                 float(settings.get("letter_spacing", 0.0)),
             )
             metrics = QFontMetricsF(font)
             advance = metrics.horizontalAdvance(word)
-            x = rng.uniform(45.0, max(46.0, self.width - advance - 45.0))
-            y = rng.uniform(size + 24.0, self.height - 24.0)
-            angle = rng.choice((0.0, 0.0, 0.0, 90.0, -90.0, rng.uniform(-18.0, 18.0)))
+            x = y = 0.0
+            for _attempt in range(12):
+                x = rng.uniform(32.0, max(33.0, self.width - advance - 32.0))
+                y = rng.uniform(size + 18.0, self.height - 18.0)
+                nx = x / max(1.0, self.width)
+                ny = y / max(1.0, self.height)
+                if (
+                        abs(nx - 0.5) > safe_half_width
+                        or abs(ny - 0.5) > safe_half_height
+                ):
+                    break
+            angle = rng.choice((0.0, 0.0, 0.0, 90.0, -90.0, rng.uniform(-22.0, 22.0)))
             path = QPainterPath()
             path.addText(QPointF(0.0, 0.0), font, word)
-            color = primary if index % 2 == 0 else secondary
+            color = secondary_color if index % 2 == 0 else primary
             painter.save()
             painter.translate(x, y)
             painter.rotate(angle)
             if bool(settings.get("shadow", False)):
                 shadow = QPainterPath(path)
-                shadow.translate(5.0, 6.0)
-                painter.fillPath(shadow, QColor(0, 0, 0, 125))
+                shadow.translate(4.0, 5.0)
+                painter.fillPath(shadow, QColor(0, 0, 0, 150))
             if stroke_width > 0.0:
                 painter.strokePath(
                     path,
-                    self._pen(str(settings.get("stroke_color", "#211B2A")), stroke_width),
+                    self._pen(
+                        str(settings.get("stroke_color", "#211B2A")),
+                        stroke_width * 0.8,
+                    ),
                 )
             painter.fillPath(path, self._color(color))
             painter.restore()
+
+        # Fit a single heavy headline to the safe central width. The rest of the
+        # phrase cloud stays subordinate so generated type remains the focal point.
+        headline_size = max(40, min(560, round(base_size * 1.55)))
+        font = QFont(family)
+        font.setWeight(QFont.Weight(900))
+        font.setLetterSpacing(
+            QFont.SpacingType.AbsoluteSpacing,
+            float(settings.get("letter_spacing", 0.0)) * 0.45,
+        )
+        while headline_size > 36:
+            font.setPixelSize(headline_size)
+            if QFontMetricsF(font).horizontalAdvance(headline) <= self.width * 0.88:
+                break
+            headline_size = round(headline_size * 0.92)
+        font.setPixelSize(headline_size)
+        metrics = QFontMetricsF(font)
+        advance = metrics.horizontalAdvance(headline)
+        x = (self.width - advance) / 2.0
+        y = self.height * 0.5 + (metrics.ascent() - metrics.descent()) * 0.5
+        path = QPainterPath()
+        path.addText(QPointF(x, y), font, headline)
+
+        painter.save()
+        painter.translate(self.width / 2.0, self.height / 2.0)
+        painter.rotate(rng.uniform(-2.5, 2.5))
+        painter.translate(-self.width / 2.0, -self.height / 2.0)
+        if bool(settings.get("shadow", False)):
+            shadow = QPainterPath(path)
+            shadow.translate(5.0, 7.0)
+            painter.fillPath(shadow, QColor(0, 0, 0, 185))
+        if stroke_width > 0.0:
+            painter.strokePath(
+                path,
+                self._pen(
+                    str(settings.get("stroke_color", "#211B2A")),
+                    max(0.8, stroke_width * 0.65),
+                ),
+            )
+        painter.fillPath(path, self._color(primary))
+        painter.restore()
 
     def _draw_waveform(self, painter: QPainter, settings: dict[str, Any]) -> None:
         width = self.width

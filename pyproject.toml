@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "eli-lab-av-translator"
-version = "0.5.0"
+version = "0.6.0"
 description = "A modular live audiovisual compositor for video collage, generative visuals and Sonic Pi control."
 readme = "README.md"
 requires-python = ">=3.12"

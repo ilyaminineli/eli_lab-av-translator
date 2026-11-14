@@ -26,12 +26,12 @@ _DEFAULTS: dict[str, dict[str, Any]] = {
         "text_path_points": [[0.12, 0.68], [0.34, 0.28], [0.66, 0.72], [0.88, 0.32]],
         "text_pool_language": "bilingual",
         "text_pool_theme": "random",
-        "text_pool_count": 16,
+        "text_pool_count": 8,
         "text_pool_dictionary": True,
         "text_auto_regenerate": True,
         "font_family": "Arial",
-        "font_size": 148,
-        "font_weight": 700,
+        "font_size": 168,
+        "font_weight": 800,
         "letter_spacing": 10.0,
         "line_spacing": 1.0,
         "alignment": "center",
@@ -39,9 +39,9 @@ _DEFAULTS: dict[str, dict[str, Any]] = {
         "primary_color": "#F2EEE6",
         "secondary_color": "#C35C75",
         "text_color_mode": "alternate",
-        "text_layout": "single",
+        "text_layout": "collage",
         "collage_seed": 211,
-        "collage_font_variation": 0.65,
+        "collage_font_variation": 0.72,
         "text_animation": "none",
         "text_animation_speed": 1.0,
         "text_animation_amount": 0.025,
@@ -154,7 +154,7 @@ def normalize_settings(generator_type: str, settings: dict[str, Any] | None) -> 
             "random", "memory", "body", "signal", "ritual", "identity", "queer"
         }:
             result["text_pool_theme"] = "random"
-        result["text_pool_count"] = max(1, min(60, int(result.get("text_pool_count", 16))))
+        result["text_pool_count"] = max(1, min(60, int(result.get("text_pool_count", 8))))
         result["text_pool_dictionary"] = bool(result.get("text_pool_dictionary", True))
         result["text_auto_regenerate"] = bool(result.get("text_auto_regenerate", True))
         result["font_size"] = max(12, min(420, int(result["font_size"])))

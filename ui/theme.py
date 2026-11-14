@@ -129,6 +129,28 @@ QPushButton:disabled {
     color: #666666;
     border-color: #292929;
 }
+QToolButton {
+    background: #1b1b1b;
+    color: #e8e8e8;
+    border: 1px solid #3b3b3b;
+    border-radius: 3px;
+    padding: 2px;
+}
+QToolButton:hover {
+    background: #303030;
+    border-color: #858585;
+}
+QToolButton:pressed {
+    background: #e8e8e8;
+}
+QToolButton:checked {
+    background: #ededed;
+    border-color: #ededed;
+}
+QToolButton:disabled {
+    background: #141414;
+    border-color: #292929;
+}
 QCheckBox {
     spacing: 6px;
     color: #d9d9d9;

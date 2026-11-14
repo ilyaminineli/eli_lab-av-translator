@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import random
 from pathlib import Path
 
 from PySide6.QtCore import QSettings, Qt, QTimer
@@ -29,6 +30,7 @@ from config import (
 )
 from core.application import Application
 from core.performance_service import PerformanceModePlan
+from effects.settings import PRESETS
 from ui.asset_library_panel import AssetLibraryPanel
 from ui.automation_panel import AutomationPanel
 from ui.deck_panel import DeckPanel
@@ -194,6 +196,7 @@ class MainWindow(QMainWindow):
         self.deck_panel.loop_changed.connect(self.set_deck_loop)
         self.transport_bar.random_set_requested.connect(self.randomize_decks)
         self.transport_bar.random_layout_requested.connect(self.randomize_layout)
+        self.transport_bar.random_look_requested.connect(self.randomize_look)
         self.transport_bar.lock_all_requested.connect(self.lock_all)
         self.automation_panel.start_requested.connect(self.start_automation)
         self.automation_panel.stop_requested.connect(self.stop_automation)
@@ -432,7 +435,7 @@ class MainWindow(QMainWindow):
                 self.performance_timeline_dock,
         ):
             dock.setMinimumWidth(right_minimum)
-        self.deck_dock.setMinimumHeight(100 if compact else 120)
+        self.deck_dock.setMinimumHeight(140 if compact else 150)
         self.preview_dock.setMinimumSize(
             190 if compact else 260,
             130 if compact else 180,
@@ -461,11 +464,11 @@ class MainWindow(QMainWindow):
         if compact:
             left_width = max(150, min(220, round(width * 0.17)))
             right_width = max(170, min(250, round(width * 0.20)))
-            deck_height = max(100, min(170, round(height * 0.18)))
+            deck_height = max(150, min(230, round(height * 0.26)))
         else:
             left_width = max(220, min(340, round(width * 0.19)))
             right_width = max(250, min(400, round(width * 0.23)))
-            deck_height = max(120, min(190, round(height * 0.20)))
+            deck_height = max(160, min(250, round(height * 0.23)))
         self.resizeDocks([self.media_dock], [left_width], Qt.Orientation.Horizontal)
         self.resizeDocks([self.layer_dock], [right_width], Qt.Orientation.Horizontal)
         self.resizeDocks([self.deck_dock], [deck_height], Qt.Orientation.Vertical)
@@ -922,8 +925,23 @@ class MainWindow(QMainWindow):
         count = self.application.performance_manager.randomize_layout(
             self.application.composition.layers
         )
+        self.application.composition.sort_layers()
         self.layer_panel.refresh()
-        self.statusBar().showMessage(f"Randomized {count} layer(s).", 3000)
+        self.generators_panel.refresh()
+        self.statusBar().showMessage(
+            f"Generated a new freeform collage · {count} visual layer(s).",
+            3500,
+        )
+
+    def randomize_look(self) -> None:
+        choices = [name for name in PRESETS if name != "Clean"]
+        if not choices:
+            return
+        preset = random.choice(choices)
+        self.application.effects.apply_preset(preset)
+        self.effects_panel.sync_from_settings()
+        self.effects_panel.manual_parameter_changed.emit("master.*")
+        self.statusBar().showMessage(f"MASTER LOOK · {preset}", 3500)
 
     def lock_all(self, locked: bool) -> None:
         for deck in self.application.decks.values():
@@ -1170,12 +1188,18 @@ class MainWindow(QMainWindow):
             f"About {APP_NAME}",
             (
                 f"<h2>{APP_NAME} {APP_VERSION}</h2>"
-                "<p>Live audiovisual performance environment.</p>"
-                "<p>Video collage · procedural geometry · text art · particles<br>"
-                "GPU effects · audio reactivity · Sonic Pi OSC · projector output</p>"
-                "<p><b>Built with</b><br>"
-                "Python · PySide6 / Qt · ModernGL / OpenGL · PyAV / FFmpeg<br>"
-                "NumPy · SoundCard · python-osc · MIDI</p>"
+                "<p><b>A live audiovisual instrument for video collage, generative "
+                "graphics and music-driven performance.</b></p>"
+                "<p>Build layered compositions with four independent video decks, "
+                "Text Art, procedural geometry and waveforms, GPU particle systems, "
+                "image/video overlays and a real-time effects compositor.</p>"
+                "<p>Shape a performance with audio analysis, internal transport, "
+                "Sonic Pi OSC, MIDI, six Performance Macros, the live show timeline "
+                "and autonomous visual direction. Preview and fullscreen projector "
+                "output run as independent render contexts.</p>"
+                "<p><b>Technology</b><br>"
+                "Python · PySide6 / Qt · ModernGL / OpenGL 3.3 · PyAV / FFmpeg<br>"
+                "NumPy · SoundCard · python-osc · optional MIDI</p>"
                 f"<p><b>Created by</b><br>{APP_AUTHOR}<br>"
                 f"{APP_STUDIO} · 2026</p>"
                 f"<p>{APP_COPYRIGHT}<br>"

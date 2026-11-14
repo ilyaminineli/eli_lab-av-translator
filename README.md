@@ -2,13 +2,13 @@
 
 **Windows-first audiovisual performance environment for live video collage, procedural visuals, typography, audio reactivity and Sonic Pi-controlled shows.**
 
-## Project status — 13 November 2026
+## Project status — 14 November 2026
 
-M0–M5 implementation is on `main`. M5's asynchronous generator rasterization and text-performance controls were merged in [PR #19](https://github.com/ilyaminineli/eli_lab-av-translator/pull/19). The latest `main` snapshot is `358dc597`; **Quality workflow #116 passed** Python compilation and Ruff on that commit ([run #116](https://github.com/ilyaminineli/eli_lab-av-translator/actions/runs/43132442896)).
+The `main` branch contains the M0–M6 rendering, video, generator, performance-control and live-workspace foundations, plus the first M7 implementation increments. [PR #34](https://github.com/ilyaminineli/eli_lab-av-translator/pull/34) merged the unified visual director and the initial PERFORM / COMPOSE / PREPARE workspace shell. [PR #35](https://github.com/ilyaminineli/eli_lab-av-translator/pull/35) hardened timeline/macro runtime handling, bounded generator raster work, and introduced the monochrome workspace theme and 16:9 local preview frame.
 
-A green quality workflow is a static-code check, not a hardware sign-off. Full SONATA rehearsal, audio-device reconnect, four-deck stress and projector acceptance still need to be performed on the target Windows computer. The former pytest/unit-test suite is not present in this repository.
+The current `ui/adaptive-chaos-control-refresh` branch continues that work: freeform multi-source collage layouts, responsive four-deck cards, compact icon actions, headline-led Text Art and updated About/version information. This branch is not yet part of `main`.
 
-M6 — Advanced VJ Environment — is in active development. The current follow-up on `m6/performance-macros` implements the six-macro control layer; it is not merged to `main` yet. M6 implementation status and remaining hardware acceptance gates are tracked in [docs/ROADMAP.md](docs/ROADMAP.md).
+The Quality workflow performs Python compilation, Ruff and regression tests. Those checks do not replace target-Windows GUI, OpenGL/GPU, four-deck, Sonic Pi, projector and sustained-performance acceptance. Hardware validation remains an explicit release gate; do not treat static CI as a hardware sign-off.
 
 ## Current capabilities
 
@@ -20,7 +20,9 @@ M6 — Advanced VJ Environment — is in active development. The current follow-
 - **M5 — Performance environment:** one-button Performance Mode, phrase-aware AUTO PERFORMANCE, Modulator Bank, per-layer performance modifiers, MIDI mapping/scene tools and shared performance diagnostics.
 - **M5 — Asynchronous generator rendering:** one application-owned background raster worker, latest-revision-wins snapshots, per-layer pending-job coalescing, static CPU raster / animated GPU-shader separation, preview/projector-local uploads and lifecycle invalidation.
 - **M5 — Text raster controls:** live preview, Apply Immediately, commit-on-pause, 25/50/75/100% preview quality, optional 1600×900 final raster, 1–20 Hz text-job rate limit, freeze, last-valid-texture fallback and pipeline status.
-- **M6 follow-up — Performance Macros (branch in progress):** six normalized 0–1 controls (CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT) with multi-target master/layer routing, audio/Sonic Pi/Modulator Bank source assignments, keyboard toggles, MIDI CC/note learn, OSC and project/scene persistence.
+- **M6 — Live performance controls:** six normalized 0–1 Performance Macros (CHAOS, DENSITY, DEPTH, DECAY, PRESSURE and FRAGMENT), Modulator Bank source assignments, MIDI/OSC/keyboard input, VJ scenes and a bar/beat live performance timeline.
+- **M7-A — Unified visual director:** composition-aware variation across video, generators and overlays; dynamic all-layer variation budgets, spatial relationships, optional anchors, activity feedback, per-layer cooldowns and manual-override precedence.
+- **M7-B — Operator workspace foundation:** central PERFORM / COMPOSE / PREPARE workspaces, a shared macro strip, compact/responsive workspace constraints and the monochrome Qt Material base theme.
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for milestone state and remaining acceptance gates. Implementation detail is in the [M5 Autonomous Performance guide](docs/M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance Environment](docs/M5_PERFORMANCE_ENVIRONMENT.md), [Architecture](docs/ARCHITECTURE.md) and [M5 Completion Handoff](docs/M5_COMPLETION_HANDOFF.md).
 
