@@ -335,7 +335,7 @@ class MediaBrowser(QWidget):
         answer = QMessageBox.question(
             self,
             ui_text("Remove folder from media library"),
-            (
+            ui_text(
                 f"Remove {name} from the library index?\n\n"
                 "This removes its entries and cached thumbnails only. "
                 "Your original video files and folders will NOT be deleted. "
@@ -377,7 +377,7 @@ class MediaBrowser(QWidget):
         answer = QMessageBox.question(
             self,
             ui_text("Clear media library"),
-            (
+            ui_text(
                 "Remove every indexed folder and clip from the media library?\n\n"
                 "This does NOT delete original source videos. "
                 "Clips already loaded into decks continue playing."
