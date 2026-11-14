@@ -1,6 +1,12 @@
 from __future__ import annotations
 
+import os
 import sqlite3
+
+os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
+
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication, QWidget
 
 from core.automation import AutomationSettings
 from core.composition import Layer
@@ -9,6 +15,7 @@ from generators.catalog import default_generator_settings, normalize_settings
 from generators.text_pools import random_text_sample
 from media.library import MediaLibrary
 from ui.deck_panel import deck_columns_for_width
+from ui.icons import app_icon, icon_button
 
 
 def test_manual_layout_randomizer_uses_video_generator_and_overlay_layers() -> None:
@@ -228,3 +235,25 @@ def test_media_library_repairs_legacy_txt_columns_without_losing_indexed_data(
     )
     assert tuple(collection) == ("collection-1", "/media", "media")
     assert index is not None
+
+
+
+def test_monochrome_icon_set_renders_and_keeps_accessible_actions() -> None:
+    application = QApplication.instance() or QApplication([])
+    parent = QWidget()
+    icon_names = (
+        "play", "pause", "stop", "load", "restart", "shuffle", "layout",
+        "sparkles", "lock", "unlock", "trash", "apply", "reset", "settings",
+        "warning", "library", "image", "menu",
+    )
+
+    for name in icon_names:
+        icon = app_icon(name)
+        assert not icon.isNull()
+        assert not icon.pixmap(24, 24, QIcon.Mode.Disabled).isNull()
+
+    button = icon_button(parent, "settings", "Media library tools", checkable=True)
+    assert button.toolTip() == "Media library tools"
+    assert button.accessibleName() == "Media library tools"
+    assert button.isCheckable()
+    assert application is not None
