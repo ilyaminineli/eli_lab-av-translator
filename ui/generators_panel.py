@@ -4,7 +4,7 @@ import json
 import random
 import time
 
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import QSize, Qt, QTimer, Signal
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -23,6 +23,8 @@ from PySide6.QtWidgets import (
     QSizePolicy,
     QSlider,
     QSpinBox,
+    QStyle,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -31,6 +33,17 @@ from core.application import Application
 from generators.catalog import normalize_settings
 from generators.palettes import import_aco_palette, palette_look, palette_names
 from generators.text_pools import random_text_sample
+
+
+def _icon_action(parent: QWidget, icon: QStyle.StandardPixmap, tooltip: str) -> QToolButton:
+    button = QToolButton(parent)
+    button.setIcon(parent.style().standardIcon(icon))
+    button.setIconSize(QSize(16, 16))
+    button.setToolTip(tooltip)
+    button.setAccessibleName(tooltip)
+    button.setAutoRaise(False)
+    button.setFixedSize(30, 28)
+    return button
 
 
 class GeneratorsPanel(QWidget):
@@ -81,7 +94,7 @@ class GeneratorsPanel(QWidget):
         row_three.addWidget(self.add_particle_system_button)
         row_four = QHBoxLayout()
         self.add_overlay_button = QPushButton("+ IMAGE / VIDEO OVERLAY")
-        self.remove_button = QPushButton("REMOVE SELECTED LAYER")
+        self.remove_button = _icon_action(\n            self, QStyle.StandardPixmap.SP_TrashIcon, "Remove selected visual layer"\n        )
         row_four.addWidget(self.add_overlay_button)
         row_four.addWidget(self.remove_button)
         add_layout.addLayout(row_one)
@@ -177,7 +190,7 @@ class GeneratorsPanel(QWidget):
             "A failed render preserves the last valid texture when recovery is enabled."
         )
         raster_form.addRow("STATUS", self.text_raster_status)
-        self.apply_text_now_button = QPushButton("APPLY IMMEDIATELY")
+        self.apply_text_now_button = _icon_action(\n            self, QStyle.StandardPixmap.SP_DialogApplyButton,\n            "Apply text and typography immediately",\n        )
         self.apply_text_now_button.setToolTip(
             "Commit current text and typography now, bypassing the pause debounce "
             "and using final resolution when enabled."
@@ -317,9 +330,9 @@ class GeneratorsPanel(QWidget):
             self.random_theme_combo.addItem(label, value)
         random_form.addRow("THEME", self.random_theme_combo)
         self.random_count_combo = QComboBox()
-        for count in (8, 12, 16, 20, 24, 32):
+        for count in (6, 8, 10, 12, 16):
             self.random_count_combo.addItem(str(count), count)
-        self.random_count_combo.setCurrentText("16")
+        self.random_count_combo.setCurrentText("8")
         random_form.addRow("FRAGMENTS", self.random_count_combo)
         self.dictionary_check = QCheckBox("Use repository dictionaries")
         self.dictionary_check.setChecked(True)
@@ -330,7 +343,7 @@ class GeneratorsPanel(QWidget):
         )
         self.auto_text_check.setChecked(True)
         random_form.addRow("AUTO TEXT", self.auto_text_check)
-        self.random_text_button = QPushButton("REGENERATE TEXT")
+        self.random_text_button = _icon_action(\n            self, QStyle.StandardPixmap.SP_BrowserReload, "Regenerate Text Art"\n        )
         random_form.addRow(self.random_text_button)
         text_form.addRow(random_group)
         root.addWidget(self.text_group)
@@ -1361,7 +1374,7 @@ class GeneratorsPanel(QWidget):
             self.random_theme_combo.setCurrentIndex(
                 max(0, self.random_theme_combo.findData(values.get("text_pool_theme", "random"))))
             self.random_count_combo.setCurrentIndex(
-                max(0, self.random_count_combo.findData(int(values.get("text_pool_count", 16)))))
+                max(0, self.random_count_combo.findData(int(values.get("text_pool_count", 8)))))
             self.dictionary_check.setChecked(bool(values.get("text_pool_dictionary", True)))
             self.auto_text_check.setChecked(bool(values.get("text_auto_regenerate", True)))
             self.text_layout_combo.setCurrentIndex(
