@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from PySide6.QtCore import Qt
@@ -389,6 +390,40 @@ _JA_TEXT: dict[str, str] = {
     "ACCENT COLOUR": "アクセントカラー",
     "BACKGROUND COLOUR": "背景色",
     "Manual colours": "手動設定",
+    "Indexed {count} visual assets across {folders} folders.": "ビジュアル素材を{count}件、{folders}個のフォルダーから索引化しました。",
+    "Asset indexing failed: {error}": "素材の索引作成に失敗しました: {error}",
+    "Added {name} as a composition overlay.": "{name}を構成オーバーレイとして追加しました。",
+    "Scanning {folder}… {count} folder(s) queued.": "{folder}をスキャン中… 待機中のフォルダー: {count}件。",
+    "Indexed {count} video file(s).": "動画ファイルを{count}件索引化しました。",
+    "Scan failed: {error}": "スキャンに失敗しました: {error}",
+    "All folders · {count} clips": "すべてのフォルダー · {count}クリップ",
+    "Removed {count} indexed clip(s). Source files were kept.": "索引から{count}クリップを削除しました。元ファイルは保持されています。",
+    "Removed {count} missing file record(s).": "見つからないファイルの記録を{count}件削除しました。",
+    "Removed {count} unused thumbnail(s).": "未使用のサムネイルを{count}件削除しました。",
+    "Library cleared · removed {count} index record(s). Source files were kept.": "ライブラリを消去しました · {count}件の索引記録を削除しました。元ファイルは保持されています。",
+    "ERROR · {error}": "エラー · {error}",
+    "LAYER · {name}": "レイヤー · {name}",
+    "Display configuration changed · {count} display(s) detected": "ディスプレイ設定が変更されました · {count}台を検出",
+    "Assigned {count} video deck(s).": "動画を{count}個のデッキに割り当てました。",
+    "Generated a new freeform collage · {count} visual layer(s).": "新しい自由配置コラージュを生成しました · {count}レイヤー。",
+    "Text committed · {count} characters. Rasterization continues in the background.": "テキストを確定しました · {count}文字。ラスタライズはバックグラウンドで続行します。",
+    "Editing {name} · opacity and blend mode update live.": "{name}を編集中 · 不透明度と合成モードは即時反映されます。",
+    "Applied overlay playback and appearance settings to {name}.": "{name}にオーバーレイの再生・外観設定を適用しました。",
+    "Applied {name}. Static content updates once; animation remains GPU-side.": "{name}に設定を適用しました。静的コンテンツを更新し、アニメーションはGPU側で処理します。",
+    "Could not add overlay: {error}": "オーバーレイを追加できませんでした: {error}",
+    "Performance set saved · {path}": "パフォーマンスセットを保存しました · {path}",
+    "Performance set loaded · {name}": "パフォーマンスセットを読み込みました · {name}",
+    "Projector output opened on {name}. Press Escape on the output to close it.": "{name}にプロジェクター出力を開きました。出力画面でEscapeキーを押すと閉じます。",
+    "LOCAL PREVIEW READY · {renderer}": "ローカルプレビュー準備完了 · {renderer}",
+    "PROJECTOR READY · {renderer}": "プロジェクター準備完了 · {renderer}",
+    "LOCAL PREVIEW ERROR · {error}": "ローカルプレビューエラー · {error}",
+    "PROJECTOR ERROR · {error}": "プロジェクターエラー · {error}",
+    "RUNNING · {count} deck(s) automated. Layouts, generator text and layer FX will evolve automatically.": "実行中 · {count}個のデッキを自動操作しています。レイアウト、生成テキスト、レイヤーFXが自動的に変化します。",
+    "Could not start · {error}": "開始できませんでした · {error}",
+    "SONIC PI · {action}": "SONIC PI · {action}",
+    "RUNNING · {action} · {time}": "実行中 · {action} · {time}",
+    "RUNNING · {action} · {time} remaining": "実行中 · {action} · 残り{time}",
+    "Performance Macro · {name}": "パフォーマンスマクロ · {name}",
     "JAPANESE PALETTE LOOK": "日本の配色",
     "IMPORT ACO PALETTE…": "ACOパレットを読み込む…",
     "ANIMATION": "アニメーション",
@@ -716,6 +751,44 @@ _JA_TEXT: dict[str, str] = {
 }
 
 
+_JA_FORMATS: tuple[tuple[str, str], ...] = (
+    ("Indexed {count} visual assets across {folders} folders.", "ビジュアル素材を{count}件、{folders}個のフォルダーから索引化しました。"),
+    ("Asset indexing failed: {error}", "素材の索引作成に失敗しました: {error}"),
+    ("Added {name} as a composition overlay.", "{name}を構成オーバーレイとして追加しました。"),
+    ("Scanning {folder}… {count} folder(s) queued.", "{folder}をスキャン中… 待機中のフォルダー: {count}件。"),
+    ("Indexed {count} video file(s).", "動画ファイルを{count}件索引化しました。"),
+    ("Scan failed: {error}", "スキャンに失敗しました: {error}"),
+    ("All folders · {count} clips", "すべてのフォルダー · {count}クリップ"),
+    ("Removed {count} indexed clip(s). Source files were kept.", "索引から{count}クリップを削除しました。元ファイルは保持されています。"),
+    ("Removed {count} missing file record(s).", "見つからないファイルの記録を{count}件削除しました。"),
+    ("Removed {count} unused thumbnail(s).", "未使用のサムネイルを{count}件削除しました。"),
+    ("Library cleared · removed {count} index record(s). Source files were kept.", "ライブラリを消去しました · {count}件の索引記録を削除しました。元ファイルは保持されています。"),
+    ("ERROR · {error}", "エラー · {error}"),
+    ("LAYER · {name}", "レイヤー · {name}"),
+    ("Display configuration changed · {count} display(s) detected", "ディスプレイ設定が変更されました · {count}台を検出"),
+    ("Assigned {count} video deck(s).", "動画を{count}個のデッキに割り当てました。"),
+    ("Generated a new freeform collage · {count} visual layer(s).", "新しい自由配置コラージュを生成しました · {count}レイヤー。"),
+    ("Text committed · {count} characters. Rasterization continues in the background.", "テキストを確定しました · {count}文字。ラスタライズはバックグラウンドで続行します。"),
+    ("Editing {name} · opacity and blend mode update live.", "{name}を編集中 · 不透明度と合成モードは即時反映されます。"),
+    ("Applied overlay playback and appearance settings to {name}.", "{name}にオーバーレイの再生・外観設定を適用しました。"),
+    ("Applied {name}. Static content updates once; animation remains GPU-side.", "{name}に設定を適用しました。静的コンテンツを更新し、アニメーションはGPU側で処理します。"),
+    ("Could not add overlay: {error}", "オーバーレイを追加できませんでした: {error}"),
+    ("Performance set saved · {path}", "パフォーマンスセットを保存しました · {path}"),
+    ("Performance set loaded · {name}", "パフォーマンスセットを読み込みました · {name}"),
+    ("Projector output opened on {name}. Press Escape on the output to close it.", "{name}にプロジェクター出力を開きました。出力画面でEscapeキーを押すと閉じます。"),
+    ("LOCAL PREVIEW READY · {renderer}", "ローカルプレビュー準備完了 · {renderer}"),
+    ("PROJECTOR READY · {renderer}", "プロジェクター準備完了 · {renderer}"),
+    ("LOCAL PREVIEW ERROR · {error}", "ローカルプレビューエラー · {error}"),
+    ("PROJECTOR ERROR · {error}", "プロジェクターエラー · {error}"),
+    ("RUNNING · {count} deck(s) automated. Layouts, generator text and layer FX will evolve automatically.", "実行中 · {count}個のデッキを自動操作しています。レイアウト、生成テキスト、レイヤーFXが自動的に変化します。"),
+    ("Could not start · {error}", "開始できませんでした · {error}"),
+    ("SONIC PI · {action}", "SONIC PI · {action}"),
+    ("RUNNING · {action} · {time}", "実行中 · {action} · {time}"),
+    ("RUNNING · {action} · {time} remaining", "実行中 · {action} · 残り{time}"),
+    ("Performance Macro · {name}", "パフォーマンスマクロ · {name}"),
+)
+
+
 def tr(key: str, language: str = "en", **values: Any) -> str:
     catalog = _JAPANESE if language == "ja" else _ENGLISH
     template = catalog.get(key, _ENGLISH.get(key, key))
@@ -741,7 +814,18 @@ def ui_text(text: str, language: str | None = None) -> str:
             language = "en"
     if language != "ja":
         return text
-    return _JA_TEXT.get(text, text)
+    exact = _JA_TEXT.get(text)
+    if exact is not None:
+        return exact
+    for source, translated in _JA_FORMATS:
+        names = re.findall(r"\{([a-zA-Z_][a-zA-Z0-9_]*)\}", source)
+        parts = re.split(r"\{[a-zA-Z_][a-zA-Z0-9_]*\}", source)
+        expression = "^" + r"(.*?)".join(re.escape(part) for part in parts) + "$"
+        match = re.fullmatch(expression, text)
+        if match is not None:
+            values = dict(zip(names, match.groups(), strict=True))
+            return translated.format(**values)
+    return text
 
 
 def set_ui_text(widget: Any, source_text: str, language: str | None = None) -> None:
