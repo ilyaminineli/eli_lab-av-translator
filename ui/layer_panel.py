@@ -73,10 +73,10 @@ class LayerPanel(QWidget):
         controls_layout = QVBoxLayout(controls_body)
         controls_layout.setContentsMargins(2, 2, 2, 2)
 
-        self.layer_lock_check = QCheckBox("LOCK SELECTED LY")
+        self.layer_lock_check = QCheckBox("LOCK LAYER")
         controls_layout.addWidget(self.layer_lock_check)
 
-        self.transform_group = QGroupBox("SELECTED LY TRANSFORM")
+        self.transform_group = QGroupBox("LAYER TRANSFORM")
         transform_layout = QVBoxLayout(self.transform_group)
         self.position_x = self._add_slider(transform_layout, "X POSITION", 0, 100, 50)
         self.position_y = self._add_slider(transform_layout, "Y POSITION", 0, 100, 50)
@@ -90,7 +90,7 @@ class LayerPanel(QWidget):
         transform_layout.addLayout(blend_row)
         controls_layout.addWidget(self.transform_group)
 
-        self.performance_modifiers_group = QGroupBox("PERF MODIFIERS · PER LY")
+        self.performance_modifiers_group = QGroupBox("PER-LAYER PERFORMANCE MODIFIERS")
         modifier_layout = QVBoxLayout(self.performance_modifiers_group)
         self.modifier_help_label = QLabel(
             "Give this layer its own rhythmic, audio or Sonic Pi movement. "
@@ -98,7 +98,7 @@ class LayerPanel(QWidget):
         )
         self.modifier_help_label.setWordWrap(True)
         modifier_layout.addWidget(self.modifier_help_label)
-        self.modifier_rhythm_status = QLabel("BT — · DOWNBT — · PHRASE —")
+        self.modifier_rhythm_status = QLabel("BEAT — · DOWNBEAT — · PHRASE —")
         self.modifier_rhythm_status.setObjectName("mutedLabel")
         modifier_layout.addWidget(self.modifier_rhythm_status)
         self.modifier_list = QListWidget()
@@ -131,8 +131,8 @@ class LayerPanel(QWidget):
         )
         modifier_buttons = QHBoxLayout()
         self.modifier_add_button = QPushButton("ADD MODIFIER")
-        self.modifier_beat_button = QPushButton("BT")
-        self.modifier_downbeat_button = QPushButton("DOWNBT")
+        self.modifier_beat_button = QPushButton("BEAT")
+        self.modifier_downbeat_button = QPushButton("DOWNBEAT")
         self.modifier_phrase_button = QPushButton("PHRASE")
         for button in (
                 self.modifier_add_button,
@@ -148,9 +148,9 @@ class LayerPanel(QWidget):
         self._modifier_signature: tuple = ()
         self._modifier_widgets: dict[str, tuple[QCheckBox, QLabel, QProgressBar]] = {}
 
-        self.layer_fx_group = QGroupBox("SELECTED LY EFFECT STACK")
+        self.layer_fx_group = QGroupBox("LAYER EFFECT STACK")
         layer_fx_layout = QVBoxLayout(self.layer_fx_group)
-        self.layer_fx_enabled = QCheckBox("ON LY FX")
+        self.layer_fx_enabled = QCheckBox("ENABLE LAYER EFFECTS")
         self.layer_fx_layout = layer_fx_layout
         layer_fx_layout.addWidget(self.layer_fx_enabled)
         self.layer_fx_preset = QComboBox()
@@ -177,8 +177,8 @@ class LayerPanel(QWidget):
         layer_fx_layout.addLayout(stage_row)
         chain_row = QHBoxLayout()
         self.fx_chain_save = QPushButton("SAVE CHAIN…")
-        self.fx_chain_export = QPushButton("EXPT PSETS…")
-        self.fx_chain_import = QPushButton("IMPORT PSETS…")
+        self.fx_chain_export = QPushButton("EXPORT PRESETS…")
+        self.fx_chain_import = QPushButton("IMPORT PRESETS…")
         for button in (self.fx_chain_save, self.fx_chain_export, self.fx_chain_import):
             chain_row.addWidget(button)
         layer_fx_layout.addLayout(chain_row)
@@ -206,7 +206,7 @@ class LayerPanel(QWidget):
             self.layer_fx_sliders[key] = (label, slider, title)
         controls_layout.addWidget(self.layer_fx_group)
 
-        self.remove_layer_button = QPushButton("REMOVE SELECTED LY")
+        self.remove_layer_button = QPushButton("REMOVE LAYER")
         controls_layout.addWidget(self.remove_layer_button)
         controls_layout.addStretch(1)
         self.controls_scroll = QScrollArea()
