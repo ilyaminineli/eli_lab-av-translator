@@ -104,6 +104,7 @@ class MediaBrowser(QWidget):
             Qt.ToolButtonStyle.ToolButtonTextBesideIcon
         )
         self.library_tools_button.setToolTip("Media library tools")
+        self.library_tools_button.setAccessibleName("Media library tools")
         self.library_tools_button.setPopupMode(
             QToolButton.ToolButtonPopupMode.InstantPopup
         )
