@@ -91,9 +91,7 @@ class AssetLibraryPanel(QWidget):
         layout.addWidget(self.kind_combo)
         self.asset_list = QListWidget()
         layout.addWidget(self.asset_list, 1)
-        self.detail_label = QLabel(
-            "Select an asset to inspect its tags and intended uses."
-        )
+        self.detail_label = QLabel("—")
         self.detail_label.setWordWrap(True)
         layout.addWidget(self.detail_label)
         self.add_button = QPushButton("ADD AS OVERLAY")
