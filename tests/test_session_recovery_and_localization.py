@@ -28,10 +28,12 @@ from ui.theme import application_font_families, configure_application_theme
 
 def test_theme_accepts_hover_hint_preference() -> None:
     application = QApplication.instance() or QApplication([])
-    configure_application_theme(application, show_hints=False)
+    configure_application_theme(application, show_hints=False, language="ja")
     tooltip_filter = getattr(application, "_eli_tooltip_filter")
     assert isinstance(tooltip_filter, ToolTipFilter)
     assert tooltip_filter.enabled is False
+    assert application.font().families()[0] == "Yu Gothic UI"
+    assert application.property("ui_language") == "ja"
 
 
 def test_tooltip_filter_can_be_toggled_without_removing_tooltips() -> None:
