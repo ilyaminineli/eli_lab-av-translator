@@ -317,20 +317,36 @@ QDockWidget::title, QTabBar::tab, QLabel#mutedLabel, QStatusBar {
     letter-spacing: 0.4px;
 }
 QLabel#brandMark {
-    font-family: "Yu Mincho";
+    font-family: "Yu Mincho", "Noto Serif JP", "MS Mincho", serif;
+    font-size: 27px;
+    font-weight: 500;
+    color: #eeeeee;
 }
 QLabel#brandName {
     font-family: "Yu Gothic UI";
+    font-size: 8px;
+    letter-spacing: 1.1px;
+    color: #d0d0d0;
 }
 """
     return """
 QLabel#sectionHeading, QLabel#brandMark {
     font-family: "Georgia";
 }
+QLabel#brandMark {
+    font-size: 27px;
+    font-weight: 500;
+    color: #eeeeee;
+}
 QDockWidget::title, QTabBar::tab, QLabel#mutedLabel, QStatusBar,
 QLabel#brandName {
     font-family: "Consolas";
     letter-spacing: 0.8px;
+}
+QLabel#brandName {
+    font-size: 8px;
+    letter-spacing: 1.1px;
+    color: #d0d0d0;
 }
 """
 
