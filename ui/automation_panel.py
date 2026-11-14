@@ -145,6 +145,12 @@ class AutomationPanel(QWidget):
         self.peak_particle_boost_spin.setDecimals(2)
         self.peak_particle_boost_spin.setSingleStep(0.05)
         self.peak_particle_boost_spin.setValue(0.35)
+        self.layer_cooldown_spin = QDoubleSpinBox()
+        self.layer_cooldown_spin.setRange(0.0, 30.0)
+        self.layer_cooldown_spin.setDecimals(1)
+        self.layer_cooldown_spin.setSingleStep(0.25)
+        self.layer_cooldown_spin.setSuffix(" s")
+        self.layer_cooldown_spin.setValue(1.5)
         self.slow_breakdown_check = QCheckBox(
             "Use slower layout transitions during breakdowns"
         )
@@ -168,6 +174,7 @@ class AutomationPanel(QWidget):
         director_form.addRow(self.effect_after_transition_check)
         director_form.addRow("PALETTE MEMORY · PHRASES", self.palette_memory_spin)
         director_form.addRow("PEAK PARTICLE BOOST · 0–1", self.peak_particle_boost_spin)
+        director_form.addRow("PER-LAYER AUTOMATION COOLDOWN", self.layer_cooldown_spin)
         director_form.addRow(self.slow_breakdown_check)
         director_form.addRow("BREAKDOWN TRANSITION MIN", self.breakdown_min_spin)
         director_form.addRow("BREAKDOWN TRANSITION MAX", self.breakdown_max_spin)
@@ -276,6 +283,7 @@ class AutomationPanel(QWidget):
             effect_after_transition=self.effect_after_transition_check.isChecked(),
             palette_memory_phrases=self.palette_memory_spin.value(),
             peak_particle_boost=self.peak_particle_boost_spin.value(),
+            layer_cooldown_seconds=self.layer_cooldown_spin.value(),
             slow_breakdown_transitions=self.slow_breakdown_check.isChecked(),
             breakdown_transition_min_seconds=self.breakdown_min_spin.value(),
             breakdown_transition_max_seconds=self.breakdown_max_spin.value(),
@@ -312,6 +320,7 @@ class AutomationPanel(QWidget):
         for control, key in (
                 (self.palette_memory_spin, "palette_memory_phrases"),
                 (self.peak_particle_boost_spin, "peak_particle_boost"),
+                (self.layer_cooldown_spin, "layer_cooldown_seconds"),
                 (self.breakdown_min_spin, "breakdown_transition_min_seconds"),
                 (self.breakdown_max_spin, "breakdown_transition_max_seconds"),
         ):

@@ -59,6 +59,7 @@ class AutomationSettings:
     overlap_bias: float = 0.88
     offscreen_range: float = 0.55
     abrupt_transition_probability: float = 0.45
+    layer_cooldown_seconds: float = 1.5
     effect_after_transition: bool = True
     palette_memory_phrases: int = 4
     peak_particle_boost: float = 0.35
@@ -104,6 +105,9 @@ class AutomationSettings:
         self.offscreen_range = max(0.0, min(1.0, float(self.offscreen_range)))
         self.abrupt_transition_probability = max(
             0.0, min(1.0, float(self.abrupt_transition_probability))
+        )
+        self.layer_cooldown_seconds = max(
+            0.0, min(30.0, float(self.layer_cooldown_seconds))
         )
         self.effect_after_transition = bool(self.effect_after_transition)
         self.palette_memory_phrases = max(0, min(16, int(self.palette_memory_phrases)))
@@ -177,6 +181,8 @@ class AutomationDirector:
         self._layout_morphs: dict[str, dict[str, object]] = {}
         self._peak_particle_base: dict[str, tuple[str, float, str]] = {}
         self._active_variation_layer_ids: tuple[str, ...] = ()
+        self._layer_last_variation_at: dict[str, float] = {}
+        self._manual_layer_until: dict[str, float] = {}
         self._last_layer_fx_variation = False
         self._last_peak_context = False
         self._director = GenerativeVariationDirector()
@@ -223,6 +229,8 @@ class AutomationDirector:
         self._layout_morphs.clear()
         self._peak_particle_base.clear()
         self._active_variation_layer_ids = ()
+        self._layer_last_variation_at.clear()
+        self._manual_layer_until.clear()
         self._last_layer_fx_variation = False
         self._last_peak_context = False
         self._macro_values.clear()
@@ -382,10 +390,92 @@ class AutomationDirector:
             layer_id for layer_id in self._active_variation_layer_ids
             if layer_id in valid_ids
         )
+        self._layer_last_variation_at = {
+            layer_id: stamp
+            for layer_id, stamp in self._layer_last_variation_at.items()
+            if layer_id in valid_ids
+        }
+        self._manual_layer_until = {
+            layer_id: stamp
+            for layer_id, stamp in self._manual_layer_until.items()
+            if layer_id in valid_ids
+        }
 
-    def _variation_budget(self, strength: float | None = None) -> int:
-        """Choose a dynamic scope from music, macros and the number of eligible layers."""
-        eligible = sum(1 for layer in self._layers if layer.visible and not layer.locked)
+    def notify_layer_manual_override(
+            self,
+            layer_id: str,
+            duration_seconds: float = 3.0,
+            now: float | None = None,
+    ) -> None:
+        """Suspend automatic changes after a direct operator edit."""
+        stamp = time.monotonic() if now is None else float(now)
+        duration = max(0.0, min(120.0, float(duration_seconds)))
+        if duration <= 0.0:
+            return
+        self._manual_layer_until[layer_id] = max(
+            self._manual_layer_until.get(layer_id, 0.0),
+            stamp + duration,
+        )
+        self._layout_morphs.pop(layer_id, None)
+        # Do not later restore a pre-edit particle value over the operator's edit.
+        self._peak_particle_base.pop(layer_id, None)
+        self._active_variation_layer_ids = tuple(
+            item for item in self._active_variation_layer_ids if item != layer_id
+        )
+
+    def _is_manual_layer_override(self, layer_id: str, now: float) -> bool:
+        deadline = self._manual_layer_until.get(layer_id, 0.0)
+        if deadline <= now:
+            self._manual_layer_until.pop(layer_id, None)
+            return False
+        return True
+
+    def _effective_layer_cooldown(self) -> float:
+        base = self.settings.layer_cooldown_seconds
+        if base <= 0.0:
+            return 0.0
+        drive = max(
+            self._performance_energy,
+            self._performance_intensity,
+            self._macro_values.get("chaos", self.settings.spatial_chaos),
+            self._macro_values.get("density", 0.0),
+            self._macro_values.get("fragment", 0.0),
+            1.0 if self._performance_section == "peak" else 0.0,
+        )
+        # High musical pressure shortens the rest, but never removes it entirely.
+        return max(0.12, base * (1.0 - 0.82 * min(1.0, drive)))
+
+    def _mark_layer_varied(self, layer_id: str, now: float) -> None:
+        self._layer_last_variation_at[layer_id] = float(now)
+
+    def _eligible_variation_layers(self, now: float | None = None) -> list[Layer]:
+        stamp = time.monotonic() if now is None else float(now)
+        cooldown = self._effective_layer_cooldown()
+        eligible: list[Layer] = []
+        for layer in self._layers:
+            if layer.locked or not layer.visible:
+                continue
+            if self._is_manual_layer_override(layer.id, stamp):
+                continue
+            last_change = self._layer_last_variation_at.get(layer.id)
+            if cooldown > 0.0 and last_change is not None:
+                if stamp - last_change < cooldown:
+                    continue
+            eligible.append(layer)
+        return eligible
+
+    def _variation_budget(
+            self,
+            strength: float | None = None,
+            now: float | None = None,
+            eligible_layers: list[Layer] | None = None,
+    ) -> int:
+        """Choose a dynamic scope from music, activity and cooldown-eligible layers."""
+        candidates = (
+            self._eligible_variation_layers(now)
+            if eligible_layers is None else eligible_layers
+        )
+        eligible = len(candidates)
         if eligible <= 0:
             return 0
         chaos = self._macro_values.get("chaos", self.settings.spatial_chaos)
@@ -434,10 +524,12 @@ class AutomationDirector:
             prefer_particles: bool = False,
             *,
             strength: float | None = None,
+            now: float | None = None,
     ) -> tuple[str, ...]:
-        budget = self._variation_budget(strength)
+        candidates = self._eligible_variation_layers(now)
+        budget = self._variation_budget(strength, now, candidates)
         return self._director.select_layers(
-            self._layers,
+            candidates,
             budget,
             self.rng,
             keep_anchor=self.settings.keep_visual_anchor,
@@ -457,7 +549,12 @@ class AutomationDirector:
             now: float | None = None,
     ) -> int:
         # Every visible unlocked visual source participates, not only video.
-        allowed = set(layer_ids) if layer_ids is not None else set(self._select_variation_layers())
+        stamp = time.monotonic() if now is None else float(now)
+        allowed = (
+            set(layer_ids)
+            if layer_ids is not None
+            else set(self._select_variation_layers(now=stamp))
+        )
         self._active_variation_layer_ids = tuple(allowed)
         anchor_id = self._director.choose_anchor(
             self._layers,
@@ -473,6 +570,7 @@ class AutomationDirector:
                 and layer.source_type == "video"
                 and layer.id == anchor_id
             )
+            and not self._is_manual_layer_override(layer.id, stamp)
             and not (
                 layer.source_type == "overlay"
                 and time.time() < float(
@@ -513,7 +611,6 @@ class AutomationDirector:
             self.rng.uniform(0.28, 0.72),
             self.rng.uniform(0.28, 0.72),
         )
-        stamp = time.monotonic() if now is None else float(now)
         depth = self._macro_values.get("depth", 0.0)
         duration = self._director.transition_duration(
             self._performance_section,
@@ -611,6 +708,7 @@ class AutomationDirector:
                 layer.rotation = target_rotation
                 layer.opacity = target_opacity
                 layer.blend_mode = target_blend
+            self._mark_layer_varied(layer.id, stamp)
         return len(active)
 
     def _tick_layout_transitions(self, now: float) -> bool:
@@ -666,6 +764,11 @@ class AutomationDirector:
         )
         changed = False
         for layer in self._layers:
+            if self._is_manual_layer_override(layer.id, time.monotonic()):
+                # A manual edit supersedes the automatic peak boost; never restore
+                # an old cached value over the operator's chosen particle settings.
+                self._peak_particle_base.pop(layer.id, None)
+                continue
             stored = self._peak_particle_base.get(layer.id)
             kind = str(layer.generator_type or "")
             if stored is not None and (
@@ -724,8 +827,10 @@ class AutomationDirector:
             layer_ids: Iterable[str] | None = None,
             *,
             allow_effect_change: bool = True,
+            now: float | None = None,
     ) -> int:
         changed = 0
+        variation_now = time.monotonic() if now is None else float(now)
         self._last_layer_fx_variation = False
         allowed = set(layer_ids) if layer_ids is not None else None
         if allowed is None:
@@ -746,8 +851,10 @@ class AutomationDirector:
                     layer.locked
                     or not layer.visible
                     or (allowed is not None and layer.id not in allowed)
+                    or self._is_manual_layer_override(layer.id, variation_now)
             ):
                 continue
+            changed_before_layer = changed
 
             if layer.source_type == "generator" and layer.generator_type in GENERATOR_TYPES:
                 kind = layer.generator_type
@@ -912,6 +1019,9 @@ class AutomationDirector:
                     )
                     self._last_layer_fx_variation = True
                     changed += 1
+
+            if changed > changed_before_layer:
+                self._mark_layer_varied(layer.id, variation_now)
         return changed
 
     def set_performance_context(
@@ -1034,6 +1144,7 @@ class AutomationDirector:
         variation_layer_ids = self._select_variation_layers(
             prefer_particles=peak_context,
             strength=strength,
+            now=stamp,
         )
         self._active_variation_layer_ids = tuple(variation_layer_ids)
         allow_effect_change = (
@@ -1088,6 +1199,7 @@ class AutomationDirector:
                 count = self._randomize_generators(
                     variation_layer_ids,
                     allow_effect_change=allow_effect_change,
+                    now=stamp,
                 )
                 if (
                         allow_effect_change
@@ -1162,6 +1274,8 @@ class AutomationDirector:
             if getattr(deck, "locked", False):
                 continue
             layer = video_layers.get(deck_id)
+            if layer is None or self._is_manual_layer_override(layer.id, now):
+                continue
             if allowed is not None and (
                     layer is None or layer.id not in allowed
             ):
@@ -1182,6 +1296,7 @@ class AutomationDirector:
             )
             if loaded:
                 self._director.mark_transition()
+                self._mark_layer_varied(layer.id, now)
                 changed = True
         return changed
 
@@ -1274,6 +1389,7 @@ class AutomationDirector:
         budget = self._select_variation_layers(
             prefer_particles=peak_context,
             strength=strength,
+            now=current,
         )
         allowed = set(budget)
         self._active_variation_layer_ids = tuple(budget)
@@ -1323,6 +1439,7 @@ class AutomationDirector:
                 )
                 if loaded:
                     self._director.mark_transition()
+                    self._mark_layer_varied(layer.id, current)
                     transition_happened = True
                     changed = True
             self._deck_due[deck_id] = current + self._interval(
@@ -1358,6 +1475,7 @@ class AutomationDirector:
             count = self._randomize_generators(
                 budget,
                 allow_effect_change=effect_ready,
+                now=current,
             )
             if effect_ready and self._last_layer_fx_variation:
                 self._director.mark_effect_applied()

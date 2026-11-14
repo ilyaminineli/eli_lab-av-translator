@@ -2308,6 +2308,7 @@ class Application:
         layer = self.composition.get_layer(layer_id)
         if layer is None:
             return
+        self.automation.notify_layer_manual_override(layer_id, duration_seconds)
         local_targets = {
             str(raw.get("target_id", ""))
             for raw in layer.performance_modifiers
@@ -2336,6 +2337,12 @@ class Application:
             if target_id.endswith(".*")
             else [target_id]
         )
+        selected = self.composition.get_layer(self._selected_layer_id or "")
+        if (
+            selected is not None
+            and target_id.startswith(("selected_layer.", "generator.", "overlay.", "layer."))
+        ):
+            self.automation.notify_layer_manual_override(selected.id, duration_seconds)
         for key in targets:
             current = self._get_modulation_target(key)
             if current is not None:

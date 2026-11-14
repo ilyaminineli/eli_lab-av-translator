@@ -258,3 +258,80 @@ def test_layout_director_selects_relationship_aware_patterns() -> None:
     assert relationships
     assert relationships <= valid
     assert "shared_center" in relationships or "orbit" in relationships
+
+
+
+def test_layer_cooldown_is_adaptive_and_can_be_disabled() -> None:
+    director = AutomationDirector(seed=21)
+    director.settings = AutomationSettings(layer_cooldown_seconds=2.0)
+    director.settings.normalize()
+
+    calm = director._effective_layer_cooldown()
+    director._performance_section = "peak"
+    director._performance_energy = 1.0
+    director._performance_intensity = 1.0
+    director._macro_values = {"chaos": 1.0, "density": 1.0, "fragment": 1.0}
+    peak = director._effective_layer_cooldown()
+
+    assert calm == 2.0
+    assert 0.12 <= peak < calm
+
+    director.settings.layer_cooldown_seconds = 0.0
+    assert director._effective_layer_cooldown() == 0.0
+
+
+def test_layer_cooldown_excludes_recently_varied_layers_then_releases_them() -> None:
+    director = AutomationDirector(seed=22)
+    director._layers = make_layers(3)
+    director.settings = AutomationSettings(layer_cooldown_seconds=2.0)
+    director.settings.normalize()
+    director._mark_layer_varied("layer-0", now=10.0)
+
+    eligible_during_cooldown = {
+        layer.id for layer in director._eligible_variation_layers(now=11.0)
+    }
+    eligible_after_cooldown = {
+        layer.id for layer in director._eligible_variation_layers(now=13.0)
+    }
+
+    assert "layer-0" not in eligible_during_cooldown
+    assert eligible_during_cooldown == {"layer-1", "layer-2"}
+    assert eligible_after_cooldown == {"layer-0", "layer-1", "layer-2"}
+
+
+def test_manual_override_cancels_morph_and_suspends_automation() -> None:
+    director = AutomationDirector(seed=23)
+    director._layers = make_layers(2)
+    director._layout_morphs["layer-0"] = {"started_at": 1.0, "duration": 2.0}
+    director._peak_particle_base["layer-0"] = ("density", 20.0, "particles")
+
+    director.notify_layer_manual_override("layer-0", duration_seconds=3.0, now=10.0)
+
+    assert "layer-0" not in director._layout_morphs
+    assert "layer-0" not in director._peak_particle_base
+    assert "layer-0" not in {
+        layer.id for layer in director._eligible_variation_layers(now=11.0)
+    }
+    assert "layer-0" in {
+        layer.id for layer in director._eligible_variation_layers(now=14.0)
+    }
+
+
+def test_layout_randomization_respects_manual_override_window() -> None:
+    director = AutomationDirector(seed=24)
+    director._layers = make_layers(3)
+    director.settings = AutomationSettings(
+        spatial_chaos=1.0,
+        abrupt_transition_probability=1.0,
+    )
+    director.settings.normalize()
+    director.notify_layer_manual_override("layer-0", duration_seconds=5.0, now=10.0)
+    original = director._layers[0].position
+
+    changed = director._randomize_layout(
+        layer_ids=[layer.id for layer in director._layers],
+        now=11.0,
+    )
+
+    assert changed == 2
+    assert director._layers[0].position == original
