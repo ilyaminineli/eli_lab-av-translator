@@ -341,3 +341,19 @@ def test_layout_randomization_respects_manual_override_window() -> None:
 
     assert changed == 2
     assert director._layers[0].position == original
+
+
+
+def test_transform_override_keeps_peak_particle_baseline_but_generator_edit_invalidates() -> None:
+    director = AutomationDirector(seed=25)
+    director._peak_particle_base["layer-0"] = ("density", 20.0, "particles")
+
+    director.notify_layer_manual_override("layer-0", now=10.0)
+    assert director._peak_particle_base["layer-0"] == ("density", 20.0, "particles")
+
+    director.notify_layer_manual_override(
+        "layer-0",
+        now=11.0,
+        invalidate_peak_particle_base=True,
+    )
+    assert "layer-0" not in director._peak_particle_base
