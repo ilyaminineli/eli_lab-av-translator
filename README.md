@@ -6,7 +6,7 @@
 
 The `main` branch contains the M0–M6 rendering, video, generator, performance-control and live-workspace foundations, plus the first M7 implementation increments. [PR #34](https://github.com/ilyaminineli/eli_lab-av-translator/pull/34) merged the unified visual director and the initial PERF / COMPOSE / PREPARE workspace shell. [PR #35](https://github.com/ilyaminineli/eli_lab-av-translator/pull/35) hardened timeline/macro runtime handling, bounded generator raster work, and introduced the monochrome workspace theme and 16:9 local preview frame.
 
-The current `ui/adaptive-chaos-control-refresh` branch continues that work: freeform multi-source collage layouts, responsive four-deck cards, compact icon actions, headline-led Text Art and updated About/version information. This branch is not yet part of `main`.
+The freeform multi-source collage layouts, responsive four-deck cards, compact actions, headline-led Text Art and About/version update were merged to `main` in [PR #36](https://github.com/ilyaminineli/eli_lab-av-translator/pull/36).
 
 The Quality workflow performs Python compilation, Ruff and regression tests. Those checks do not replace target-Windows GUI, OpenGL/GPU, four-deck, Sonic Pi, projector and sustained-performance acceptance. Hardware validation remains an explicit release gate; do not treat static CI as a hardware sign-off.
 
@@ -24,7 +24,7 @@ The Quality workflow performs Python compilation, Ruff and regression tests. Tho
 - **M7-A — Unified visual director:** composition-aware variation across video, generators and overlays; dynamic all-layer variation budgets, spatial relationships, optional anchors, activity feedback, per-layer cooldowns and manual-override precedence.
 - **M7-B — Operator workspace foundation:** central PERF / COMPOSE / PREPARE workspaces, a shared macro strip, compact/responsive workspace constraints and the monochrome Qt Material base theme.
 
-See [docs/ROADMAP.md](docs/ROADMAP.md) for milestone state and remaining acceptance gates. Implementation detail is in the [M5 Autonomous Performance guide](docs/M5_AUTONOMOUS_PERF.md), [M5 Performance Environment](docs/M5_PERF_ENVIRONMENT.md), [Architecture](docs/ARCHITECTURE.md) and [M5 Completion Handoff](docs/M5_COMPLETION_HANDOFF.md).
+See [docs/ROADMAP.md](docs/ROADMAP.md) for milestone state and remaining acceptance gates. Implementation detail is in the [M5 Autonomous Performance guide](docs/M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance Environment](docs/M5_PERFORMANCE_ENVIRONMENT.md), [Architecture](docs/ARCHITECTURE.md) and [M5 Completion Handoff](docs/M5_COMPLETION_HANDOFF.md).
 
 ## Build and run on Windows
 
@@ -69,7 +69,7 @@ Static generator content is rasterized by the shared background service. Text co
 
 Text's **TXT RASTER PERF** controls let the operator trade preview detail for edit responsiveness. The last valid texture can remain visible while a new raster is prepared or after a raster failure. These controls do not pause video decoding, GPU motion, effects or audio-reactive updates.
 
-See [M2 Generative Visuals](docs/M2_GENERATIVE_VISUALS.md) and [M5 Autonomous Performance](docs/M5_AUTONOMOUS_PERF.md).
+See [M2 Generative Visuals](docs/M2_GENERATIVE_VISUALS.md) and [M5 Autonomous Performance](docs/M5_AUTONOMOUS_PERFORMANCE.md).
 
 ## System requirements and practical limits
 
@@ -104,4 +104,4 @@ Writable application data, the SQLite media index, thumbnails and logs live unde
 
 ## M6 — Advanced VJ Environment
 
-M6 is in active development across the live-deck, scene-bank, visual-transformation, particle, typography and performance-control workstreams. The current Performance Macro follow-up is documented in [docs/M6_ADV_PERF_CTRLS.md](docs/M6_ADV_PERF_CTRLS.md); the wider VJ scope and acceptance criteria are tracked in [docs/M6_ADV_VJ_ENVIRONMENT.md](docs/M6_ADV_VJ_ENVIRONMENT.md).
+M6 is in active development across the live-deck, scene-bank, visual-transformation, particle, typography and performance-control workstreams. The current Performance Macro follow-up is documented in [docs/M6_ADVANCED_PERFORMANCE_CONTROLS.md](docs/M6_ADVANCED_PERFORMANCE_CONTROLS.md); the wider VJ scope and acceptance criteria are tracked in [docs/M6_ADVANCED_VJ_ENVIRONMENT.md](docs/M6_ADVANCED_VJ_ENVIRONMENT.md).
