@@ -750,8 +750,6 @@ def apply_widget_translations(root: Any, language: str = "en") -> None:
     except ImportError:
         return
 
-    application = root.window().windowHandle() if False else None
-    del application
     try:
         from PySide6.QtWidgets import QApplication
 
