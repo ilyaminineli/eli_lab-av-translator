@@ -79,15 +79,9 @@ class PerformanceControlPanel(QWidget):
         )
         self.performance_mode_status_label.setWordWrap(True)
         self.performance_mode_status_label.setObjectName("sectionHeading")
-        self.performance_mode_hint_label = QLabel(
-            "Press PERF MODE, then run SONATA Expanded in Sonic Pi. The first "
-            "transport packet starts AUTO PERF; bars, phrases, energy, cutoff "
-            "and optional system-loopback audio drive the installed curves."
-        )
-        self.performance_mode_hint_label.setWordWrap(True)
-        self.performance_mode_hint_label.setObjectName("mutedLabel")
+        self.performance_mode_status_label.setText("OFF")
+        self.performance_mode_status_label.setWordWrap(False)
         mode_layout.addWidget(self.performance_mode_status_label)
-        mode_layout.addWidget(self.performance_mode_hint_label)
         root.addWidget(self.autonomous_mode_group)
 
         self.transport_group = QGroupBox("INTERNAL TRANSPORT / TEST CLOCK")
@@ -189,12 +183,6 @@ class PerformanceControlPanel(QWidget):
 
         self.performance_macro_group = QGroupBox("PERF MACROS · NORMALIZED 0–1")
         macro_layout = QVBoxLayout(self.performance_macro_group)
-        macro_hint = QLabel(
-            "One control can drive multiple parameters across layers and effects, assigned via keyboard, MIDI or OSC."
-        )
-        macro_hint.setWordWrap(True)
-        macro_hint.setObjectName("mutedLabel")
-        macro_layout.addWidget(macro_hint)
         self.macro_sliders: dict[str, QSlider] = {}
         self.macro_value_labels: dict[str, QLabel] = {}
         self.macro_source_combos: dict[str, QComboBox] = {}
@@ -249,10 +237,7 @@ class PerformanceControlPanel(QWidget):
                     macro_id, sequence
                 )
             )
-        self.macro_status_label = QLabel(
-            "Keyboard shortcuts toggle a macro between 0 and 1. "
-            "A mapped input source resumes after a short manual takeover."
-        )
+        self.macro_status_label = QLabel("")
         self.macro_status_label.setWordWrap(True)
         self.macro_status_label.setObjectName("mutedLabel")
         macro_layout.addWidget(self.macro_status_label)
@@ -346,21 +331,9 @@ class PerformanceControlPanel(QWidget):
         osc_buttons.addWidget(self.osc_stop_button)
         osc_form.addRow(osc_buttons)
         osc_form.addRow(self.osc_copy_button)
-        self.osc_status_label = QLabel(
-            "STOPPED · Performance Mode starts the receiver automatically; "
-            "manual start is also available."
-        )
+        self.osc_status_label = QLabel("STOPPED")
         self.osc_status_label.setWordWrap(True)
         osc_form.addRow("CONNECTION", self.osc_status_label)
-        self.osc_hint_label = QLabel(
-            "Sonic Pi is an OSC control source, not an item in the audio-device list. "
-            "For Sonic Pi on this computer, use 127.0.0.1 and the same UDP port in "
-            "SONATA_expanded.rb. Press PERF MODE, then run the patch; the "
-            "receiver and default reactive curves are armed automatically."
-        )
-        self.osc_hint_label.setWordWrap(True)
-        self.osc_hint_label.setObjectName("mutedLabel")
-        osc_form.addRow("HOW TO CONNECT", self.osc_hint_label)
         root.addWidget(self.osc_group)
 
         self.scene_group = QGroupBox("SCENE PROFILES")
