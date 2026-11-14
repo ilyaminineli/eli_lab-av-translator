@@ -208,6 +208,7 @@ def test_dynamic_text_can_switch_between_languages_without_losing_source() -> No
     assert label.text() == rendered
     apply_widget_translations(root, "ja")
     assert label.text() == "Overlay · Rainを構成オーバーレイとして追加しました。"
+    assert qt_app is not None
 
 
 def test_japanese_dynamic_status_templates() -> None:
