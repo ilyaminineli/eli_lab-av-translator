@@ -7,9 +7,40 @@ from config import RESOURCE_DIR
 from ui.hints import ToolTipFilter
 
 APP_STYLE = """
-QMainWindow, QDialog, QMessageBox {
+QMainWindow, QDialog, QMessageBox, QWidget {
     background: #090909;
     color: #eeeeee;
+}
+QWidget { font-size: 9pt; }
+QLabel { background: transparent; }
+QLabel#eyebrow {
+    color: #858585;
+    font-size: 8pt;
+    padding: 2px 0;
+}
+QLabel#sectionHeading {
+    color: #f0f0f0;
+    font-size: 17pt;
+    font-weight: 400;
+    padding: 5px 0 8px;
+}
+QLabel#panelSubheading {
+    color: #c8c8c8;
+    font-size: 10pt;
+    padding: 3px 0 5px;
+}
+QLabel#mutedLabel {
+    color: #969696;
+    font-size: 8pt;
+}
+QLabel#brandMark {
+    font-family: "Noto Serif JP", "Yu Mincho", serif;
+    font-size: 27pt;
+    color: #f1f1f1;
+}
+QLabel#brandName {
+    font-size: 8pt;
+    color: #d0d0d0;
 }
 QMenuBar {
     background: #090909;
@@ -97,8 +128,8 @@ QTabBar {
 QTabBar::tab {
     background: transparent;
     color: #888888;
-    padding: 9px 15px 10px;
-    min-height: 23px;
+    padding: 11px 17px 12px;
+    min-height: 26px;
     border: 0;
     border-bottom: 2px solid transparent;
 }
@@ -112,20 +143,21 @@ QTabBar::tab:selected {
     border-bottom: 2px solid #eeeeee;
 }
 QGroupBox {
-    background: transparent;
+    background: #0e0e0e;
     color: #e5e5e5;
-    border: 1px solid #2b2b2b;
+    border: 1px solid #303030;
     border-radius: 1px;
-    margin-top: 14px;
-    padding: 12px 10px 9px;
+    margin-top: 17px;
+    padding: 16px 12px 12px;
 }
 QGroupBox::title {
     subcontrol-origin: margin;
-    left: 10px;
-    padding: 0 6px;
-    color: #bcbcbc;
-    background: #101010;
-    font-size: 9px;
+    left: 12px;
+    padding: 0 7px;
+    color: #c2c2c2;
+    background: #0e0e0e;
+    font-size: 8pt;
+    letter-spacing: 1px;
 }
 QLabel { color: #e5e5e5; }
 QLabel#sectionHeading {
@@ -144,7 +176,8 @@ QPlainTextEdit, QTextEdit, QListWidget, QTreeWidget, QTableWidget {
     color: #eeeeee;
     border: 1px solid #303030;
     border-radius: 1px;
-    padding: 5px 7px;
+    padding: 7px 9px;
+    min-height: 18px;
     selection-background-color: #dedede;
     selection-color: #090909;
 }
@@ -173,8 +206,8 @@ QPushButton {
     color: #e8e8e8;
     border: 1px solid #343434;
     border-radius: 1px;
-    padding: 7px 12px;
-    min-height: 17px;
+    padding: 8px 13px;
+    min-height: 20px;
 }
 QPushButton:hover {
     background: #202020;
@@ -259,7 +292,7 @@ QHeaderView::section {
     color: #a3a3a3;
     border: 0;
     border-bottom: 1px solid #303030;
-    padding: 7px 9px;
+    padding: 9px 11px;
 }
 QAbstractItemView::item {
     padding: 3px;
@@ -269,6 +302,19 @@ QAbstractItemView::item:selected {
     color: #090909;
 }
 QScrollArea { border: 0; background: transparent; }
+QSplitter::handle {
+    background: #282828;
+}
+QSplitter::handle:hover {
+    background: #595959;
+}
+QToolBar {
+    spacing: 12px;
+}
+QDockWidget::title {
+    padding: 11px 13px;
+    min-height: 17px;
+}
 QScrollBar:vertical, QScrollBar:horizontal {
     background: #101010;
     border: 0;
@@ -307,8 +353,8 @@ def _typography_stylesheet(language: str) -> str:
     if language == "ja":
         return """
 QLabel#sectionHeading {
-    font-family: "Yu Mincho";
-    font-size: 16px;
+    font-family: "Yu Mincho", "Noto Serif JP", "MS Mincho", serif;
+    font-size: 17px;
     font-weight: 500;
     letter-spacing: 0px;
 }
@@ -331,7 +377,7 @@ QLabel#brandName {
 """
     return """
 QLabel#sectionHeading, QLabel#brandMark {
-    font-family: "Georgia";
+    font-family: "Newsreader", "Yu Mincho", "Noto Serif JP", "Georgia", serif;
 }
 QLabel#brandMark {
     font-size: 27px;
@@ -340,8 +386,12 @@ QLabel#brandMark {
 }
 QDockWidget::title, QTabBar::tab, QLabel#mutedLabel, QStatusBar,
 QLabel#brandName {
-    font-family: "Consolas";
+    font-family: "DM Mono", "Consolas", "Cascadia Mono", monospace;
     letter-spacing: 0.8px;
+}
+QPushButton, QToolButton, QComboBox, QLineEdit, QSpinBox,
+QDoubleSpinBox, QPlainTextEdit, QTextEdit {
+    font-family: "Noto Sans", "Segoe UI", sans-serif;
 }
 QLabel#brandName {
     font-size: 8px;
