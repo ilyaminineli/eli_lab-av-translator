@@ -76,6 +76,18 @@ class MainWindow(QMainWindow):
             | QMainWindow.DockOption.AllowNestedDocks
         )
         self._ui_settings = QSettings()
+        self._language = str(self._ui_settings.value("ui/language_v1", "en"))
+        self._show_hints = self._ui_settings.value(
+            "ui/show_hints_v1", True, type=bool
+        )
+        self._restore_session_enabled = self._ui_settings.value(
+            "session/restore_v1", True, type=bool
+        )
+        self._recovery_path = SESSION_RECOVERY_PATH
+        self._restoring_session = False
+        self._autosave_timer = QTimer(self)
+        self._autosave_timer.setInterval(30000)
+        self._autosave_timer.timeout.connect(self._autosave_session)
         self._restore_local_preview_on_close = False
 
         self.performance_view = PerformanceView(application, self)
@@ -261,6 +273,20 @@ class MainWindow(QMainWindow):
         self.asset_library_panel.composition_changed.connect(
             self.generators_panel.refresh
         )
+        for signal in (
+            self.generators_panel.composition_changed,
+            self.layer_panel.layers_changed,
+            self.layer_panel.layer_properties_changed,
+            self.effects_panel.manual_parameter_changed,
+            self.modulator_bank_panel.bank_changed,
+            self.modulator_bank_panel.assignment_created,
+            self.asset_library_panel.composition_changed,
+            self.deck_panel.action_requested,
+            self.deck_panel.loop_changed,
+            self.deck_panel.lock_changed,
+            self.performance_control_panel.macros_changed,
+        ):
+            signal.connect(self._autosave_session)
 
         self._create_actions()
         self._sync_performance_macro_shortcuts()
@@ -325,6 +351,7 @@ class MainWindow(QMainWindow):
             self.modulator_bank_panel.refresh_live
         )
         self._modifier_feedback_timer.start()
+        QTimer.singleShot(0, self._start_session_recovery)
 
     def _build_workspace(self) -> QWidget:
         """Build the primary Perform / Compose / Prepare operator workspaces."""
@@ -1205,21 +1232,7 @@ class MainWindow(QMainWindow):
             return
         try:
             self.application.load_project(path)
-            self._sync_performance_mode_button()
-            self.performance_control_panel.sync_from_application()
-            self.automation_panel.sync_performance_plan(
-                self.application.performance_mode.plan
-            )
-            self.deck_panel.refresh()
-            self.layer_panel.refresh()
-            self.modulator_bank_panel.refresh()
-            self.layer_panel.sync_performance_modifier_sources()
-            self.performance_control_panel.sync_modulator_sources()
-            self.performance_control_panel.refresh_routes()
-            self.performance_control_panel.sync_from_application()
-            self.performance_timeline_panel.refresh(force=True)
-            self.effects_panel.sync_from_settings()
-            self.generators_panel.refresh()
+            self._refresh_after_project_load()
             self.statusBar().showMessage(f"Opened {Path(path).name}", 4000)
         except Exception as exc:
             _LOG.exception("Could not open project %s", path)
@@ -1251,6 +1264,81 @@ class MainWindow(QMainWindow):
             self.statusBar().showMessage(f"Saved {saved.name}", 3000)
         except Exception as exc:
             QMessageBox.critical(self, "Project save failed", str(exc))
+
+    def open_settings(self) -> None:
+        dialog = SettingsDialog(
+            self,
+            language=self._language,
+            show_hints=self._show_hints,
+            restore_session=self._restore_session_enabled,
+        )
+        if dialog.exec() != dialog.DialogCode.Accepted:
+            return
+        self._language = dialog.language
+        self._show_hints = dialog.show_hints
+        self._restore_session_enabled = dialog.restore_session
+        self._ui_settings.setValue("ui/language_v1", self._language)
+        self._ui_settings.setValue("ui/show_hints_v1", self._show_hints)
+        self._ui_settings.setValue("session/restore_v1", self._restore_session_enabled)
+        self._ui_settings.sync()
+        gui = QGuiApplication.instance()
+        if gui is not None:
+            gui.setToolTipDuration(4500 if self._show_hints else 0)
+        self.statusBar().showMessage("Settings saved.", 2500)
+
+    def _refresh_after_project_load(self) -> None:
+        self._sync_performance_mode_button()
+        self.performance_control_panel.sync_from_application()
+        self.automation_panel.sync_performance_plan(
+            self.application.performance_mode.plan
+        )
+        self.deck_panel.refresh()
+        self.layer_panel.refresh()
+        self.modulator_bank_panel.refresh()
+        self.layer_panel.sync_performance_modifier_sources()
+        self.performance_control_panel.sync_modulator_sources()
+        self.performance_control_panel.refresh_routes()
+        self.performance_control_panel.sync_from_application()
+        self.performance_timeline_panel.refresh(force=True)
+        self.effects_panel.sync_from_settings()
+        self.generators_panel.refresh()
+
+    def _restore_session(self) -> None:
+        if not self._restore_session_enabled or not self._recovery_path.is_file():
+            return
+        try:
+            self._restoring_session = True
+            self.application.load_project(self._recovery_path)
+            self.application.current_project_path = None
+            self._refresh_after_project_load()
+            self.statusBar().showMessage(tr("status.recovered", self._language), 4000)
+        except Exception:
+            _LOG.exception("Could not restore previous session")
+            self.statusBar().showMessage("Session recovery failed.", 5000)
+        finally:
+            self._restoring_session = False
+
+    def _autosave_session(self, *_args) -> None:
+        if (
+            not self._restore_session_enabled
+            or self._restoring_session
+            or self.application.current_project_path == self._recovery_path
+        ):
+            return
+        previous_project_path = self.application.current_project_path
+        try:
+            self.application.save_project(self._recovery_path)
+            self._ui_settings.setValue("session/recovery_available_v1", True)
+            self._ui_settings.sync()
+        except Exception:
+            _LOG.exception("Session autosave failed")
+        finally:
+            self.application.current_project_path = previous_project_path
+
+    def _start_session_recovery(self) -> None:
+        self._restore_session()
+        if self._restore_session_enabled:
+            self._autosave_timer.start()
 
     def show_about(self) -> None:
         QMessageBox.about(
@@ -1284,6 +1372,9 @@ class MainWindow(QMainWindow):
             "ui/active_workspace_v1",
             self.workspace_tabs.currentIndex(),
         )
+        self._autosave_timer.stop()
+        if self._restore_session_enabled:
+            self._autosave_session()
         self._runtime_timer.stop()
         self._status_timer.stop()
         self._modifier_feedback_timer.stop()
