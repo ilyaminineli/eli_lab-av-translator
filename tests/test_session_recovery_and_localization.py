@@ -6,7 +6,7 @@ import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtCore import QEvent
-from PySide6.QtGui import QAction
+from PySide6.QtGui import QAction, QImage
 from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
 )
 
 from core.application import Application
+from ui.generators_panel import GeneratorsPanel
 from ui.hints import ToolTipFilter
 from ui.i18n import apply_widget_translations, tr
 from ui.performance_timeline_panel import PerformanceTimelinePanel
@@ -134,6 +135,33 @@ def test_timeline_payload_explanation_is_japanese_hover_help_only() -> None:
         assert not hasattr(panel, "payload_hint")
         assert panel.payload_edit.toolTip() == (
             "INTRO／PEAK／BREAKDOWNなどの区間名を記録します。シーンの呼び出しは行いません。"
+        )
+    finally:
+        if panel is not None:
+            panel.close()
+        application.shutdown()
+
+
+
+
+def test_overlay_format_note_is_hover_only_and_localized(tmp_path) -> None:
+    qt_app = QApplication.instance() or QApplication([])
+    qt_app.setProperty("ui_language", "ja")
+    application = Application()
+    panel = None
+    try:
+        image_path = tmp_path / "overlay.png"
+        image = QImage(2, 2, QImage.Format.Format_RGBA8888)
+        assert image.save(str(image_path))
+        layer = application.add_media_overlay(image_path)
+
+        panel = GeneratorsPanel(application)
+        panel.refresh(select_id=layer.id)
+
+        assert not hasattr(panel, "overlay_hint")
+        assert panel.overlay_group.toolTip() == (
+            "静止画像では開始／終了位置、不透明度、合成モード、マットを設定できます。"
+            "再生速度、フレーム保持、ループ再生は適用されません。"
         )
     finally:
         if panel is not None:
