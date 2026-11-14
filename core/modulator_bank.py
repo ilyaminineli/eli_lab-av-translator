@@ -538,7 +538,7 @@ class ModulatorBank:
         if payload.get("format") not in {
             None, "eli-lab-modulator-presets"
         }:
-            raise ValueError("This file is not an ELI LAB modulator preset bank.")
+            raise ValueError("This file is not an eli_lab modulator preset bank.")
         raw_presets = payload.get("presets")
         if not isinstance(raw_presets, list):
             raise ValueError("Modulator preset file has no preset list.")
