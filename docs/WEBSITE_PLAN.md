@@ -181,6 +181,6 @@ Do not label the application production-stable until the target Windows/GPU, pro
 
 The first pass intentionally uses a schematic HTML/CSS plate in place of a screenshot. It is labelled as a schematic, not a capture of the application. Real screenshots and short, optimized demonstrations should be added only after they can be captured from the running Windows application and validated for accuracy.
 
-The initial English and Japanese homepages, product overviews, Manuals and Wiki indexes are present. The technical reference corpus is predominantly English; Japanese navigation marks English-only guides explicitly. Keep the two languages semantically aligned as translations are expanded.
+The initial English and Japanese homepages, Features, Manuals, Wiki, Downloads and About pages are present. The technical reference corpus is predominantly English; Japanese navigation marks English-only guides explicitly. Keep the two languages semantically aligned as translations are expanded.
 
 Before treating the website as published, verify the first successful Pages deployment and inspect the generated home, representative Markdown guide, Japanese pages, responsive mobile layout and all internal links. GitHub Actions code checks do not verify the website's appearance in a real browser.
