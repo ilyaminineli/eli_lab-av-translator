@@ -22,12 +22,12 @@ from PySide6.QtWidgets import (
 )
 
 from core.application import Application
-from ui.i18n import ui_text
 from core.performance_timeline import (
     TMLN_EVT_LABELS,
     TMLN_EVT_TYPES,
     PerformanceTimelineEvent,
 )
+from ui.i18n import ui_text
 
 _PAYLOAD_TEMPLATES = {
     "scene_marker": "{}",
