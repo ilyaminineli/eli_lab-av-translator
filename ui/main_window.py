@@ -446,7 +446,7 @@ class MainWindow(QMainWindow):
             return
         self._responsive_compact = compact
         side_minimum = 150 if compact else 220
-        right_minimum = 170 if compact else 250
+        right_minimum = 220 if compact else 280
         for dock in (self.media_dock, self.asset_library_dock):
             dock.setMinimumWidth(side_minimum)
         for dock in (
@@ -487,11 +487,11 @@ class MainWindow(QMainWindow):
         height = max(self.height(), self.minimumHeight())
         if compact:
             left_width = max(150, min(220, round(width * 0.17)))
-            right_width = max(170, min(250, round(width * 0.20)))
+            right_width = max(230, min(310, round(width * 0.29)))
             deck_height = max(150, min(230, round(height * 0.26)))
         else:
             left_width = max(220, min(340, round(width * 0.19)))
-            right_width = max(250, min(400, round(width * 0.23)))
+            right_width = max(300, min(420, round(width * 0.27)))
             deck_height = max(160, min(250, round(height * 0.23)))
         self.resizeDocks([self.media_dock], [left_width], Qt.Orientation.Horizontal)
         self.resizeDocks([self.layer_dock], [right_width], Qt.Orientation.Horizontal)
