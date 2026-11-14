@@ -22,6 +22,7 @@ from PySide6.QtWidgets import (
 )
 
 from core.application import Application
+from ui.i18n import ui_text
 from core.performance_timeline import (
     TMLN_EVT_LABELS,
     TMLN_EVT_TYPES,
@@ -40,7 +41,7 @@ _PAYLOAD_TEMPLATES = {
     "transition_cue": '{"scene_id": "scene-id", "morph_seconds": 4.0}',
 }
 
-_PAYLOAD_HINTS = {
+_PAYLOAD_TOOLTIPS = {
     "scene_marker": (
         "A named section marker. It records INTRO / PEAK / BREAKDOWN "
         "and does not recall a scene by itself."
@@ -106,9 +107,7 @@ class PerformanceTimelinePanel(QWidget):
         header.addWidget(self.rewind_button)
         root.addLayout(header)
 
-        self.state_label = QLabel(
-            "IDLE · add events, arm the timeline, then start the transport."
-        )
+        self.state_label = QLabel("IDLE")
         self.state_label.setWordWrap(True)
         self.state_label.setObjectName("mutedLabel")
         root.addWidget(self.state_label)
@@ -147,14 +146,12 @@ class PerformanceTimelinePanel(QWidget):
         self.label_edit.setPlaceholderText("INTRO / TEXT APPEARS / FIRST PEAK …")
         form.addRow("LABEL", self.label_edit)
 
-        self.payload_hint = QLabel(_PAYLOAD_HINTS["phrase_marker"])
-        self.payload_hint.setWordWrap(True)
-        self.payload_hint.setObjectName("mutedLabel")
-        form.addRow("ACTION", self.payload_hint)
-
         self.payload_edit = QPlainTextEdit()
         self.payload_edit.setMaximumHeight(100)
         self.payload_edit.setPlaceholderText("{}")
+        self.payload_edit.setToolTip(
+            ui_text(_PAYLOAD_TOOLTIPS["phrase_marker"])
+        )
         form.addRow("PAYLOAD · JSON", self.payload_edit)
 
         self.event_enabled = QCheckBox("Event enabled")
@@ -316,7 +313,9 @@ class PerformanceTimelinePanel(QWidget):
 
     def _type_changed(self, *_args) -> None:
         event_type = str(self.type_combo.currentData() or "phrase_marker")
-        self.payload_hint.setText(_PAYLOAD_HINTS.get(event_type, "JSON event payload."))
+        self.payload_edit.setToolTip(
+            ui_text(_PAYLOAD_TOOLTIPS.get(event_type, "JSON event payload."))
+        )
         if not self._loading and not self.payload_edit.toPlainText().strip():
             self.payload_edit.setPlainText(_PAYLOAD_TEMPLATES.get(event_type, "{}"))
 
