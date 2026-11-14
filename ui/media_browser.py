@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
 from media.library import MediaLibrary
 from media.models import MediaAsset
 from media.thumbnails import generate_thumbnail
+from ui.i18n import set_ui_text
 from ui.icons import app_icon
 
 _LOG = logging.getLogger(__name__)
@@ -177,9 +178,9 @@ class MediaBrowser(QWidget):
         self._scan_active = True
         self.add_folder_button.setEnabled(False)
         self.library_tools_button.setEnabled(False)
-        self.status_label.setText(
-            f"Scanning {Path(folder).name}… "
-            f"{len(self._scan_queue)} folder(s) queued."
+        set_ui_text(
+            self.status_label,
+            f"Scanning {Path(folder).name}… {len(self._scan_queue)} folder(s) queued.",
         )
         worker = ScanWorker(self.library, folder)
         self._scan_worker = worker
@@ -221,13 +222,13 @@ class MediaBrowser(QWidget):
 
     def scan_finished(self, assets: list[MediaAsset]) -> None:
         self.refresh()
-        self.status_label.setText(f"Indexed {len(assets)} video file(s).")
+        set_ui_text(self.status_label, f"Indexed {len(assets)} video file(s).")
         self.library_updated.emit()
         self._queue_thumbnails(assets)
         self._finish_scan()
 
     def scan_failed(self, message: str) -> None:
-        self.status_label.setText(f"Scan failed: {message}")
+        set_ui_text(self.status_label, f"Scan failed: {message}")
         _LOG.error("Media scan failed: %s", message)
         self._finish_scan()
 
@@ -318,10 +319,11 @@ class MediaBrowser(QWidget):
             item.setToolTip(asset.path)
             self.asset_list.addItem(item)
         if assets:
-            self.status_label.setText(f"{len(assets)} asset(s) in selected view.")
+            set_ui_text(self.status_label, f"{len(assets)} asset(s) in selected view.")
         else:
-            self.status_label.setText(
-                "No clips in this view. Add a folder or change the filter."
+            set_ui_text(
+                self.status_label,
+                "No clips in this view. Add a folder or change the filter.",
             )
         self.remove_collection_action.setEnabled(bool(collection_id))
 
@@ -347,8 +349,9 @@ class MediaBrowser(QWidget):
         removed = self.library.remove_collection(str(collection_id))
         self.refresh()
         self.library_updated.emit()
-        self.status_label.setText(
-            f"Removed {removed} indexed clip(s). Source files were kept."
+        set_ui_text(
+            self.status_label,
+            f"Removed {removed} indexed clip(s). Source files were kept.",
         )
 
     def prune_missing_files(self) -> None:
@@ -364,11 +367,11 @@ class MediaBrowser(QWidget):
         removed = self.library.remove_missing()
         self.refresh()
         self.library_updated.emit()
-        self.status_label.setText(f"Removed {removed} missing file record(s).")
+        set_ui_text(self.status_label, f"Removed {removed} missing file record(s).")
 
     def clean_thumbnail_cache(self) -> None:
         removed = self.library.cleanup_thumbnail_cache()
-        self.status_label.setText(f"Removed {removed} unused thumbnail(s).")
+        set_ui_text(self.status_label, f"Removed {removed} unused thumbnail(s).")
 
     def clear_library(self) -> None:
         answer = QMessageBox.question(
@@ -387,8 +390,9 @@ class MediaBrowser(QWidget):
         removed = self.library.clear_index()
         self.refresh()
         self.library_updated.emit()
-        self.status_label.setText(
-            f"Library cleared · removed {removed} index record(s). Source files were kept."
+        set_ui_text(
+            self.status_label,
+            f"Library cleared · removed {removed} index record(s). Source files were kept.",
         )
 
     def shutdown_workers(self) -> None:
