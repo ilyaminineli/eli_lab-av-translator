@@ -59,7 +59,7 @@ When moving a project:
 
 A project JSON file alone is not a portable copy of the video media.
 
-## 4. Connect the projector
+## 5. Connect the projector
 
 1. Connect HDMI before opening the fullscreen output.
 2. In Windows Display Settings, choose **Extend these displays**.
@@ -71,7 +71,7 @@ A project JSON file alone is not a portable copy of the video media.
 
 Preview and projector use separate OpenGL contexts but share application state and CPU frame snapshots. Each output owns and uploads its own GPU textures.
 
-## 5. Run an autonomous Sonic Pi performance
+## 6. Run an autonomous Sonic Pi performance
 
 1. Prepare a composition with video decks and/or generator layers.
 2. In **AUD / CTRL**, choose System Loopback for analysis of actual audio-band/onset activity, or Sonic Pi macros only when local capture is unavailable or unnecessary.
@@ -86,7 +86,7 @@ Sonic Pi energy/cutoff macros are normalized musical control signals, not raw au
 
 See [SONATA integration notes](SONIC_PI_SONATA_INTEGRATION.md) for remote-computer OSC addressing and the protocol.
 
-## 6. Developer setup (source run)
+## 7. Developer setup (source run)
 
 Use 64-bit CPython 3.12, 3.13 or 3.14 on the Windows development computer:
 
@@ -102,7 +102,7 @@ py -3.14 -m venv .venv
 
 Use `py -3.12` or `py -3.13` if preferred. PowerShell activation is optional; calling the project interpreter directly avoids activating the wrong environment.
 
-## 7. Developer quality checks
+## 8. Developer quality checks
 
 The former pytest/unit-test suite and its dependencies are not present in the current repository. The Quality workflow performs Python compilation and Ruff:
 
@@ -113,7 +113,7 @@ The former pytest/unit-test suite and its dependencies are not present in the cu
 
 A green quality workflow is not a runtime, GUI, OpenGL, musical or hardware acceptance result.
 
-## 8. Diagnostics
+## 9. Diagnostics
 
 The one-file build supports:
 
@@ -127,7 +127,7 @@ The application log is:
 
 `%LOCALAPPDATA%\eli_lab\AV Translator\logs\av-translator.log`
 
-## 9. Troubleshooting
+## 10. Troubleshooting
 
 ### OpenGL initialization fails
 
