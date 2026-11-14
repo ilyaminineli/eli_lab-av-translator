@@ -340,4 +340,4 @@ class AutomationPanel(QWidget):
             set_ui_text(self.status_label, message)
 
     def set_status(self, message: str) -> None:
-        self.status_label.setText(message)
+        set_ui_text(self.status_label, message)
