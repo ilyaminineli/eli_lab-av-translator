@@ -3,7 +3,7 @@ from __future__ import annotations
 import time
 from pathlib import Path
 
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import QSize, Qt, Signal
 from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QCheckBox,
@@ -12,7 +12,9 @@ from PySide6.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QProgressBar,
-    QPushButton,
+    QScrollArea,
+    QStyle,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -49,7 +51,7 @@ class DeckCard(QGroupBox):
         self.thumbnail_label = QLabel("NO THUMBNAIL")
         self.thumbnail_label.setObjectName("deckThumbnail")
         self.thumbnail_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.thumbnail_label.setFixedSize(104, 58)
+        self.thumbnail_label.setFixedSize(80, 45)
         identity.addWidget(self.thumbnail_label, 0)
 
         details = QVBoxLayout()
@@ -86,19 +88,32 @@ class DeckCard(QGroupBox):
         layout.addLayout(progress_row)
 
         controls = QHBoxLayout()
-        controls.setSpacing(4)
-        self.load_button = QPushButton("LOAD")
-        self.play_button = QPushButton("PLAY")
-        self.pause_button = QPushButton("PAUSE")
-        self.hold_button = QPushButton("HOLD")
-        self.restart_button = QPushButton("RESTART")
-        self.stop_button = QPushButton("STOP")
-        self.load_button.setToolTip("Choose a clip in the Media Library for this deck")
-        self.play_button.setToolTip("Start or resume this deck")
-        self.pause_button.setToolTip("Pause playback at the current position")
-        self.hold_button.setToolTip("Freeze the currently presented frame")
-        self.restart_button.setToolTip("Restart playback from the segment in-point")
-        self.stop_button.setToolTip("Stop playback and clear the displayed frame")
+        controls.setSpacing(3)
+        self.load_button = self._action_button(
+            QStyle.StandardPixmap.SP_DialogOpenButton,
+            "Load a clip from the Media Library",
+        )
+        self.play_button = self._action_button(
+            QStyle.StandardPixmap.SP_MediaPlay,
+            "Start or resume this deck",
+        )
+        self.pause_button = self._action_button(
+            QStyle.StandardPixmap.SP_MediaPause,
+            "Pause playback at the current position",
+        )
+        self.hold_button = self._action_button(
+            QStyle.StandardPixmap.SP_MediaPause,
+            "Freeze the currently presented frame",
+        )
+        self.hold_button.setCheckable(True)
+        self.restart_button = self._action_button(
+            QStyle.StandardPixmap.SP_MediaSkipBackward,
+            "Restart playback from the segment in-point",
+        )
+        self.stop_button = self._action_button(
+            QStyle.StandardPixmap.SP_MediaStop,
+            "Stop playback and clear the displayed frame",
+        )
         self.load_button.clicked.connect(
             lambda: self.action_requested.emit(deck_id, "load")
         )
@@ -123,7 +138,8 @@ class DeckCard(QGroupBox):
                 self.restart_button,
                 self.stop_button,
         ):
-            controls.addWidget(button, 1)
+            controls.addWidget(button)
+        controls.addStretch(1)
         layout.addLayout(controls)
 
         options = QHBoxLayout()
@@ -143,6 +159,16 @@ class DeckCard(QGroupBox):
         options.addWidget(self.lock_checkbox)
         options.addStretch(1)
         layout.addLayout(options)
+
+    def _action_button(self, icon: QStyle.StandardPixmap, tooltip: str) -> QToolButton:
+        button = QToolButton(self)
+        button.setIcon(self.style().standardIcon(icon))
+        button.setToolTip(tooltip)
+        button.setAccessibleName(tooltip)
+        button.setAutoRaise(True)
+        button.setFixedSize(28, 26)
+        button.setIconSize(QSize(15, 15))
+        return button
 
     def _toggle_hold(self) -> None:
         self.action_requested.emit(
@@ -245,7 +271,11 @@ class DeckCard(QGroupBox):
         self.play_button.setEnabled(loaded)
         self.pause_button.setEnabled(bool(playing))
         self.hold_button.setEnabled(bool(loaded and has_frame))
-        self.hold_button.setText("UNHOLD" if held else "HOLD")
+        self.hold_button.setChecked(bool(held))
+        self.hold_button.setIcon(self.style().standardIcon(
+            QStyle.StandardPixmap.SP_MediaPlay
+            if held else QStyle.StandardPixmap.SP_MediaPause
+        ))
         self.restart_button.setEnabled(loaded)
         self.stop_button.setEnabled(loaded)
 
@@ -268,10 +298,23 @@ class DeckPanel(QWidget):
         self._asset_ids: dict[str, str | None] = {}
         self._asset_cache: dict[str, MediaAsset | None] = {}
         self._asset_cache_refresh_at = 0.0
-        layout = QGridLayout(self)
-        layout.setContentsMargins(6, 6, 6, 6)
-        layout.setHorizontalSpacing(8)
-        layout.setVerticalSpacing(6)
+        self.setMinimumWidth(0)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        self.scroll = QScrollArea(self)
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.scroll.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.scroll.setFrameShape(QScrollArea.Shape.NoFrame)
+        self.body = QWidget()
+        self.body.setMinimumWidth(0)
+        self.grid = QGridLayout(self.body)
+        self.grid.setContentsMargins(6, 6, 6, 6)
+        self.grid.setHorizontalSpacing(6)
+        self.grid.setVerticalSpacing(6)
+        self.grid.setColumnStretch(0, 1)
+        self.scroll.setWidget(self.body)
+        outer.addWidget(self.scroll, 1)
         self.cards: dict[str, DeckCard] = {}
         titles = {
             "deck_a": "VIDEO DECK A",
@@ -279,16 +322,34 @@ class DeckPanel(QWidget):
             "deck_c": "VIDEO DECK C",
             "deck_d": "VIDEO DECK D",
         }
-        for index, (deck_id, deck) in enumerate(application.decks.items()):
-            card = DeckCard(deck_id, titles.get(deck_id, deck_id.upper()))
+        for deck_id, deck in application.decks.items():
+            card = DeckCard(deck_id, titles.get(deck_id, deck_id.upper()), self.body)
+            card.setMinimumWidth(0)
             card.action_requested.connect(self.action_requested)
             card.lock_changed.connect(self._on_lock)
             card.loop_changed.connect(self.loop_changed)
             self.cards[deck_id] = card
-            layout.addWidget(card, 0, index)
             card.lock_checkbox.setChecked(deck.locked)
             card.loop_checkbox.setChecked(deck.loop)
+        self._reflow_cards()
         self.refresh()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._reflow_cards()
+
+    def _reflow_cards(self) -> None:
+        width = max(1, self.scroll.viewport().width())
+        columns = 1 if width < 560 else 2 if width < 1120 else 4
+        for index, card in enumerate(self.cards.values()):
+            self.grid.removeWidget(card)
+            row, column = divmod(index, columns)
+            self.grid.addWidget(card, row, column)
+        for column in range(4):
+            self.grid.setColumnStretch(column, 1 if column < columns else 0)
+        rows = (len(self.cards) + columns - 1) // columns
+        for row in range(max(rows, 4)):
+            self.grid.setRowStretch(row, 0)
 
     def _on_lock(self, deck_id: str, locked: bool) -> None:
         self.application.decks[deck_id].locked = locked
