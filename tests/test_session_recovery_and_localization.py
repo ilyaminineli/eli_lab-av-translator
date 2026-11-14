@@ -13,7 +13,9 @@ from PySide6.QtWidgets import (
     QGroupBox,
     QLabel,
     QLineEdit,
+    QProgressBar,
     QTabWidget,
+    QTableWidget,
     QVBoxLayout,
     QWidget,
 )
@@ -21,7 +23,13 @@ from PySide6.QtWidgets import (
 from core.application import Application
 from ui.generators_panel import GeneratorsPanel
 from ui.hints import ToolTipFilter
-from ui.i18n import apply_widget_translations, set_ui_text, tr, ui_text
+from ui.i18n import (
+    apply_widget_translations,
+    set_ui_format,
+    set_ui_text,
+    tr,
+    ui_text,
+)
 from ui.performance_timeline_panel import PerformanceTimelinePanel
 from ui.settings_dialog import SettingsDialog
 from ui.theme import application_font_families, configure_application_theme
@@ -215,6 +223,43 @@ def test_japanese_dynamic_status_templates() -> None:
     assert ui_text("Indexed 12 video file(s).", "ja") == "動画ファイルを12件索引化しました。"
     assert ui_text("CONNECTED · USB MIDI", "ja") == "接続中 · USB MIDI"
     assert ui_text("TEXT PIPELINE · READY", "ja") == "テキスト処理 · 準備完了"
+
+
+
+def test_dynamic_dialog_and_multiline_media_prompts_translate() -> None:
+    assert ui_text("New project", "ja") == "新規プロジェクト"
+    assert ui_text("Imported 3 modulator preset(s).", "ja") == (
+        "モジュレータープリセットを3件インポートしました。"
+    )
+    prompt = (
+        "Remove Archive from the library index?\\n\\n"
+        "This removes its entries and cached thumbnails only. "
+        "Your original video files and folders will NOT be deleted. "
+        "Clips already loaded into decks continue playing."
+    )
+    translated = ui_text(prompt, "ja")
+    assert translated.startswith("Archiveをライブラリの索引から削除しますか？")
+    assert "元の動画ファイルやフォルダーは削除されません" in translated
+
+
+def test_widget_headers_and_progress_formats_retranslate_live() -> None:
+    qt_app = QApplication.instance() or QApplication([])
+    root = QWidget()
+    table = QTableWidget(0, 2, root)
+    table.setHorizontalHeaderLabels(["Layer", "Opacity"])
+    progress = QProgressBar(root)
+    set_ui_format(progress, "IDLE", "ja")
+
+    apply_widget_translations(root, "ja")
+    assert table.horizontalHeaderItem(0).text() == "レイヤー"
+    assert table.horizontalHeaderItem(1).text() == "不透明度"
+    assert progress.format() == "待機中"
+
+    apply_widget_translations(root, "en")
+    assert table.horizontalHeaderItem(0).text() == "Layer"
+    assert table.horizontalHeaderItem(1).text() == "Opacity"
+    assert progress.format() == "IDLE"
+    assert qt_app is not None
 
 
 def test_recovery_snapshot_does_not_auto_start_performance_or_decks(
