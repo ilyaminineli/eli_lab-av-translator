@@ -27,6 +27,7 @@ from config import (
     APP_REPOSITORY_URL,
     APP_STUDIO,
     APP_VER,
+    SESSION_RECOVERY_PATH,
 )
 from core.application import Application
 from core.performance_service import PerformanceModePlan
@@ -44,6 +45,8 @@ from ui.performance_control_panel import PerformanceControlPanel
 from ui.performance_timeline_panel import PerformanceTimelinePanel
 from ui.performance_view import AspectRatioPreview, PerformanceView
 from ui.transport_bar import TransportBar
+from ui.i18n import tr
+from ui.settings_dialog import SettingsDialog
 
 _LOG = logging.getLogger(__name__)
 
