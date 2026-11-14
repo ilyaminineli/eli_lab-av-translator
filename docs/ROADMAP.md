@@ -47,7 +47,7 @@ The November 4 RTX 4060 screenshot showed approximately 18.9 FPS. The new counte
 
 # M7 — Unified Generative Audiovisual Instrument
 
-**Status:** In progress on `m7/unified-visual-director`. Full design brief and implementation log: [M7.md](M7.md). M7-A now has dynamic uncapped variation, optional anchors, cross-source spatial mutation, relationship-aware placement and a composition-only Visual Activity estimate. Initial M7-B work adds the Qt Material styling foundation and central Perform / Compose / Prepare workspaces. Current Visual Activity/UI changes are under CI revalidation; target-Windows GPU/projector acceptance remains open.
+**Status:** In progress on `m7/unified-visual-director`. Full design brief and implementation log: [M7.md](M7.md). M7-A has dynamic uncapped variation, optional anchors, cross-source spatial mutation, relationship-aware placement and a composition-only Visual Activity estimate. M7-B has the first central Perform / Compose / Prepare workspaces, macro strip and theme foundation. The current branch passes compile, targeted Ruff and 11 regression tests at `1213cf2`; target-Windows GPU/projector acceptance remains open.
 
 | Workstream | Scope | Status |
 | --- | --- | --- |
