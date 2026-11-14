@@ -703,6 +703,9 @@ _JA_TEXT: dict[str, str] = {
     "PULSE WIDTH": "パルス幅",
     "Digital Damage": "デジタルダメージ",
     "Fuji · 藤": "富士 · 藤",
+    "Video overlays support looping and local in/out timing. Playback speed and frame hold are not available for video sources yet.": "動画オーバーレイはループ再生と開始／終了位置を指定できます。再生速度とフレーム保持には対応していません。",
+    "Animated images support playback speed, frame hold and looping.": "アニメーション画像では再生速度、フレーム保持、ループ再生を使用できます。",
+    "Still images use local in/out timing, opacity, blend and matte. Playback speed, frame hold and looping do not apply.": "静止画像では開始／終了位置、不透明度、合成モード、マットを設定できます。再生速度、フレーム保持、ループ再生は適用されません。",
 }
 
 
