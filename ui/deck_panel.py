@@ -33,6 +33,12 @@ def _format_time(seconds: float | None) -> str:
     return f"{minutes:02d}:{whole_seconds:04.1f}"
 
 
+def deck_columns_for_width(available_width: int) -> int:
+    """Choose a deck grid width without clipping cards on compact displays."""
+    width = max(1, int(available_width))
+    return 1 if width < 560 else 2 if width < 1120 else 4
+
+
 class DeckCard(QGroupBox):
     action_requested = Signal(str, str)
     lock_changed = Signal(str, bool)
@@ -340,8 +346,7 @@ class DeckPanel(QWidget):
         self._reflow_cards()
 
     def _reflow_cards(self) -> None:
-        width = max(1, self.scroll.viewport().width())
-        columns = 1 if width < 560 else 2 if width < 1120 else 4
+        columns = deck_columns_for_width(self.scroll.viewport().width())
         for index, card in enumerate(self.cards.values()):
             self.grid.removeWidget(card)
             row, column = divmod(index, columns)
