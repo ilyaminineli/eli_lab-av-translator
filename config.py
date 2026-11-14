@@ -40,7 +40,7 @@ def _runtime_root() -> Path:
 PROJECT_ROOT = _runtime_root()
 RESOURCE_DIR = PROJECT_ROOT / "resources"
 DICTIONARY_DIR = PROJECT_ROOT / "dictionary"
-ICON_PATH = RESOURCE_DIR / "icons" / "Icon.ico"
+ICON_PATH = RESOURCE_DIR / "icons" / "eli-lab-mark.ico"
 
 if os.name == "nt":
     _app_data_root = Path(
