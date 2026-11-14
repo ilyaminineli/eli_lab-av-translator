@@ -128,3 +128,104 @@ def test_video_deck_grid_reflows_at_compact_and_wide_widths() -> None:
     assert deck_columns_for_width(420) == 1
     assert deck_columns_for_width(820) == 2
     assert deck_columns_for_width(1360) == 4
+
+
+
+def test_media_library_repairs_legacy_txt_columns_without_losing_indexed_data(
+        tmp_path,
+) -> None:
+    import sqlite3
+
+    from media.library import MediaLibrary
+
+    database_path = tmp_path / "media.sqlite3"
+    thumbnail_directory = tmp_path / "thumbnails"
+
+    with sqlite3.connect(database_path) as connection:
+        connection.executescript(
+            """
+            CREATE TABLE assets (
+                id TXT PRIMARY KEY,
+                path TXT NOT NULL UNIQUE,
+                collection_id TXT NOT NULL,
+                name TXT NOT NULL,
+                duration REAL,
+                width INTEGER,
+                height INTEGER,
+                fps REAL,
+                codec TXT,
+                thumbnail_path TXT,
+                status TXT NOT NULL,
+                file_size INTEGER NOT NULL,
+                modified_at REAL NOT NULL
+            );
+            CREATE TABLE collections (
+                id TXT PRIMARY KEY,
+                root_path TXT NOT NULL,
+                name TXT NOT NULL,
+                imported_at REAL NOT NULL
+            );
+            CREATE INDEX idx_assets_collection ON assets(collection_id);
+            """
+        )
+        connection.execute(
+            """
+            INSERT INTO assets (
+                id, path, collection_id, name, duration, width, height, fps,
+                codec, thumbnail_path, status, file_size, modified_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                "asset-1", "/media/example.mp4", "collection-1", "example.mp4",
+                12.5, 1920, 1080, 30.0, "h264", None, "ready", 1234, 42.0,
+            ),
+        )
+        connection.execute(
+            """
+            INSERT INTO collections (id, root_path, name, imported_at)
+            VALUES (?, ?, ?, ?)
+            """,
+            ("collection-1", "/media", "media", 42.0),
+        )
+
+    MediaLibrary(
+        database_path=database_path,
+        thumbnail_directory=thumbnail_directory,
+    )
+
+    with sqlite3.connect(database_path) as connection:
+        connection.row_factory = sqlite3.Row
+        asset_columns = {
+            row["name"]: row["type"]
+            for row in connection.execute("PRAGMA table_info(assets)")
+        }
+        collection_columns = {
+            row["name"]: row["type"]
+            for row in connection.execute("PRAGMA table_info(collections)")
+        }
+        asset = connection.execute(
+            "SELECT id, path, collection_id, name, codec FROM assets WHERE id=?",
+            ("asset-1",),
+        ).fetchone()
+        collection = connection.execute(
+            "SELECT id, root_path, name FROM collections WHERE id=?",
+            ("collection-1",),
+        ).fetchone()
+        index = connection.execute(
+            "SELECT name FROM sqlite_master "
+            "WHERE type='index' AND name='idx_assets_collection'"
+        ).fetchone()
+
+    for name in (
+            "id", "path", "collection_id", "name", "codec",
+            "thumbnail_path", "status",
+    ):
+        assert asset_columns[name] == "TEXT"
+    for name in ("id", "root_path", "name"):
+        assert collection_columns[name] == "TEXT"
+
+    assert tuple(asset) == (
+        "asset-1", "/media/example.mp4", "collection-1", "example.mp4", "h264"
+    )
+    assert tuple(collection) == ("collection-1", "/media", "media")
+    assert index is not None
