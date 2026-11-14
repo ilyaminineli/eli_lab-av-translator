@@ -738,7 +738,7 @@ class MainWindow(QMainWindow):
                 self.application.stop_performance_mode()
             except Exception as exc:
                 _LOG.exception("Could not stop Performance Mode")
-                QMessageBox.warning(self, "Performance Mode", str(exc))
+                QMessageBox.warning(self, ui_text("Performance Mode", self._language), ui_text(str(exc), self._language))
             set_ui_text(self.performance_mode_button, "▶ PERF MODE", self._language)
             self.performance_control_panel.refresh_monitor()
             self._show_status_message("Performance Mode stopped.", 5000)
@@ -794,7 +794,7 @@ class MainWindow(QMainWindow):
             self.performance_mode_button.setChecked(False)
             self.performance_mode_button.blockSignals(False)
             set_ui_text(self.performance_mode_button, "▶ PERF MODE", self._language)
-            QMessageBox.critical(self, "Performance Mode could not start", str(exc))
+            QMessageBox.critical(self, ui_text("Performance Mode could not start", self._language), ui_text(str(exc), self._language))
 
     def _sync_performance_mode_button(self) -> None:
         enabled = self.application.performance_mode_snapshot()["enabled"]
@@ -810,7 +810,7 @@ class MainWindow(QMainWindow):
     def save_performance_set(self) -> None:
         path, _ = QFileDialog.getSaveFileName(
             self,
-            "Save Performance Set",
+            ui_text("Save Performance Set", self._language),
             "performance.eliset",
             "eli_lab Performance Set (*.eliset)",
         )
@@ -821,14 +821,14 @@ class MainWindow(QMainWindow):
         try:
             saved = self.application.save_performance_set(path)
         except Exception as exc:
-            QMessageBox.critical(self, "Could Not Save Performance Set", str(exc))
+            QMessageBox.critical(self, ui_text("Could Not Save Performance Set", self._language), ui_text(str(exc), self._language))
             return
         self._show_status_message(f"Performance set saved · {saved}", 5000)
 
     def load_performance_set(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Load Performance Set",
+            ui_text("Load Performance Set", self._language),
             "",
             "eli_lab Performance Set (*.eliset)",
         )
@@ -842,7 +842,7 @@ class MainWindow(QMainWindow):
                 self.application.performance_mode.plan
             )
         except Exception as exc:
-            QMessageBox.critical(self, "Could Not Load Performance Set", str(exc))
+            QMessageBox.critical(self, ui_text("Could Not Load Performance Set", self._language), ui_text(str(exc), self._language))
             return
         self.layer_panel.refresh()
         self.generators_panel.refresh()
@@ -926,7 +926,7 @@ class MainWindow(QMainWindow):
             )
         except Exception as exc:
             _LOG.exception("Could not open projector output")
-            QMessageBox.critical(self, "Projector output failed", str(exc))
+            QMessageBox.critical(self, ui_text("Projector output failed", self._language), ui_text(str(exc), self._language))
 
     def _projector_output_closed(self) -> None:
         set_ui_text(self.workspace_output_label, "OUTPUT  ·  LOCAL")
@@ -953,7 +953,7 @@ class MainWindow(QMainWindow):
     def add_overlay_media(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Add image or video overlay",
+            ui_text("Add image or video overlay", self._language),
             "",
             (
                 "Overlay media (*.png *.apng *.gif *.webp *.jpg *.jpeg *.bmp "
@@ -969,7 +969,7 @@ class MainWindow(QMainWindow):
             self._show_status_message(f"Added overlay {layer.name}", 4000)
         except Exception as exc:
             _LOG.exception("Could not add overlay media")
-            QMessageBox.warning(self, "Overlay load failed", str(exc))
+            QMessageBox.warning(self, ui_text("Overlay load failed", self._language), ui_text(str(exc), self._language))
 
     def _choose_media_folder(self) -> None:
         self.workspace_tabs.setCurrentIndex(2)
@@ -985,7 +985,7 @@ class MainWindow(QMainWindow):
             )
         except Exception as exc:
             _LOG.exception("Could not assign media to deck")
-            QMessageBox.critical(self, "Video load failed", str(exc))
+            QMessageBox.critical(self, ui_text("Video load failed", self._language), ui_text(str(exc), self._language))
 
     def deck_action(self, deck_id: str, action: str) -> None:
         deck = self.application.decks[deck_id]
@@ -1020,7 +1020,7 @@ class MainWindow(QMainWindow):
             self.deck_panel.refresh()
         except Exception as exc:
             _LOG.exception("Deck action failed: %s · %s", deck_id, action)
-            QMessageBox.warning(self, "Deck error", str(exc))
+            QMessageBox.warning(self, ui_text("Deck error", self._language), ui_text(str(exc), self._language))
 
     def set_deck_loop(self, deck_id: str, enabled: bool) -> None:
         self.application.decks[deck_id].set_loop(enabled)
@@ -1100,11 +1100,11 @@ class MainWindow(QMainWindow):
                 )
             self.automation_panel.set_running(False, message)
             self._show_status_message(message, 8000)
-            QMessageBox.information(self, "Auto Performance not started", message)
+            QMessageBox.information(self, ui_text("Auto Performance not started", self._language), ui_text(message, self._language))
         except Exception as exc:
             _LOG.exception("Could not start automation")
             self.automation_panel.set_running(False, f"Could not start · {exc}")
-            QMessageBox.warning(self, "Automation could not start", str(exc))
+            QMessageBox.warning(self, ui_text("Automation could not start", self._language), ui_text(str(exc), self._language))
 
     def stop_automation(self) -> None:
         self.application.stop_automation()
@@ -1221,8 +1221,8 @@ class MainWindow(QMainWindow):
     def new_project(self) -> None:
         answer = QMessageBox.question(
             self,
-            "New project",
-            "Create a new composition? Unsaved project changes will be lost.",
+            ui_text("New project", self._language),
+            ui_text("Create a new composition? Unsaved project changes will be lost.", self._language),
         )
         if answer != QMessageBox.StandardButton.Yes:
             return
@@ -1248,7 +1248,7 @@ class MainWindow(QMainWindow):
     def open_project(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
             self,
-            "Open AV Translator project",
+            ui_text("Open AV Translator project", self._language),
             "",
             "ELI AV Project (*.eliav);;JSON files (*.json)",
         )
@@ -1260,7 +1260,7 @@ class MainWindow(QMainWindow):
             self._show_status_message(f"Opened {Path(path).name}", 4000)
         except Exception as exc:
             _LOG.exception("Could not open project %s", path)
-            QMessageBox.critical(self, "Project open failed", str(exc))
+            QMessageBox.critical(self, ui_text("Project open failed", self._language), ui_text(str(exc), self._language))
 
     def save_project(self) -> None:
         if self.application.current_project_path is None:
@@ -1270,12 +1270,12 @@ class MainWindow(QMainWindow):
             path = self.application.save_project(self.application.current_project_path)
             self._show_status_message(f"Saved {path.name}", 3000)
         except Exception as exc:
-            QMessageBox.critical(self, "Project save failed", str(exc))
+            QMessageBox.critical(self, ui_text("Project save failed", self._language), ui_text(str(exc), self._language))
 
     def save_project_as(self) -> None:
         path, _ = QFileDialog.getSaveFileName(
             self,
-            "Save AV Translator project",
+            ui_text("Save AV Translator project", self._language),
             "Untitled.eliav",
             "ELI AV Project (*.eliav)",
         )
