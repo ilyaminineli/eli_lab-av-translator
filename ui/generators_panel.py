@@ -31,6 +31,7 @@ from core.application import Application
 from generators.catalog import normalize_settings
 from generators.palettes import import_aco_palette, palette_look, palette_names
 from generators.text_pools import random_text_sample
+from ui.i18n import ui_text
 from ui.icons import icon_button
 
 
@@ -1363,19 +1364,23 @@ class GeneratorsPanel(QWidget):
             self.overlay_frame_hold_spin.setEnabled(is_animated_image)
             self.overlay_loop_check.setEnabled(is_video or is_animated_image)
             if is_video:
-                self.overlay_hint.setText(
+                overlay_help = (
                     "Video overlays support looping and local in/out timing. "
                     "Playback speed and frame hold are not available for video sources yet."
                 )
             elif is_animated_image:
-                self.overlay_hint.setText(
+                overlay_help = (
                     "Animated images support playback speed, frame hold and looping."
                 )
             else:
-                self.overlay_hint.setText(
+                overlay_help = (
                     "Still images use local in/out timing, opacity, blend and matte. "
                     "Playback speed, frame hold and looping do not apply."
                 )
+            self.overlay_group.setToolTip(ui_text(overlay_help))
+            self.overlay_speed_spin.setToolTip(ui_text(overlay_help))
+            self.overlay_frame_hold_spin.setToolTip(ui_text(overlay_help))
+            self.overlay_loop_check.setToolTip(ui_text(overlay_help))
             self.hint_label.setText(
                 f"Editing {layer.name} · opacity and blend mode update live."
             )
