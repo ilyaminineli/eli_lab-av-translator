@@ -18,6 +18,7 @@ from PySide6.QtWidgets import (
 
 from core.application import Application
 from media.asset_index import VisualAsset, VisualAssetIndex
+from ui.i18n import set_ui_text
 
 
 class _AssetScanSignals(QObject):
@@ -126,7 +127,7 @@ class AssetLibraryPanel(QWidget):
         if self._scan_in_progress:
             return
         self._scan_in_progress = True
-        self.detail_label.setText("Indexing bundled and user visual assets…")
+        set_ui_text(self.detail_label, "Indexing bundled and user visual assets…")
         self.add_button.setEnabled(False)
         worker = _AssetScanWorker(list(self.application.visual_asset_index.roots))
         worker.signals.finished.connect(self._on_scan_finished)
@@ -149,15 +150,16 @@ class AssetLibraryPanel(QWidget):
         self.application.visual_asset_index.assets = assets
         self._index_loaded = True
         self.refresh()
-        self.detail_label.setText(
+        set_ui_text(
+            self.detail_label,
             f"Indexed {len(assets)} visual assets across "
-            f"{len(self.application.visual_asset_index.roots)} folders."
+            f"{len(self.application.visual_asset_index.roots)} folders.",
         )
 
     def _on_scan_failed(self, error: str) -> None:
         self._scan_in_progress = False
         self._scan_worker = None
-        self.detail_label.setText(f"Asset indexing failed: {error}")
+        set_ui_text(self.detail_label, f"Asset indexing failed: {error}")
         self.add_button.setEnabled(False)
 
     def refresh(self, *_args) -> None:
@@ -180,7 +182,7 @@ class AssetLibraryPanel(QWidget):
             if asset.id == selected_id:
                 self.asset_list.setCurrentItem(item)
         if self.asset_list.count() == 0:
-            self.detail_label.setText("No indexed assets match this search.")
+            set_ui_text(self.detail_label, "No indexed assets match this search.")
         elif self.asset_list.currentItem() is None:
             self.asset_list.setCurrentRow(0)
 
@@ -211,4 +213,4 @@ class AssetLibraryPanel(QWidget):
             QMessageBox.warning(self, "Asset could not be added", str(exc))
             return
         self.composition_changed.emit()
-        self.detail_label.setText(f"Added {layer.name} as a composition overlay.")
+        set_ui_text(self.detail_label, f"Added {layer.name} as a composition overlay.")
