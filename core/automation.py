@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import math
 import random
 import time
 from collections.abc import Iterable
@@ -179,6 +180,8 @@ class AutomationDirector:
         self._last_layer_fx_variation = False
         self._last_peak_context = False
         self._director = GenerativeVariationDirector()
+        self._last_layout_relationship = "independent"
+        self._last_visual_activity = self._director.measure_visual_activity(())
         self.generator_settings_changed = None
         self.palette_changed = None
 
@@ -393,9 +396,18 @@ class AutomationDirector:
             self._performance_cutoff * 0.55,
             float(strength or 0.0),
         )
+        self._last_visual_activity = self._director.measure_visual_activity(self._layers)
+        underactivity = 1.0 - self._last_visual_activity.score
         drive = max(
             0.0,
-            min(1.0, 0.36 * chaos + 0.25 * fragment + 0.22 * density + 0.17 * musical_drive),
+            min(
+                1.0,
+                0.30 * chaos
+                + 0.21 * fragment
+                + 0.19 * density
+                + 0.17 * musical_drive
+                + 0.13 * underactivity,
+            ),
         )
         # Strong musical/macro peaks occasionally open the variation scope fully.
         # This is a weighted global burst, not a fixed maximum-layer setting.
@@ -473,6 +485,22 @@ class AutomationDirector:
         overlap = max(0.0, min(1.0, self.settings.overlap_bias))
         offscreen = max(0.0, min(1.0, self.settings.offscreen_range))
         use_seed = self.rng.random() > chaos * 0.78
+        relationship = self.rng.choices(
+            ("independent", "shared_center", "opposed", "nested", "orbit"),
+            weights=(
+                max(0.12, 1.0 - overlap),
+                0.22 + overlap * 0.62,
+                0.16 + overlap * 0.22,
+                0.16 + overlap * 0.30,
+                0.10 + overlap * 0.38,
+            ),
+            k=1,
+        )[0]
+        self._last_layout_relationship = relationship
+        relationship_center = (
+            self.rng.uniform(0.28, 0.72),
+            self.rng.uniform(0.28, 0.72),
+        )
         stamp = time.monotonic() if now is None else float(now)
         depth = self._macro_values.get("depth", 0.0)
         duration = self._director.transition_duration(
@@ -495,11 +523,42 @@ class AutomationDirector:
                 target_y = y + self.rng.uniform(-spread, spread)
                 target_scale = seed_size * self.rng.uniform(0.55, 1.75 + chaos * 2.0)
             else:
-                # Dense clusters naturally overlap; selected objects escape the canvas.
+                # The director creates spatial relationships, not just independent
+                # random transforms. High overlap bias favours shared visual masses.
+                center_x, center_y = relationship_center
                 cluster_spread = 0.05 + (1.0 - overlap) * 0.45
-                target_x = self.rng.uniform(0.18, 0.82) + self.rng.gauss(0.0, cluster_spread)
-                target_y = self.rng.uniform(0.18, 0.82) + self.rng.gauss(0.0, cluster_spread)
-                target_scale = self.rng.uniform(0.28, 1.35 + chaos * 1.65)
+                if relationship == "shared_center":
+                    target_x = center_x + self.rng.gauss(0.0, cluster_spread * 0.55)
+                    target_y = center_y + self.rng.gauss(0.0, cluster_spread * 0.55)
+                    target_scale = self.rng.uniform(0.42, 1.35 + chaos * 1.55)
+                elif relationship == "opposed":
+                    side = -1.0 if index % 2 else 1.0
+                    offset = self.rng.uniform(0.08, 0.30 + chaos * 0.18)
+                    target_x = center_x + side * offset
+                    target_y = center_y + self.rng.gauss(0.0, cluster_spread * 0.65)
+                    target_scale = self.rng.uniform(0.35, 1.25 + chaos * 1.55)
+                elif relationship == "nested":
+                    target_x = center_x + self.rng.gauss(0.0, cluster_spread * 0.25)
+                    target_y = center_y + self.rng.gauss(0.0, cluster_spread * 0.25)
+                    nesting = 1.0 - 0.62 * (index / max(1, len(active)))
+                    target_scale = nesting * self.rng.uniform(0.62, 1.30 + chaos * 1.3)
+                elif relationship == "orbit":
+                    angle = (
+                        2.0 * math.pi * index / max(1, len(active))
+                        + self.rng.uniform(-0.28, 0.28)
+                    )
+                    radius = self.rng.uniform(0.12, 0.30 + chaos * 0.18)
+                    target_x = center_x + math.cos(angle) * radius
+                    target_y = center_y + math.sin(angle) * radius
+                    target_scale = self.rng.uniform(0.32, 1.25 + chaos * 1.5)
+                else:
+                    target_x = self.rng.uniform(0.18, 0.82) + self.rng.gauss(
+                        0.0, cluster_spread
+                    )
+                    target_y = self.rng.uniform(0.18, 0.82) + self.rng.gauss(
+                        0.0, cluster_spread
+                    )
+                    target_scale = self.rng.uniform(0.28, 1.35 + chaos * 1.65)
             if self.rng.random() < offscreen * (0.08 + chaos * 0.48):
                 target_x += self.rng.choice((-1.0, 1.0)) * self.rng.uniform(0.05, offscreen)
                 target_y += self.rng.uniform(-0.35, 0.35) * offscreen
