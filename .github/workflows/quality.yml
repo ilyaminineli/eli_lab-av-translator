@@ -32,12 +32,20 @@ jobs:
       - name: Check formatting and lint for M7 changes
         run: >-
           python -m ruff check
+          core/application.py
           core/automation.py
           core/generative_director.py
+          core/performance_manager.py
+          generators/catalog.py
+          generators/rasterizer.py
+          generators/text_pools.py
           ui/automation_panel.py
+          ui/deck_panel.py
+          ui/generators_panel.py
           ui/main_window.py
           ui/performance_control_panel.py
           ui/theme.py
+          ui/transport_bar.py
           main.py
           tests
       - name: Run unit and regression tests
