@@ -19,18 +19,18 @@ class TransportBar(QWidget):
         layout.setSpacing(4)
 
         self.random_set_button = icon_button(
-            self, "shuffle", "Randomize video deck assignments", size=32
+            self, "shuffle", "Randomize decks", size=32
         )
         self.random_layout_button = icon_button(
-            self, "layout", "Generate a new freeform collage layout", size=32
+            self, "layout", "Randomize layout", size=32
         )
         self.random_look_button = icon_button(
-            self, "sparkles", "Apply a randomized master-effect look", size=32
+            self, "sparkles", "Randomize look", size=32
         )
         self.lock_all_button = icon_button(
             self,
             "unlock",
-            "Lock or unlock all decks and visual layers",
+            "Lock all layers",
             size=32,
             checkable=True,
         )
@@ -49,9 +49,9 @@ class TransportBar(QWidget):
     def _lock_all_toggled(self, locked: bool) -> None:
         self.lock_all_button.setIcon(app_icon("lock" if locked else "unlock"))
         action = (
-            "Unlock all decks and visual layers"
+            "Unlock all layers"
             if locked
-            else "Lock all decks and visual layers"
+            else "Lock all layers"
         )
         self.lock_all_button.setToolTip(action)
         self.lock_all_button.setAccessibleName(action)
