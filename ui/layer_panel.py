@@ -127,7 +127,7 @@ class LayerPanel(QWidget):
         response_row.addWidget(self.modifier_polarity_combo, 1)
         modifier_layout.addLayout(response_row)
         self.modifier_depth = self._add_slider(
-            modifier_layout, "DPTH · %", 0, 100, 12
+            modifier_layout, "DEPTH · %", 0, 100, 12
         )
         modifier_buttons = QHBoxLayout()
         self.modifier_add_button = QPushButton("ADD MODIFIER")
