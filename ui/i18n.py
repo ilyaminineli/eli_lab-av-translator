@@ -661,45 +661,49 @@ _JA_TEXT: dict[str, str] = {
     "Apply text and typography immediately": "テキストとタイポグラフィをすぐに適用します",
     "Commit current text and typography now, bypassing the pause debounce and using final resolution when enabled.": "入力待ちを省略して現在のテキストと書体設定を確定します。最終解像度が有効ならそれを使用します。",
     "Allow Auto Performance to regenerate this text layer on its generator cycle.": "自動パフォーマンスの生成サイクルに合わせて、このテキストレイヤーを再生成します。",
-}
-
-_HINTS = {
-    "scene_marker": (
-        "A named section marker. It records INTRO / PEAK / BREAKDOWN "
-        "and does not recall a scene by itself."
-    ),
-    "phrase_marker": (
-        "A descriptive musical phrase marker. Use the same bar/beat "
-        "grid as the transport."
-    ),
-    "scene_recall": (
-        "Recall a saved VJ Scene Bank scene. Use morph_seconds 0 "
-        "for an immediate cut."
-    ),
-    "clip_trigger": (
-        "Trigger a loaded deck, or include asset_id to load a media-library "
-        "asset. Actions: load, play, pause, hold, release, restart, stop, seek."
-    ),
-    "effect_change": (
-        "Apply a master look preset and/or override selected EffectSettings "
-        "fields. Preset names come from the FX dock."
-    ),
-    "text_regenerate": (
-        "Regenerate a Text Art layer using its saved language/theme/dictionary "
-        "settings. Omit layer_id to use the first unlocked Text Art layer."
-    ),
-    "palette_change": (
-        "Apply a named palette to unlocked generator layers. Choose a palette "
-        "from the current palette library."
-    ),
-    "modulation": (
-        "Set a normalized Performance Macro (0–1). The manual value takes "
-        "priority for duration_bars, then its assigned live source resumes."
-    ),
-    "transition_cue": (
-        "Recall a saved VJ Scene with a numeric morph. Discrete media/text "
-        "changes retain the scene bank's cut policy."
-    ),
+    # Timeline payload help: available on hover, never shown as a permanent paragraph.
+    "A named section marker. It records INTRO / PEAK / BREAKDOWN and does not recall a scene by itself.": "INTRO／PEAK／BREAKDOWNなどの区間名を記録します。シーンの呼び出しは行いません。",
+    "A descriptive musical phrase marker. Use the same bar/beat grid as the transport.": "音楽フレーズの説明用マーカーです。トランスポートと同じ小節／ビート位置を使用します。",
+    "Recall a saved VJ Scene Bank scene. Use morph_seconds 0 for an immediate cut.": "保存したVJシーンを呼び出します。即時カットにする場合は morph_seconds を 0 に設定します。",
+    "Trigger a loaded deck, or include asset_id to load a media-library asset. Actions: load, play, pause, hold, release, restart, stop, seek.": "読み込み済みデッキを操作します。asset_id を指定するとメディアライブラリの素材を読み込めます。操作: load、play、pause、hold、release、restart、stop、seek。",
+    "Apply a master look preset and/or override selected EffectSettings fields. Preset names come from the FX dock.": "マスタールックのプリセットを適用し、必要に応じて EffectSettings の項目を上書きします。プリセット名は FX パネルから選びます。",
+    "Regenerate a Text Art layer using its saved language/theme/dictionary settings. Omit layer_id to use the first unlocked Text Art layer.": "保存済みの言語・テーマ・辞書設定でテキストアートレイヤーを再生成します。layer_id を省略すると最初のロックされていないテキストレイヤーを使用します。",
+    "Apply a named palette to unlocked generator layers. Choose a palette from the current palette library.": "ロックされていないジェネレーターレイヤーに指定した配色を適用します。現在のパレットライブラリから選択してください。",
+    "Set a normalized Performance Macro (0–1). The manual value takes priority for duration_bars, then its assigned live source resumes.": "正規化されたパフォーマンスマクロ（0–1）を設定します。duration_bars の間は手動値が優先され、その後に割り当て済みのライブソースへ戻ります。",
+    "Recall a saved VJ Scene with a numeric morph. Discrete media/text changes retain the scene bank's cut policy.": "数値補間で保存済みのVJシーンを呼び出します。メディアやテキストなどの離散的な変更にはシーンバンクのカット設定が適用されます。",
+    "Randomize decks": "デッキをランダムに変更します",
+    "Randomize layout": "レイアウトをランダムに変更します",
+    "Randomize look": "ルックをランダムに変更します",
+    "Lock all layers": "すべてのレイヤーをロックします",
+    "Unlock all layers": "すべてのレイヤーのロックを解除します",
+    "Media library tools": "メディアライブラリの操作",
+    "Remove selected folder from library…": "選択したフォルダーをライブラリから削除…",
+    "Remove missing files…": "見つからないファイルを削除…",
+    "Clean unused thumbnails": "未使用のサムネイルを整理",
+    "Clear entire media library…": "メディアライブラリをすべて消去…",
+    "LIBRARY": "ライブラリ",
+    "FOLDER": "フォルダー",
+    "Assign to": "割り当て先",
+    "Deck A": "デッキ A",
+    "Deck B": "デッキ B",
+    "Deck C": "デッキ C",
+    "Deck D": "デッキ D",
+    "HELD · FRAME FROZEN": "保持中 · フレーム固定",
+    "STOPPED / READY": "停止 · 準備完了",
+    "LAYER · NOT ATTACHED": "レイヤー · 未接続",
+    "Effect mix": "エフェクトミックス",
+    "Master video look controls; all outputs render the same settings.": "マスタービデオの外観設定です。すべての出力に同じ設定が適用されます。",
+    "Directional scan displacement (approx.)": "方向性スキャン変位（近似）",
+    "Refresh available displacement sources": "利用可能な変位ソースを更新",
+    "COLLAGE VARIATION": "コラージュの変化",
+    "LINE WIDTH": "線幅",
+    "FIELD DENSITY": "フィールド密度",
+    "DRIFT / SPREAD": "ドリフト／拡散",
+    "TURBULENCE SCALE · 0.1": "乱流スケール · 0.1",
+    "PULSE WIDTH": "パルス幅",
+    "PULSE WIDTH": "パルス幅",
+    "Digital Damage": "デジタルダメージ",
+    "Fuji · 藤": "富士 · 藤",
 }
 
 
@@ -817,6 +821,11 @@ def apply_widget_translations(root: Any, language: str = "en") -> None:
         )
         if source_tooltip:
             widget.setToolTip(ui_text(str(source_tooltip), language))
+        source_accessible = original(
+            widget, "_eli_i18n_accessible_name", widget.accessibleName()
+        )
+        if source_accessible:
+            widget.setAccessibleName(ui_text(str(source_accessible), language))
 
     for action in root.findChildren(QAction):
         source_text = original(action, "_eli_i18n_text", action.text())
