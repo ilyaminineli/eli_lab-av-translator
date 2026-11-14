@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import sqlite3
+
 from core.automation import AutomationSettings
 from core.composition import Layer
 from core.performance_manager import PerformanceManager
 from generators.catalog import default_generator_settings, normalize_settings
 from generators.text_pools import random_text_sample
+from media.library import MediaLibrary
 from ui.deck_panel import deck_columns_for_width
 
 
@@ -134,10 +137,6 @@ def test_video_deck_grid_reflows_at_compact_and_wide_widths() -> None:
 def test_media_library_repairs_legacy_txt_columns_without_losing_indexed_data(
         tmp_path,
 ) -> None:
-    import sqlite3
-
-    from media.library import MediaLibrary
-
     database_path = tmp_path / "media.sqlite3"
     thumbnail_directory = tmp_path / "thumbnails"
 
