@@ -213,7 +213,7 @@ def test_video_downscale_uses_bicubic_at_the_1080p_ceiling(tmp_path) -> None:
     from config import MAX_DECODE_HEIGHT, MAX_DECODE_WIDTH
 
     decoder = VideoDecoder(tmp_path / "source.mp4", FrameQueue())
-    source = _FakeVideoFrame(3840, 2160)
+    source = _FakeVideoFrame(2560, 1440)
 
     pixels = decoder._preview_pixels(source)
 
