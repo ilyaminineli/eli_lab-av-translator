@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""Windows x64 one-file build for eli_lab AVTranslator (CPython 3.12-3.14)."""
+"""Native Windows x64 / Linux x86_64 one-file build (CPython 3.12-3.14)."""
 
 import importlib.util
 import sys
@@ -13,7 +13,9 @@ if str(ROOT) not in sys.path:
 
 from config import APP_NAME, ICON_PATH  # noqa: E402
 
-ICON = ICON_PATH
+# PyInstaller embeds ICO metadata on Windows. Linux executables have no
+# equivalent native file-icon resource; the ICO remains bundled for Qt's UI.
+ICON = ICON_PATH if sys.platform == "win32" else None
 
 required_paths = (
     ROOT / "main.py",
@@ -42,10 +44,10 @@ hiddenimports = [
 ]
 
 for package in (
-    "av",          # PyAV; wheel contains the FFmpeg runtime DLLs
+    "av",          # PyAV; wheel contains the FFmpeg runtime libraries
     "moderngl",    # ModernGL renderer
     "glcontext",   # OpenGL context providers
-    "soundcard",   # Windows audio loopback/input
+    "soundcard",   # System audio loopback/input where supported
     "pythonosc",   # Sonic Pi OSC receiver
     "mido",        # MIDI abstraction; backend is optional
 ):
@@ -54,8 +56,8 @@ for package in (
     binaries.extend(package_binaries)
     hiddenimports.extend(package_hiddenimports)
 
-# python-rtmidi currently has no CPython 3.14 Windows wheel. If the builder
-# compiled/installed it from source via --with-midi, include its package too.
+# If the builder installed the optional native MIDI backend via --with-midi,
+# include its package too.
 if importlib.util.find_spec("rtmidi") is not None:
     package_datas, package_binaries, package_hiddenimports = collect_all("rtmidi")
     datas.extend(package_datas)
@@ -117,5 +119,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=str(ICON),
+    icon=str(ICON) if ICON is not None else None,
 )

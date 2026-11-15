@@ -1,0 +1,124 @@
+name: Cross-platform Versioned Builds
+
+on:
+  workflow_dispatch:
+    inputs:
+      compression:
+        description: ZIP compression for the downloadable release archives
+        type: choice
+        required: true
+        default: deflate
+        options:
+          - deflate
+          - stored
+          - bzip2
+          - lzma
+      compression_level:
+        description: Deflate level 0-9 or BZIP2 level 1-9 (ignored by stored/LZMA)
+        type: number
+        required: true
+        default: 6
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.platform }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: windows-x64
+            python: "3.12"
+            binary: "dist/eli_lab AVTranslator.exe"
+          - os: ubuntu-22.04
+            platform: linux-x86_64
+            python: "3.12"
+            binary: "dist/eli_lab AVTranslator"
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 100
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up CPython
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          architecture: x64
+          cache: pip
+          cache-dependency-path: requirements-build-pyinstaller.txt
+
+      - name: Install Linux Qt/OpenGL/audio runtime libraries
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libasound2 \
+            libegl1 \
+            libgl1 \
+            libpulse0 \
+            libx11-xcb1 \
+            libxcb-cursor0 \
+            libxcb-icccm4 \
+            libxcb-keysyms1 \
+            libxcb-randr0 \
+            libxcb-render-util0 \
+            libxcb-shape0 \
+            libxcb-sync1 \
+            libxcb-xfixes0 \
+            libxcb-xinerama0 \
+            libxcb-xkb1 \
+            libxkbcommon-x11-0
+
+      - name: Create project-local environment (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: py -3.12 -m venv .venv
+
+      - name: Create project-local environment (Linux)
+        if: runner.os == 'Linux'
+        run: python -m venv .venv
+
+      - name: Build and self-check Windows executable
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: .\.venv\Scripts\python.exe .\scripts\build_pyinstaller.py
+
+      - name: Build and self-check Linux executable
+        if: runner.os == 'Linux'
+        shell: bash
+        run: .venv/bin/python scripts/build_pyinstaller.py
+
+      - name: Create versioned Windows release archive
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: .\.venv\Scripts\python.exe .\scripts\package_release.py --binary "${{ matrix.binary }}" --platform "${{ matrix.platform }}" --compression "${{ inputs.compression }}" --level "${{ inputs.compression_level }}"
+
+      - name: Create versioned Linux release archive
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          .venv/bin/python scripts/package_release.py \
+            --binary "${{ matrix.binary }}" \
+            --platform "${{ matrix.platform }}" \
+            --compression "${{ inputs.compression }}" \
+            --level "${{ inputs.compression_level }}"
+
+      - name: Upload versioned release archive
+        uses: actions/upload-artifact@v4
+        with:
+          name: eli-lab-avtranslator-${{ matrix.platform }}-run-${{ github.run_number }}
+          path: dist/releases/*.zip
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload build report
+        uses: actions/upload-artifact@v4
+        with:
+          name: eli-lab-avtranslator-build-report-${{ matrix.platform }}-run-${{ github.run_number }}
+          path: build/pyinstaller-build-report.txt
+          if-no-files-found: error
+          retention-days: 30

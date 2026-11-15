@@ -36,7 +36,8 @@ The Wiki is an index to the technical guides. Use the [Field manual](MANUAL.md) 
 
 - [Project format](PROJECT_FORMAT.md) — `.eliav` and `.eliset`.
 - [Windows setup](SETUP_WINDOWS.md) — installation, operation and troubleshooting.
-- [Windows executable build](BUILD_PYINSTALLER_WINDOWS.md) — local PyInstaller process.
+- [Cross-platform versioned builds](BUILD_CROSS_PLATFORM.md) — one-run Windows/Linux native builds and ZIP compression options.
+- [Windows executable build](BUILD_PYINSTALLER_WINDOWS.md) — Windows-specific PyInstaller process and extraction troubleshooting.
 - [Build notes](BUILD_WINDOWS.md) — additional build information.
 
 ## Development notes

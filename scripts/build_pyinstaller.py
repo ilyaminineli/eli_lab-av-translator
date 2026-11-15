@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import os
+import shlex
 import shutil
 import struct
 import subprocess
@@ -19,11 +20,23 @@ if str(ROOT) not in sys.path:
 
 from config import APP_NAME, APP_VER, ICON_PATH  # noqa: E402
 
-PROJECT_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
+IS_WINDOWS = sys.platform == "win32"
+IS_LINUX = sys.platform.startswith("linux")
+if IS_WINDOWS:
+    PROJECT_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
+    PLATFORM_ID = "windows-x64"
+    EXECUTABLE = ROOT / "dist" / f"{APP_NAME}.exe"
+elif IS_LINUX:
+    PROJECT_PYTHON = ROOT / ".venv" / "bin" / "python"
+    PLATFORM_ID = "linux-x86_64"
+    EXECUTABLE = ROOT / "dist" / APP_NAME
+else:
+    PROJECT_PYTHON = ROOT / ".venv" / "bin" / "python"
+    PLATFORM_ID = sys.platform
+    EXECUTABLE = ROOT / "dist" / APP_NAME
 REQUIREMENTS = ROOT / "requirements-build-pyinstaller.txt"
 MIDI_REQUIREMENTS = ROOT / "requirements-build-pyinstaller-midi.txt"
 SPEC = ROOT / "AVTranslator.spec"
-EXE = ROOT / "dist" / f"{APP_NAME}.exe"
 BUILD_TEMP_DIR = Path(
     os.path.expandvars(
         os.environ.get("AVT_BUILD_TEMP_DIR", str(ROOT / "build" / "tmp"))
@@ -39,7 +52,12 @@ PIP_CACHE_DIR = Path(
 def run(
     command: list[str], *, timeout: int | None = None
 ) -> subprocess.CompletedProcess[str]:
-    print("\n> " + subprocess.list2cmdline(command), flush=True)
+    rendered = (
+        subprocess.list2cmdline(command)
+        if os.name == "nt"
+        else shlex.join(command)
+    )
+    print("\n> " + rendered, flush=True)
     return subprocess.run(
         command,
         cwd=ROOT,
@@ -113,14 +131,14 @@ def sha256_file(path: Path) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build eli_lab AVTranslator as a Windows x64 one-file executable."
+        description="Build eli_lab AVTranslator as a native one-file executable for this OS."
     )
     parser.add_argument(
         "--with-midi",
         action="store_true",
         help=(
-            "also build/install the native python-rtmidi backend. On Python 3.14 this "
-            "requires the Visual Studio 2022 C++ Build Tools and Windows SDK."
+            "also build/install the optional native python-rtmidi backend. On Windows "
+            "with Python 3.14 this requires Visual Studio 2022 C++ Build Tools and the SDK."
         ),
     )
     return parser.parse_args()
@@ -153,13 +171,22 @@ def relaunch_in_project_venv() -> None:
 
 
 def validate_environment() -> None:
-    if os.name != "nt":
+    if not (IS_WINDOWS or IS_LINUX):
         raise SystemExit(
-            "This profile builds a native Windows executable and must run on Windows."
+            "Native release builds are supported on Windows x64 and Linux x86_64. "
+            f"Current platform: {sys.platform}."
         )
+    if IS_LINUX:
+        import platform
+
+        if platform.machine().lower() not in {"x86_64", "amd64"}:
+            raise SystemExit(
+                "The Linux release profile currently targets x86_64; "
+                f"current architecture: {platform.machine()}."
+            )
     if struct.calcsize("P") * 8 != 64:
         raise SystemExit(
-            "A 64-bit Python interpreter is required for the Windows x64 executable."
+            "A 64-bit Python interpreter is required for this native executable."
         )
     if sys.implementation.name != "cpython" or not (3, 12) <= sys.version_info[:2] < (
         3,
@@ -241,21 +268,14 @@ def main() -> int:
     )
     if args.with_midi:
         print(
-            "\nBuilding optional python-rtmidi from source. A working MSVC C++ toolchain "
-            "and Windows SDK must be installed.",
+            "\nInstalling the optional native python-rtmidi backend. "
+            "A compatible wheel or platform C++ build toolchain is required.",
             flush=True,
         )
-        run(
-            [
-                python,
-                "-m",
-                "pip",
-                "install",
-                "--no-binary=python-rtmidi",
-                "-r",
-                str(MIDI_REQUIREMENTS),
-            ]
-        )
+        midi_command = [python, "-m", "pip", "install", "-r", str(MIDI_REQUIREMENTS)]
+        if IS_WINDOWS and sys.version_info >= (3, 14):
+            midi_command[4:4] = ["--no-binary=python-rtmidi"]
+        run(midi_command)
     run([python, "-m", "pip", "check"])
 
     # Verify the expected runtime imports before starting packaging.
@@ -306,14 +326,15 @@ def main() -> int:
         ]
     )
 
-    if not EXE.is_file():
+    if not EXECUTABLE.is_file():
         raise SystemExit(
-            f"PyInstaller completed without producing the expected executable: {EXE}"
+            "PyInstaller completed without producing the expected executable: "
+            f"{EXECUTABLE}"
         )
 
     print("\nRunning packaged --self-check ...", flush=True)
     check = subprocess.run(
-        [str(EXE), "--self-check"],
+        [str(EXECUTABLE), "--self-check"],
         cwd=ROOT,
         text=True,
         capture_output=True,
@@ -334,8 +355,8 @@ def main() -> int:
         midi_available = True
     except Exception:
         midi_available = False
-    size_mib = EXE.stat().st_size / (1024 * 1024)
-    digest = sha256_file(EXE)
+    size_mib = EXECUTABLE.stat().st_size / (1024 * 1024)
+    digest = sha256_file(EXECUTABLE)
     package_names = (
         "PySide6",
         "moderngl",
@@ -367,8 +388,9 @@ def main() -> int:
         f"Build temp directory: {BUILD_TEMP_DIR}\n"
         "Resolved packages:\n" + "\n".join(package_report) + "\n"
         f"Native MIDI backend: {'included' if midi_available else 'not included (optional)'}\n"
-        f"Executable: {EXE}\n"
-        f"Icon: {ICON_PATH}\n"
+        f"Platform: {PLATFORM_ID}\n"
+        f"Executable: {EXECUTABLE}\n"
+        f"Icon resource: {ICON_PATH}\n"
         f"Size: {size_mib:.1f} MiB\n"
         f"SHA-256: {digest}\n"
         "Packaged self-check: PASS\n"
@@ -380,7 +402,8 @@ def main() -> int:
     print("\n" + "=" * 72)
     print("BUILD COMPLETE")
     print(f"Application: {APP_NAME} {APP_VER}")
-    print(f"Executable: {EXE}")
+    print(f"Platform:   {PLATFORM_ID}")
+    print(f"Executable: {EXECUTABLE}")
     print(f"Size:       {size_mib:.1f} MiB")
     print(f"SHA-256:    {digest}")
     print(
@@ -397,7 +420,11 @@ if __name__ == "__main__":
     except subprocess.CalledProcessError as exc:
         print(
             "\nBUILD FAILED while running:",
-            subprocess.list2cmdline(exc.cmd),
+            (
+                subprocess.list2cmdline(exc.cmd)
+                if os.name == "nt"
+                else shlex.join(exc.cmd)
+            ),
             file=sys.stderr,
         )
         raise SystemExit(exc.returncode or 1) from exc

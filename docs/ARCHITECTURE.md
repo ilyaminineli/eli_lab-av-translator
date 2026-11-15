@@ -2,7 +2,7 @@
 
 ## Product and runtime boundaries
 
-eli_lab AVTranslator is a Windows-first live audiovisual/VJ performance environment. The application combines four independent video decks, composition layers, procedural generators, overlays, GPU effects and renderer-independent performance controls. M5 adds autonomous show orchestration and a shared asynchronous generator-raster pipeline. M6 is planned to make the operator experience more like a dedicated live VJ mixer.
+eli_lab AVTranslator is a Windows-first live audiovisual/VJ performance environment with native packaging for Windows x64 and Linux x86_64. The application combines four independent video decks, composition layers, procedural generators, overlays, GPU effects and renderer-independent performance controls. M5 adds autonomous show orchestration and a shared asynchronous generator-raster pipeline. M6 is planned to make the operator experience more like a dedicated live VJ mixer.
 
 The main ownership boundaries are:
 
@@ -95,9 +95,9 @@ This includes the SQLite media database, thumbnail cache and logs. User footage,
 
 ## Packaging and checks
 
-The supported local Windows one-file build is `scripts/build_pyinstaller.py`, using the repository-local `.venv` and `AVTranslator.spec`. It supports 64-bit CPython 3.12–3.14, installs the pinned build requirements, checks imports and dependencies, compiles the source, creates the one-file executable and runs its `--self-check`. Native `python-rtmidi` support is optional and may be built separately with `--with-midi`.
+The local native one-file build is `scripts/build_pyinstaller.py`, using the repository-local `.venv` and `AVTranslator.spec`. It supports 64-bit CPython 3.12–3.14 on Windows x64 and Linux x86_64, installs the pinned build requirements, checks imports and dependencies, compiles the source, creates a one-file executable and runs its `--self-check`. Native `python-rtmidi` support is optional.
 
-The GitHub Windows Onefile Build workflow is manual-dispatch only. The normal Quality workflow performs Python compilation and Ruff; it is not a GUI, OpenGL, audio-device or hardware integration test. See [Windows PyInstaller build guide](BUILD_PYINSTALLER_WINDOWS.md).
+The manual **Cross-platform Versioned Builds** workflow builds Windows and Linux on their respective native runners in one dispatch, then creates versioned ZIP archives with selectable Stored, Deflate, BZIP2 or LZMA compression. See [Cross-platform builds](BUILD_CROSS_PLATFORM.md) and [Windows build troubleshooting](BUILD_PYINSTALLER_WINDOWS.md). CI does not replace target-machine GUI, GPU, audio-device or projector acceptance.
 
 ## Project data
 

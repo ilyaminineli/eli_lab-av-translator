@@ -2,10 +2,14 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 
+import numpy as np
+
 from core.application import Application
 from core.automation import AutomationDirector
 from core.performance_control import ControlEvent, ControlEventQueue
 from generators.catalog import normalize_settings
+from media.frame_queue import FrameQueue
+from media.video_decoder import VideoDecoder
 from generators.raster_service import GeneratorRasterService
 from rendering.compositor import canvas_fit_scale
 
@@ -187,3 +191,47 @@ def test_control_queue_stays_bounded_during_a_large_sonic_pi_burst() -> None:
 
     queue.clear()
     assert len(queue) == 0
+
+
+
+class _FakeVideoFrame:
+    def __init__(self, width: int, height: int) -> None:
+        self.width = width
+        self.height = height
+        self.reformat_options: dict[str, object] | None = None
+
+    def reformat(self, **kwargs):
+        self.reformat_options = kwargs
+        return _FakeVideoFrame(int(kwargs["width"]), int(kwargs["height"]))
+
+    def to_ndarray(self, *, format: str):
+        assert format == "rgb24"
+        return np.zeros((self.height, self.width, 3), dtype=np.uint8)
+
+
+def test_video_downscale_uses_bicubic_at_the_1080p_ceiling(tmp_path) -> None:
+    from config import MAX_DECODE_HEIGHT, MAX_DECODE_WIDTH
+
+    decoder = VideoDecoder(tmp_path / "source.mp4", FrameQueue())
+    source = _FakeVideoFrame(2560, 1440)
+
+    pixels = decoder._preview_pixels(source)
+
+    assert (MAX_DECODE_WIDTH, MAX_DECODE_HEIGHT) == (1920, 1080)
+    assert pixels.shape == (1080, 1920, 3)
+    assert source.reformat_options == {
+        "width": 1920,
+        "height": 1080,
+        "format": "rgb24",
+        "interpolation": "BICUBIC",
+    }
+
+
+def test_video_decoder_never_upscales_native_footage(tmp_path) -> None:
+    decoder = VideoDecoder(tmp_path / "source.mp4", FrameQueue())
+    source = _FakeVideoFrame(1280, 720)
+
+    pixels = decoder._preview_pixels(source)
+
+    assert pixels.shape == (720, 1280, 3)
+    assert source.reformat_options is None
