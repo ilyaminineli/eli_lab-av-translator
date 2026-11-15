@@ -40,11 +40,12 @@ The UI resolves Newsreader, DM Mono, Segoe UI, Yu Gothic UI and Japanese display
 1. Verifies Windows x64 and 64-bit CPython 3.12–3.14.
 2. Verifies the source files, resource folders, dictionaries and PyInstaller spec are present.
 3. Installs/updates pip and installs `requirements-build-pyinstaller.txt` in the project-local environment.
-4. Runs `pip check` and checks the runtime imports.
-5. Compiles the application modules.
-6. Runs PyInstaller using `AVTranslator.spec` to produce a one-file windowed executable.
-7. Runs the packaged executable with `--self-check`.
-8. Writes `build\pyinstaller-build-report.txt` with application, Python and PyInstaller versions, resolved runtime package versions, icon path, executable size and SHA-256.
+4. Refreshes the local editable project metadata from the current checkout with `pip install --no-deps --force-reinstall -e .`. This removes stale dependency declarations left by older installed versions without changing the runtime requirements.
+5. Runs `pip check` and checks the runtime imports.
+6. Compiles the application modules.
+7. Runs PyInstaller using `AVTranslator.spec` to produce a one-file windowed executable.
+8. Runs the packaged executable with `--self-check`.
+9. Writes `build\pyinstaller-build-report.txt` with application, Python and PyInstaller versions, resolved runtime package versions, icon path, executable size and SHA-256.
 
 Output:
 
