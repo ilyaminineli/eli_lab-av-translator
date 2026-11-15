@@ -8,6 +8,7 @@ from urllib.parse import unquote, urlsplit
 ROOT = Path(__file__).resolve().parents[1]
 PAGES = (
     "index.html",
+    "site/index.html",
     "site/features.html",
     "site/manual.html",
     "site/wiki.html",
@@ -38,6 +39,10 @@ class PageInspector(HTMLParser):
         self.stylesheets: list[str] = []
         self.links: list[str] = []
         self.has_favicon = False
+        self.in_primary_nav = False
+        self._nav_anchor_href: str | None = None
+        self._nav_anchor_text = ""
+        self.primary_nav_links: list[tuple[str, str]] = []
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attributes = dict(attrs)
@@ -46,6 +51,8 @@ class PageInspector(HTMLParser):
         if tag == "head":
             self.in_head = True
             self.has_head = True
+        if tag == "nav" and "primary-nav" in str(attributes.get("class") or "").split():
+            self.in_primary_nav = True
         if self.in_head and tag == "title":
             self.has_title = True
         if tag == "meta":
@@ -66,8 +73,23 @@ class PageInspector(HTMLParser):
             href = str(attributes.get("href") or "")
             if href:
                 self.links.append(href)
+                if self.in_primary_nav:
+                    self._nav_anchor_href = href
+                    self._nav_anchor_text = ""
+
+    def handle_data(self, data: str) -> None:
+        if self.in_primary_nav and self._nav_anchor_href is not None:
+            self._nav_anchor_text += data
 
     def handle_endtag(self, tag: str) -> None:
+        if tag == "a" and self.in_primary_nav and self._nav_anchor_href is not None:
+            self.primary_nav_links.append(
+                (self._nav_anchor_href, self._nav_anchor_text.strip())
+            )
+            self._nav_anchor_href = None
+            self._nav_anchor_text = ""
+        if tag == "nav" and self.in_primary_nav:
+            self.in_primary_nav = False
         if tag == "head":
             self.in_head = False
 
@@ -83,6 +105,32 @@ def local_target(page: str, href: str) -> Path | None:
     if resolved == ".":
         resolved = "index.html"
     return ROOT / resolved
+
+
+def expected_primary_nav_targets(page: str) -> set[str]:
+    """Return every public section expected in a page's global navigation."""
+    if page == "index.html":
+        home = "index.html"
+        prefix = "site"
+    elif page == "site/index.html":
+        home = "site/index.html"
+        prefix = "site"
+    elif "/ja/" in f"/{page}":
+        home = "site/ja/index.html"
+        prefix = "site/ja"
+    else:
+        home = "index.html"
+        prefix = "site"
+    return {
+        home,
+        f"{prefix}/features.html",
+        f"{prefix}/manual.html",
+        f"{prefix}/wiki.html",
+        f"{prefix}/guides/windows-setup.html",
+        f"{prefix}/guides/sonic-pi.html",
+        f"{prefix}/downloads.html",
+        f"{prefix}/about.html",
+    }
 
 
 def main() -> int:
@@ -117,6 +165,20 @@ def main() -> int:
         for passed, label in checks:
             if not passed:
                 problems.append(f"{relative_path}: missing or invalid {label}")
+
+        actual_nav_targets: set[str] = set()
+        for href, _label in inspector.primary_nav_links:
+            target = local_target(relative_path, href)
+            if target is not None:
+                try:
+                    actual_nav_targets.add(target.relative_to(ROOT).as_posix())
+                except ValueError:
+                    pass
+        for expected_target in expected_primary_nav_targets(relative_path):
+            if expected_target not in actual_nav_targets:
+                problems.append(
+                    f"{relative_path}: primary navigation is missing {expected_target}"
+                )
 
         for href in inspector.links:
             parsed_href = urlsplit(href)
