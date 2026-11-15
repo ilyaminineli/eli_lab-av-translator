@@ -1,5 +1,7 @@
 # Windows one-file build with PyInstaller
 
+This document covers the Windows-specific local build and Windows extraction troubleshooting. To build both Windows x64 and Linux x86_64 in a single GitHub Actions run, see [Cross-platform versioned builds](BUILD_CROSS_PLATFORM.md).
+
 ## Supported build path
 
 The supported local Windows x64 one-file build is:
@@ -87,6 +89,8 @@ The target computer needs Windows 11 x64 and a graphics driver supporting OpenGL
 
 Run the executable with `--self-check` to validate packaged Python imports and bundled resources. The check does **not** initialize OpenGL, enumerate MIDI devices, test loopback capture, exercise projector output, run four video decks or measure long-duration performance. Those checks must be performed on the actual performance machine.
 
-## GitHub Actions workflow
+## GitHub Actions workflows
 
-The repository's **Windows Onefile Build** workflow is manual-dispatch only. It is an optional CI build path and does not run automatically on pushes or pull requests. The regular local build command remains `scripts/build_pyinstaller.py`.
+Use **Cross-platform Versioned Builds** for the normal one-run Windows + Linux release build. It runs each build on a native operating-system runner and uploads versioned compressed ZIP archives.
+
+The legacy **Windows Onefile Build** workflow remains a Windows-only manual fallback. The local Windows command above remains useful for quick individual test builds.
