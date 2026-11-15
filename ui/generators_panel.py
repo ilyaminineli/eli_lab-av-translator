@@ -129,6 +129,8 @@ class GeneratorsPanel(QWidget):
 
         self.text_group = QGroupBox("TEXT ART")
         text_form = QFormLayout(self.text_group)
+        text_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        text_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.text_edit = QPlainTextEdit()
         self.text_edit.setMaximumBlockCount(32)
         self.text_edit.setPlaceholderText(
@@ -151,6 +153,8 @@ class GeneratorsPanel(QWidget):
 
         raster_group = QGroupBox("TEXT RASTER")
         raster_form = QFormLayout(raster_group)
+        raster_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        raster_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.text_live_preview_check = QCheckBox("Live preview")
         self.text_live_preview_check.setChecked(True)
         self.text_live_preview_check.setToolTip(
@@ -302,6 +306,8 @@ class GeneratorsPanel(QWidget):
         )
         self.text_motion_group = QGroupBox("ANIMATED TYPOGRAPHY · GPU SHADER")
         motion_form = QFormLayout(self.text_motion_group)
+        motion_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        motion_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.text_animation_combo = QComboBox()
         self.text_animation_combo.addItem("None", "none")
         self.text_animation_combo.addItem("Type-on", "type_on")
@@ -334,6 +340,8 @@ class GeneratorsPanel(QWidget):
 
         random_group = QGroupBox("RANDOM TEXT POOL · ENGLISH / 日本語")
         random_form = QFormLayout(random_group)
+        random_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        random_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.random_language_combo = QComboBox()
         self.random_language_combo.addItem("Bilingual", "bilingual")
         self.random_language_combo.addItem("English", "english")
@@ -374,6 +382,8 @@ class GeneratorsPanel(QWidget):
 
         self.geometry_group = QGroupBox("GEOMETRY")
         geometry_form = QFormLayout(self.geometry_group)
+        geometry_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        geometry_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.geometry_pattern_combo = QComboBox()
         self.geometry_pattern_combo.addItems(
             [
@@ -398,6 +408,8 @@ class GeneratorsPanel(QWidget):
 
         self.waveform_group = QGroupBox("WAVEFORM")
         waveform_form = QFormLayout(self.waveform_group)
+        waveform_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        waveform_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.waveform_pattern_combo = QComboBox()
         self.waveform_pattern_combo.addItems(
             ["sine", "lissajous", "orbit", "radial", "rose"]
@@ -419,6 +431,8 @@ class GeneratorsPanel(QWidget):
 
         self.particles_group = QGroupBox("GPU PARTICLE FIELD · LEGACY")
         particles_form = QFormLayout(self.particles_group)
+        particles_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        particles_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.particle_density_slider, self.particle_density_value = self._slider(
             particles_form, "FIELD DENSITY", 4, 120, 42
         )
@@ -441,6 +455,8 @@ class GeneratorsPanel(QWidget):
 
         self.particle_system_group = QGroupBox("PARTICLE SYSTEM 2.0 · GPU PHYSICS")
         system_form = QFormLayout(self.particle_system_group)
+        system_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        system_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.particle_system_count_slider, self.particle_system_count_value = (
             self._slider(system_form, "PARTICLES · HARD CAP 8192", 128, 8192, 4096)
         )
@@ -578,6 +594,8 @@ class GeneratorsPanel(QWidget):
 
         self.style_group = QGroupBox("COLOUR AND ANIMATION")
         style_form = QFormLayout(self.style_group)
+        style_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        style_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.primary_color = QLineEdit("#E8E4DA")
         self.secondary_color = QLineEdit("#8678A8")
         self.background_color = QLineEdit("#00000000")
@@ -607,6 +625,8 @@ class GeneratorsPanel(QWidget):
 
         self.layer_appearance_group = QGroupBox("LAYER APPEARANCE")
         appearance_form = QFormLayout(self.layer_appearance_group)
+        appearance_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        appearance_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.blend_mode_combo = QComboBox()
         self.blend_mode_combo.addItems(
             ["normal", "add", "screen", "multiply", "difference"]
@@ -619,6 +639,8 @@ class GeneratorsPanel(QWidget):
 
         self.overlay_group = QGroupBox("IMAGE / VIDEO OVERLAY")
         overlay_form = QFormLayout(self.overlay_group)
+        overlay_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        overlay_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.overlay_in_spin = QDoubleSpinBox()
         self.overlay_in_spin.setRange(0.0, 86400.0)
         self.overlay_in_spin.setDecimals(2)
