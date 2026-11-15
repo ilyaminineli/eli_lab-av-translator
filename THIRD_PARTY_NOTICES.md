@@ -33,4 +33,4 @@ The repository bundles image libraries under resources/textures/, including dire
 
 ## Application authorship
 
-eli_lab AVTranslator is authored by Ilya Minin (Eli), eli_lab, 2026. No separate project-wide open-source licence file was present in the repository during this audit; do not assume that the application source itself is licensed for unrestricted redistribution.
+eli_lab AVTranslator is authored by Eli Minin, eli_lab, 2026. No separate project-wide open-source licence file was present in the repository during this audit; do not assume that the application source itself is licensed for unrestricted redistribution.

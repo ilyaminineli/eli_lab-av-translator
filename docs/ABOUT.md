@@ -6,7 +6,7 @@ section: 04 / PROJECT
 
 eli_lab AVTranslator is a Windows desktop environment for live audiovisual composition and performance. It brings footage, typography, procedural graphics and visual effects into one system that can respond to sound, musical time, MIDI and OSC.
 
-The project is developed as part of **eli_lab** by **Ilya Minin (Eli)**.
+The project is developed as part of **eli_lab** by **Eli Minin**.
 
 Its central idea is simple: a visual composition should be something that can be performed, not only something that is rendered once and finished.
 

@@ -6,9 +6,9 @@ from pathlib import Path
 
 APP_NAME = "eli_lab AVTranslator"
 APP_VER = "0.6.0"
-APP_AUTHOR = "Ilya Minin (Eli)"
+APP_AUTHOR = "Eli Minin"
 APP_STUDIO = "eli_lab"
-APP_COPYRIGHT = "© 2026 Ilya Minin (Eli) · eli_lab"
+APP_COPYRIGHT = "© 2026 Eli Minin · eli_lab"
 APP_REPOSITORY_URL = "https://github.com/ilyaminineli/eli_lab-av-translator"
 
 DEFAULT_CANVAS_WIDTH = 1920
