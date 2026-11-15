@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPlainTextEdit,
     QPushButton,
+    QScrollArea,
     QSpinBox,
     QVBoxLayout,
     QWidget,
@@ -91,9 +92,16 @@ class PerformanceTimelinePanel(QWidget):
         self._loading = False
         self._definition_revision = -1
 
-        root = QVBoxLayout(self)
-        root.setContentsMargins(8, 8, 8, 8)
-        root.setSpacing(8)
+        outer = QVBoxLayout(self)
+        outer.setContentsMargins(0, 0, 0, 0)
+        self.scroll = QScrollArea(self)
+        self.scroll.setWidgetResizable(True)
+        self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        body = QWidget()
+        body.setMinimumWidth(0)
+        root = QVBoxLayout(body)
+        root.setContentsMargins(12, 12, 12, 14)
+        root.setSpacing(12)
 
         header = QHBoxLayout()
         title = QLabel("SHOW TIMELINE")
@@ -189,6 +197,8 @@ class PerformanceTimelinePanel(QWidget):
         structure_row.addWidget(self.clear_button)
         root.addLayout(structure_row)
         root.addStretch(1)
+        self.scroll.setWidget(body)
+        outer.addWidget(self.scroll, 1)
 
         self.type_combo.currentIndexChanged.connect(self._type_changed)
         self.add_button.clicked.connect(self._add_event)
