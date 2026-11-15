@@ -377,6 +377,7 @@ class MainWindow(QMainWindow):
             # Retain the user's dock arrangement, but upgrade the deck strip height
             # so its transport and loop/lock controls are not clipped by old states.
             QTimer.singleShot(0, self._apply_responsive_deck_size)
+            QTimer.singleShot(0, self._migrate_compact_operator_dock_width_once)
 
         self._runtime_timer = QTimer(self)
         # Refresh queues and automation at the configured render cadence.
@@ -543,7 +544,7 @@ class MainWindow(QMainWindow):
             return
         self._responsive_compact = compact
         side_minimum = 150 if compact else 190
-        right_minimum = 205 if compact else 245
+        right_minimum = 340 if compact else 275
         for dock in (self.media_dock, self.asset_library_dock):
             dock.setMinimumWidth(side_minimum)
         for dock in (
@@ -556,7 +557,7 @@ class MainWindow(QMainWindow):
             self.performance_timeline_dock,
         ):
             dock.setMinimumWidth(right_minimum)
-        self.deck_dock.setMinimumHeight(200 if compact else 220)
+        self.deck_dock.setMinimumHeight(180 if compact else 220)
         self.preview_dock.setMinimumSize(
             180 if compact else 230,
             125 if compact else 160,
@@ -595,6 +596,27 @@ class MainWindow(QMainWindow):
             Qt.Orientation.Vertical,
         )
 
+    def _migrate_compact_operator_dock_width_once(self) -> None:
+        """Widen legacy compact layouts once when their operator dock is cramped."""
+        if not self._is_compact_workspace():
+            return
+        if self._ui_settings.value(
+            "ui/compact_operator_layout_v1", False, type=bool
+        ):
+            return
+
+        width = max(self.width(), self.minimumWidth())
+        target_width = max(360, min(520, round(width * 0.55)))
+        cramped_threshold = max(340, round(width * 0.42))
+        if self.layer_dock.width() < cramped_threshold:
+            self.resizeDocks(
+                [self.layer_dock],
+                [target_width],
+                Qt.Orientation.Horizontal,
+            )
+        self._ui_settings.setValue("ui/compact_operator_layout_v1", True)
+        self._ui_settings.sync()
+
     def _apply_default_dock_sizes(self) -> None:
         # Rebalance dock widths against the available editor area. Portrait-ish
         # 4:3 displays use narrower side docks and retain a usable center canvas.
@@ -604,8 +626,10 @@ class MainWindow(QMainWindow):
         height = max(self.height(), self.minimumHeight())
         if compact:
             left_width = max(150, min(220, round(width * 0.17)))
-            right_width = max(230, min(310, round(width * 0.29)))
-            deck_height = max(220, min(340, round(height * 0.34)))
+            # The compact operator layout intentionally gives Layers enough
+            # horizontal room for field labels, readouts and the controls tab.
+            right_width = max(360, min(520, round(width * 0.55)))
+            deck_height = max(180, min(300, round(height * 0.28)))
         else:
             left_width = max(220, min(340, round(width * 0.19)))
             right_width = max(300, min(420, round(width * 0.27)))

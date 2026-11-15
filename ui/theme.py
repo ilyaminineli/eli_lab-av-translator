@@ -4,7 +4,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
 
 from config import RESOURCE_DIR
-from ui.hints import ToolTipFilter
+from ui.hints import ToolTipFilter, WheelGuard
 
 APP_STYLE = """
 QMainWindow, QDialog, QMessageBox, QWidget {
@@ -192,6 +192,41 @@ QDoubleSpinBox:focus, QPlainTextEdit:focus, QTextEdit:focus {
 QComboBox::drop-down {
     border: 0;
     width: 22px;
+}
+QLabel#fieldCaption {
+    color: #a3a3a3;
+    font-family: "DM Mono", "Consolas", monospace;
+    font-size: 8pt;
+    letter-spacing: 0.08em;
+}
+QLabel#sliderReadout {
+    color: #a3a3a3;
+    font-family: "DM Mono", "Consolas", monospace;
+    font-size: 8pt;
+    min-height: 22px;
+}
+QComboBox#propertyCombo {
+    font-family: "DM Mono", "Consolas", monospace;
+    font-size: 8.5pt;
+    letter-spacing: 0.02em;
+}
+QSlider#propertySlider::groove:horizontal {
+    height: 2px;
+    background: #3c3c3c;
+}
+QSlider#propertySlider::sub-page:horizontal {
+    background: #cfcfcf;
+}
+QSlider#propertySlider::add-page:horizontal {
+    background: #292929;
+}
+QSlider#propertySlider::handle:horizontal {
+    width: 11px;
+    height: 11px;
+    margin: -5px 0;
+    background: #eeeeee;
+    border: 1px solid #eeeeee;
+    border-radius: 6px;
 }
 QComboBox QAbstractItemView {
     background: #111111;
@@ -447,6 +482,12 @@ def configure_application_theme(
     tooltip_filter = ToolTipFilter(show_hints, app)
     app.installEventFilter(tooltip_filter)
     app._eli_tooltip_filter = tooltip_filter
+
+    wheel_guard = getattr(app, "_eli_wheel_guard", None)
+    if not isinstance(wheel_guard, WheelGuard):
+        wheel_guard = WheelGuard(app)
+        app.installEventFilter(wheel_guard)
+        app._eli_wheel_guard = wheel_guard
 
     icon_directory = (RESOURCE_DIR / "icons").resolve()
     close_icon = (icon_directory / "dock-close.svg").as_posix()

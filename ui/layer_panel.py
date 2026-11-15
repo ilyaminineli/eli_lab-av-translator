@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import html
 import time
 
 from PySide6.QtCore import Qt, Signal
@@ -96,8 +97,11 @@ class LayerPanel(QWidget):
         self.scale = self._add_slider(transform_layout, "UNIFORM SCALE", 10, 200, 100)
         self.rotation = self._add_slider(transform_layout, "ROTATION", -180, 180, 0)
         blend_row = QHBoxLayout()
-        blend_row.addWidget(QLabel("BLEND MODE"))
+        blend_caption = QLabel("BLEND MODE")
+        blend_caption.setObjectName("fieldCaption")
+        blend_row.addWidget(blend_caption)
         self.selected_blend_combo = QComboBox()
+        self.selected_blend_combo.setObjectName("propertyCombo")
         self.selected_blend_combo.addItems(_BLEND_MODES)
         blend_row.addWidget(self.selected_blend_combo, 1)
         transform_layout.addLayout(blend_row)
@@ -264,7 +268,7 @@ class LayerPanel(QWidget):
         )
         self.panel_splitter.setStretchFactor(0, 2)
         self.panel_splitter.setStretchFactor(1, 3)
-        self.panel_splitter.setSizes([180, 260])
+        self.panel_splitter.setSizes([150, 320])
         layout.addWidget(self.panel_splitter, 1)
 
         self.layer_lock_check.toggled.connect(self._selected_layer_lock_changed)
@@ -306,6 +310,19 @@ class LayerPanel(QWidget):
         self.refresh()
 
     @staticmethod
+    def _slider_readout(title: str, value: int) -> str:
+        safe_title = html.escape(str(title))
+        safe_value = html.escape(str(int(value)))
+        return (
+            '<span style="font-family:\'DM Mono\',\'Consolas\',monospace;'
+            'font-size:8pt;color:#969696;">'
+            f"{safe_title}</span>&nbsp;"
+            '<span style="font-family:\'DM Mono\',\'Consolas\',monospace;'
+            'font-size:8.5pt;color:#eeeeee;">'
+            f"{safe_value}</span>"
+        )
+
+    @staticmethod
     def _add_slider(
         parent_layout: QVBoxLayout,
         title: str,
@@ -314,15 +331,26 @@ class LayerPanel(QWidget):
         value: int,
     ) -> tuple[QLabel, QSlider]:
         row = QHBoxLayout()
-        label = QLabel(f"{title}  {value}")
-        label.setMinimumWidth(0)
+        row.setContentsMargins(0, 1, 0, 1)
+        row.setSpacing(10)
+        label = QLabel(LayerPanel._slider_readout(title, value))
+        label.setObjectName("sliderReadout")
+        label.setTextFormat(Qt.TextFormat.RichText)
+        label.setMinimumWidth(124)
+        label.setMaximumWidth(152)
+        label.setToolTip(f"{title} · {value}")
         slider = QSlider(Qt.Orientation.Horizontal)
+        slider.setObjectName("propertySlider")
         slider.setRange(minimum, maximum)
         slider.setValue(value)
+        slider.setMinimumWidth(48)
         slider.valueChanged.connect(
-            lambda current: label.setText(f"{title}  {current}")
+            lambda current: (
+                label.setText(LayerPanel._slider_readout(title, current)),
+                label.setToolTip(f"{title} · {current}"),
+            )
         )
-        row.addWidget(label)
+        row.addWidget(label, 0)
         row.addWidget(slider, 1)
         parent_layout.addLayout(row)
         return label, slider
@@ -336,15 +364,26 @@ class LayerPanel(QWidget):
         value: int,
     ) -> tuple[QLabel, QSlider]:
         row = QHBoxLayout()
-        label = QLabel(f"{title}  {value}")
-        label.setMinimumWidth(0)
+        row.setContentsMargins(0, 1, 0, 1)
+        row.setSpacing(10)
+        label = QLabel(LayerPanel._slider_readout(title, value))
+        label.setObjectName("sliderReadout")
+        label.setTextFormat(Qt.TextFormat.RichText)
+        label.setMinimumWidth(124)
+        label.setMaximumWidth(152)
+        label.setToolTip(f"{title} · {value}")
         slider = QSlider(Qt.Orientation.Horizontal)
+        slider.setObjectName("propertySlider")
         slider.setRange(minimum, maximum)
         slider.setValue(value)
+        slider.setMinimumWidth(48)
         slider.valueChanged.connect(
-            lambda current: label.setText(f"{title}  {current}")
+            lambda current: (
+                label.setText(LayerPanel._slider_readout(title, current)),
+                label.setToolTip(f"{title} · {current}"),
+            )
         )
-        row.addWidget(label)
+        row.addWidget(label, 0)
         row.addWidget(slider, 1)
         parent_layout.addLayout(row)
         return label, slider
@@ -822,7 +861,7 @@ class LayerPanel(QWidget):
             slider.blockSignals(True)
             slider.setValue(value)
             slider.blockSignals(False)
-            label.setText(f"{title}  {value}")
+            label.setText(self._slider_readout(title, value))
         live = self.application.layer_performance_modifier_values(layer.id)
         for modifier_id, (_enabled, _detail, meter) in self._modifier_widgets.items():
             value = live.get(modifier_id)
@@ -841,7 +880,7 @@ class LayerPanel(QWidget):
             value = round(float(values[key]) * scale)
             slider.setValue(value)
             slider.blockSignals(False)
-            label.setText(f"{title}  {value}")
+            label.setText(self._slider_readout(title, value))
         self.layer_fx_preset.blockSignals(True)
         imported = self.application.composition.metadata.get("layer_fx_presets", {})
         known_names = (

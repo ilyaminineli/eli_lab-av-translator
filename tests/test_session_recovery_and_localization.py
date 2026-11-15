@@ -5,8 +5,8 @@ import os
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtCore import QEvent
-from PySide6.QtGui import QAction, QIcon, QImage
+from PySide6.QtCore import QEvent, QPoint, QPointF, Qt
+from PySide6.QtGui import QAction, QIcon, QImage, QWheelEvent
 from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
@@ -15,6 +15,8 @@ from PySide6.QtWidgets import (
     QLabel,
     QLineEdit,
     QProgressBar,
+    QScrollArea,
+    QSlider,
     QTableWidget,
     QTabWidget,
     QVBoxLayout,
@@ -24,7 +26,7 @@ from PySide6.QtWidgets import (
 from config import ICON_PATH
 from core.application import Application
 from ui.generators_panel import GeneratorsPanel
-from ui.hints import ToolTipFilter
+from ui.hints import ToolTipFilter, WheelGuard
 from ui.i18n import (
     apply_widget_translations,
     set_ui_format,
@@ -343,3 +345,64 @@ def test_performance_macro_strip_uses_three_column_layout() -> None:
         if panel is not None:
             panel.close()
         application.shutdown()
+
+
+
+def test_wheel_over_controls_scrolls_panel_without_changing_values() -> None:
+    qt_app = QApplication.instance() or QApplication([])
+    scroll_area = QScrollArea()
+    scroll_area.setWidgetResizable(True)
+    content = QWidget()
+    layout = QVBoxLayout(content)
+
+    slider = QSlider(Qt.Orientation.Horizontal)
+    slider.setRange(0, 100)
+    slider.setValue(40)
+    combo = QComboBox()
+    combo.addItems(["Manual", "MIDI", "OSC"])
+    layout.addWidget(slider)
+    layout.addWidget(combo)
+    for index in range(24):
+        layout.addWidget(QLabel(f"SCROLL ROW {index:02d}"))
+
+    scroll_area.setWidget(content)
+    scroll_area.resize(280, 150)
+    scroll_area.show()
+    guard = WheelGuard(qt_app)
+    qt_app.installEventFilter(guard)
+    qt_app.processEvents()
+
+    def wheel_over(widget: QWidget) -> None:
+        local_position = QPointF(widget.width() / 2, widget.height() / 2)
+        global_position = QPointF(
+            widget.mapToGlobal(local_position.toPoint())
+        )
+        event = QWheelEvent(
+            local_position,
+            global_position,
+            QPoint(0, 0),
+            QPoint(0, -120),
+            Qt.MouseButton.NoButton,
+            Qt.KeyboardModifier.NoModifier,
+            Qt.ScrollPhase.NoScrollPhase,
+            False,
+        )
+        QApplication.sendEvent(widget, event)
+        qt_app.processEvents()
+
+    try:
+        vertical_scroll = scroll_area.verticalScrollBar()
+        initial_scroll = vertical_scroll.value()
+        wheel_over(slider)
+        assert slider.value() == 40
+        after_slider_scroll = vertical_scroll.value()
+        assert after_slider_scroll > initial_scroll
+
+        initial_combo_index = combo.currentIndex()
+        wheel_over(combo)
+        assert combo.currentIndex() == initial_combo_index
+        assert vertical_scroll.value() > after_slider_scroll
+    finally:
+        qt_app.removeEventFilter(guard)
+        scroll_area.close()
+        guard.deleteLater()
