@@ -1529,6 +1529,8 @@ class MainWindow(QMainWindow):
                 font: 8pt "DM Mono", "Consolas", monospace;
             }
             QLabel#aboutLink { color: #eeeeee; }
+            QLabel#aboutLink a:link,
+            QLabel#aboutLink a:visited { color: #eeeeee; text-decoration: underline; }
             QPushButton#aboutOk {
                 min-width: 82px;
                 min-height: 28px;
