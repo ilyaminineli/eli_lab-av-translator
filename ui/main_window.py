@@ -707,7 +707,8 @@ class MainWindow(QMainWindow):
         for tab_bar in self.findChildren(QTabBar):
             tab_bar.setUsesScrollButtons(True)
             tab_bar.setElideMode(Qt.TextElideMode.ElideNone)
-            tab_bar.setExpanding(False)
+            if tab_bar.count() >= 4:
+                tab_bar.setExpanding(False)
             for index in range(tab_bar.count()):
                 visible_title = tab_bar.tabText(index)
                 dock = title_to_dock.get(visible_title)
