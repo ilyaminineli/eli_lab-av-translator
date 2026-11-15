@@ -37,6 +37,7 @@ from core.performance_modifiers import (
     LayerPerformanceModifier,
 )
 from ui.i18n import set_ui_text, ui_text
+from ui.panel_layout import configure_inspector_form
 
 
 class ModulatorBankPanel(QWidget):
@@ -130,6 +131,7 @@ class ModulatorBankPanel(QWidget):
         editor_group = QGroupBox("MODULATOR EDITOR")
         editor = QVBoxLayout(editor_group)
         common_form = QFormLayout()
+        configure_inspector_form(common_form)
         self.name_edit = QLineEdit()
         self.enabled_check = QCheckBox("ENABLED")
         self.sync_combo = QComboBox()
@@ -148,6 +150,7 @@ class ModulatorBankPanel(QWidget):
         self.lfo_group = QGroupBox("LFO")
         self.lfo_group.setToolTip("LFO · CYCLIC WAVEFORM")
         lfo_form = QFormLayout(self.lfo_group)
+        configure_inspector_form(lfo_form)
         lfo_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         lfo_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.waveform_combo = QComboBox()
@@ -175,6 +178,7 @@ class ModulatorBankPanel(QWidget):
         self.follower_group = QGroupBox("FOLLOWER")
         self.follower_group.setToolTip("CONTROL FOLLOWER · SONIC PI / AUDIO")
         follower_form = QFormLayout(self.follower_group)
+        configure_inspector_form(follower_form)
         follower_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         follower_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -202,6 +206,7 @@ class ModulatorBankPanel(QWidget):
 
         self.envelope_group = QGroupBox("ENVELOPE · ADSR")
         envelope_form = QFormLayout(self.envelope_group)
+        configure_inspector_form(envelope_form)
         envelope_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         envelope_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -231,6 +236,7 @@ class ModulatorBankPanel(QWidget):
         self.sequence_group = QGroupBox("STEP SEQUENCER")
         self.sequence_group.setToolTip("STEP SEQUENCER / RHYTHM GRID")
         sequence_form = QFormLayout(self.sequence_group)
+        configure_inspector_form(sequence_form)
         sequence_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         sequence_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -256,6 +262,7 @@ class ModulatorBankPanel(QWidget):
         self.euclidean_group = QGroupBox("EUCLIDEAN RHYTHM")
         self.euclidean_group.setToolTip("EUCLIDEAN RHYTHM GENERATOR")
         euclidean_form = QFormLayout(self.euclidean_group)
+        configure_inspector_form(euclidean_form)
         euclidean_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         euclidean_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -292,6 +299,7 @@ class ModulatorBankPanel(QWidget):
         assignment_group = QGroupBox("ASSIGNMENT")
         assignment_group.setToolTip("ASSIGN TO SELECTED LAYER")
         assignment_form = QFormLayout(assignment_group)
+        configure_inspector_form(assignment_form)
         assignment_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         assignment_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
