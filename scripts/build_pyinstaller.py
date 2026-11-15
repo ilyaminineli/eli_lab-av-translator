@@ -3,8 +3,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import os
-import shutil
 import shlex
+import shutil
 import struct
 import subprocess
 import sys
@@ -18,7 +18,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from config import APP_NAME, APP_SLUG, APP_VER, ICON_PATH  # noqa: E402
+from config import APP_NAME, APP_VER, ICON_PATH  # noqa: E402
 
 IS_WINDOWS = sys.platform == "win32"
 IS_LINUX = sys.platform.startswith("linux")
@@ -356,7 +356,7 @@ def main() -> int:
     except Exception:
         midi_available = False
     size_mib = EXECUTABLE.stat().st_size / (1024 * 1024)
-    digest = sha256_file(EXE)
+    digest = sha256_file(EXECUTABLE)
     package_names = (
         "PySide6",
         "moderngl",
