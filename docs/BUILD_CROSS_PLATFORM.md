@@ -54,6 +54,11 @@ Create a versioned release ZIP manually:
 The Linux builder targets x86_64 and is tested in the CI workflow on Ubuntu 22.04. A local build needs CPython 3.12–3.14, build tools, and Qt/OpenGL/audio runtime libraries. On Debian/Ubuntu, install the runtime libraries used by the CI runner, then run:
 
 ~~~bash
+sudo apt-get update
+sudo apt-get install -y build-essential libasound2 libegl1 libgl1 libpulse0 libx11-xcb1 libxcb-cursor0 libxcb-icccm4 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-shape0 libxcb-sync1 libxcb-xfixes0 libxcb-xinerama0 libxcb-xkb1 libxkbcommon-x11-0
+~~~
+
+~~~bash
 python3.12 -m venv .venv
 .venv/bin/python -m pip install --upgrade pip
 .venv/bin/python scripts/build_pyinstaller.py
