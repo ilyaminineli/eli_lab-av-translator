@@ -46,6 +46,7 @@ class DeckCard(QGroupBox):
 
     def __init__(self, deck_id: str, title: str, parent=None) -> None:
         super().__init__(title, parent)
+        self.setObjectName("deckCard")
         self.deck_id = deck_id
         self._thumbnail_source: str | None = None
         self._held = False
