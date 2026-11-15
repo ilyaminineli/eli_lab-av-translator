@@ -25,7 +25,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from config import APP_NAME, APP_VER, ICON_PATH
+from config import APP_VER, ICON_PATH
 from core.application import Application
 from ui.generators_panel import GeneratorsPanel
 from ui.hints import ToolTipFilter, WheelGuard
