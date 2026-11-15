@@ -25,7 +25,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from config import APP_VER, ICON_PATH
+from config import APP_NAME, APP_SLUG, APP_VER, ICON_PATH
 from core.application import Application
 from ui.generators_panel import GeneratorsPanel
 from ui.hints import ToolTipFilter, WheelGuard
@@ -410,6 +410,9 @@ def test_package_and_build_metadata_are_consistent() -> None:
     build_script = (root / "scripts" / "build_pyinstaller.py").read_text(
         encoding="utf-8"
     )
+    release_script = (root / "scripts" / "package_release.py").read_text(
+        encoding="utf-8"
+    )
 
     assert project["version"] == APP_VER
     assert (
@@ -424,8 +427,20 @@ def test_package_and_build_metadata_are_consistent() -> None:
     assert "wheel" in build_requirements
     assert "from config import APP_NAME, ICON_PATH" in spec
     assert "name=APP_NAME" in spec
-    assert "ICON = ICON_PATH" in spec
+    assert 'ICON = ICON_PATH if sys.platform == "win32" else None' in spec
+    assert "icon=str(ICON) if ICON is not None else None" in spec
     assert "APP_NAME" in build_script
+    assert "IS_WINDOWS" in build_script
+    assert "IS_LINUX" in build_script
+    assert 'PLATFORM_ID = "windows-x64"' in build_script
+    assert 'PLATFORM_ID = "linux-x86_64"' in build_script
+    assert "APP_SLUG" in release_script
+    assert "zipfile.ZIP_DEFLATED" in release_script
+    assert "zipfile.ZIP_BZIP2" in release_script
+    assert "zipfile.ZIP_LZMA" in release_script
+    assert "zipfile.ZIP_STORED" in release_script
+    assert APP_NAME == "eli_lab AVTranslator"
+    assert APP_SLUG == "eli_lab-avtranslator"
     assert "APP_VER" in build_script
     assert "ICON_PATH" in build_script
     assert "--no-deps" in build_script
