@@ -3,7 +3,6 @@
 
 import importlib.util
 import sys
-import sysconfig
 from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_all
@@ -63,10 +62,9 @@ if importlib.util.find_spec("rtmidi") is not None:
     binaries.extend(package_binaries)
     hiddenimports.extend(package_hiddenimports)
 
-# Keep any PyAV wheel auxiliary DLL directory, if the installed wheel uses one.
-site_packages = Path(sysconfig.get_paths()["purelib"])
-for libs_dir in site_packages.glob("av.libs"):
-    binaries.extend((str(dll), ".") for dll in libs_dir.rglob("*.dll"))
+# The PyInstaller hook for PyAV collects Windows wheel DLLs as data under
+# "av.libs". Do not add a second copy as top-level binaries: that duplicates
+# the FFmpeg DLL payload and defeats the hook's preserved runtime directory.
 
 
 def deduplicate(items):
