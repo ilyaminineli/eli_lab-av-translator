@@ -99,7 +99,7 @@ class DeckCard(QGroupBox):
         controls = QHBoxLayout()
         controls.setSpacing(3)
         self.load_button = icon_button(
-            self, "load", "—", size=28
+            self, "load", "Load media into this deck", size=28
         )
         self.play_button = icon_button(
             self, "play", "Start or resume this deck", size=28

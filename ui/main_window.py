@@ -5,9 +5,10 @@ import random
 from pathlib import Path
 
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QAction, QGuiApplication, QKeySequence, QShortcut
+from PySide6.QtGui import QAction, QFontMetrics, QGuiApplication, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
+    QDialog,
     QDockWidget,
     QFileDialog,
     QHBoxLayout,
@@ -15,6 +16,7 @@ from PySide6.QtWidgets import (
     QMainWindow,
     QMessageBox,
     QPushButton,
+    QSizePolicy,
     QTabWidget,
     QToolBar,
     QVBoxLayout,
@@ -27,6 +29,7 @@ from config import (
     APP_REPOSITORY_URL,
     APP_STUDIO,
     APP_VER,
+    ICON_PATH,
     SESSION_RECOVERY_PATH,
 )
 from core.application import Application
@@ -38,6 +41,7 @@ from ui.deck_panel import DeckPanel
 from ui.effects_panel import EffectsPanel
 from ui.generators_panel import GeneratorsPanel
 from ui.i18n import apply_widget_translations, set_ui_text, tr, ui_text
+from ui.icons import icon_button
 from ui.layer_panel import LayerPanel
 from ui.media_browser import MediaBrowser
 from ui.modulator_bank_panel import ModulatorBankPanel
@@ -50,6 +54,38 @@ from ui.theme import apply_application_language
 from ui.transport_bar import TransportBar
 
 _LOG = logging.getLogger(__name__)
+
+
+class ElidingLabel(QLabel):
+    """Keep status text readable while preserving the complete value on hover."""
+
+    def __init__(self, text: str = "", parent=None) -> None:
+        self._full_text = str(text)
+        super().__init__("", parent)
+        self.setMinimumWidth(0)
+        self.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Preferred,
+        )
+        self.setText(self._full_text)
+
+    def setText(self, text: str) -> None:
+        self._full_text = str(text)
+        self.setToolTip(self._full_text)
+        self._apply_elision()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._apply_elision()
+
+    def _apply_elision(self) -> None:
+        width = max(0, self.contentsRect().width())
+        display = QFontMetrics(self.font()).elidedText(
+            self._full_text,
+            Qt.TextElideMode.ElideRight,
+            width,
+        )
+        super().setText(display)
 
 
 class MainWindow(QMainWindow):
@@ -193,11 +229,13 @@ class MainWindow(QMainWindow):
         brand_layout = QHBoxLayout(brand_widget)
         brand_layout.setContentsMargins(2, 0, 12, 0)
         brand_layout.setSpacing(8)
-        brand_mark = QLabel("絵", brand_widget)
+        brand_mark = QLabel(brand_widget)
         brand_mark.setObjectName("brandMark")
-        brand_mark.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-        brand_mark.setToolTip("絵 · visual composition")
-        brand_name = QLabel("eli_lab\nAVTranslator", brand_widget)
+        brand_mark.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        brand_mark.setFixedSize(38, 38)
+        brand_mark.setPixmap(QIcon(str(ICON_PATH)).pixmap(36, 36))
+        brand_mark.setToolTip("絵 · eli_lab identity")
+        brand_name = QLabel("eli_lab\nAVT", brand_widget)
         brand_name.setObjectName("brandName")
         brand_name.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         brand_layout.addWidget(brand_mark)
@@ -215,20 +253,19 @@ class MainWindow(QMainWindow):
         toolbar.addWidget(self.performance_mode_button)
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, toolbar)
 
-        self.control_status_label = QLabel(
+        self.control_status_label = ElidingLabel(
             self.application.performance_control.status_text()
         )
         self._last_control_revision = self.application.performance_control.revision
         self._last_timeline_state_revision = int(
             self.application.performance_timeline.snapshot()["state_revision"]
         )
-        self.control_status_label.setToolTip(
-            "M3 control state · normalized transport, scene and macro events"
-        )
-        self.statusBar().addPermanentWidget(self.control_status_label)
-        self.status_label = QLabel(
-            ui_text("LOCAL PREVIEW · IDLE")
-        )
+        self.control_status_label.setMinimumWidth(0)
+        self.control_status_label.setMaximumWidth(330)
+        self.statusBar().addPermanentWidget(self.control_status_label, 1)
+        self.status_label = ElidingLabel(ui_text("LOCAL PREVIEW · IDLE"))
+        self.status_label.setMinimumWidth(0)
+        self.status_label.setMaximumWidth(230)
         self.statusBar().addPermanentWidget(self.status_label)
         self.performance_view.render_status_changed.connect(
             lambda value: set_ui_text(self.status_label, value, self._language)
@@ -1457,18 +1494,112 @@ class MainWindow(QMainWindow):
             self._autosave_timer.start()
 
     def show_about(self) -> None:
-        QMessageBox.about(
-            self,
-            f"{APP_NAME} {APP_VER}",
-            (
-                f"<h3>{APP_NAME} {APP_VER}</h3>"
-                f"<p>{tr('about.tagline', self._language)}</p>"
-                f"<p>{tr('about.created', self._language)}: "
-                f"{APP_AUTHOR} · {APP_STUDIO}</p>"
-                f'<p><a href="{APP_REPOSITORY_URL}">'
-                f'{tr("about.project", self._language)}</a></p>'
-            ),
+        """Show a compact, application-styled About panel without native accent chrome."""
+        dialog = QDialog(self)
+        dialog.setObjectName("aboutDialog")
+        dialog.setWindowTitle(f"{APP_NAME} {APP_VER}")
+        dialog.setWindowFlags(
+            Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint
         )
+        dialog.setModal(True)
+        dialog.setMinimumWidth(440)
+        dialog.setStyleSheet(
+            """
+            QDialog#aboutDialog {
+                background: #0b0b0b;
+                color: #eeeeee;
+                border: 1px solid #555555;
+            }
+            QWidget#aboutTitleBar { background: #151515; }
+            QLabel#aboutTitle {
+                color: #bdbdbd;
+                font: 8pt "DM Mono", "Consolas", monospace;
+                letter-spacing: 1px;
+            }
+            QLabel#aboutName {
+                color: #f1f1f1;
+                font: 500 16pt "Newsreader", "Georgia", serif;
+            }
+            QLabel#aboutCopy {
+                color: #c0c0c0;
+                font-size: 9pt;
+            }
+            QLabel#aboutMeta {
+                color: #999999;
+                font: 8pt "DM Mono", "Consolas", monospace;
+            }
+            QLabel#aboutLink { color: #eeeeee; }
+            QLabel#aboutLink a:link,
+            QLabel#aboutLink a:visited { color: #eeeeee; text-decoration: underline; }
+            QPushButton#aboutOk {
+                min-width: 82px;
+                min-height: 28px;
+            }
+            """
+        )
+        root = QVBoxLayout(dialog)
+        root.setContentsMargins(1, 1, 1, 1)
+        root.setSpacing(0)
+
+        title_bar = QWidget(dialog)
+        title_bar.setObjectName("aboutTitleBar")
+        title_layout = QHBoxLayout(title_bar)
+        title_layout.setContentsMargins(12, 6, 7, 6)
+        title_layout.setSpacing(8)
+        title = QLabel(f"ABOUT  /  {APP_NAME.upper()}  /  {APP_VER}")
+        title.setObjectName("aboutTitle")
+        title_layout.addWidget(title)
+        title_layout.addStretch(1)
+        close_button = icon_button(title_bar, "close", "Close About", size=27)
+        close_button.clicked.connect(dialog.reject)
+        title_layout.addWidget(close_button)
+        root.addWidget(title_bar)
+
+        content = QWidget(dialog)
+        content_layout = QHBoxLayout(content)
+        content_layout.setContentsMargins(20, 22, 20, 18)
+        content_layout.setSpacing(22)
+        mark = QLabel(content)
+        mark.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignHCenter)
+        mark.setFixedSize(82, 82)
+        mark.setPixmap(QIcon(str(ICON_PATH)).pixmap(76, 76))
+        mark.setToolTip("絵 · eli_lab identity")
+        content_layout.addWidget(mark)
+
+        copy_column = QVBoxLayout()
+        copy_column.setContentsMargins(0, 0, 0, 0)
+        copy_column.setSpacing(9)
+        app_name = QLabel(f"{APP_NAME} {APP_VER}")
+        app_name.setObjectName("aboutName")
+        tagline = QLabel(tr("about.tagline", self._language))
+        tagline.setObjectName("aboutCopy")
+        tagline.setWordWrap(True)
+        created = QLabel(
+            f"{tr('about.created', self._language)}: {APP_AUTHOR} · {APP_STUDIO}"
+        )
+        created.setObjectName("aboutMeta")
+        project = QLabel(
+            f'<a href="{APP_REPOSITORY_URL}">{tr("about.project", self._language)}</a>'
+        )
+        project.setObjectName("aboutLink")
+        project.setOpenExternalLinks(True)
+        copy_column.addWidget(app_name)
+        copy_column.addWidget(tagline)
+        copy_column.addWidget(created)
+        copy_column.addWidget(project)
+        copy_column.addStretch(1)
+        content_layout.addLayout(copy_column, 1)
+        root.addWidget(content)
+
+        footer = QHBoxLayout()
+        footer.setContentsMargins(16, 0, 16, 14)
+        footer.addStretch(1)
+        ok_button = QPushButton("OK", dialog)
+        ok_button.setObjectName("aboutOk")
+        ok_button.clicked.connect(dialog.accept)
+        footer.addWidget(ok_button)
+        root.addLayout(footer)
+        dialog.exec()
 
     def closeEvent(self, event) -> None:
         self._ui_settings.setValue("ui/main_window_geometry_v2", self.saveGeometry())

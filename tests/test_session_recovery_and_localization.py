@@ -10,6 +10,7 @@ from PySide6.QtGui import QAction, QImage
 from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
+    QGridLayout,
     QGroupBox,
     QLabel,
     QLineEdit,
@@ -32,7 +33,11 @@ from ui.i18n import (
 )
 from ui.performance_timeline_panel import PerformanceTimelinePanel
 from ui.settings_dialog import SettingsDialog
-from ui.theme import application_font_families, configure_application_theme
+from ui.theme import (
+    _typography_stylesheet,
+    application_font_families,
+    configure_application_theme,
+)
 
 
 def test_theme_accepts_hover_hint_preference() -> None:
@@ -80,6 +85,9 @@ def test_japanese_catalog_and_english_fallback() -> None:
     assert tr("about.tagline", "ja") == "映像・生成表現・音楽をつなぐライブ映像制作ツール。"
     assert tr("menu.settings", "en") == "Settings"
     assert tr("missing.key", "ja") == "missing.key"
+    assert ui_text("PERF MODIFIERS", "ja") == "レイヤー別モディファイア"
+    assert ui_text("TEXT MOTION", "ja") == "テキストモーション"
+    assert ui_text("MASTER FX", "ja") == "マスターFX"
 
 
 
@@ -131,9 +139,11 @@ def test_language_font_fallback_order_is_readable() -> None:
     assert japanese[0] == "Yu Gothic UI"
     assert "Noto Sans JP" in japanese
     assert "Noto Sans" in english
-    assert "Newsreader" in __import__("ui.theme", fromlist=["_typography_stylesheet"])._typography_stylesheet("en")
-    assert "DM Mono" in __import__("ui.theme", fromlist=["_typography_stylesheet"])._typography_stylesheet("en")
-    assert "Noto Serif JP" in __import__("ui.theme", fromlist=["_typography_stylesheet"])._typography_stylesheet("ja")
+    english_typography = _typography_stylesheet("en")
+    japanese_typography = _typography_stylesheet("ja")
+    assert "Newsreader" in english_typography
+    assert "DM Mono" in english_typography
+    assert "Noto Serif JP" in japanese_typography
 
 
 def test_timeline_payload_explanation_is_japanese_hover_help_only() -> None:
@@ -283,11 +293,13 @@ def test_recovery_snapshot_does_not_auto_start_performance_or_decks(
 
 
 
-def test_japanese_application_mark_is_available() -> None:
-    from ui.icons import app_icon
+def test_final_application_seal_is_packaged() -> None:
+    from PySide6.QtGui import QIcon
+    from config import ICON_PATH
 
-    icon = app_icon("japanese_mark")
-    assert not icon.isNull()
+    assert ICON_PATH.name == "eli-lab-mark.ico"
+    assert ICON_PATH.is_file()
+    assert not QIcon(str(ICON_PATH)).isNull()
 
 
 def test_theme_uses_responsive_group_and_control_metrics() -> None:
@@ -297,3 +309,39 @@ def test_theme_uses_responsive_group_and_control_metrics() -> None:
     assert "min-height: 20px" in APP_STYLE
     assert "Newsreader" in _typography_stylesheet("en")
     assert "DM Mono" in _typography_stylesheet("en")
+
+
+
+def test_eliding_status_label_keeps_full_diagnostic_text() -> None:
+    qt_app = QApplication.instance() or QApplication([])
+    from ui.main_window import ElidingLabel
+
+    label = ElidingLabel()
+    label.resize(76, 24)
+    source = "PROJECTOR READY · NVIDIA GeForce RTX 4060"
+    label.setText(source)
+    label.show()
+    qt_app.processEvents()
+
+    assert label.text() != source
+    assert label.toolTip() == source
+    label.close()
+
+
+def test_performance_macro_strip_uses_three_column_layout() -> None:
+    from ui.performance_control_panel import PerformanceControlPanel
+
+    application = Application()
+    panel = None
+    try:
+        panel = PerformanceControlPanel(application)
+        layout = panel.performance_macro_group.layout()
+        assert isinstance(layout, QGridLayout)
+        assert len(panel.macro_sliders) == 6
+        assert layout.columnCount() == 3
+        panel.take_performance_macro_group()
+        assert panel.performance_macro_group.maximumHeight() >= 260
+    finally:
+        if panel is not None:
+            panel.close()
+        application.shutdown()

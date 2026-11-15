@@ -84,16 +84,24 @@ class GeneratorsPanel(QWidget):
         row_two.addWidget(self.add_particles_button)
         row_three = QHBoxLayout()
         row_three.setSpacing(8)
-        self.add_particle_system_button = QPushButton("+ PARTICLE SYSTEM 2.0")
+        self.add_particle_system_button = QPushButton("+ PARTICLE SYSTEM")
         row_three.addWidget(self.add_particle_system_button)
         row_four = QHBoxLayout()
         row_four.setSpacing(8)
-        self.add_overlay_button = QPushButton("+ IMAGE / VIDEO OVERLAY")
+        self.add_overlay_button = QPushButton("+ OVERLAY")
         self.remove_button = icon_button(
             self, "trash", "Remove selected visual layer", size=30
         )
         row_four.addWidget(self.add_overlay_button)
         row_four.addWidget(self.remove_button)
+        self.add_text_button.setText("+ TEXT")
+        self.add_particles_button.setText("+ PARTICLES")
+        self.add_geometry_button.setToolTip("Add a procedural geometry generator")
+        self.add_text_button.setToolTip("Add a Text Art typography layer")
+        self.add_waveform_button.setToolTip("Add an audio-reactive waveform generator")
+        self.add_particles_button.setToolTip("Add a GPU particle field")
+        self.add_particle_system_button.setToolTip("Add Particle System 2.0 with GPU simulation")
+        self.add_overlay_button.setToolTip("Add an image or video overlay")
         for action_button in (
             self.add_geometry_button,
             self.add_text_button,
@@ -102,7 +110,7 @@ class GeneratorsPanel(QWidget):
             self.add_particle_system_button,
             self.add_overlay_button,
         ):
-            action_button.setMinimumHeight(34)
+            action_button.setMinimumHeight(32)
             action_button.setSizePolicy(
                 QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
             )
@@ -121,6 +129,8 @@ class GeneratorsPanel(QWidget):
 
         self.text_group = QGroupBox("TEXT ART")
         text_form = QFormLayout(self.text_group)
+        text_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        text_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.text_edit = QPlainTextEdit()
         self.text_edit.setMaximumBlockCount(32)
         self.text_edit.setPlaceholderText(
@@ -143,6 +153,8 @@ class GeneratorsPanel(QWidget):
 
         raster_group = QGroupBox("TEXT RASTER")
         raster_form = QFormLayout(raster_group)
+        raster_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        raster_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.text_live_preview_check = QCheckBox("Live preview")
         self.text_live_preview_check.setChecked(True)
         self.text_live_preview_check.setToolTip(
@@ -292,8 +304,11 @@ class GeneratorsPanel(QWidget):
         self.collage_variation_slider, self.collage_variation_value = self._slider(
             text_form, "COLLAGE VARIATION", 0, 100, 65
         )
-        self.text_motion_group = QGroupBox("ANIMATED TYPOGRAPHY · GPU SHADER")
+        self.text_motion_group = QGroupBox("TEXT MOTION")
+        self.text_motion_group.setToolTip("ANIMATED TYPOGRAPHY · GPU SHADER")
         motion_form = QFormLayout(self.text_motion_group)
+        motion_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        motion_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.text_animation_combo = QComboBox()
         self.text_animation_combo.addItem("None", "none")
         self.text_animation_combo.addItem("Type-on", "type_on")
@@ -324,8 +339,11 @@ class GeneratorsPanel(QWidget):
         )
         text_form.addRow(self.text_motion_group)
 
-        random_group = QGroupBox("RANDOM TEXT POOL · ENGLISH / 日本語")
+        random_group = QGroupBox("RANDOM TEXT POOL")
+        random_group.setToolTip("RANDOM TEXT POOL · ENGLISH / 日本語")
         random_form = QFormLayout(random_group)
+        random_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        random_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.random_language_combo = QComboBox()
         self.random_language_combo.addItem("Bilingual", "bilingual")
         self.random_language_combo.addItem("English", "english")
@@ -366,6 +384,8 @@ class GeneratorsPanel(QWidget):
 
         self.geometry_group = QGroupBox("GEOMETRY")
         geometry_form = QFormLayout(self.geometry_group)
+        geometry_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        geometry_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.geometry_pattern_combo = QComboBox()
         self.geometry_pattern_combo.addItems(
             [
@@ -390,6 +410,8 @@ class GeneratorsPanel(QWidget):
 
         self.waveform_group = QGroupBox("WAVEFORM")
         waveform_form = QFormLayout(self.waveform_group)
+        waveform_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        waveform_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.waveform_pattern_combo = QComboBox()
         self.waveform_pattern_combo.addItems(
             ["sine", "lissajous", "orbit", "radial", "rose"]
@@ -409,8 +431,11 @@ class GeneratorsPanel(QWidget):
         )
         root.addWidget(self.waveform_group)
 
-        self.particles_group = QGroupBox("GPU PARTICLE FIELD · LEGACY")
+        self.particles_group = QGroupBox("PARTICLE FIELD")
+        self.particles_group.setToolTip("GPU PARTICLE FIELD · LEGACY")
         particles_form = QFormLayout(self.particles_group)
+        particles_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        particles_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.particle_density_slider, self.particle_density_value = self._slider(
             particles_form, "FIELD DENSITY", 4, 120, 42
         )
@@ -431,8 +456,11 @@ class GeneratorsPanel(QWidget):
         particles_form.addRow("FIELD MODE", self.particle_mode_combo)
         root.addWidget(self.particles_group)
 
-        self.particle_system_group = QGroupBox("PARTICLE SYSTEM 2.0 · GPU PHYSICS")
+        self.particle_system_group = QGroupBox("PARTICLE SYSTEM 2.0")
+        self.particle_system_group.setToolTip("PARTICLE SYSTEM 2.0 · GPU PHYSICS")
         system_form = QFormLayout(self.particle_system_group)
+        system_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        system_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.particle_system_count_slider, self.particle_system_count_value = (
             self._slider(system_form, "PARTICLES · HARD CAP 8192", 128, 8192, 4096)
         )
@@ -570,6 +598,8 @@ class GeneratorsPanel(QWidget):
 
         self.style_group = QGroupBox("COLOUR AND ANIMATION")
         style_form = QFormLayout(self.style_group)
+        style_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        style_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.primary_color = QLineEdit("#E8E4DA")
         self.secondary_color = QLineEdit("#8678A8")
         self.background_color = QLineEdit("#00000000")
@@ -599,6 +629,8 @@ class GeneratorsPanel(QWidget):
 
         self.layer_appearance_group = QGroupBox("LAYER APPEARANCE")
         appearance_form = QFormLayout(self.layer_appearance_group)
+        appearance_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        appearance_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.blend_mode_combo = QComboBox()
         self.blend_mode_combo.addItems(
             ["normal", "add", "screen", "multiply", "difference"]
@@ -611,6 +643,8 @@ class GeneratorsPanel(QWidget):
 
         self.overlay_group = QGroupBox("IMAGE / VIDEO OVERLAY")
         overlay_form = QFormLayout(self.overlay_group)
+        overlay_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        overlay_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.overlay_in_spin = QDoubleSpinBox()
         self.overlay_in_spin.setRange(0.0, 86400.0)
         self.overlay_in_spin.setDecimals(2)

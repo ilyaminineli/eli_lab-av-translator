@@ -73,7 +73,8 @@ class PerformanceControlPanel(QWidget):
         root.setContentsMargins(8, 8, 8, 8)
         root.setSpacing(8)
 
-        self.autonomous_mode_group = QGroupBox("AUTO PERFORMANCE MODE")
+        self.autonomous_mode_group = QGroupBox("AUTO PERF")
+        self.autonomous_mode_group.setToolTip("AUTO PERFORMANCE MODE")
         mode_layout = QVBoxLayout(self.autonomous_mode_group)
         self.performance_mode_status_label = QLabel(
             "OFF · arm the show from the main Performance toolbar."
@@ -85,7 +86,8 @@ class PerformanceControlPanel(QWidget):
         mode_layout.addWidget(self.performance_mode_status_label)
         root.addWidget(self.autonomous_mode_group)
 
-        self.transport_group = QGroupBox("INTERNAL TRANSPORT / TEST CLOCK")
+        self.transport_group = QGroupBox("TRANSPORT")
+        self.transport_group.setToolTip("INTERNAL TRANSPORT / TEST CLOCK")
         transport_form = QFormLayout(self.transport_group)
         transport_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         transport_form.setFieldGrowthPolicy(
@@ -119,7 +121,8 @@ class PerformanceControlPanel(QWidget):
         transport_form.addRow("CLOCK", self.transport_status)
         root.addWidget(self.transport_group)
 
-        self.midi_group = QGroupBox("MIDI CONTROLLERS · OPTIONAL")
+        self.midi_group = QGroupBox("MIDI")
+        self.midi_group.setToolTip("MIDI CONTROLLERS · OPTIONAL")
         midi_form = QFormLayout(self.midi_group)
         midi_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         midi_form.setFieldGrowthPolicy(
@@ -182,26 +185,32 @@ class PerformanceControlPanel(QWidget):
         midi_form.addRow("STATUS", self.midi_status_label)
         root.addWidget(self.midi_group)
 
-        self.performance_macro_group = QGroupBox("PERF MACROS · NORMALIZED 0–1")
-        macro_layout = QVBoxLayout(self.performance_macro_group)
+        self.performance_macro_group = QGroupBox("PERF MACROS")
+        self.performance_macro_group.setToolTip("PERF MACROS · NORMALIZED 0–1")
+        macro_layout = QGridLayout(self.performance_macro_group)
+        macro_layout.setContentsMargins(10, 8, 10, 8)
+        macro_layout.setHorizontalSpacing(10)
+        macro_layout.setVerticalSpacing(6)
         self.macro_sliders: dict[str, QSlider] = {}
         self.macro_value_labels: dict[str, QLabel] = {}
         self.macro_source_combos: dict[str, QComboBox] = {}
         self.macro_key_edits: dict[str, QKeySequenceEdit] = {}
-        for macro in self.application.performance_macro_engine.list_macros():
+        macros = self.application.performance_macro_engine.list_macros()
+        for index, macro in enumerate(macros):
             macro_row = QWidget(self.performance_macro_group)
-            macro_row.setObjectName("performanceMacroRow")
+            macro_row.setObjectName("performanceMacroTile")
             row_layout = QVBoxLayout(macro_row)
-            row_layout.setContentsMargins(0, 5, 0, 6)
-            row_layout.setSpacing(5)
+            row_layout.setContentsMargins(7, 5, 7, 5)
+            row_layout.setSpacing(3)
 
             heading = QHBoxLayout()
+            heading.setContentsMargins(0, 0, 0, 0)
             name_label = QLabel(macro.name)
             name_label.setObjectName("macroName")
             name_label.setToolTip(macro.description)
             value_label = QLabel("0.00")
             value_label.setObjectName("macroValue")
-            value_label.setMinimumWidth(42)
+            value_label.setMinimumWidth(38)
             value_label.setAlignment(
                 Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter
             )
@@ -214,23 +223,34 @@ class PerformanceControlPanel(QWidget):
             slider.setRange(0, 1000)
             slider.setSingleStep(5)
             slider.setMinimumWidth(0)
+            slider.setMaximumHeight(18)
             row_layout.addWidget(slider)
 
             routing = QHBoxLayout()
-            routing.setSpacing(7)
+            routing.setContentsMargins(0, 0, 0, 0)
+            routing.setSpacing(6)
             source_combo = QComboBox()
             source_combo.setMinimumWidth(0)
             source_combo.setSizePolicy(
                 QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
             )
-            source_combo.setMinimumContentsLength(5)
+            source_combo.setMinimumContentsLength(4)
             key_edit = QKeySequenceEdit(QKeySequence(macro.keyboard_shortcut))
-            key_edit.setMinimumWidth(62)
-            key_edit.setMaximumWidth(92)
+            key_edit.setMinimumWidth(54)
+            key_edit.setMaximumWidth(82)
             routing.addWidget(source_combo, 1)
             routing.addWidget(key_edit, 0)
             row_layout.addLayout(routing)
-            macro_layout.addWidget(macro_row)
+
+            grid_row, grid_column = divmod(index, 3)
+            macro_layout.addWidget(macro_row, grid_row, grid_column)
+            macro_row.setStyleSheet(
+                "QWidget#performanceMacroTile { "
+                "background: #101010; border: 1px solid #292929; }"
+                "QLabel#macroName { color: #e8e8e8; font-size: 8.5pt; }"
+                "QLabel#macroValue { color: #bdbdbd; "
+                "font-family: 'DM Mono', Consolas, monospace; font-size: 8pt; }"
+            )
 
             self.macro_sliders[macro.macro_id] = slider
             self.macro_value_labels[macro.macro_id] = value_label
@@ -252,16 +272,18 @@ class PerformanceControlPanel(QWidget):
                 )
             )
             macro_row.setProperty("macro_id", macro.macro_id)
-            macro_row.setStyleSheet(
-                "QWidget#performanceMacroRow { border-bottom: 1px solid #292929; }"
-                "QLabel#macroName { color: #e8e8e8; font-size: 9pt; }"
-                "QLabel#macroValue { color: #bdbdbd; font-family: 'DM Mono', Consolas, monospace; }"
-            )
+
+        macro_layout.setColumnStretch(0, 1)
+        macro_layout.setColumnStretch(1, 1)
+        macro_layout.setColumnStretch(2, 1)
         self.macro_status_label = QLabel("")
         self.macro_status_label.setWordWrap(True)
         self.macro_status_label.setObjectName("mutedLabel")
-        macro_layout.addWidget(self.macro_status_label)
+        status_row = (len(macros) + 2) // 3
+        macro_layout.addWidget(self.macro_status_label, status_row, 0, 1, 2)
         root.addWidget(self.performance_macro_group)
+
+
 
         self.performance_scene_group = QGroupBox("VJ SCENE BANK")
         scene_form = QFormLayout(self.performance_scene_group)
@@ -328,7 +350,8 @@ class PerformanceControlPanel(QWidget):
         scene_form.addRow(scene_buttons)
         root.addWidget(self.performance_scene_group)
 
-        self.osc_group = QGroupBox("SONIC PI CONNECTION · OSC /eli_lab/v1")
+        self.osc_group = QGroupBox("SONIC PI / OSC")
+        self.osc_group.setToolTip("SONIC PI CONNECTION · OSC /eli_lab/v1")
         osc_form = QFormLayout(self.osc_group)
         osc_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         osc_form.setFieldGrowthPolicy(
@@ -394,7 +417,8 @@ class PerformanceControlPanel(QWidget):
         scene_form.addRow(self.scene_buttons)
         root.addWidget(self.scene_group)
 
-        self.audio_group = QGroupBox("AUDIO INPUT / SYSTEM LOOPBACK")
+        self.audio_group = QGroupBox("AUDIO INPUT")
+        self.audio_group.setToolTip("AUDIO INPUT / SYSTEM LOOPBACK")
         audio_layout = QVBoxLayout(self.audio_group)
         device_row = QHBoxLayout()
         self.audio_device_combo = QComboBox()
@@ -625,7 +649,8 @@ class PerformanceControlPanel(QWidget):
         if layout is not None:
             layout.removeWidget(self.performance_macro_group)
         self.performance_macro_group.setParent(parent)
-        self.performance_macro_group.setMaximumHeight(250)
+        self.performance_macro_group.setMinimumHeight(235)
+        self.performance_macro_group.setMaximumHeight(275)
         self.performance_macro_group.setObjectName("livePerformanceMacroStrip")
         return self.performance_macro_group
 

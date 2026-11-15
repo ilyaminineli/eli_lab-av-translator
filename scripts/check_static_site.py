@@ -37,6 +37,7 @@ class PageInspector(HTMLParser):
         self.has_viewport = False
         self.stylesheets: list[str] = []
         self.links: list[str] = []
+        self.has_favicon = False
 
     def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
         attributes = dict(attrs)
@@ -59,6 +60,8 @@ class PageInspector(HTMLParser):
                 self.links.append(href)
                 if "stylesheet" in relation:
                     self.stylesheets.append(href)
+                if "icon" in relation:
+                    self.has_favicon = True
         if tag == "a":
             href = str(attributes.get("href") or "")
             if href:
@@ -109,6 +112,7 @@ def main() -> int:
             (not any(token in html for token in ("{{", "{%", "---\n")),
              "no template/front-matter syntax"),
             (bool(inspector.stylesheets), "stylesheet link"),
+            (inspector.has_favicon, "application seal favicon"),
         )
         for passed, label in checks:
             if not passed:

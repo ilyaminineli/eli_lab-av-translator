@@ -28,8 +28,8 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         QColor(color),
         max(1.45, size / 13.0),
         Qt.PenStyle.SolidLine,
-        Qt.PenCapStyle.RoundCap,
-        Qt.PenJoinStyle.RoundJoin,
+        Qt.PenCapStyle.SquareCap,
+        Qt.PenJoinStyle.MiterJoin,
     )
     painter.setPen(pen)
     painter.setBrush(Qt.BrushStyle.NoBrush)
@@ -73,11 +73,11 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         filled_triangle(((8.0, 5.0), (19.0, 12.0), (8.0, 19.0)))
     elif name == "pause":
         painter.setBrush(QColor(color))
-        painter.drawRoundedRect(6.0, 5.0, 4.0, 14.0, 1.0, 1.0)
-        painter.drawRoundedRect(14.0, 5.0, 4.0, 14.0, 1.0, 1.0)
+        painter.drawRect(6, 5, 4, 14)
+        painter.drawRect(14, 5, 4, 14)
     elif name == "stop":
         painter.setBrush(QColor(color))
-        painter.drawRoundedRect(6.0, 6.0, 12.0, 12.0, 1.5, 1.5)
+        painter.drawRect(6, 6, 12, 12)
     elif name == "load":
         path(
             (
@@ -102,19 +102,19 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         line((16.5, 4.0), (20.0, 7.0), (16.5, 10.0))
         line((16.5, 14.0), (20.0, 17.0), (16.5, 20.0))
     elif name == "layout":
-        painter.drawRoundedRect(3.5, 4.0, 11.0, 8.5, 1.0, 1.0)
-        painter.drawRoundedRect(9.5, 11.5, 11.0, 8.5, 1.0, 1.0)
+        painter.drawRect(3, 4, 12, 9)
+        painter.drawRect(9, 11, 12, 9)
         line((7.0, 15.5), (7.0, 19.5), (11.0, 19.5))
     elif name == "sparkles":
         sparkle(11.0, 12.0, 7.0)
         sparkle(18.5, 5.5, 3.0)
         sparkle(5.0, 19.0, 2.5)
     elif name == "lock":
-        painter.drawRoundedRect(5.0, 10.0, 14.0, 10.0, 1.8, 1.8)
+        painter.drawRect(5, 10, 14, 10)
         painter.drawArc(QRectF(8.0, 3.0, 8.0, 12.0), 0, 180 * 16)
         line((12.0, 14.0), (12.0, 16.5))
     elif name == "unlock":
-        painter.drawRoundedRect(5.0, 10.0, 14.0, 10.0, 1.8, 1.8)
+        painter.drawRect(5, 10, 14, 10)
         painter.drawArc(QRectF(8.0, 3.0, 8.0, 12.0), 0, 115 * 16)
         line((16.0, 5.0), (18.5, 7.0))
         line((12.0, 14.0), (12.0, 16.5))
@@ -144,13 +144,13 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         line((12.0, 8.0), (12.0, 14.0))
         painter.drawPoint(QPointF(12.0, 17.0))
     elif name == "library":
-        painter.drawRoundedRect(3.5, 4.0, 5.0, 16.0, 0.8, 0.8)
-        painter.drawRoundedRect(10.0, 4.0, 5.0, 16.0, 0.8, 0.8)
-        painter.drawRoundedRect(16.5, 4.0, 4.0, 16.0, 0.8, 0.8)
+        painter.drawRect(3, 4, 5, 16)
+        painter.drawRect(10, 4, 5, 16)
+        painter.drawRect(17, 4, 4, 16)
         line((5.0, 7.0), (7.0, 7.0), (7.0, 16.5))
         line((11.5, 7.0), (13.5, 7.0), (13.5, 16.5))
     elif name == "image":
-        painter.drawRoundedRect(3.0, 4.0, 18.0, 16.0, 1.5, 1.5)
+        painter.drawRect(3, 4, 18, 16)
         painter.drawEllipse(QPointF(16.5, 8.5), 1.5, 1.5)
         path(((4.5, 17.5), (9.0, 12.5), (12.0, 15.0), (15.0, 11.5), (19.5, 17.5)))
     elif name == "menu":
@@ -167,25 +167,11 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         line((12.0, 4.0), (20.0, 4.0), (20.0, 12.0))
         line((20.0, 4.0), (10.0, 14.0))
     elif name == "dock":
-        painter.drawRoundedRect(3.5, 4.0, 17.0, 16.0, 1.5, 1.5)
+        painter.drawRect(3, 4, 17, 16)
         line((8.0, 7.0), (8.0, 17.0))
         line((8.0, 12.0), (16.0, 12.0))
         line((13.0, 9.0), (16.0, 12.0), (13.0, 15.0))
-    elif name in {"japanese_mark", "mark"}:
-        # A compact "絵" seal: an abstract composition glyph rather than
-        # a literal torii/flag motif. The negative space keeps it legible
-        # at both toolbar and Windows taskbar icon sizes.
-        painter.save()
-        painter.setPen(QPen(QColor(color), max(1.6, size / 12.0),
-                            Qt.PenStyle.SolidLine,
-                            Qt.PenCapStyle.SquareCap,
-                            Qt.PenJoinStyle.MiterJoin))
-        painter.drawRect(QRectF(3.2, 3.2, 17.6, 17.6))
-        line((6.2, 7.0), (17.7, 7.0))
-        line((6.2, 11.0), (17.7, 11.0))
-        line((7.0, 16.8), (11.8, 13.8), (17.2, 18.0))
-        line((12.0, 13.2), (12.0, 19.0))
-        painter.restore()
+
     else:
         painter.drawEllipse(QPointF(12.0, 12.0), 7.0, 7.0)
 

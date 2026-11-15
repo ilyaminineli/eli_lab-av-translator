@@ -115,7 +115,8 @@ class EffectsPanel(QWidget):
         content_layout.setContentsMargins(0, 0, 0, 0)
         content_layout.setSpacing(8)
 
-        group = QGroupBox("MASTER FILTERS + OVERLAYS")
+        group = QGroupBox("MASTER FX")
+        group.setToolTip("MASTER FILTERS + OVERLAYS")
         form = QFormLayout(group)
         form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
@@ -137,7 +138,8 @@ class EffectsPanel(QWidget):
             self._sliders[key] = (slider, value_label, scale)
         content_layout.addWidget(group)
 
-        geometry_group = QGroupBox("GEOMETRY + DISPLACEMENT")
+        geometry_group = QGroupBox("GEOMETRY")
+        geometry_group.setToolTip("GEOMETRY + DISPLACEMENT")
         geometry_form = QFormLayout(geometry_group)
         geometry_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         geometry_form.setFieldGrowthPolicy(
@@ -184,7 +186,8 @@ class EffectsPanel(QWidget):
         geometry_form.addRow("", self.displacement_luma_check)
         content_layout.addWidget(geometry_group)
 
-        feedback_group = QGroupBox("GPU FEEDBACK ENGINE")
+        feedback_group = QGroupBox("FEEDBACK")
+        feedback_group.setToolTip("GPU FEEDBACK ENGINE")
         feedback_form = QFormLayout(feedback_group)
         feedback_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         feedback_form.setFieldGrowthPolicy(

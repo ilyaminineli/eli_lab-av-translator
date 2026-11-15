@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFileDialog,
+    QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QHeaderView,
@@ -56,19 +57,23 @@ class LayerPanel(QWidget):
         self.setMinimumWidth(0)
 
         self.table = QTableWidget(0, 4)
-        self.table.setHorizontalHeaderLabels(["Visible", "Layer", "Opacity", "Blend"])
+        self.table.setHorizontalHeaderLabels(["On", "Layer", "Op.", "Blend"])
+        self.table.horizontalHeaderItem(2).setToolTip("Layer opacity")
+        self.table.horizontalHeaderItem(3).setToolTip("Layer blend mode")
         header = self.table.horizontalHeader()
         header.setSectionResizeMode(0, QHeaderView.ResizeMode.Fixed)
         header.setSectionResizeMode(1, QHeaderView.ResizeMode.Stretch)
         header.setSectionResizeMode(2, QHeaderView.ResizeMode.Fixed)
         header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)
-        self.table.setColumnWidth(0, 62)
-        self.table.setColumnWidth(2, 92)
-        self.table.setColumnWidth(3, 94)
-        self.table.setMinimumHeight(178)
+        self.table.setColumnWidth(0, 36)
+        self.table.setColumnWidth(2, 46)
+        self.table.setColumnWidth(3, 56)
+        self.table.setMinimumWidth(0)
+        self.table.setMinimumHeight(136)
         self.table.setAlternatingRowColors(False)
         self.table.setWordWrap(False)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        header.setMinimumSectionSize(38)
         self.table.setTextElideMode(Qt.TextElideMode.ElideMiddle)
         self.table.verticalHeader().setDefaultSectionSize(34)
         self.table.verticalHeader().setVisible(False)
@@ -98,14 +103,15 @@ class LayerPanel(QWidget):
         transform_layout.addLayout(blend_row)
         controls_layout.addWidget(self.transform_group)
 
-        self.performance_modifiers_group = QGroupBox("PER-LAYER PERFORMANCE MODIFIERS")
+        self.performance_modifiers_group = QGroupBox("PERF MODIFIERS")
+        self.performance_modifiers_group.setToolTip("PER-LAYER PERFORMANCE MODIFIERS")
         modifier_layout = QVBoxLayout(self.performance_modifiers_group)
         self.modifier_rhythm_status = QLabel("BEAT — · DOWNBEAT — · PHRASE —")
         self.modifier_rhythm_status.setObjectName("mutedLabel")
         modifier_layout.addWidget(self.modifier_rhythm_status)
         self.modifier_list = QListWidget()
-        self.modifier_list.setMinimumHeight(82)
-        self.modifier_list.setMaximumHeight(170)
+        self.modifier_list.setMinimumHeight(64)
+        self.modifier_list.setMaximumHeight(140)
         modifier_layout.addWidget(self.modifier_list)
 
         self.modifier_source_combo = QComboBox()
@@ -113,10 +119,12 @@ class LayerPanel(QWidget):
             self.modifier_source_combo.addItem(label, source_id)
         self.modifier_target_combo = QComboBox()
         self.modifier_curve_combo = QComboBox()
+        self.modifier_curve_combo.setMinimumWidth(0)
         self.modifier_curve_combo.addItem("Smoothstep", "smoothstep")
         self.modifier_curve_combo.addItem("Linear", "linear")
         self.modifier_curve_combo.addItem("Exponential", "exponential")
         self.modifier_polarity_combo = QComboBox()
+        self.modifier_polarity_combo.setMinimumWidth(0)
         self.modifier_polarity_combo.addItem("Positive", "positive")
         self.modifier_polarity_combo.addItem("Bipolar", "bipolar")
         modifier_layout.addWidget(QLabel("SOURCE"))
@@ -129,20 +137,29 @@ class LayerPanel(QWidget):
         response_row.addWidget(self.modifier_polarity_combo, 1)
         modifier_layout.addLayout(response_row)
         self.modifier_depth = self._add_slider(modifier_layout, "DEPTH · %", 0, 100, 12)
-        modifier_buttons = QHBoxLayout()
+        modifier_buttons = QGridLayout()
+        modifier_buttons.setHorizontalSpacing(6)
+        modifier_buttons.setVerticalSpacing(6)
         self.modifier_add_button = QPushButton("ADD MODIFIER")
         self.modifier_beat_button = QPushButton("BEAT")
         self.modifier_downbeat_button = QPushButton("DOWNBEAT")
         self.modifier_phrase_button = QPushButton("PHRASE")
-        for button in (
-            self.modifier_add_button,
-            self.modifier_beat_button,
-            self.modifier_downbeat_button,
-            self.modifier_phrase_button,
-        ):
-            modifier_buttons.addWidget(button)
+        self.modifier_add_button.setText("ADD")
+        self.modifier_remove_button = QPushButton("REMOVE MODIFIER")
+        self.modifier_add_button.setToolTip(
+            "Add a modifier with the selected source, target and response"
+        )
+        self.modifier_beat_button.setToolTip("Add a beat-synchronized modifier")
+        self.modifier_downbeat_button.setToolTip("Add a downbeat-synchronized modifier")
+        self.modifier_phrase_button.setToolTip("Add a phrase-synchronized modifier")
+        modifier_buttons.addWidget(self.modifier_add_button, 0, 0)
+        modifier_buttons.addWidget(self.modifier_beat_button, 0, 1)
+        modifier_buttons.addWidget(self.modifier_downbeat_button, 1, 0)
+        modifier_buttons.addWidget(self.modifier_phrase_button, 1, 1)
+        modifier_buttons.setColumnStretch(0, 1)
+        modifier_buttons.setColumnStretch(1, 1)
         modifier_layout.addLayout(modifier_buttons)
-        self.modifier_remove_button = QPushButton("REMOVE SELECTED MODIFIER")
+        self.modifier_remove_button.setToolTip("Remove the selected performance modifier")
         modifier_layout.addWidget(self.modifier_remove_button)
         controls_layout.addWidget(self.performance_modifiers_group)
         self._modifier_signature: tuple = ()
@@ -160,30 +177,46 @@ class LayerPanel(QWidget):
         self.fx_stage_list = QListWidget()
         self.fx_stage_list.setMaximumHeight(120)
         layer_fx_layout.addWidget(self.fx_stage_list)
-        stage_row = QHBoxLayout()
         self.fx_stage_type = QComboBox()
         for key, title in EFFECT_STAGE_TYPES.items():
             self.fx_stage_type.addItem(title, key)
-        stage_row.addWidget(self.fx_stage_type, 1)
+        layer_fx_layout.addWidget(self.fx_stage_type)
+        stage_actions = QGridLayout()
+        stage_actions.setHorizontalSpacing(6)
+        stage_actions.setVerticalSpacing(6)
         self.fx_stage_add = QPushButton("ADD")
         self.fx_stage_remove = QPushButton("REMOVE")
-        self.fx_stage_up = QPushButton("↑")
-        self.fx_stage_down = QPushButton("↓")
-        for button in (
+        self.fx_stage_up = QPushButton("UP")
+        self.fx_stage_down = QPushButton("DOWN")
+        self.fx_stage_add.setToolTip("Add the selected effect stage")
+        self.fx_stage_remove.setToolTip("Remove the selected effect stage")
+        self.fx_stage_up.setToolTip("Move the selected effect stage earlier in the stack")
+        self.fx_stage_down.setToolTip("Move the selected effect stage later in the stack")
+        for index, button in enumerate((
             self.fx_stage_add,
             self.fx_stage_remove,
             self.fx_stage_up,
             self.fx_stage_down,
-        ):
-            stage_row.addWidget(button)
-        layer_fx_layout.addLayout(stage_row)
-        chain_row = QHBoxLayout()
-        self.fx_chain_save = QPushButton("SAVE CHAIN…")
-        self.fx_chain_export = QPushButton("EXPORT PRESETS…")
-        self.fx_chain_import = QPushButton("IMPORT PRESETS…")
-        for button in (self.fx_chain_save, self.fx_chain_export, self.fx_chain_import):
-            chain_row.addWidget(button)
-        layer_fx_layout.addLayout(chain_row)
+        )):
+            stage_actions.addWidget(button, index // 2, index % 2)
+        stage_actions.setColumnStretch(0, 1)
+        stage_actions.setColumnStretch(1, 1)
+        layer_fx_layout.addLayout(stage_actions)
+        chain_actions = QGridLayout()
+        chain_actions.setHorizontalSpacing(6)
+        chain_actions.setVerticalSpacing(6)
+        self.fx_chain_save = QPushButton("SAVE CHAIN")
+        self.fx_chain_export = QPushButton("EXPORT")
+        self.fx_chain_import = QPushButton("IMPORT")
+        self.fx_chain_save.setToolTip("Save the current layer effect chain as a reusable preset")
+        self.fx_chain_export.setToolTip("Export layer effect presets")
+        self.fx_chain_import.setToolTip("Import layer effect presets")
+        chain_actions.addWidget(self.fx_chain_save, 0, 0)
+        chain_actions.addWidget(self.fx_chain_export, 0, 1)
+        chain_actions.addWidget(self.fx_chain_import, 1, 0, 1, 2)
+        chain_actions.setColumnStretch(0, 1)
+        chain_actions.setColumnStretch(1, 1)
+        layer_fx_layout.addLayout(chain_actions)
         self.layer_fx_sliders = {}
         for key, title, minimum, maximum, default in (
             ("mix", "FX MIX", 0, 100, 100),
@@ -213,7 +246,7 @@ class LayerPanel(QWidget):
         controls_layout.addStretch(1)
         self.controls_scroll = QScrollArea()
         self.controls_scroll.setWidgetResizable(True)
-        self.controls_scroll.setMinimumHeight(180)
+        self.controls_scroll.setMinimumHeight(124)
         self.controls_scroll.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
@@ -224,15 +257,14 @@ class LayerPanel(QWidget):
         self.panel_splitter.addWidget(self.table)
         self.panel_splitter.addWidget(self.controls_scroll)
         self.panel_splitter.setChildrenCollapsible(False)
-        self.panel_splitter.setStretchFactor(0, 3)
-        self.panel_splitter.setStretchFactor(1, 4)
+
         self.controls_scroll.setMinimumWidth(0)
         self.controls_scroll.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
         self.panel_splitter.setStretchFactor(0, 2)
         self.panel_splitter.setStretchFactor(1, 3)
-        self.panel_splitter.setSizes([260, 360])
+        self.panel_splitter.setSizes([180, 260])
         layout.addWidget(self.panel_splitter, 1)
 
         self.layer_lock_check.toggled.connect(self._selected_layer_lock_changed)
@@ -283,7 +315,7 @@ class LayerPanel(QWidget):
     ) -> tuple[QLabel, QSlider]:
         row = QHBoxLayout()
         label = QLabel(f"{title}  {value}")
-        label.setMinimumWidth(96)
+        label.setMinimumWidth(0)
         slider = QSlider(Qt.Orientation.Horizontal)
         slider.setRange(minimum, maximum)
         slider.setValue(value)
@@ -305,7 +337,7 @@ class LayerPanel(QWidget):
     ) -> tuple[QLabel, QSlider]:
         row = QHBoxLayout()
         label = QLabel(f"{title}  {value}")
-        label.setMinimumWidth(125)
+        label.setMinimumWidth(0)
         slider = QSlider(Qt.Orientation.Horizontal)
         slider.setRange(minimum, maximum)
         slider.setValue(value)
