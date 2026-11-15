@@ -86,7 +86,8 @@ class EffectsPanel(QWidget):
         )
 
         root = QVBoxLayout(self)
-        root.setContentsMargins(4, 6, 4, 6)
+        root.setContentsMargins(8, 8, 8, 8)
+        root.setSpacing(8)
         preset_row = QHBoxLayout()
         preset_row.addWidget(QLabel("LOOK"))
         self.preset_combo = QComboBox()
