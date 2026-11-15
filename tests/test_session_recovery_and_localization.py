@@ -390,7 +390,12 @@ def test_package_and_build_metadata_are_consistent() -> None:
         project["dependencies"] and set(project["dependencies"]) == runtime_requirements
     )
     assert set(project["optional-dependencies"]["dev"]) == dev_requirements
-    assert "PyInstaller==" in build_requirements
+    assert "mido>=1.3,<2" in project["optional-dependencies"]["midi"]
+    assert "python-rtmidi==1.5.8" in project["optional-dependencies"]["midi"]
+    assert "PyInstaller==6.22.3" in build_requirements
+    assert "pyinstaller-hooks-contrib==2026.9" in build_requirements
+    assert "setuptools>=69" in build_requirements
+    assert "wheel" in build_requirements
     assert "from config import APP_NAME, ICON_PATH" in spec
     assert "name=APP_NAME" in spec
     assert "ICON = ICON_PATH" in spec
@@ -398,8 +403,18 @@ def test_package_and_build_metadata_are_consistent() -> None:
     assert "APP_VER" in build_script
     assert "ICON_PATH" in build_script
     assert "--no-deps" in build_script
+    assert "--no-build-isolation" in build_script
     assert "--force-reinstall" in build_script
+    assert "AVT_BUILD_TEMP_DIR" in build_script
+    assert "PIP_CACHE_DIR" in build_script
     assert ICON_PATH.is_file()
+
+    # PyInstaller's hook-av preserves the wheel's av.libs directory. The spec
+    # must not add a second top-level binary copy of those same FFmpeg DLLs.
+    assert "sysconfig" not in spec
+    assert 'site_packages.glob("av.libs")' not in spec
+    assert '(str(dll), ".")' not in spec
+    assert "PyInstaller" in spec
 
 
 def test_eliding_status_label_keeps_full_diagnostic_text() -> None:
