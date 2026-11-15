@@ -368,7 +368,6 @@ class MainWindow(QMainWindow):
 
         self._create_actions()
         apply_widget_translations(self, self._language)
-        QTimer.singleShot(0, self._configure_dock_tab_bars)
         self._sync_performance_macro_shortcuts()
         # Keep a pristine Qt dock-state snapshot for the View → Restore Default Layout action.
         self._default_dock_state = self.saveState(4)
@@ -395,6 +394,10 @@ class MainWindow(QMainWindow):
             # so its transport and loop/lock controls are not clipped by old states.
             QTimer.singleShot(0, self._apply_responsive_deck_size)
             QTimer.singleShot(0, self._migrate_compact_operator_dock_width_once)
+
+        # restoreState() can recreate/update internal dock tab bars. Reapply the
+        # compact titles and no-elision policy only after the restored state exists.
+        QTimer.singleShot(0, self._configure_dock_tab_bars)
 
         self._runtime_timer = QTimer(self)
         # Refresh queues and automation at the configured render cadence.
@@ -667,6 +670,9 @@ class MainWindow(QMainWindow):
         self.workspace_tabs.setCurrentIndex(0)
         self.layer_dock.raise_()
         self._responsive_layout_managed = True
+        # Restoring Qt's dock snapshot can reinstate older tab captions. Force
+        # current localized labels and scrollable/no-elide sizing after restoration.
+        QTimer.singleShot(0, self._configure_dock_tab_bars)
         QTimer.singleShot(0, self._apply_default_dock_sizes)
         self._ui_settings.setValue("ui/main_window_state_v5", self._default_dock_state)
         self._ui_settings.sync()
@@ -677,24 +683,39 @@ class MainWindow(QMainWindow):
         self.workspace_tabs.setCurrentIndex(0)
 
     def _configure_dock_tab_bars(self) -> None:
-        """Keep inspector tabs compact and expose their full names on hover."""
+        """Reassert compact localized dock labels after every layout restore."""
         docks = self.findChildren(QDockWidget)
+        for dock in docks:
+            full_title = str(
+                dock.property("_eli_dock_full_title")
+                or dock.accessibleName()
+                or dock.windowTitle()
+            )
+            compact_title = _DOCK_TAB_TITLES.get(full_title, full_title)
+            localized_title = ui_text(compact_title, self._language)
+            localized_full_title = ui_text(full_title, self._language)
+
+            # The dock's windowTitle drives the text rendered by Qt's internal
+            # dock-area tab bar. Reassign it after restoreState() so snapshots
+            # from older builds cannot bring back the long, clipped captions.
+            if dock.windowTitle() != localized_title:
+                dock.setWindowTitle(localized_title)
+            dock.setToolTip(localized_full_title)
+            dock.setAccessibleName(localized_full_title)
+
+        title_to_dock = {dock.windowTitle(): dock for dock in docks}
         for tab_bar in self.findChildren(QTabBar):
             tab_bar.setUsesScrollButtons(True)
             tab_bar.setElideMode(Qt.TextElideMode.ElideNone)
-            if tab_bar.count() >= 4:
-                tab_bar.setExpanding(False)
+            tab_bar.setExpanding(False)
             for index in range(tab_bar.count()):
                 visible_title = tab_bar.tabText(index)
-                dock = next(
-                    (
-                        item for item in docks
-                        if item.windowTitle() == visible_title
-                    ),
-                    None,
-                )
+                dock = title_to_dock.get(visible_title)
                 if dock is not None:
-                    tab_bar.setTabToolTip(index, dock.toolTip() or dock.accessibleName())
+                    tab_bar.setTabToolTip(
+                        index,
+                        dock.toolTip() or dock.accessibleName(),
+                    )
 
     def _make_dock(self, title: str, widget) -> QDockWidget:
         tab_title = _DOCK_TAB_TITLES.get(title, title)
