@@ -135,6 +135,8 @@ class ModulatorBankPanel(QWidget):
 
         self.lfo_group = QGroupBox("LFO · CYCLIC WAVEFORM")
         lfo_form = QFormLayout(self.lfo_group)
+        lfo_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        lfo_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.waveform_combo = QComboBox()
         for value, label in (
             ("sine", "Sine"),
@@ -159,6 +161,8 @@ class ModulatorBankPanel(QWidget):
 
         self.follower_group = QGroupBox("CONTROL FOLLOWER · SONIC PI / AUDIO")
         follower_form = QFormLayout(self.follower_group)
+        follower_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        follower_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.input_source_combo = QComboBox()
         for source_id, label in FOLLOWER_SOURCES.items():
             self.input_source_combo.addItem(label, source_id)
@@ -182,6 +186,8 @@ class ModulatorBankPanel(QWidget):
 
         self.envelope_group = QGroupBox("ENVELOPE · ADSR")
         envelope_form = QFormLayout(self.envelope_group)
+        envelope_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        envelope_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.trigger_combo = QComboBox()
         for source_id, label in TRIGGER_SOURCES.items():
             self.trigger_combo.addItem(label, source_id)
@@ -206,6 +212,8 @@ class ModulatorBankPanel(QWidget):
 
         self.sequence_group = QGroupBox("STEP SEQUENCER / RHYTHM GRID")
         sequence_form = QFormLayout(self.sequence_group)
+        sequence_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        sequence_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.steps_edit = QLineEdit()
         self.steps_edit.setPlaceholderText("1, 0, 0.5, 0")
         self.division_spin = self._double_spin(1.0 / 96.0, 64.0, 0.25, 4)
@@ -226,6 +234,8 @@ class ModulatorBankPanel(QWidget):
         self.seed_spin.setValue(211)
         self.euclidean_group = QGroupBox("EUCLIDEAN RHYTHM GENERATOR")
         euclidean_form = QFormLayout(self.euclidean_group)
+        euclidean_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        euclidean_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.euclidean_pulses = QSpinBox()
         self.euclidean_pulses.setRange(0, 64)
         self.euclidean_pulses.setValue(3)
@@ -257,6 +267,8 @@ class ModulatorBankPanel(QWidget):
 
         assignment_group = QGroupBox("ASSIGN TO SELECTED LAYER")
         assignment_form = QFormLayout(assignment_group)
+        assignment_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        assignment_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.assignment_layer_label = QLabel("No layer selected")
         self.assignment_layer_label.setWordWrap(True)
         self.assignment_target_combo = QComboBox()
