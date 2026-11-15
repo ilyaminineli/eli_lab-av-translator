@@ -17,6 +17,7 @@ from PySide6.QtWidgets import (
 )
 
 from effects.settings import PSETS, EffectSettings
+from ui.panel_layout import configure_inspector_form
 
 _SLIDERS = (
     ("mix", "Effect mix", 0, 100, 100.0),
@@ -118,6 +119,7 @@ class EffectsPanel(QWidget):
         group = QGroupBox("MASTER FX")
         group.setToolTip("MASTER FILTERS + OVERLAYS")
         form = QFormLayout(group)
+        configure_inspector_form(form)
         form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         for key, title, low, high, scale in _SLIDERS:
@@ -141,6 +143,7 @@ class EffectsPanel(QWidget):
         geometry_group = QGroupBox("GEOMETRY")
         geometry_group.setToolTip("GEOMETRY + DISPLACEMENT")
         geometry_form = QFormLayout(geometry_group)
+        configure_inspector_form(geometry_form)
         geometry_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         geometry_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -189,6 +192,7 @@ class EffectsPanel(QWidget):
         feedback_group = QGroupBox("FEEDBACK")
         feedback_group.setToolTip("GPU FEEDBACK ENGINE")
         feedback_form = QFormLayout(feedback_group)
+        configure_inspector_form(feedback_form)
         feedback_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         feedback_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
