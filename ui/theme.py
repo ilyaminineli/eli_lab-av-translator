@@ -391,7 +391,7 @@ QMessageBox QPushButton {
 def _typography_stylesheet(language: str) -> str:
     if language == "ja":
         return """
-QLabel#sectionHeading {
+QLabel#sectionHeading, QLabel#panelSubheading {
     font-family: "Yu Mincho", "Noto Serif JP", "MS Mincho", serif;
     font-size: 17px;
     font-weight: 500;
@@ -422,7 +422,7 @@ QLabel#brandName {
 }
 """
     return """
-QLabel#sectionHeading, QLabel#brandMark {
+QLabel#sectionHeading, QLabel#panelSubheading, QLabel#brandMark {
     font-family: "Newsreader", "Yu Mincho", "Noto Serif JP", "Georgia", serif;
 }
 QLabel#brandMark {
