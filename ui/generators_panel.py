@@ -304,7 +304,8 @@ class GeneratorsPanel(QWidget):
         self.collage_variation_slider, self.collage_variation_value = self._slider(
             text_form, "COLLAGE VARIATION", 0, 100, 65
         )
-        self.text_motion_group = QGroupBox("ANIMATED TYPOGRAPHY · GPU SHADER")
+        self.text_motion_group = QGroupBox("TEXT MOTION")
+        self.text_motion_group.setToolTip("ANIMATED TYPOGRAPHY · GPU SHADER")
         motion_form = QFormLayout(self.text_motion_group)
         motion_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         motion_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
@@ -338,7 +339,8 @@ class GeneratorsPanel(QWidget):
         )
         text_form.addRow(self.text_motion_group)
 
-        random_group = QGroupBox("RANDOM TEXT POOL · ENGLISH / 日本語")
+        random_group = QGroupBox("RANDOM TEXT POOL")
+        random_group.setToolTip("RANDOM TEXT POOL · ENGLISH / 日本語")
         random_form = QFormLayout(random_group)
         random_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         random_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
@@ -429,7 +431,8 @@ class GeneratorsPanel(QWidget):
         )
         root.addWidget(self.waveform_group)
 
-        self.particles_group = QGroupBox("GPU PARTICLE FIELD · LEGACY")
+        self.particles_group = QGroupBox("PARTICLE FIELD")
+        self.particles_group.setToolTip("GPU PARTICLE FIELD · LEGACY")
         particles_form = QFormLayout(self.particles_group)
         particles_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         particles_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
@@ -453,7 +456,8 @@ class GeneratorsPanel(QWidget):
         particles_form.addRow("FIELD MODE", self.particle_mode_combo)
         root.addWidget(self.particles_group)
 
-        self.particle_system_group = QGroupBox("PARTICLE SYSTEM 2.0 · GPU PHYSICS")
+        self.particle_system_group = QGroupBox("PARTICLE SYSTEM 2.0")
+        self.particle_system_group.setToolTip("PARTICLE SYSTEM 2.0 · GPU PHYSICS")
         system_form = QFormLayout(self.particle_system_group)
         system_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         system_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
