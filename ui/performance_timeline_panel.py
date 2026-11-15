@@ -101,8 +101,8 @@ class PerformanceTimelinePanel(QWidget):
         body = QWidget()
         body.setMinimumWidth(0)
         root = QVBoxLayout(body)
-        root.setContentsMargins(12, 12, 12, 14)
-        root.setSpacing(12)
+        root.setContentsMargins(8, 8, 8, 8)
+        root.setSpacing(8)
 
         header = QHBoxLayout()
         title = QLabel("SHOW TIMELINE")
