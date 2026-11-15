@@ -101,7 +101,7 @@ QDockWidget::title {
     border: 0;
     border-bottom: 1px solid #303030;
     text-align: left;
-    font-size: 9px;
+    font-size: 8.5pt;
 }
 QDockWidget::close-button,
 QDockWidget::float-button {
@@ -148,7 +148,7 @@ QGroupBox {
     border: 1px solid #303030;
     border-radius: 1px;
     margin-top: 17px;
-    padding: 16px 12px 12px;
+    padding: 17px 14px 13px;
 }
 QGroupBox::title {
     subcontrol-origin: margin;
@@ -156,19 +156,19 @@ QGroupBox::title {
     padding: 0 7px;
     color: #c2c2c2;
     background: #0e0e0e;
-    font-size: 8pt;
+    font-size: 8.5pt;
     letter-spacing: 1px;
 }
 QLabel { color: #e5e5e5; }
 QLabel#sectionHeading {
     color: #f0f0f0;
-    font-size: 16px;
+    font-size: 18px;
     font-weight: 400;
-    padding: 2px 0 4px;
+    padding: 4px 0 7px;
 }
 QLabel#mutedLabel {
-    color: #929292;
-    font-size: 9px;
+    color: #9a9a9a;
+    font-size: 8.5pt;
 }
 QLineEdit, QComboBox, QSpinBox, QDoubleSpinBox,
 QPlainTextEdit, QTextEdit, QListWidget, QTreeWidget, QTableWidget {
@@ -177,7 +177,7 @@ QPlainTextEdit, QTextEdit, QListWidget, QTreeWidget, QTableWidget {
     border: 1px solid #303030;
     border-radius: 1px;
     padding: 7px 9px;
-    min-height: 18px;
+    min-height: 22px;
     selection-background-color: #dedede;
     selection-color: #090909;
 }
@@ -207,7 +207,7 @@ QPushButton {
     border: 1px solid #343434;
     border-radius: 1px;
     padding: 8px 13px;
-    min-height: 20px;
+    min-height: 25px;
 }
 QPushButton:hover {
     background: #202020;
@@ -254,8 +254,8 @@ QCheckBox, QRadioButton {
     color: #d7d7d7;
 }
 QCheckBox::indicator, QRadioButton::indicator {
-    width: 13px;
-    height: 13px;
+    width: 15px;
+    height: 15px;
     background: #101010;
     border: 1px solid #737373;
 }
@@ -310,13 +310,17 @@ QSplitter::handle:hover {
 }
 QToolBar {
     spacing: 12px;
+    min-height: 42px;
 }
 QDockWidget::title {
     padding: 11px 13px;
-    min-height: 17px;
+    min-height: 20px;
+    font-size: 8.5pt;
 }
 QScrollBar:vertical, QScrollBar:horizontal {
     background: #101010;
+    width: 10px;
+    height: 10px;
     border: 0;
     margin: 0;
 }
@@ -370,7 +374,7 @@ QLabel#brandMark {
 }
 QLabel#brandName {
     font-family: "Yu Gothic UI";
-    font-size: 8px;
+    font-size: 8pt;
     letter-spacing: 1.1px;
     color: #d0d0d0;
 }
