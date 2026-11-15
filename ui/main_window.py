@@ -543,7 +543,7 @@ class MainWindow(QMainWindow):
             return
         self._responsive_compact = compact
         side_minimum = 150 if compact else 190
-        right_minimum = 205 if compact else 245
+        right_minimum = 340 if compact else 275
         for dock in (self.media_dock, self.asset_library_dock):
             dock.setMinimumWidth(side_minimum)
         for dock in (
@@ -556,7 +556,7 @@ class MainWindow(QMainWindow):
             self.performance_timeline_dock,
         ):
             dock.setMinimumWidth(right_minimum)
-        self.deck_dock.setMinimumHeight(200 if compact else 220)
+        self.deck_dock.setMinimumHeight(180 if compact else 220)
         self.preview_dock.setMinimumSize(
             180 if compact else 230,
             125 if compact else 160,
@@ -604,8 +604,10 @@ class MainWindow(QMainWindow):
         height = max(self.height(), self.minimumHeight())
         if compact:
             left_width = max(150, min(220, round(width * 0.17)))
-            right_width = max(230, min(310, round(width * 0.29)))
-            deck_height = max(220, min(340, round(height * 0.34)))
+            # The compact operator layout intentionally gives Layers enough
+            # horizontal room for field labels, readouts and the controls tab.
+            right_width = max(360, min(520, round(width * 0.55)))
+            deck_height = max(180, min(300, round(height * 0.28)))
         else:
             left_width = max(220, min(340, round(width * 0.19)))
             right_width = max(300, min(420, round(width * 0.27)))
