@@ -1496,7 +1496,9 @@ class PerformanceControlPanel(QWidget):
                 macro_id, normalized, hold_seconds=1.5
             )
             self.macro_value_labels[macro_id].setText(f"{normalized:.2f}")
-            self.application.apply_modulation()
+            # The 30 FPS application runtime evaluates modulation once per tick.
+            # Do not run a second full layer/modulator pass for every mouse-move
+            # valueChanged event while the operator drags this slider.
         except (KeyError, TypeError, ValueError) as exc:
             set_ui_text(self.macro_status_label, f"Macro update failed · {exc}")
 
