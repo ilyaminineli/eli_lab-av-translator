@@ -15,7 +15,7 @@ The project-local `.venv` is required. The script automatically relaunches itsel
 - Windows 10/11 x64.
 - 64-bit CPython 3.12, 3.13 or 3.14.
 - Internet access for the pinned Python wheels/build dependencies.
-- Enough free disk space for the virtual environment, PyInstaller work directory and final executable.
+- At least 2 GiB free on both the project/build volume and the configured build-temp volume; 5 GiB or more is recommended for a full Qt/FFmpeg one-file build.
 - Visual Studio C++ Build Tools are **not required** for the normal build. They are needed only if you choose to compile the optional native MIDI backend.
 
 Create the project environment once, choosing an installed interpreter:
@@ -33,15 +33,18 @@ The build reads the application display name, version and final `eli-lab-mark.ic
 
 The UI resolves Newsreader, DM Mono, Segoe UI, Yu Gothic UI and Japanese display/body fallbacks from installed system fonts. No additional pip dependency or bundled font binary is required for the typography pass. The spec collects the complete `resources/` tree, including the final application seal.
 
+PyAV's Windows wheel stores FFmpeg DLLs in the sibling `av.libs/` directory. The pinned PyInstaller hooks-contrib set supplies `hook-av`, which preserves this directory in the bundle. Do not manually add the same DLLs again as root-level binaries: that creates duplicate copies and increases one-file extraction size.
+
 ## What the build script does
 
 `scripts/build_pyinstaller.py`:
 
 1. Verifies Windows x64 and 64-bit CPython 3.12–3.14.
 2. Verifies the source files, resource folders, dictionaries and PyInstaller spec are present.
-3. Installs/updates pip and installs `requirements-build-pyinstaller.txt` in the project-local environment.
-4. Refreshes the local editable project metadata from the current checkout with `pip install --no-deps --force-reinstall -e .`. This removes stale dependency declarations left by older installed versions without changing the runtime requirements.
-5. Runs `pip check` and checks the runtime imports.
+3. Creates `build\tmp` and `build\tmp\pip-cache`, then redirects `TEMP`, `TMP`, `TMPDIR` and `PIP_CACHE_DIR` there. This avoids relying on a nearly-full Windows system temp drive when the project lives on another volume. The build reports free space and stops if either volume has less than 2 GiB available.
+4. Installs/updates pip and installs `requirements-build-pyinstaller.txt`, including the matching setuptools/wheel build tools and pinned PyInstaller hook set.
+5. Refreshes local editable metadata with `pip install --no-deps --no-build-isolation --force-reinstall -e .`. The build-system requirements are already installed in the project venv, so pip does not create a second isolated build environment.
+6. Runs `pip check` and checks the runtime imports.
 6. Compiles the application modules.
 7. Runs PyInstaller using `AVTranslator.spec` to produce a one-file windowed executable.
 8. Runs the packaged executable with `--self-check`.
@@ -53,6 +56,21 @@ Output:
 
 No compatibility patch to `main.py` is required. The current self-check treats native `rtmidi` as optional.
 
+## Temporary extraction on the target computer
+
+A one-file executable extracts its embedded Python and native DLLs to a temporary directory before starting. On Windows, PyInstaller normally uses the directory selected by `TEMP` / `TMP`. If the EXE reports an extraction/write error for an FFmpeg DLL (for example `swscale-*.dll` with decompression return code `-1`), first check free space and write access on that temporary volume. In PyInstaller's bootloader, `-1` is the zlib I/O error used when writing the extracted file fails; it is not, by itself, proof of a missing FFmpeg DLL or a corrupt FFmpeg package.
+
+For a one-time test with the EXE on F:, you can direct that process to a roomy folder on F::
+
+```powershell
+New-Item -ItemType Directory -Force F:\AVTranslatorTemp | Out-Null
+$env:TEMP = "F:\AVTranslatorTemp"
+$env:TMP = $env:TEMP
+& ".\dist\eli_lab AVTranslator.exe"
+```
+
+For normal double-click launches, set the Windows user `TEMP` and `TMP` environment variables to a writable folder with sufficient free space, or use a launcher that sets those variables before starting the EXE. Do not hard-code the developer's F: path into the distributed executable.
+
 ## Optional native MIDI hardware input
 
 The default build includes the `mido` abstraction and does not require `python-rtmidi`. To attempt to include the native MIDI backend:
@@ -61,7 +79,7 @@ The default build includes the `mido` abstraction and does not require `python-r
 .\.venv\Scripts\python.exe .\scripts\build_pyinstaller.py --with-midi
 ```
 
-This compiles `python-rtmidi` from source and requires Visual Studio 2022 Build Tools with **Desktop development with C++** and the Windows SDK. Native MIDI is optional; Sonic Pi OSC integration does not depend on it.
+This compiles `python-rtmidi` from source and requires Visual Studio 2022 Build Tools with **Desktop development with C++** and the Windows SDK when a compatible wheel is unavailable. The current 1.5.8 PyPI Windows wheel is for CPython 3.12 x64; CPython 3.14 therefore uses a source build. Native MIDI is optional; Sonic Pi OSC integration and the bundled Mido abstraction do not require the native backend. Do not install `.[midi]` unless you need direct native MIDI device access.
 
 ## Target computer
 
