@@ -1486,6 +1486,7 @@ class MainWindow(QMainWindow):
             if qt_application is not None:
                 apply_application_language(qt_application, self._language)
             apply_widget_translations(self, self._language)
+            self._configure_dock_tab_bars()
             self.performance_control_panel.sync_from_application()
             self.performance_control_panel.refresh_monitor()
             self.performance_timeline_panel.refresh(force=True)
