@@ -12,7 +12,7 @@ from scripts.package_release import COMPRESSION_METHODS, create_release_archive
 def test_versioned_release_archives_use_selected_zip_compression(
     tmp_path, compression: str
 ) -> None:
-    binary = tmp_path / ("AVTranslator.exe" if "windows" in compression else "avtranslator")
+    binary = tmp_path / "AVTranslator.exe"
     binary.write_bytes(b"ELI-LAB-AVT-BUILD\x00" * 512)
     archive_path = create_release_archive(
         binary_path=binary,
