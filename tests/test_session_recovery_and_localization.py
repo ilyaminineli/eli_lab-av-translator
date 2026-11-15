@@ -33,7 +33,11 @@ from ui.i18n import (
 )
 from ui.performance_timeline_panel import PerformanceTimelinePanel
 from ui.settings_dialog import SettingsDialog
-from ui.theme import application_font_families, configure_application_theme
+from ui.theme import (
+    _typography_stylesheet,
+    application_font_families,
+    configure_application_theme,
+)
 
 
 def test_theme_accepts_hover_hint_preference() -> None:
@@ -132,9 +136,11 @@ def test_language_font_fallback_order_is_readable() -> None:
     assert japanese[0] == "Yu Gothic UI"
     assert "Noto Sans JP" in japanese
     assert "Noto Sans" in english
-    assert "Newsreader" in __import__("ui.theme", fromlist=["_typography_stylesheet"])._typography_stylesheet("en")
-    assert "DM Mono" in __import__("ui.theme", fromlist=["_typography_stylesheet"])._typography_stylesheet("en")
-    assert "Noto Serif JP" in __import__("ui.theme", fromlist=["_typography_stylesheet"])._typography_stylesheet("ja")
+    english_typography = _typography_stylesheet("en")
+    japanese_typography = _typography_stylesheet("ja")
+    assert "Newsreader" in english_typography
+    assert "DM Mono" in english_typography
+    assert "Noto Serif JP" in japanese_typography
 
 
 def test_timeline_payload_explanation_is_japanese_hover_help_only() -> None:
