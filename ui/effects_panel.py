@@ -73,7 +73,7 @@ class EffectsPanel(QWidget):
     manual_parameter_changed = Signal(str)
 
     def __init__(
-        self, settings: EffectSettings, source_provider=None, parent=None
+            self, settings: EffectSettings, source_provider=None, parent=None
     ) -> None:
         super().__init__(parent)
         self.settings = settings
@@ -152,11 +152,11 @@ class EffectsPanel(QWidget):
         self.transform_mode_combo = QComboBox()
         self.transform_mode_combo.setMinimumWidth(0)
         for label, value in (
-            ("Off", "none"),
-            ("Kaleidoscope", "kaleidoscope"),
-            ("Polar coordinates", "polar"),
-            ("Mosaic / tile", "mosaic"),
-            ("Directional scan displacement (approx.)", "pixel_sort"),
+                ("Off", "none"),
+                ("Kaleidoscope", "kaleidoscope"),
+                ("Polar coordinates", "polar"),
+                ("Mosaic / tile", "mosaic"),
+                ("Directional scan displacement (approx.)", "pixel_sort"),
         ):
             self.transform_mode_combo.addItem(label, value)
         geometry_form.addRow("Transform", self.transform_mode_combo)
@@ -318,11 +318,11 @@ class EffectsPanel(QWidget):
         self.settings.enabled = bool(enabled)
 
     def _value_changed(
-        self,
-        field: str,
-        value: int,
-        scale: float,
-        label: QLabel,
+            self,
+            field: str,
+            value: int,
+            scale: float,
+            label: QLabel,
     ) -> None:
         numeric_value = value / scale
         if field in {"kaleidoscope_slices", "mosaic_tiles", "feedback_delay_frames"}:

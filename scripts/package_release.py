@@ -31,11 +31,11 @@ def sha256_file(path: Path) -> str:
 
 
 def create_release_archive(
-    binary_path: Path,
-    platform_id: str,
-    compression: str = "deflate",
-    level: int = 6,
-    output_dir: Path | None = None,
+        binary_path: Path,
+        platform_id: str,
+        compression: str = "deflate",
+        level: int = 6,
+        output_dir: Path | None = None,
 ) -> Path:
     """Package one native executable and its notices as a versioned ZIP archive."""
     binary_path = Path(binary_path).expanduser().resolve()
@@ -72,20 +72,20 @@ def create_release_archive(
     }
 
     with zipfile.ZipFile(
-        archive_path,
-        mode="w",
-        compression=method,
-        compresslevel=(
-            int(level) if compression in {"deflate", "bzip2"} else None
-        ),
-        allowZip64=True,
+            archive_path,
+            mode="w",
+            compression=method,
+            compresslevel=(
+                    int(level) if compression in {"deflate", "bzip2"} else None
+            ),
+            allowZip64=True,
     ) as archive:
         archive.write(binary_path, arcname=binary_path.name)
 
         for relative_path, archive_name in (
-            (ROOT / "README.md", "README.md"),
-            (ROOT / "THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md"),
-            (ROOT / "build" / "pyinstaller-build-report.txt", "build-report.txt"),
+                (ROOT / "README.md", "README.md"),
+                (ROOT / "THIRD_PARTY_NOTICES.md", "THIRD_PARTY_NOTICES.md"),
+                (ROOT / "build" / "pyinstaller-build-report.txt", "build-report.txt"),
         ):
             if relative_path.is_file():
                 archive.write(relative_path, arcname=archive_name)

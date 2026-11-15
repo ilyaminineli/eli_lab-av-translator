@@ -842,7 +842,6 @@ _JA_TEXT: dict[str, str] = {
     "Still images use local in/out timing, opacity, blend and matte. Playback speed, frame hold and looping do not apply.": "静止画像では開始／終了位置、不透明度、合成モード、マットを設定できます。再生速度、フレーム保持、ループ再生は適用されません。",
 }
 
-
 _JA_FORMATS: tuple[tuple[str, str], ...] = (
     (
         "Indexed {count} visual assets across {folders} folders.",

@@ -90,11 +90,11 @@ def self_check() -> int:
     dictionary_files = list(DICTIONARY_DIR.glob("*.txt"))
     checks["dictionary_text_files"] = len(dictionary_files)
     for name, passed in (
-        ("icon", bool(checks["icon"])),
-        ("dock controls", bool(checks["dock_controls"])),
-        ("textures", bool(checks["textures"])),
-        ("sketches", bool(checks["sketches"])),
-        ("dictionary", len(dictionary_files) > 0),
+            ("icon", bool(checks["icon"])),
+            ("dock controls", bool(checks["dock_controls"])),
+            ("textures", bool(checks["textures"])),
+            ("sketches", bool(checks["sketches"])),
+            ("dictionary", len(dictionary_files) > 0),
     ):
         if not passed:
             errors.append(f"Bundled resource check failed: {name}")

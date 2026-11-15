@@ -26,9 +26,9 @@ class PerformanceManager:
         self._shuffle_bags: dict[str, list[MediaAsset]] = defaultdict(list)
 
     def randomize_decks(
-        self,
-        assets: Iterable[MediaAsset],
-        decks: Iterable[object],
+            self,
+            assets: Iterable[MediaAsset],
+            decks: Iterable[object],
     ) -> int:
         candidates = list(assets)
         unlocked = [deck for deck in decks if not getattr(deck, "locked", False)]
@@ -59,8 +59,8 @@ class PerformanceManager:
             layer
             for layer in layers
             if layer.visible
-            and not layer.locked
-            and layer.source_type in {"video", "generator", "overlay"}
+               and not layer.locked
+               and layer.source_type in {"video", "generator", "overlay"}
         ]
         if not candidates:
             return 0
@@ -127,8 +127,8 @@ class PerformanceManager:
         # Establish one large visual mass so the result reads as a composition,
         # not a collection of equally-sized windows.
         background_candidates = [
-            layer for layer in spatial if layer.source_type == "video"
-        ] or spatial
+                                    layer for layer in spatial if layer.source_type == "video"
+                                ] or spatial
         if background_candidates:
             background = self.random.choice(background_candidates)
             background.position = (
