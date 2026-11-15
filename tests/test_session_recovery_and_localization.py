@@ -365,9 +365,12 @@ def test_package_and_build_metadata_are_consistent() -> None:
     assert project["dependencies"] and set(project["dependencies"]) == runtime_requirements
     assert set(project["optional-dependencies"]["dev"]) == dev_requirements
     assert "PyInstaller==" in build_requirements
-    assert APP_NAME in spec
-    assert "eli-lab-mark.ico" in spec
-    assert "eli-lab-mark.ico" in build_script
+    assert "from config import APP_NAME, ICON_PATH" in spec
+    assert "name=APP_NAME" in spec
+    assert "ICON = ICON_PATH" in spec
+    assert "APP_NAME" in build_script
+    assert "APP_VER" in build_script
+    assert "ICON_PATH" in build_script
     assert ICON_PATH.is_file()
 
 
