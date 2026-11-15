@@ -69,11 +69,13 @@ def configure_build_storage() -> None:
     gib = 1024**3
     build_free = shutil.disk_usage(ROOT).free
     temp_free = shutil.disk_usage(BUILD_TEMP_DIR).free
+    cache_free = shutil.disk_usage(PIP_CACHE_DIR).free
     print(f"Build directory: {ROOT}")
     print(f"Build-volume free space: {build_free / gib:.1f} GiB")
     print(f"Build temporary directory: {BUILD_TEMP_DIR}")
     print(f"Temporary-volume free space: {temp_free / gib:.1f} GiB")
     print(f"pip cache: {PIP_CACHE_DIR}")
+    print(f"pip-cache volume free space: {cache_free / gib:.1f} GiB")
 
     minimum_free = 2 * gib
     if build_free < minimum_free:
@@ -88,7 +90,12 @@ def configure_build_storage() -> None:
             "At least 2 GiB is required; set AVT_BUILD_TEMP_DIR to a directory "
             "on a volume with more free space."
         )
-    if build_free < 5 * gib or temp_free < 5 * gib:
+    if cache_free < minimum_free:
+        raise SystemExit(
+            "Insufficient free space for the pip cache. "
+            "Set AVT_PIP_CACHE_DIR to a directory on a volume with more free space."
+        )
+    if build_free < 5 * gib or temp_free < 5 * gib or cache_free < 5 * gib:
         print(
             "WARNING: less than 5 GiB is free on at least one build volume. "
             "A full Qt/FFmpeg one-file build may need additional working space.",
