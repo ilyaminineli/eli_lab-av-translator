@@ -6,7 +6,7 @@ import os
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
 from PySide6.QtCore import QEvent
-from PySide6.QtGui import QAction, QImage
+from PySide6.QtGui import QAction, QIcon, QImage
 from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from config import ICON_PATH
 from core.application import Application
 from ui.generators_panel import GeneratorsPanel
 from ui.hints import ToolTipFilter
@@ -294,9 +295,6 @@ def test_recovery_snapshot_does_not_auto_start_performance_or_decks(
 
 
 def test_final_application_seal_is_packaged() -> None:
-    from PySide6.QtGui import QIcon
-    from config import ICON_PATH
-
     assert ICON_PATH.name == "eli-lab-mark.ico"
     assert ICON_PATH.is_file()
     assert not QIcon(str(ICON_PATH)).isNull()
