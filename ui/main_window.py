@@ -1546,7 +1546,7 @@ class MainWindow(QMainWindow):
             }
             QLabel#aboutCopy {
                 color: #c0c0c0;
-                font-size: 9pt;
+                font: 9pt "Segoe UI", "Noto Sans", Arial, sans-serif;
             }
             QLabel#aboutMeta {
                 color: #999999;
@@ -1603,7 +1603,8 @@ class MainWindow(QMainWindow):
         )
         created.setObjectName("aboutMeta")
         project = QLabel(
-            f'<a href="{APP_REPOSITORY_URL}">{tr("about.project", self._language)}</a>'
+            f'<a style="color:#eeeeee;text-decoration:underline;" '
+            f'href="{APP_REPOSITORY_URL}">{tr("about.project", self._language)}</a>'
         )
         project.setObjectName("aboutLink")
         project.setOpenExternalLinks(True)
