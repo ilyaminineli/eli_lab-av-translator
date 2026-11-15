@@ -84,16 +84,24 @@ class GeneratorsPanel(QWidget):
         row_two.addWidget(self.add_particles_button)
         row_three = QHBoxLayout()
         row_three.setSpacing(8)
-        self.add_particle_system_button = QPushButton("+ PARTICLE SYSTEM 2.0")
+        self.add_particle_system_button = QPushButton("+ PARTICLE SYSTEM")
         row_three.addWidget(self.add_particle_system_button)
         row_four = QHBoxLayout()
         row_four.setSpacing(8)
-        self.add_overlay_button = QPushButton("+ IMAGE / VIDEO OVERLAY")
+        self.add_overlay_button = QPushButton("+ OVERLAY")
         self.remove_button = icon_button(
             self, "trash", "Remove selected visual layer", size=30
         )
         row_four.addWidget(self.add_overlay_button)
         row_four.addWidget(self.remove_button)
+        self.add_text_button.setText("+ TEXT")
+        self.add_particles_button.setText("+ PARTICLES")
+        self.add_geometry_button.setToolTip("Add a procedural geometry generator")
+        self.add_text_button.setToolTip("Add a Text Art typography layer")
+        self.add_waveform_button.setToolTip("Add an audio-reactive waveform generator")
+        self.add_particles_button.setToolTip("Add a GPU particle field")
+        self.add_particle_system_button.setToolTip("Add Particle System 2.0 with GPU simulation")
+        self.add_overlay_button.setToolTip("Add an image or video overlay")
         for action_button in (
             self.add_geometry_button,
             self.add_text_button,
@@ -102,7 +110,7 @@ class GeneratorsPanel(QWidget):
             self.add_particle_system_button,
             self.add_overlay_button,
         ):
-            action_button.setMinimumHeight(34)
+            action_button.setMinimumHeight(32)
             action_button.setSizePolicy(
                 QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed
             )
