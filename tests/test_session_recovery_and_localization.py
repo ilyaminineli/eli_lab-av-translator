@@ -319,7 +319,7 @@ def test_eliding_status_label_keeps_full_diagnostic_text() -> None:
     label.close()
 
 
-def test_performance_macro_strip_uses_two_column_layout() -> None:
+def test_performance_macro_strip_uses_three_column_layout() -> None:
     from ui.performance_control_panel import PerformanceControlPanel
 
     application = Application()
@@ -329,7 +329,7 @@ def test_performance_macro_strip_uses_two_column_layout() -> None:
         layout = panel.performance_macro_group.layout()
         assert isinstance(layout, QGridLayout)
         assert len(panel.macro_sliders) == 6
-        assert layout.columnCount() == 2
+        assert layout.columnCount() == 3
         panel.take_performance_macro_group()
         assert panel.performance_macro_group.maximumHeight() >= 260
     finally:
