@@ -114,7 +114,7 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         painter.drawArc(QRectF(8.0, 3.0, 8.0, 12.0), 0, 180 * 16)
         line((12.0, 14.0), (12.0, 16.5))
     elif name == "unlock":
-        painter.drawRoundedRect(5.0, 10.0, 14.0, 10.0, 1.8, 1.8)
+        painter.drawRect(5, 10, 14, 10)
         painter.drawArc(QRectF(8.0, 3.0, 8.0, 12.0), 0, 115 * 16)
         line((16.0, 5.0), (18.5, 7.0))
         line((12.0, 14.0), (12.0, 16.5))
@@ -144,9 +144,9 @@ def _render_icon(name: str, color: str, size: int) -> QPixmap:
         line((12.0, 8.0), (12.0, 14.0))
         painter.drawPoint(QPointF(12.0, 17.0))
     elif name == "library":
-        painter.drawRoundedRect(3.5, 4.0, 5.0, 16.0, 0.8, 0.8)
-        painter.drawRoundedRect(10.0, 4.0, 5.0, 16.0, 0.8, 0.8)
-        painter.drawRoundedRect(16.5, 4.0, 4.0, 16.0, 0.8, 0.8)
+        painter.drawRect(3, 4, 5, 16)
+        painter.drawRect(10, 4, 5, 16)
+        painter.drawRect(17, 4, 4, 16)
         line((5.0, 7.0), (7.0, 7.0), (7.0, 16.5))
         line((11.5, 7.0), (13.5, 7.0), (13.5, 16.5))
     elif name == "image":
