@@ -121,6 +121,8 @@ class PerformanceTimelinePanel(QWidget):
 
         self.editor_group = QGroupBox("TIMELINE EVENT")
         form = QFormLayout(self.editor_group)
+        form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.bar_spin = QSpinBox()
         self.bar_spin.setRange(1, 1_000_000)
         self.bar_spin.setValue(1)
