@@ -247,9 +247,12 @@ class PerformanceControlPanel(QWidget):
             macro_row.setStyleSheet(
                 "QWidget#performanceMacroTile { "
                 "background: #101010; border: 1px solid #292929; }"
-                "QLabel#macroName { color: #e8e8e8; font-size: 8.5pt; }"
+                "QLabel#macroName { color: #e8e8e8; "
+                "font-family: 'DM Mono', Consolas, 'Cascadia Mono', monospace; "
+                "font-size: 8.5pt; }"
                 "QLabel#macroValue { color: #bdbdbd; "
-                "font-family: 'DM Mono', Consolas, monospace; font-size: 8pt; }"
+                "font-family: 'DM Mono', Consolas, 'Cascadia Mono', monospace; "
+                "font-size: 8pt; }"
             )
 
             self.macro_sliders[macro.macro_id] = slider
