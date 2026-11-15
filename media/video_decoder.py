@@ -189,7 +189,12 @@ class VideoDecoder:
         if scale < 1.0:
             width = max(2, int(round(width * scale)))
             height = max(2, int(round(height * scale)))
-            frame = frame.reformat(width=width, height=height, format="rgb24")
+            frame = frame.reformat(
+                width=width,
+                height=height,
+                format="rgb24",
+                interpolation="BICUBIC",
+            )
         return frame.to_ndarray(format="rgb24")
 
     def _decode_loop(self) -> None:
