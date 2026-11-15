@@ -128,10 +128,11 @@ QTabBar {
 QTabBar::tab {
     background: transparent;
     color: #888888;
-    padding: 11px 17px 12px;
-    min-height: 26px;
+    padding: 5px 8px 6px;
+    min-height: 20px;
     border: 0;
     border-bottom: 2px solid transparent;
+    font-size: 7.5pt;
 }
 QTabBar::tab:hover {
     color: #eeeeee;
@@ -158,6 +159,12 @@ QGroupBox::title {
     background: #0e0e0e;
     font-size: 8.5pt;
     letter-spacing: 1px;
+}
+QGroupBox#deckCard::title,
+QGroupBox#performanceModifiersGroup::title {
+    font-family: "DM Mono", "Consolas", "Cascadia Mono", monospace;
+    font-size: 8pt;
+    letter-spacing: 0.7px;
 }
 QLabel { color: #e5e5e5; }
 QLabel#sectionHeading {
@@ -398,7 +405,9 @@ QLabel#sectionHeading, QLabel#panelSubheading {
     letter-spacing: 0px;
 }
 QLabel, QAbstractItemView, QToolTip,
-QGroupBox::title, QDockWidget::title, QTabBar::tab,
+QGroupBox::title, QGroupBox#deckCard::title,
+QGroupBox#performanceModifiersGroup::title,
+QDockWidget::title, QTabBar::tab,
 QLabel#eyebrow, QLabel#mutedLabel, QLabel#brandName, QStatusBar,
 QPushButton, QToolButton, QCheckBox, QRadioButton, QProgressBar,
 QMenuBar, QMenu, QHeaderView::section,
@@ -431,7 +440,9 @@ QLabel#brandMark {
     color: #eeeeee;
 }
 QLabel, QAbstractItemView, QToolTip,
-QGroupBox::title, QDockWidget::title, QTabBar::tab,
+QGroupBox::title, QGroupBox#deckCard::title,
+QGroupBox#performanceModifiersGroup::title,
+QDockWidget::title, QTabBar::tab,
 QLabel#eyebrow, QLabel#mutedLabel, QLabel#brandName, QStatusBar,
 QPushButton, QToolButton, QCheckBox, QRadioButton,
 QMenuBar, QMenu, QHeaderView::section,
