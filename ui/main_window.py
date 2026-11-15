@@ -25,11 +25,11 @@ from PySide6.QtWidgets import (
 
 from config import (
     APP_AUTHOR,
-    ICON_PATH,
     APP_NAME,
     APP_REPOSITORY_URL,
     APP_STUDIO,
     APP_VER,
+    ICON_PATH,
     SESSION_RECOVERY_PATH,
 )
 from core.application import Application
