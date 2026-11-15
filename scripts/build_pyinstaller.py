@@ -8,7 +8,8 @@ import subprocess
 import sys
 import tomllib
 from datetime import UTC, datetime
-from importlib.metadata import PackageNotFoundError, version as distribution_version
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as distribution_version
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
