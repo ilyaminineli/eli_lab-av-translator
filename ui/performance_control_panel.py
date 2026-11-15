@@ -73,7 +73,8 @@ class PerformanceControlPanel(QWidget):
         root.setContentsMargins(8, 8, 8, 8)
         root.setSpacing(8)
 
-        self.autonomous_mode_group = QGroupBox("AUTO PERFORMANCE MODE")
+        self.autonomous_mode_group = QGroupBox("AUTO PERF")
+        self.autonomous_mode_group.setToolTip("AUTO PERFORMANCE MODE")
         mode_layout = QVBoxLayout(self.autonomous_mode_group)
         self.performance_mode_status_label = QLabel(
             "OFF · arm the show from the main Performance toolbar."
@@ -85,7 +86,8 @@ class PerformanceControlPanel(QWidget):
         mode_layout.addWidget(self.performance_mode_status_label)
         root.addWidget(self.autonomous_mode_group)
 
-        self.transport_group = QGroupBox("INTERNAL TRANSPORT / TEST CLOCK")
+        self.transport_group = QGroupBox("TRANSPORT")
+        self.transport_group.setToolTip("INTERNAL TRANSPORT / TEST CLOCK")
         transport_form = QFormLayout(self.transport_group)
         transport_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         transport_form.setFieldGrowthPolicy(
@@ -119,7 +121,8 @@ class PerformanceControlPanel(QWidget):
         transport_form.addRow("CLOCK", self.transport_status)
         root.addWidget(self.transport_group)
 
-        self.midi_group = QGroupBox("MIDI CONTROLLERS · OPTIONAL")
+        self.midi_group = QGroupBox("MIDI")
+        self.midi_group.setToolTip("MIDI CONTROLLERS · OPTIONAL")
         midi_form = QFormLayout(self.midi_group)
         midi_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         midi_form.setFieldGrowthPolicy(
@@ -182,7 +185,8 @@ class PerformanceControlPanel(QWidget):
         midi_form.addRow("STATUS", self.midi_status_label)
         root.addWidget(self.midi_group)
 
-        self.performance_macro_group = QGroupBox("PERF MACROS · NORMALIZED 0–1")
+        self.performance_macro_group = QGroupBox("PERF MACROS")
+        self.performance_macro_group.setToolTip("PERF MACROS · NORMALIZED 0–1")
         macro_layout = QGridLayout(self.performance_macro_group)
         macro_layout.setContentsMargins(10, 8, 10, 8)
         macro_layout.setHorizontalSpacing(10)
@@ -346,7 +350,8 @@ class PerformanceControlPanel(QWidget):
         scene_form.addRow(scene_buttons)
         root.addWidget(self.performance_scene_group)
 
-        self.osc_group = QGroupBox("SONIC PI CONNECTION · OSC /eli_lab/v1")
+        self.osc_group = QGroupBox("SONIC PI / OSC")
+        self.osc_group.setToolTip("SONIC PI CONNECTION · OSC /eli_lab/v1")
         osc_form = QFormLayout(self.osc_group)
         osc_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         osc_form.setFieldGrowthPolicy(
@@ -412,7 +417,8 @@ class PerformanceControlPanel(QWidget):
         scene_form.addRow(self.scene_buttons)
         root.addWidget(self.scene_group)
 
-        self.audio_group = QGroupBox("AUDIO INPUT / SYSTEM LOOPBACK")
+        self.audio_group = QGroupBox("AUDIO INPUT")
+        self.audio_group.setToolTip("AUDIO INPUT / SYSTEM LOOPBACK")
         audio_layout = QVBoxLayout(self.audio_group)
         device_row = QHBoxLayout()
         self.audio_device_combo = QComboBox()
