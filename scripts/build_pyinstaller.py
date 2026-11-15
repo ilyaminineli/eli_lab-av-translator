@@ -92,6 +92,7 @@ def validate_environment() -> None:
         ROOT / "main.py",
         ROOT / "config.py",
         ROOT / "resources",
+        ROOT / "resources" / "icons" / "eli-lab-mark.ico",
         ROOT / "dictionary",
         ROOT / "THIRD_PARTY_NOTICES.md",
         SPEC,
