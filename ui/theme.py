@@ -4,7 +4,7 @@ from PySide6.QtGui import QFont
 from PySide6.QtWidgets import QApplication
 
 from config import RESOURCE_DIR
-from ui.hints import ToolTipFilter
+from ui.hints import ToolTipFilter, WheelGuard
 
 APP_STYLE = """
 QMainWindow, QDialog, QMessageBox, QWidget {
@@ -447,6 +447,10 @@ def configure_application_theme(
     tooltip_filter = ToolTipFilter(show_hints, app)
     app.installEventFilter(tooltip_filter)
     app._eli_tooltip_filter = tooltip_filter
+
+    wheel_guard = WheelGuard(app)
+    app.installEventFilter(wheel_guard)
+    app._eli_wheel_guard = wheel_guard
 
     icon_directory = (RESOURCE_DIR / "icons").resolve()
     close_icon = (icon_directory / "dock-close.svg").as_posix()
