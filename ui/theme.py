@@ -416,7 +416,6 @@ QLabel#brandMark {
     color: #eeeeee;
 }
 QLabel#brandName {
-    font-family: "Yu Gothic UI";
     font-size: 8pt;
     letter-spacing: 1.1px;
     color: #d0d0d0;
