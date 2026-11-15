@@ -4,10 +4,11 @@ import os
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
-from PySide6.QtWidgets import QApplication, QFormLayout
+from PySide6.QtWidgets import QApplication, QDockWidget, QFormLayout, QTabBar
 
 from core.application import Application
 from ui.automation_panel import AutomationPanel
+from ui.main_window import MainWindow
 from ui.panel_layout import configure_inspector_form
 from ui.performance_control_panel import PerformanceControlPanel
 
@@ -72,3 +73,45 @@ def test_macro_drag_defers_modulation_to_the_30_fps_runtime_tick(
     finally:
         panel.close()
         application.shutdown()
+
+
+
+def test_restore_default_layout_reapplies_compact_dock_tab_titles() -> None:
+    qt_app = QApplication.instance() or QApplication([])
+    application = Application()
+    window = MainWindow(application)
+    expected = {"LAYERS", "FX", "AUTO", "PREVIEW", "AUDIO", "MOD", "TIME"}
+    try:
+        for dock in window.findChildren(QDockWidget):
+            full_title = dock.property("_eli_dock_full_title")
+            if full_title in {
+                "LAYERS",
+                "FX + OVERLAYS",
+                "AUTO PERF",
+                "LOCAL PREVIEW",
+                "AUDIO / CTRL",
+                "MOD BANK",
+                "LIVE TIMELINE",
+            }:
+                dock.setWindowTitle(str(full_title))
+
+        window.restore_default_layout()
+        qt_app.processEvents()
+
+        dock_titles = {
+            dock.windowTitle()
+            for dock in window.findChildren(QDockWidget)
+        }
+        assert expected.issubset(dock_titles)
+
+        tab_texts = {
+            tab_bar.tabText(index)
+            for tab_bar in window.findChildren(QTabBar)
+            for index in range(tab_bar.count())
+        }
+        assert {"LAYERS", "FX", "AUTO", "AUDIO", "MOD", "TIME"}.issubset(
+            tab_texts
+        )
+    finally:
+        window.close()
+        qt_app.processEvents()
