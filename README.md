@@ -10,7 +10,7 @@ The `main` branch contains the M0–M6 rendering, video, generator, performance-
 
 The freeform multi-source collage layouts, responsive four-deck cards, compact actions, headline-led Text Art and About/version update were merged to `main` in [PR #36](https://github.com/ilyaminineli/eli_lab-av-translator/pull/36). The operator-workspace follow-up added the final 絵 seal, responsive dock sizing, wheel-safe controls and complete English/Japanese navigation in [PR #40](https://github.com/ilyaminineli/eli_lab-av-translator/pull/40), then applied the website-aligned desktop typography hierarchy in [PR #42](https://github.com/ilyaminineli/eli_lab-av-translator/pull/42).
 
-The Quality workflow performs Python compilation, Ruff and regression tests. Those checks do not replace target-Windows GUI, OpenGL/GPU, four-deck, Sonic Pi, projector and sustained-performance acceptance. Hardware validation remains an explicit release gate; do not treat static CI as a hardware sign-off.
+The Quality workflow performs Python compilation, Ruff, pytest regression tests and a Japanese UI typography proof. Those checks do not replace target-Windows GUI, OpenGL/GPU, four-deck, Sonic Pi, projector and sustained-performance acceptance. Hardware validation remains an explicit release gate; do not treat static CI as a hardware sign-off.
 
 ## Current capabilities
 
