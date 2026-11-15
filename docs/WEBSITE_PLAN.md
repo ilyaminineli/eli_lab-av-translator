@@ -119,10 +119,11 @@ A good visual reference is a dark technical field manual: the page is nearly bla
 
 ### Application
 
-- **English UI:** Segoe UI as the first choice. It is designed for clear on-screen interface text and is the normal Windows UI family.
-- **Japanese UI:** Yu Gothic UI first, then Meiryo UI / BIZ UDGothic, followed by Noto Sans JP and the normal Qt/system fallback.
-- Keep the application UI sans-serif and compact. Use regular weights for control labels and medium/bold weights only for section headings.
-- Do not bundle proprietary Windows fonts. They should be resolved from the operating system.
+- **Body and editable fields:** Segoe UI first for English; Yu Gothic UI, then Meiryo UI / BIZ UDGothic for Japanese. These remain compact, sans-serif and easy to read.
+- **Display headings:** Newsreader with Georgia fallback for English; Yu Mincho / Noto Serif JP for Japanese.
+- **Technical captions:** DM Mono with Consolas / Cascadia Mono fallback for uppercase buttons, checkboxes, group titles, navigation-like tabs, metadata and values.
+- Keep regular weights for control labels and reserve medium/bold weights for section headings and selected states.
+- Do not bundle proprietary Windows fonts or external font files. Resolve the preferred families from the operating system and use the listed fallbacks.
 
 ### Website
 

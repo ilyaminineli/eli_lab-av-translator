@@ -397,9 +397,16 @@ QLabel#sectionHeading {
     font-weight: 500;
     letter-spacing: 0px;
 }
-QDockWidget::title, QTabBar::tab, QLabel#mutedLabel, QStatusBar {
-    font-family: "Yu Gothic UI";
+QGroupBox::title, QDockWidget::title, QTabBar::tab,
+QLabel#eyebrow, QLabel#mutedLabel, QLabel#brandName, QStatusBar,
+QPushButton, QToolButton, QCheckBox, QRadioButton,
+QMenuBar, QMenu, QHeaderView::section {
+    font-family: "DM Mono", "Yu Gothic UI", "Meiryo UI", monospace;
     letter-spacing: 0.4px;
+}
+QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox,
+QPlainTextEdit, QTextEdit {
+    font-family: "Yu Gothic UI", "Meiryo UI", "Noto Sans JP", sans-serif;
 }
 QLabel#brandMark {
     font-family: "Yu Mincho", "Noto Serif JP", "MS Mincho", serif;
@@ -423,14 +430,16 @@ QLabel#brandMark {
     font-weight: 500;
     color: #eeeeee;
 }
-QDockWidget::title, QTabBar::tab, QLabel#mutedLabel, QStatusBar,
-QLabel#brandName {
+QGroupBox::title, QDockWidget::title, QTabBar::tab,
+QLabel#eyebrow, QLabel#mutedLabel, QLabel#brandName, QStatusBar,
+QPushButton, QToolButton, QCheckBox, QRadioButton,
+QMenuBar, QMenu, QHeaderView::section {
     font-family: "DM Mono", "Consolas", "Cascadia Mono", monospace;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.55px;
 }
-QPushButton, QToolButton, QComboBox, QLineEdit, QSpinBox,
-QDoubleSpinBox, QPlainTextEdit, QTextEdit {
-    font-family: "Noto Sans", "Segoe UI", sans-serif;
+QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox,
+QPlainTextEdit, QTextEdit {
+    font-family: "Segoe UI", "Noto Sans", "Arial", sans-serif;
 }
 QLabel#brandName {
     font-size: 8pt;

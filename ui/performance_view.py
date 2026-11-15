@@ -179,6 +179,10 @@ class PerformanceView(QOpenGLWidget):
         painter.fillRect(self.rect(), QColor("#101114"))
         painter.setPen(QColor("#E5E5E8"))
         title_font = QFont()
+        title_font.setFamilies(
+            ["Newsreader", "Yu Mincho", "Noto Serif JP", "Georgia"]
+        )
+        title_font.setStyleHint(QFont.StyleHint.Serif)
         title_font.setBold(True)
         title_font.setPointSize(12)
         painter.setFont(title_font)
@@ -188,7 +192,13 @@ class PerformanceView(QOpenGLWidget):
             title,
         )
         painter.setPen(QColor("#A7A9B0"))
-        painter.setFont(QFont("Consolas", 9))
+        detail_font = QFont()
+        detail_font.setFamilies(
+            ["DM Mono", "Consolas", "Cascadia Mono", "Yu Gothic UI"]
+        )
+        detail_font.setStyleHint(QFont.StyleHint.Monospace)
+        detail_font.setPointSize(9)
+        painter.setFont(detail_font)
         painter.drawText(
             self.rect().adjusted(28, 72, -28, -28),
             0x0001 | 0x0080,
