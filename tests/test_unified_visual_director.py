@@ -358,3 +358,75 @@ def test_transform_override_keeps_peak_particle_baseline_but_generator_edit_inva
         invalidate_peak_particle_base=True,
     )
     assert "layer-0" not in director._peak_particle_base
+
+
+
+def test_scene_select_maps_to_director_section_without_bound_self_error() -> None:
+    director = AutomationDirector(seed=31)
+    director.running = True
+    director._layers = []
+    director.settings = AutomationSettings(
+        musical_sync="hybrid",
+        randomize_layout=False,
+        randomize_effects=False,
+        randomize_generators=False,
+        randomize_layer_effects=False,
+        randomize_overlays=False,
+        randomize_palette=False,
+    )
+    director.settings.normalize()
+
+    director.on_musical_event(
+        "scene",
+        scene_id="peak",
+        intensity=0.9,
+        energy=0.8,
+        cutoff=0.7,
+        bar_index=12,
+        now=100.0,
+    )
+
+    assert director._performance_section == "peak"
+    assert director._last_scene_id == "peak"
+
+
+def test_scene_and_phrase_event_stress_does_not_raise() -> None:
+    director = AutomationDirector(seed=32)
+    director.running = True
+    director._layers = []
+    director.settings = AutomationSettings(
+        musical_sync="hybrid",
+        randomize_layout=False,
+        randomize_effects=False,
+        randomize_generators=False,
+        randomize_layer_effects=False,
+        randomize_overlays=False,
+        randomize_palette=False,
+    )
+    director.settings.normalize()
+    scenes = ("in", "peak", "ssp", "dev", "rc", "rls", "trns", "intd")
+
+    for index in range(1200):
+        director.on_musical_event(
+            "scene",
+            scene_id=scenes[index % len(scenes)],
+            intensity=(index % 100) / 100.0,
+            energy=((index * 7) % 100) / 100.0,
+            cutoff=((index * 13) % 100) / 100.0,
+            bar_index=index // 4,
+            now=100.0 + index * 0.025,
+        )
+        if index % 4 == 3:
+            director.on_musical_event(
+                "phrase",
+                intensity=0.7,
+                energy=0.6,
+                cutoff=0.5,
+                bar_index=index // 4,
+                now=100.0 + (index + 1) * 0.025,
+            )
+
+    assert director._last_scene_id == scenes[(1199) % len(scenes)]
+    assert director._performance_section in {
+        "intro", "development", "peak", "breakdown", "outro"
+    }

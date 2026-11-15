@@ -24,6 +24,7 @@ from PySide6.QtWidgets import (
     QMessageBox,
     QPushButton,
     QSizePolicy,
+    QTabBar,
     QTabWidget,
     QToolBar,
     QVBoxLayout,
@@ -61,6 +62,16 @@ from ui.theme import apply_application_language
 from ui.transport_bar import TransportBar
 
 _LOG = logging.getLogger(__name__)
+
+_DOCK_TAB_TITLES = {
+    "LAYERS": "LAYERS",
+    "FX + OVERLAYS": "FX",
+    "AUTO PERF": "AUTO",
+    "LOCAL PREVIEW": "PREVIEW",
+    "AUDIO / CTRL": "AUDIO",
+    "MOD BANK": "MOD",
+    "LIVE TIMELINE": "TIME",
+}
 
 
 class ElidingLabel(QLabel):
@@ -357,6 +368,7 @@ class MainWindow(QMainWindow):
 
         self._create_actions()
         apply_widget_translations(self, self._language)
+        QTimer.singleShot(0, self._configure_dock_tab_bars)
         self._sync_performance_macro_shortcuts()
         # Keep a pristine Qt dock-state snapshot for the View → Restore Default Layout action.
         self._default_dock_state = self.saveState(4)
@@ -664,11 +676,38 @@ class MainWindow(QMainWindow):
         """Focus the central live canvas instead of opening a secondary preview dock."""
         self.workspace_tabs.setCurrentIndex(0)
 
+    def _configure_dock_tab_bars(self) -> None:
+        """Keep inspector tabs compact and expose their full names on hover."""
+        docks = self.findChildren(QDockWidget)
+        for tab_bar in self.findChildren(QTabBar):
+            tab_bar.setUsesScrollButtons(True)
+            tab_bar.setElideMode(Qt.TextElideMode.ElideNone)
+            if tab_bar.count() >= 4:
+                tab_bar.setExpanding(False)
+            for index in range(tab_bar.count()):
+                visible_title = tab_bar.tabText(index)
+                dock = next(
+                    (
+                        item for item in docks
+                        if item.windowTitle() == visible_title
+                    ),
+                    None,
+                )
+                if dock is not None:
+                    tab_bar.setTabToolTip(index, dock.toolTip() or dock.accessibleName())
+
     def _make_dock(self, title: str, widget) -> QDockWidget:
-        dock = QDockWidget(title, self)
+        tab_title = _DOCK_TAB_TITLES.get(title, title)
+        dock = QDockWidget(tab_title, self)
+        # Saved QMainWindow layouts are keyed by objectName. Keep the historical
+        # full-title name while presenting a shorter tab label in the dock strip.
         dock.setObjectName(
             title.lower().replace(" ", "_").replace("+", "plus").replace(" ", "_")
         )
+        dock.setProperty("_eli_i18n_window_title", tab_title)
+        dock.setProperty("_eli_dock_full_title", title)
+        dock.setAccessibleName(title)
+        dock.setToolTip(title)
         dock.setWidget(widget)
         dock.setAllowedAreas(
             Qt.DockWidgetArea.LeftDockWidgetArea
@@ -1447,6 +1486,7 @@ class MainWindow(QMainWindow):
             if qt_application is not None:
                 apply_application_language(qt_application, self._language)
             apply_widget_translations(self, self._language)
+            self._configure_dock_tab_bars()
             self.performance_control_panel.sync_from_application()
             self.performance_control_panel.refresh_monitor()
             self.performance_timeline_panel.refresh(force=True)

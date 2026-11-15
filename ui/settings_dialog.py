@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
 )
 
 from ui.i18n import tr
+from ui.panel_layout import configure_inspector_form
 
 
 class SettingsDialog(QDialog):
@@ -29,6 +30,7 @@ class SettingsDialog(QDialog):
 
         interface_group = QGroupBox(tr("settings.interface", self._language), self)
         interface_form = QFormLayout(interface_group)
+        configure_inspector_form(interface_form)
         self.language_combo = QComboBox(interface_group)
         self.language_combo.addItem("English", "en")
         self.language_combo.addItem("日本語", "ja")

@@ -30,6 +30,7 @@ from core.performance_timeline import (
     PerformanceTimelineEvent,
 )
 from ui.i18n import set_ui_text, ui_text
+from ui.panel_layout import configure_inspector_form
 
 _PAYLOAD_TEMPLATES = {
     "scene_marker": "{}",
@@ -100,8 +101,8 @@ class PerformanceTimelinePanel(QWidget):
         body = QWidget()
         body.setMinimumWidth(0)
         root = QVBoxLayout(body)
-        root.setContentsMargins(12, 12, 12, 14)
-        root.setSpacing(12)
+        root.setContentsMargins(8, 8, 8, 8)
+        root.setSpacing(8)
 
         header = QHBoxLayout()
         title = QLabel("SHOW TIMELINE")
@@ -132,6 +133,7 @@ class PerformanceTimelinePanel(QWidget):
 
         self.editor_group = QGroupBox("TIMELINE EVENT")
         form = QFormLayout(self.editor_group)
+        configure_inspector_form(form)
         form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.bar_spin = QSpinBox()

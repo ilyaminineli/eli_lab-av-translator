@@ -96,6 +96,12 @@ def test_japanese_catalog_and_english_fallback() -> None:
     assert ui_text("PERF MODIFIERS", "ja") == "レイヤー別モディファイア"
     assert ui_text("TEXT MOTION", "ja") == "テキストモーション"
     assert ui_text("MASTER FX", "ja") == "マスターFX"
+    assert ui_text("FX", "ja") == "FX"
+    assert ui_text("AUTO", "ja") == "AUTO"
+    assert ui_text("PREVIEW", "ja") == "プレビュー"
+    assert ui_text("AUDIO", "ja") == "音声"
+    assert ui_text("MOD", "ja") == "MOD"
+    assert ui_text("TIME", "ja") == "時間"
 
 
 def test_widget_translation_covers_controls_and_preserves_user_input() -> None:
@@ -317,6 +323,8 @@ def test_theme_uses_responsive_group_and_control_metrics() -> None:
         "QAbstractItemView",
         "QToolTip",
         "QGroupBox::title",
+        "QGroupBox#deckCard::title",
+        "QGroupBox#performanceModifiersGroup::title",
         "QPushButton",
         "QToolButton",
         "QCheckBox",
@@ -331,6 +339,23 @@ def test_theme_uses_responsive_group_and_control_metrics() -> None:
         assert control in japanese
     assert "Yu Gothic UI" in japanese
     assert "Segoe UI" in english
+    assert "padding: 5px 8px 6px" in APP_STYLE
+    assert "min-height: 20px" in APP_STYLE
+
+
+def test_inspector_dock_tab_titles_are_compact_and_stable() -> None:
+    from ui.main_window import _DOCK_TAB_TITLES
+
+    assert _DOCK_TAB_TITLES == {
+        "LAYERS": "LAYERS",
+        "FX + OVERLAYS": "FX",
+        "AUTO PERF": "AUTO",
+        "LOCAL PREVIEW": "PREVIEW",
+        "AUDIO / CTRL": "AUDIO",
+        "MOD BANK": "MOD",
+        "LIVE TIMELINE": "TIME",
+    }
+    assert all(len(label) <= 7 for label in _DOCK_TAB_TITLES.values())
 
 
 def test_package_and_build_metadata_are_consistent() -> None:

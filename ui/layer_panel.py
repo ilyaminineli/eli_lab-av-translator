@@ -108,6 +108,7 @@ class LayerPanel(QWidget):
         controls_layout.addWidget(self.transform_group)
 
         self.performance_modifiers_group = QGroupBox("PERF MODIFIERS")
+        self.performance_modifiers_group.setObjectName("performanceModifiersGroup")
         self.performance_modifiers_group.setToolTip("PER-LAYER PERFORMANCE MODIFIERS")
         modifier_layout = QVBoxLayout(self.performance_modifiers_group)
         self.modifier_rhythm_status = QLabel("BEAT — · DOWNBEAT — · PHRASE —")

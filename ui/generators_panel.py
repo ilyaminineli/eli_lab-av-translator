@@ -33,6 +33,7 @@ from generators.palettes import import_aco_palette, palette_look, palette_names
 from generators.text_pools import random_text_sample
 from ui.i18n import set_ui_text, ui_text
 from ui.icons import icon_button
+from ui.panel_layout import configure_inspector_form
 
 
 class GeneratorsPanel(QWidget):
@@ -131,6 +132,7 @@ class GeneratorsPanel(QWidget):
 
         self.text_group = QGroupBox("TEXT ART")
         text_form = QFormLayout(self.text_group)
+        configure_inspector_form(text_form)
         text_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         text_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -157,6 +159,7 @@ class GeneratorsPanel(QWidget):
 
         raster_group = QGroupBox("TEXT RASTER")
         raster_form = QFormLayout(raster_group)
+        configure_inspector_form(raster_form)
         raster_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         raster_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -313,6 +316,7 @@ class GeneratorsPanel(QWidget):
         self.text_motion_group = QGroupBox("TEXT MOTION")
         self.text_motion_group.setToolTip("ANIMATED TYPOGRAPHY · GPU SHADER")
         motion_form = QFormLayout(self.text_motion_group)
+        configure_inspector_form(motion_form)
         motion_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         motion_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -350,6 +354,7 @@ class GeneratorsPanel(QWidget):
         random_group = QGroupBox("RANDOM TEXT POOL")
         random_group.setToolTip("RANDOM TEXT POOL · ENGLISH / 日本語")
         random_form = QFormLayout(random_group)
+        configure_inspector_form(random_form)
         random_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         random_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -394,6 +399,7 @@ class GeneratorsPanel(QWidget):
 
         self.geometry_group = QGroupBox("GEOMETRY")
         geometry_form = QFormLayout(self.geometry_group)
+        configure_inspector_form(geometry_form)
         geometry_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         geometry_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -422,6 +428,7 @@ class GeneratorsPanel(QWidget):
 
         self.waveform_group = QGroupBox("WAVEFORM")
         waveform_form = QFormLayout(self.waveform_group)
+        configure_inspector_form(waveform_form)
         waveform_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         waveform_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -448,6 +455,7 @@ class GeneratorsPanel(QWidget):
         self.particles_group = QGroupBox("PARTICLE FIELD")
         self.particles_group.setToolTip("GPU PARTICLE FIELD · LEGACY")
         particles_form = QFormLayout(self.particles_group)
+        configure_inspector_form(particles_form)
         particles_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         particles_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -475,6 +483,7 @@ class GeneratorsPanel(QWidget):
         self.particle_system_group = QGroupBox("PARTICLE SYSTEM 2.0")
         self.particle_system_group.setToolTip("PARTICLE SYSTEM 2.0 · GPU PHYSICS")
         system_form = QFormLayout(self.particle_system_group)
+        configure_inspector_form(system_form)
         system_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         system_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -616,6 +625,7 @@ class GeneratorsPanel(QWidget):
 
         self.style_group = QGroupBox("COLOUR AND ANIMATION")
         style_form = QFormLayout(self.style_group)
+        configure_inspector_form(style_form)
         style_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         style_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -649,6 +659,7 @@ class GeneratorsPanel(QWidget):
 
         self.layer_appearance_group = QGroupBox("LAYER APPEARANCE")
         appearance_form = QFormLayout(self.layer_appearance_group)
+        configure_inspector_form(appearance_form)
         appearance_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         appearance_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -665,6 +676,7 @@ class GeneratorsPanel(QWidget):
 
         self.overlay_group = QGroupBox("IMAGE / VIDEO OVERLAY")
         overlay_form = QFormLayout(self.overlay_group)
+        configure_inspector_form(overlay_form)
         overlay_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         overlay_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow

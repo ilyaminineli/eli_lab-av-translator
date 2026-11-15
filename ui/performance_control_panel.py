@@ -40,6 +40,7 @@ from core.modulation import (
 from core.scene_profiles import SceneProfile
 from generators.palettes import palette_names
 from ui.i18n import set_ui_text
+from ui.panel_layout import configure_inspector_form
 
 
 class PerformanceControlPanel(QWidget):
@@ -89,6 +90,7 @@ class PerformanceControlPanel(QWidget):
         self.transport_group = QGroupBox("TRANSPORT")
         self.transport_group.setToolTip("INTERNAL TRANSPORT / TEST CLOCK")
         transport_form = QFormLayout(self.transport_group)
+        configure_inspector_form(transport_form)
         transport_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         transport_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -124,6 +126,7 @@ class PerformanceControlPanel(QWidget):
         self.midi_group = QGroupBox("MIDI")
         self.midi_group.setToolTip("MIDI CONTROLLERS · OPTIONAL")
         midi_form = QFormLayout(self.midi_group)
+        configure_inspector_form(midi_form)
         midi_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         midi_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -288,6 +291,7 @@ class PerformanceControlPanel(QWidget):
 
         self.performance_scene_group = QGroupBox("VJ SCENE BANK")
         scene_form = QFormLayout(self.performance_scene_group)
+        configure_inspector_form(scene_form)
         scene_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         scene_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -354,6 +358,7 @@ class PerformanceControlPanel(QWidget):
         self.osc_group = QGroupBox("SONIC PI / OSC")
         self.osc_group.setToolTip("SONIC PI CONNECTION · OSC /eli_lab/v1")
         osc_form = QFormLayout(self.osc_group)
+        configure_inspector_form(osc_form)
         osc_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         osc_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.osc_bind_edit = QLineEdit("127.0.0.1")
@@ -380,6 +385,7 @@ class PerformanceControlPanel(QWidget):
 
         self.scene_group = QGroupBox("SCENE PROFILES")
         scene_form = QFormLayout(self.scene_group)
+        configure_inspector_form(scene_form)
         scene_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         scene_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -434,6 +440,8 @@ class PerformanceControlPanel(QWidget):
         audio_layout.addLayout(audio_buttons)
 
         analysis_form = QFormLayout()
+
+        configure_inspector_form(analysis_form)
         analysis_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         analysis_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -484,6 +492,7 @@ class PerformanceControlPanel(QWidget):
         self.modulation_group = QGroupBox("MODULATION MATRIX")
         modulation_layout = QVBoxLayout(self.modulation_group)
         route_form = QFormLayout()
+        configure_inspector_form(route_form)
         route_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         route_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
@@ -1496,7 +1505,9 @@ class PerformanceControlPanel(QWidget):
                 macro_id, normalized, hold_seconds=1.5
             )
             self.macro_value_labels[macro_id].setText(f"{normalized:.2f}")
-            self.application.apply_modulation()
+            # The 30 FPS application runtime evaluates modulation once per tick.
+            # Do not run a second full layer/modulator pass for every mouse-move
+            # valueChanged event while the operator drags this slider.
         except (KeyError, TypeError, ValueError) as exc:
             set_ui_text(self.macro_status_label, f"Macro update failed · {exc}")
 

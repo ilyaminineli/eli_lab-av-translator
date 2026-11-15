@@ -49,7 +49,7 @@ Output:
 
 The target computer needs Windows 11 x64 and a current graphics driver supporting OpenGL 3.3 Core. It does not need Python, pip, PyInstaller or FFmpeg. Sonic Pi, video media, projects, audio devices and user-added asset folders remain external.
 
-Full steps and limitations: [Windows PyInstaller build guide](docs/BUILD_PYINSTALLER_WINDOWS.md) and [Windows setup guide](docs/SETUP_WINDOWS.md).
+Full steps and limitations: [Windows PyInstaller build guide](docs/BUILD_PYINSTALLER_WINDOWS.md) and [Windows setup guide](docs/SETUP_WINDOWS.md). For the repeatable UI/control stress suite and target-machine soak-test checklist, see [Windows stability testing](docs/WINDOWS_STABILITY_TESTING.md).
 
 The GitHub **Windows Onefile Build** workflow is manual-dispatch only. It does not run on ordinary pull-request or push updates. The local `scripts/build_pyinstaller.py` command above is the normal build path.
 
