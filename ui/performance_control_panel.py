@@ -279,10 +279,6 @@ class PerformanceControlPanel(QWidget):
         root.addWidget(self.performance_macro_group)
 
 
-        self.macro_status_label.setWordWrap(True)
-        self.macro_status_label.setObjectName("mutedLabel")
-        macro_layout.addWidget(self.macro_status_label)
-        root.addWidget(self.performance_macro_group)
 
         self.performance_scene_group = QGroupBox("VJ SCENE BANK")
         scene_form = QFormLayout(self.performance_scene_group)
