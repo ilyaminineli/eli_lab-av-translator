@@ -53,10 +53,12 @@ jobs:
           ui/modulator_bank_panel.py
           ui/performance_control_panel.py
           ui/performance_timeline_panel.py
+          ui/performance_view.py
           ui/theme.py
           ui/transport_bar.py
           main.py
           tests
+          scripts/build_pyinstaller.py
           scripts/render_japanese_ui_proof.py
           scripts/check_static_site.py
       - name: Run unit and regression tests

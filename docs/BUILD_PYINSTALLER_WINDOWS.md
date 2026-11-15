@@ -27,6 +27,12 @@ py -3.14 -m venv .venv
 
 Use `py -3.12` or `py -3.13` instead if preferred. Do not substitute another project's active virtual environment.
 
+## Build identity, icon and fonts
+
+The build reads the application display name, version and final `eli-lab-mark.ico` from the application configuration. The PyInstaller spec derives the executable filename and icon from that configuration. A preflight check verifies that `config.APP_VER` matches the project version in `pyproject.toml` and that the final icon exists before packaging.
+
+The UI resolves Newsreader, DM Mono, Segoe UI, Yu Gothic UI and Japanese display/body fallbacks from installed system fonts. No additional pip dependency or bundled font binary is required for the typography pass. The spec collects the complete `resources/` tree, including the final application seal.
+
 ## What the build script does
 
 `scripts/build_pyinstaller.py`:
@@ -38,7 +44,7 @@ Use `py -3.12` or `py -3.13` instead if preferred. Do not substitute another pro
 5. Compiles the application modules.
 6. Runs PyInstaller using `AVTranslator.spec` to produce a one-file windowed executable.
 7. Runs the packaged executable with `--self-check`.
-8. Writes `build\pyinstaller-build-report.txt` with runtime/build versions, executable size and SHA-256.
+8. Writes `build\pyinstaller-build-report.txt` with application, Python and PyInstaller versions, resolved runtime package versions, icon path, executable size and SHA-256.
 
 Output:
 

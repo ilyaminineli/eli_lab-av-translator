@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import json
 import os
+import tomllib
+from pathlib import Path
 
 os.environ.setdefault("QT_QPA_PLATFORM", "offscreen")
 
@@ -23,7 +25,7 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from config import ICON_PATH
+from config import APP_VER, ICON_PATH
 from core.application import Application
 from ui.generators_panel import GeneratorsPanel
 from ui.hints import ToolTipFilter, WheelGuard
@@ -312,6 +314,9 @@ def test_theme_uses_responsive_group_and_control_metrics() -> None:
     assert "Newsreader" in english
     assert "DM Mono" in english
     for control in (
+        "QLabel",
+        "QAbstractItemView",
+        "QToolTip",
         "QGroupBox::title",
         "QPushButton",
         "QToolButton",
@@ -320,12 +325,53 @@ def test_theme_uses_responsive_group_and_control_metrics() -> None:
         "QMenuBar",
         "QMenu",
         "QHeaderView::section",
+        "QComboBox",
+        "QSpinBox",
     ):
         assert control in english
         assert control in japanese
     assert "Yu Gothic UI" in japanese
     assert "Segoe UI" in english
 
+
+
+def test_package_and_build_metadata_are_consistent() -> None:
+    root = Path(__file__).resolve().parents[1]
+    project = tomllib.loads(
+        (root / "pyproject.toml").read_text(encoding="utf-8")
+    )["project"]
+    runtime_requirements = {
+        line.strip()
+        for line in (root / "requirements.txt").read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    }
+    dev_requirements = {
+        line.strip()
+        for line in (root / "requirements-dev.txt")
+        .read_text(encoding="utf-8")
+        .splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+        and not line.lstrip().startswith("-r ")
+    }
+    build_requirements = (
+        root / "requirements-build-pyinstaller.txt"
+    ).read_text(encoding="utf-8")
+    spec = (root / "AVTranslator.spec").read_text(encoding="utf-8")
+    build_script = (root / "scripts" / "build_pyinstaller.py").read_text(
+        encoding="utf-8"
+    )
+
+    assert project["version"] == APP_VER
+    assert project["dependencies"] and set(project["dependencies"]) == runtime_requirements
+    assert set(project["optional-dependencies"]["dev"]) == dev_requirements
+    assert "PyInstaller==" in build_requirements
+    assert "from config import APP_NAME, ICON_PATH" in spec
+    assert "name=APP_NAME" in spec
+    assert "ICON = ICON_PATH" in spec
+    assert "APP_NAME" in build_script
+    assert "APP_VER" in build_script
+    assert "ICON_PATH" in build_script
+    assert ICON_PATH.is_file()
 
 
 def test_eliding_status_label_keeps_full_diagnostic_text() -> None:

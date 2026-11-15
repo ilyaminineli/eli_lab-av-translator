@@ -32,9 +32,11 @@ The target computer does not need Python, pip, PyInstaller or FFmpeg. The execut
 
 Sonic Pi, graphics/audio drivers, user video files and user-added asset folders are not part of the EXE.
 
-## 3. Japanese interface fonts
+## 3. Desktop interface fonts
 
-The application supports English and Japanese interface copy. In Japanese mode, its font stack prefers **Yu Gothic UI**, **Meiryo UI / Meiryo**, **MS UI Gothic / MS PGothic / MS Gothic**, **BIZ UDGothic**, then Noto Sans JP and normal system fallbacks.
+The desktop interface uses Newsreader / Georgia for English display headings, Yu Mincho / Noto Serif JP for Japanese display headings, DM Mono with Consolas / Cascadia Mono fallbacks for technical labels and controls, and Segoe UI / Yu Gothic UI for editable text and longer body copy. These are system-resolved font families; the application does not bundle font binaries or install extra font packages. If a preferred face is absent, its fallback is used.
+
+In Japanese mode, the body/control font stack prefers **Yu Gothic UI**, **Meiryo UI / Meiryo**, **MS UI Gothic / MS PGothic / MS Gothic**, **BIZ UDGothic**, then Noto Sans JP and normal system fallbacks.
 
 Some Windows installations do not include the Japanese supplemental fonts by default. If Japanese characters appear as empty squares or boxes:
 
@@ -104,12 +106,16 @@ Use `py -3.12` or `py -3.13` if preferred. PowerShell activation is optional; ca
 
 ## 8. Developer quality checks
 
-The former pytest/unit-test suite and its dependencies are not present in the current repository. The Quality workflow performs Python compilation and Ruff:
+The repository includes a pytest regression suite. The Windows Quality workflow runs compilation, Ruff, pytest and a Japanese UI typography proof. Run the same core checks locally:
 
 ```powershell
+.\.venv\Scripts\python.exe -m pip check
 .\.venv\Scripts\python.exe -m compileall -q .
 .\.venv\Scripts\python.exe -m ruff check .
+.\.venv\Scripts\python.exe -m pytest -q
 ```
+
+Install the complete development/test environment with `requirements-dev.txt`. The equivalent editable-install extra is `pip install -e ".[dev]"`.
 
 A green quality workflow is not a runtime, GUI, OpenGL, musical or hardware acceptance result.
 

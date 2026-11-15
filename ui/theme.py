@@ -391,21 +391,22 @@ QMessageBox QPushButton {
 def _typography_stylesheet(language: str) -> str:
     if language == "ja":
         return """
-QLabel#sectionHeading {
+QLabel#sectionHeading, QLabel#panelSubheading {
     font-family: "Yu Mincho", "Noto Serif JP", "MS Mincho", serif;
     font-size: 17px;
     font-weight: 500;
     letter-spacing: 0px;
 }
+QLabel, QAbstractItemView, QToolTip,
 QGroupBox::title, QDockWidget::title, QTabBar::tab,
 QLabel#eyebrow, QLabel#mutedLabel, QLabel#brandName, QStatusBar,
-QPushButton, QToolButton, QCheckBox, QRadioButton,
-QMenuBar, QMenu, QHeaderView::section {
-    font-family: "DM Mono", "Yu Gothic UI", "Meiryo UI", monospace;
+QPushButton, QToolButton, QCheckBox, QRadioButton, QProgressBar,
+QMenuBar, QMenu, QHeaderView::section,
+QComboBox, QSpinBox, QDoubleSpinBox {
+    font-family: "DM Mono", "Yu Gothic UI", "Meiryo UI", "Noto Sans JP", monospace;
     letter-spacing: 0.4px;
 }
-QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox,
-QPlainTextEdit, QTextEdit {
+QLineEdit, QPlainTextEdit, QTextEdit {
     font-family: "Yu Gothic UI", "Meiryo UI", "Noto Sans JP", sans-serif;
 }
 QLabel#brandMark {
@@ -415,14 +416,13 @@ QLabel#brandMark {
     color: #eeeeee;
 }
 QLabel#brandName {
-    font-family: "Yu Gothic UI";
     font-size: 8pt;
     letter-spacing: 1.1px;
     color: #d0d0d0;
 }
 """
     return """
-QLabel#sectionHeading, QLabel#brandMark {
+QLabel#sectionHeading, QLabel#panelSubheading, QLabel#brandMark {
     font-family: "Newsreader", "Yu Mincho", "Noto Serif JP", "Georgia", serif;
 }
 QLabel#brandMark {
@@ -430,15 +430,16 @@ QLabel#brandMark {
     font-weight: 500;
     color: #eeeeee;
 }
+QLabel, QAbstractItemView, QToolTip,
 QGroupBox::title, QDockWidget::title, QTabBar::tab,
 QLabel#eyebrow, QLabel#mutedLabel, QLabel#brandName, QStatusBar,
 QPushButton, QToolButton, QCheckBox, QRadioButton,
-QMenuBar, QMenu, QHeaderView::section {
+QMenuBar, QMenu, QHeaderView::section,
+QComboBox, QSpinBox, QDoubleSpinBox {
     font-family: "DM Mono", "Consolas", "Cascadia Mono", monospace;
     letter-spacing: 0.55px;
 }
-QComboBox, QLineEdit, QSpinBox, QDoubleSpinBox,
-QPlainTextEdit, QTextEdit {
+QLineEdit, QPlainTextEdit, QTextEdit {
     font-family: "Segoe UI", "Noto Sans", "Arial", sans-serif;
 }
 QLabel#brandName {

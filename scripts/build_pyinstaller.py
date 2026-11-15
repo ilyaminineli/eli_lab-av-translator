@@ -6,15 +6,23 @@ import os
 import struct
 import subprocess
 import sys
+import tomllib
 from datetime import UTC, datetime
+from importlib.metadata import PackageNotFoundError
+from importlib.metadata import version as distribution_version
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from config import APP_NAME, APP_VER, ICON_PATH  # noqa: E402
+
 PROJECT_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
 REQUIREMENTS = ROOT / "requirements-build-pyinstaller.txt"
 MIDI_REQUIREMENTS = ROOT / "requirements-build-pyinstaller-midi.txt"
 SPEC = ROOT / "AVTranslator.spec"
-EXE = ROOT / "dist" / "eli_lab AVTranslator.exe"
+EXE = ROOT / "dist" / f"{APP_NAME}.exe"
 
 
 def run(command: list[str], *, timeout: int | None = None) -> subprocess.CompletedProcess[str]:
@@ -91,7 +99,9 @@ def validate_environment() -> None:
     required = (
         ROOT / "main.py",
         ROOT / "config.py",
+        ROOT / "pyproject.toml",
         ROOT / "resources",
+        ICON_PATH,
         ROOT / "dictionary",
         ROOT / "THIRD_PARTY_NOTICES.md",
         SPEC,
@@ -101,6 +111,18 @@ def validate_environment() -> None:
     missing = [str(path) for path in required if not path.exists()]
     if missing:
         raise SystemExit("Missing required project/build files:\n" + "\n".join(missing))
+
+    project_data = tomllib.loads(
+        (ROOT / "pyproject.toml").read_text(encoding="utf-8")
+    )
+    project_version = str(project_data.get("project", {}).get("version", ""))
+    if project_version != APP_VER:
+        raise SystemExit(
+            "Application version mismatch: "
+            f"config.APP_VER is {APP_VER!r}, pyproject.toml is {project_version!r}."
+        )
+    if not APP_NAME.strip():
+        raise SystemExit("config.APP_NAME must not be empty.")
 
     # main.py's packaged --self-check must treat native MIDI as optional on CPython 3.14.
     main_text = (ROOT / "main.py").read_text(encoding="utf-8")
@@ -119,7 +141,7 @@ def main() -> int:
     python = str(PROJECT_PYTHON.resolve())
 
     print("=" * 72)
-    print("eli_lab AVTranslator — local PyInstaller one-file build")
+    print(f"{APP_NAME} {APP_VER} — local PyInstaller one-file build")
     print(f"Python: {sys.version.split()[0]} x64")
     print(f"Environment: {PROJECT_PYTHON}")
     print(f"Native MIDI backend requested: {'yes' if args.with_midi else 'no'}")
@@ -189,13 +211,37 @@ def main() -> int:
         midi_available = False
     size_mib = EXE.stat().st_size / (1024 * 1024)
     digest = sha256_file(EXE)
+    package_names = (
+        "PySide6",
+        "moderngl",
+        "glcontext",
+        "av",
+        "numpy",
+        "SoundCard",
+        "python-osc",
+        "mido",
+        "PyInstaller",
+        "python-rtmidi",
+    )
+    package_report: list[str] = []
+    for package_name in package_names:
+        try:
+            package_version = distribution_version(package_name)
+        except PackageNotFoundError:
+            continue
+        package_report.append(f"  {package_name}=={package_version}")
+
     report = (
-        "eli_lab AVTranslator — PyInstaller build report\n"
+        f"{APP_NAME} {APP_VER} — PyInstaller build report\n"
         f"Built (UTC): {datetime.now(UTC).isoformat()}\n"
         f"Python: {sys.version.split()[0]} x64\n"
         f"PyInstaller: {__import__('PyInstaller').__version__}\n"
+        "Resolved packages:\n"
+        + "\n".join(package_report)
+        + "\n"
         f"Native MIDI backend: {'included' if midi_available else 'not included (optional)'}\n"
         f"Executable: {EXE}\n"
+        f"Icon: {ICON_PATH}\n"
         f"Size: {size_mib:.1f} MiB\n"
         f"SHA-256: {digest}\n"
         "Packaged self-check: PASS\n"
@@ -206,6 +252,7 @@ def main() -> int:
 
     print("\n" + "=" * 72)
     print("BUILD COMPLETE")
+    print(f"Application: {APP_NAME} {APP_VER}")
     print(f"Executable: {EXE}")
     print(f"Size:       {size_mib:.1f} MiB")
     print(f"SHA-256:    {digest}")

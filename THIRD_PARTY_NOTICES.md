@@ -25,6 +25,10 @@ PySide6/Qt is available under LGPL/GPL and commercial terms. Packaging Qt librar
 
 PyAV's Python bindings are BSD-3-Clause, but a PyAV wheel also brings FFmpeg native libraries. The licence of those exact FFmpeg binaries depends on their configure options and enabled external libraries. The pinned wheel's actual notices/configuration must therefore be inspected before public redistribution. The build self-check reports FFmpeg library versions; it does not prove licence compliance.
 
+## UI typography
+
+The desktop UI references system-installed Newsreader, DM Mono, Segoe UI, Yu Gothic UI and Japanese serif/sans-serif families through font fallback stacks. No font binaries are bundled in the application or added as Python dependencies. If a user installs an optional font separately, its licence and redistribution terms remain the user's responsibility.
+
 ## Bundled visual resources — clearance still required
 
 The repository bundles image libraries under resources/textures/, including directories named centurion_assets_pack and texturelabs_assets_pack, plus the resources/sketches_and_strokes/ collection and other textures. A complete licence/attribution register for every bundled asset was not present in the repository at the time of this audit.
