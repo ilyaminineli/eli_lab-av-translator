@@ -5,7 +5,7 @@ import random
 from pathlib import Path
 
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QAction, QGuiApplication, QKeySequence, QShortcut
+from PySide6.QtGui import QAction, QGuiApplication, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
     QDockWidget,
@@ -23,6 +23,7 @@ from PySide6.QtWidgets import (
 
 from config import (
     APP_AUTHOR,
+    ICON_PATH,
     APP_NAME,
     APP_REPOSITORY_URL,
     APP_STUDIO,
@@ -193,11 +194,13 @@ class MainWindow(QMainWindow):
         brand_layout = QHBoxLayout(brand_widget)
         brand_layout.setContentsMargins(2, 0, 12, 0)
         brand_layout.setSpacing(8)
-        brand_mark = QLabel("絵", brand_widget)
+        brand_mark = QLabel(brand_widget)
         brand_mark.setObjectName("brandMark")
-        brand_mark.setAlignment(Qt.AlignmentFlag.AlignVCenter)
-        brand_mark.setToolTip("絵 · visual composition")
-        brand_name = QLabel("eli_lab\nAVTranslator", brand_widget)
+        brand_mark.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        brand_mark.setFixedSize(38, 38)
+        brand_mark.setPixmap(QIcon(str(ICON_PATH)).pixmap(36, 36))
+        brand_mark.setToolTip("絵 · eli_lab identity")
+        brand_name = QLabel("eli_lab\nAVT", brand_widget)
         brand_name.setObjectName("brandName")
         brand_name.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         brand_layout.addWidget(brand_mark)
@@ -222,12 +225,17 @@ class MainWindow(QMainWindow):
         self._last_timeline_state_revision = int(
             self.application.performance_timeline.snapshot()["state_revision"]
         )
+        self.control_status_label.setMinimumWidth(0)
+        self.control_status_label.setMaximumWidth(330)
         self.control_status_label.setToolTip(
-            "M3 control state · normalized transport, scene and macro events"
+            "Control state · transport, scene, macro and synchronization diagnostics"
         )
-        self.statusBar().addPermanentWidget(self.control_status_label)
-        self.status_label = QLabel(
-            ui_text("LOCAL PREVIEW · IDLE")
+        self.statusBar().addPermanentWidget(self.control_status_label, 1)
+        self.status_label = QLabel(ui_text("LOCAL PREVIEW · IDLE"))
+        self.status_label.setMinimumWidth(0)
+        self.status_label.setMaximumWidth(230)
+        self.status_label.setToolTip(
+            "Local preview / projector render state. Hover for the full renderer message."
         )
         self.statusBar().addPermanentWidget(self.status_label)
         self.performance_view.render_status_changed.connect(
