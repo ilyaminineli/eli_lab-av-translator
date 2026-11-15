@@ -85,6 +85,9 @@ def test_japanese_catalog_and_english_fallback() -> None:
     assert tr("about.tagline", "ja") == "映像・生成表現・音楽をつなぐライブ映像制作ツール。"
     assert tr("menu.settings", "en") == "Settings"
     assert tr("missing.key", "ja") == "missing.key"
+    assert ui_text("PERF MODIFIERS", "ja") == "レイヤー別モディファイア"
+    assert ui_text("TEXT MOTION", "ja") == "テキストモーション"
+    assert ui_text("MASTER FX", "ja") == "マスターFX"
 
 
 
