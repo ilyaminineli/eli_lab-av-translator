@@ -60,6 +60,7 @@ jobs:
           main.py
           tests
           scripts/build_pyinstaller.py
+          scripts/package_release.py
           scripts/render_japanese_ui_proof.py
           scripts/check_static_site.py
       - name: Run unit and regression tests
