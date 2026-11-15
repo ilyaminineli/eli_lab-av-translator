@@ -1185,6 +1185,7 @@ class AutomationDirector:
                 if isinstance(value, (int, float))
             }
 
+    @staticmethod
     def _scene_section(scene_id: str) -> str:
         if scene_id in {"in", "c", "end"}:
             return "intro" if scene_id == "in" else "outro"
