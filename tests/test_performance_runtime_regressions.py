@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 from core.application import Application
 from core.automation import AutomationDirector
+from core.performance_control import ControlEvent, ControlEventQueue
 from generators.catalog import normalize_settings
 from generators.raster_service import GeneratorRasterService
 from rendering.compositor import canvas_fit_scale
@@ -154,3 +155,35 @@ def test_waveform_content_changes_remain_part_of_raster_fingerprint() -> None:
 
 def test_project_canvas_is_letterboxed_as_16_by_9_on_a_4_by_3_output() -> None:
     assert canvas_fit_scale(1024, 768, 1920, 1080) == (1.0, 0.75)
+
+
+
+def test_control_queue_stays_bounded_during_a_large_sonic_pi_burst() -> None:
+    queue = ControlEventQueue(capacity=256)
+
+    for sequence in range(10_000):
+        accepted = queue.submit(
+            ControlEvent(
+                kind="scene.select",
+                source="sonic_pi",
+                sequence=sequence,
+                session_id="stress-session",
+                payload={
+                    "scene_id": "peak" if sequence % 2 else "intro",
+                    "intensity": (sequence % 100) / 100.0,
+                    "bar_index": sequence // 4,
+                },
+            )
+        )
+        assert accepted is (sequence < 256)
+
+    assert len(queue) == 256
+    assert queue.dropped_events == 9_744
+
+    first_batch = queue.drain(128)
+    assert len(first_batch) == 128
+    assert [event.sequence for event in first_batch] == list(range(128))
+    assert len(queue) == 128
+
+    queue.clear()
+    assert len(queue) == 0
