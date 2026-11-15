@@ -5,6 +5,7 @@ import zipfile
 
 import pytest
 
+from config import APP_VER
 from scripts.package_release import COMPRESSION_METHODS, create_release_archive
 
 
@@ -23,7 +24,7 @@ def test_versioned_release_archives_use_selected_zip_compression(
     )
 
     assert archive_path.is_file()
-    assert "-0.6.5-windows-x64.zip" in archive_path.name
+    assert f"-{APP_VER}-windows-x64.zip" in archive_path.name
     with zipfile.ZipFile(archive_path) as archive:
         assert archive.testzip() is None
         assert archive.read(binary.name) == binary.read_bytes()
