@@ -262,9 +262,6 @@ class MainWindow(QMainWindow):
         )
         self.control_status_label.setMinimumWidth(0)
         self.control_status_label.setMaximumWidth(330)
-        self.control_status_label.setToolTip(
-            "Control state · transport, scene, macro and synchronization diagnostics"
-        )
         self.statusBar().addPermanentWidget(self.control_status_label, 1)
         self.status_label = ElidingLabel(ui_text("LOCAL PREVIEW · IDLE"))
         self.status_label.setMinimumWidth(0)
