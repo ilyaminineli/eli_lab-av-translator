@@ -397,6 +397,8 @@ def test_package_and_build_metadata_are_consistent() -> None:
     assert "APP_NAME" in build_script
     assert "APP_VER" in build_script
     assert "ICON_PATH" in build_script
+    assert "--no-deps" in build_script
+    assert "--force-reinstall" in build_script
     assert ICON_PATH.is_file()
 
 

@@ -157,6 +157,21 @@ def main() -> int:
     # Install the app's runtime packages and PyInstaller into the AVTranslator-local .venv.
     run([python, "-m", "pip", "install", "--upgrade", "pip"])
     run([python, "-m", "pip", "install", "-r", str(REQUIREMENTS)])
+
+    # Refresh stale editable/wheel metadata from older checkouts before pip check.
+    # The source tree is authoritative; do not install dependencies a second time.
+    run(
+        [
+            python,
+            "-m",
+            "pip",
+            "install",
+            "--no-deps",
+            "--force-reinstall",
+            "-e",
+            str(ROOT),
+        ]
+    )
     if args.with_midi:
         print(
             "\nBuilding optional python-rtmidi from source. A working MSVC C++ toolchain "
