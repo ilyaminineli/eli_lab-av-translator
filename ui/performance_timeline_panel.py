@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QFormLayout,
+    QGridLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
@@ -95,14 +96,16 @@ class PerformanceTimelinePanel(QWidget):
         root.setSpacing(8)
 
         header = QHBoxLayout()
-        title = QLabel("BAR / BEAT SHOW PLAN")
+        title = QLabel("SHOW TIMELINE")
         title.setObjectName("sectionHeading")
         header.addWidget(title)
         header.addStretch(1)
-        self.arm_button = QPushButton("ARM TIMELINE")
+        self.arm_button = QPushButton("ARM")
+        self.arm_button.setToolTip("Arm or disarm timeline playback")
         self.arm_button.clicked.connect(self._toggle_arm)
         header.addWidget(self.arm_button)
         self.rewind_button = QPushButton("REWIND")
+        self.rewind_button.setToolTip("Return the timeline cursor to the beginning")
         self.rewind_button.clicked.connect(self._rewind)
         header.addWidget(self.rewind_button)
         root.addLayout(header)
@@ -161,18 +164,27 @@ class PerformanceTimelinePanel(QWidget):
         form.addRow(self.event_enabled)
         root.addWidget(self.editor_group)
 
-        buttons = QHBoxLayout()
-        self.add_button = QPushButton("ADD EVENT")
-        self.update_button = QPushButton("UPDATE SELECTED")
+        buttons = QGridLayout()
+        buttons.setHorizontalSpacing(6)
+        buttons.setVerticalSpacing(6)
+        self.add_button = QPushButton("ADD")
+        self.update_button = QPushButton("UPDATE")
         self.remove_button = QPushButton("REMOVE")
-        buttons.addWidget(self.add_button)
-        buttons.addWidget(self.update_button)
-        buttons.addWidget(self.remove_button)
+        self.add_button.setToolTip("Add a new timeline event")
+        self.update_button.setToolTip("Update the selected timeline event")
+        self.remove_button.setToolTip("Remove the selected timeline event")
+        buttons.addWidget(self.add_button, 0, 0)
+        buttons.addWidget(self.update_button, 0, 1)
+        buttons.addWidget(self.remove_button, 1, 0, 1, 2)
+        buttons.setColumnStretch(0, 1)
+        buttons.setColumnStretch(1, 1)
         root.addLayout(buttons)
 
         structure_row = QHBoxLayout()
-        self.structure_button = QPushButton("INSERT EXAMPLE STRUCTURE")
-        self.clear_button = QPushButton("CLEAR EVENTS")
+        self.structure_button = QPushButton("EXAMPLE")
+        self.clear_button = QPushButton("CLEAR")
+        self.structure_button.setToolTip("Insert a sample show structure")
+        self.clear_button.setToolTip("Remove all timeline events")
         structure_row.addWidget(self.structure_button, 1)
         structure_row.addWidget(self.clear_button)
         root.addLayout(structure_row)
