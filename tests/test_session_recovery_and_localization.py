@@ -283,11 +283,13 @@ def test_recovery_snapshot_does_not_auto_start_performance_or_decks(
 
 
 
-def test_japanese_application_mark_is_available() -> None:
-    from ui.icons import app_icon
+def test_final_application_seal_is_packaged() -> None:
+    from PySide6.QtGui import QIcon
+    from config import ICON_PATH
 
-    icon = app_icon("japanese_mark")
-    assert not icon.isNull()
+    assert ICON_PATH.name == "eli-lab-mark.ico"
+    assert ICON_PATH.is_file()
+    assert not QIcon(str(ICON_PATH)).isNull()
 
 
 def test_theme_uses_responsive_group_and_control_metrics() -> None:
