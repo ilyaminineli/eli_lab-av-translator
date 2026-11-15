@@ -44,10 +44,10 @@ hiddenimports = [
 ]
 
 for package in (
-    "av",          # PyAV; wheel contains the FFmpeg runtime DLLs
+    "av",          # PyAV; wheel contains the FFmpeg runtime libraries
     "moderngl",    # ModernGL renderer
     "glcontext",   # OpenGL context providers
-    "soundcard",   # Windows audio loopback/input
+    "soundcard",   # System audio loopback/input where supported
     "pythonosc",   # Sonic Pi OSC receiver
     "mido",        # MIDI abstraction; backend is optional
 ):
