@@ -268,7 +268,7 @@ class LayerPanel(QWidget):
         )
         self.panel_splitter.setStretchFactor(0, 2)
         self.panel_splitter.setStretchFactor(1, 3)
-        self.panel_splitter.setSizes([180, 260])
+        self.panel_splitter.setSizes([150, 320])
         layout.addWidget(self.panel_splitter, 1)
 
         self.layer_lock_check.toggled.connect(self._selected_layer_lock_changed)
