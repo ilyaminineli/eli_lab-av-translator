@@ -368,6 +368,11 @@ def test_build_temp_storage_is_redirected_to_project_build_area(
     monkeypatch.setattr(build_pyinstaller, "ROOT", tmp_path)
     monkeypatch.setattr(build_pyinstaller, "BUILD_TEMP_DIR", build_temp)
     monkeypatch.setattr(build_pyinstaller, "PIP_CACHE_DIR", pip_cache)
+    real_usage = build_pyinstaller.shutil.disk_usage(tmp_path)
+    enough_space = real_usage._replace(free=6 * 1024**3)
+    monkeypatch.setattr(
+        build_pyinstaller.shutil, "disk_usage", lambda _path: enough_space
+    )
 
     build_pyinstaller.configure_build_storage()
 
