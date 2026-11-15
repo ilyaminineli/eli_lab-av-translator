@@ -66,7 +66,7 @@ class LayerPanel(QWidget):
         self.table.setColumnWidth(2, 62)
         self.table.setColumnWidth(3, 68)
         self.table.setMinimumWidth(0)
-        self.table.setMinimumHeight(164)
+        self.table.setMinimumHeight(136)
         self.table.setAlternatingRowColors(False)
         self.table.setWordWrap(False)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
@@ -106,8 +106,8 @@ class LayerPanel(QWidget):
         self.modifier_rhythm_status.setObjectName("mutedLabel")
         modifier_layout.addWidget(self.modifier_rhythm_status)
         self.modifier_list = QListWidget()
-        self.modifier_list.setMinimumHeight(82)
-        self.modifier_list.setMaximumHeight(170)
+        self.modifier_list.setMinimumHeight(64)
+        self.modifier_list.setMaximumHeight(140)
         modifier_layout.addWidget(self.modifier_list)
 
         self.modifier_source_combo = QComboBox()
@@ -115,10 +115,12 @@ class LayerPanel(QWidget):
             self.modifier_source_combo.addItem(label, source_id)
         self.modifier_target_combo = QComboBox()
         self.modifier_curve_combo = QComboBox()
+        self.modifier_curve_combo.setMinimumWidth(0)
         self.modifier_curve_combo.addItem("Smoothstep", "smoothstep")
         self.modifier_curve_combo.addItem("Linear", "linear")
         self.modifier_curve_combo.addItem("Exponential", "exponential")
         self.modifier_polarity_combo = QComboBox()
+        self.modifier_polarity_combo.setMinimumWidth(0)
         self.modifier_polarity_combo.addItem("Positive", "positive")
         self.modifier_polarity_combo.addItem("Bipolar", "bipolar")
         modifier_layout.addWidget(QLabel("SOURCE"))
@@ -238,7 +240,7 @@ class LayerPanel(QWidget):
         controls_layout.addStretch(1)
         self.controls_scroll = QScrollArea()
         self.controls_scroll.setWidgetResizable(True)
-        self.controls_scroll.setMinimumHeight(180)
+        self.controls_scroll.setMinimumHeight(124)
         self.controls_scroll.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
@@ -249,15 +251,14 @@ class LayerPanel(QWidget):
         self.panel_splitter.addWidget(self.table)
         self.panel_splitter.addWidget(self.controls_scroll)
         self.panel_splitter.setChildrenCollapsible(False)
-        self.panel_splitter.setStretchFactor(0, 3)
-        self.panel_splitter.setStretchFactor(1, 4)
+
         self.controls_scroll.setMinimumWidth(0)
         self.controls_scroll.setHorizontalScrollBarPolicy(
             Qt.ScrollBarPolicy.ScrollBarAlwaysOff
         )
         self.panel_splitter.setStretchFactor(0, 2)
         self.panel_splitter.setStretchFactor(1, 3)
-        self.panel_splitter.setSizes([260, 360])
+        self.panel_splitter.setSizes([180, 260])
         layout.addWidget(self.panel_splitter, 1)
 
         self.layer_lock_check.toggled.connect(self._selected_layer_lock_changed)
