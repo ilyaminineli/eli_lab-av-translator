@@ -58,6 +58,7 @@ class ModulatorBankPanel(QWidget):
         self.scroll.setWidgetResizable(True)
         self.scroll.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         body = QWidget()
+        body.setMinimumWidth(0)
         root = QVBoxLayout(body)
         root.setContentsMargins(8, 8, 8, 8)
         root.setSpacing(8)
