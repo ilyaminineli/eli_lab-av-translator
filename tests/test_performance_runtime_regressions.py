@@ -8,9 +8,9 @@ from core.application import Application
 from core.automation import AutomationDirector
 from core.performance_control import ControlEvent, ControlEventQueue
 from generators.catalog import normalize_settings
+from generators.raster_service import GeneratorRasterService
 from media.frame_queue import FrameQueue
 from media.video_decoder import VideoDecoder
-from generators.raster_service import GeneratorRasterService
 from rendering.compositor import canvas_fit_scale
 
 
