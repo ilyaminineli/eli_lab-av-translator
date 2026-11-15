@@ -398,6 +398,7 @@ class MainWindow(QMainWindow):
         # restoreState() can recreate/update internal dock tab bars. Reapply the
         # compact titles and no-elision policy only after the restored state exists.
         QTimer.singleShot(0, self._configure_dock_tab_bars)
+        QTimer.singleShot(60, self._configure_dock_tab_bars)
 
         self._runtime_timer = QTimer(self)
         # Refresh queues and automation at the configured render cadence.
@@ -674,6 +675,7 @@ class MainWindow(QMainWindow):
         # current localized labels and scrollable/no-elide sizing after restoration.
         QTimer.singleShot(0, self._configure_dock_tab_bars)
         QTimer.singleShot(0, self._apply_default_dock_sizes)
+        QTimer.singleShot(60, self._configure_dock_tab_bars)
         self._ui_settings.setValue("ui/main_window_state_v5", self._default_dock_state)
         self._ui_settings.sync()
         self._show_status_message("Default workspace layout restored.", 4000)
