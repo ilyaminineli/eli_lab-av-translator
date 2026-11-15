@@ -398,7 +398,7 @@ QDoubleSpinBox, QPlainTextEdit, QTextEdit {
     font-family: "Noto Sans", "Segoe UI", sans-serif;
 }
 QLabel#brandName {
-    font-size: 8px;
+    font-size: 8pt;
     letter-spacing: 1.1px;
     color: #d0d0d0;
 }
