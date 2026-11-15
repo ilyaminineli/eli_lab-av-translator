@@ -238,7 +238,7 @@ class PerformanceControlPanel(QWidget):
             routing.addWidget(key_edit, 0)
             row_layout.addLayout(routing)
 
-            grid_row, grid_column = divmod(index, 2)
+            grid_row, grid_column = divmod(index, 3)
             macro_layout.addWidget(macro_row, grid_row, grid_column)
             macro_row.setStyleSheet(
                 "QWidget#performanceMacroTile { "
@@ -271,10 +271,11 @@ class PerformanceControlPanel(QWidget):
 
         macro_layout.setColumnStretch(0, 1)
         macro_layout.setColumnStretch(1, 1)
+        macro_layout.setColumnStretch(2, 1)
         self.macro_status_label = QLabel("")
         self.macro_status_label.setWordWrap(True)
         self.macro_status_label.setObjectName("mutedLabel")
-        status_row = (len(macros) + 1) // 2
+        status_row = (len(macros) + 2) // 3
         macro_layout.addWidget(self.macro_status_label, status_row, 0, 1, 2)
         root.addWidget(self.performance_macro_group)
 
