@@ -32,8 +32,8 @@ from generators.catalog import normalize_settings
 from generators.palettes import import_aco_palette, palette_look, palette_names
 from generators.text_pools import random_text_sample
 from ui.i18n import set_ui_text, ui_text
-from ui.panel_layout import configure_inspector_form
 from ui.icons import icon_button
+from ui.panel_layout import configure_inspector_form
 
 
 class GeneratorsPanel(QWidget):
