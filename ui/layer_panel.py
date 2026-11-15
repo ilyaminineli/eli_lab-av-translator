@@ -314,10 +314,10 @@ class LayerPanel(QWidget):
         safe_title = html.escape(str(title))
         safe_value = html.escape(str(int(value)))
         return (
-            '<span style="font-family:DM Mono,Consolas,monospace;'
+            '<span style="font-family:\'DM Mono\',\'Consolas\',monospace;'
             'font-size:8pt;color:#969696;">'
             f"{safe_title}</span>&nbsp;"
-            '<span style="font-family:DM Mono,Consolas,monospace;'
+            '<span style="font-family:\'DM Mono\',\'Consolas\',monospace;'
             'font-size:8.5pt;color:#eeeeee;">'
             f"{safe_value}</span>"
         )
