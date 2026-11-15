@@ -377,6 +377,7 @@ class MainWindow(QMainWindow):
             # Retain the user's dock arrangement, but upgrade the deck strip height
             # so its transport and loop/lock controls are not clipped by old states.
             QTimer.singleShot(0, self._apply_responsive_deck_size)
+            QTimer.singleShot(0, self._migrate_compact_operator_dock_width_once)
 
         self._runtime_timer = QTimer(self)
         # Refresh queues and automation at the configured render cadence.
@@ -594,6 +595,27 @@ class MainWindow(QMainWindow):
             [self._responsive_deck_height()],
             Qt.Orientation.Vertical,
         )
+
+    def _migrate_compact_operator_dock_width_once(self) -> None:
+        """Widen legacy compact layouts once when their operator dock is cramped."""
+        if not self._is_compact_workspace():
+            return
+        if self._ui_settings.value(
+            "ui/compact_operator_layout_v1", False, type=bool
+        ):
+            return
+
+        width = max(self.width(), self.minimumWidth())
+        target_width = max(360, min(520, round(width * 0.55)))
+        cramped_threshold = max(340, round(width * 0.42))
+        if self.layer_dock.width() < cramped_threshold:
+            self.resizeDocks(
+                [self.layer_dock],
+                [target_width],
+                Qt.Orientation.Horizontal,
+            )
+        self._ui_settings.setValue("ui/compact_operator_layout_v1", True)
+        self._ui_settings.sync()
 
     def _apply_default_dock_sizes(self) -> None:
         # Rebalance dock widths against the available editor area. Portrait-ish
