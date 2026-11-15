@@ -104,12 +104,16 @@ Use `py -3.12` or `py -3.13` if preferred. PowerShell activation is optional; ca
 
 ## 8. Developer quality checks
 
-The former pytest/unit-test suite and its dependencies are not present in the current repository. The Quality workflow performs Python compilation and Ruff:
+The repository includes a pytest regression suite. The Windows Quality workflow runs compilation, Ruff, pytest and a Japanese UI typography proof. Run the same core checks locally:
 
 ```powershell
+.\.venv\Scripts\python.exe -m pip check
 .\.venv\Scripts\python.exe -m compileall -q .
 .\.venv\Scripts\python.exe -m ruff check .
+.\.venv\Scripts\python.exe -m pytest -q
 ```
+
+Install the complete development/test environment with `requirements-dev.txt`. The equivalent editable-install extra is `pip install -e ".[dev]"`.
 
 A green quality workflow is not a runtime, GUI, OpenGL, musical or hardware acceptance result.
 
