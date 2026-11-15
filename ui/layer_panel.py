@@ -142,7 +142,9 @@ class LayerPanel(QWidget):
         self.modifier_phrase_button = QPushButton("PHRASE")
         self.modifier_add_button.setText("ADD")
         self.modifier_remove_button = QPushButton("REMOVE MODIFIER")
-        self.modifier_add_button.setToolTip("Add a modifier with the selected source, target and response")
+        self.modifier_add_button.setToolTip(
+            "Add a modifier with the selected source, target and response"
+        )
         self.modifier_beat_button.setToolTip("Add a beat-synchronized modifier")
         self.modifier_downbeat_button.setToolTip("Add a downbeat-synchronized modifier")
         self.modifier_phrase_button.setToolTip("Add a phrase-synchronized modifier")
