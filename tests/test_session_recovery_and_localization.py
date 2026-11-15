@@ -10,6 +10,7 @@ from PySide6.QtGui import QAction, QImage
 from PySide6.QtWidgets import (
     QApplication,
     QComboBox,
+    QGridLayout,
     QGroupBox,
     QLabel,
     QLineEdit,
@@ -299,3 +300,39 @@ def test_theme_uses_responsive_group_and_control_metrics() -> None:
     assert "min-height: 20px" in APP_STYLE
     assert "Newsreader" in _typography_stylesheet("en")
     assert "DM Mono" in _typography_stylesheet("en")
+
+
+
+def test_eliding_status_label_keeps_full_diagnostic_text() -> None:
+    qt_app = QApplication.instance() or QApplication([])
+    from ui.main_window import ElidingLabel
+
+    label = ElidingLabel()
+    label.resize(76, 24)
+    source = "PROJECTOR READY · NVIDIA GeForce RTX 4060"
+    label.setText(source)
+    label.show()
+    qt_app.processEvents()
+
+    assert label.text() != source
+    assert label.toolTip() == source
+    label.close()
+
+
+def test_performance_macro_strip_uses_two_column_layout() -> None:
+    from ui.performance_control_panel import PerformanceControlPanel
+
+    application = Application()
+    panel = None
+    try:
+        panel = PerformanceControlPanel(application)
+        layout = panel.performance_macro_group.layout()
+        assert isinstance(layout, QGridLayout)
+        assert len(panel.macro_sliders) == 6
+        assert layout.columnCount() == 2
+        panel.take_performance_macro_group()
+        assert panel.performance_macro_group.maximumHeight() >= 260
+    finally:
+        if panel is not None:
+            panel.close()
+        application.shutdown()
