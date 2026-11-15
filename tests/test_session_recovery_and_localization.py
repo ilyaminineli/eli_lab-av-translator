@@ -305,10 +305,26 @@ def test_final_application_seal_is_packaged() -> None:
 def test_theme_uses_responsive_group_and_control_metrics() -> None:
     from ui.theme import APP_STYLE, _typography_stylesheet
 
+    english = _typography_stylesheet("en")
+    japanese = _typography_stylesheet("ja")
     assert "QSplitter::handle" in APP_STYLE
     assert "min-height: 20px" in APP_STYLE
-    assert "Newsreader" in _typography_stylesheet("en")
-    assert "DM Mono" in _typography_stylesheet("en")
+    assert "Newsreader" in english
+    assert "DM Mono" in english
+    for control in (
+        "QGroupBox::title",
+        "QPushButton",
+        "QToolButton",
+        "QCheckBox",
+        "QRadioButton",
+        "QMenuBar",
+        "QMenu",
+        "QHeaderView::section",
+    ):
+        assert control in english
+        assert control in japanese
+    assert "Yu Gothic UI" in japanese
+    assert "Segoe UI" in english
 
 
 
