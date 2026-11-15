@@ -623,10 +623,10 @@ void main() {
 
 
 def canvas_fit_scale(
-        output_width: int,
-        output_height: int,
-        canvas_width: int,
-        canvas_height: int,
+    output_width: int,
+    output_height: int,
+    canvas_width: int,
+    canvas_height: int,
 ) -> tuple[float, float]:
     """Return normalized UV scale that letterboxes a canvas without distortion."""
     output_aspect = max(1, int(output_width)) / max(1, int(output_height))
@@ -664,10 +664,22 @@ class Compositor:
         )
         vertices = np.array(
             [
-                -1.0, -1.0, 0.0, 0.0,
-                1.0, -1.0, 1.0, 0.0,
-                -1.0, 1.0, 0.0, 1.0,
-                1.0, 1.0, 1.0, 1.0,
+                -1.0,
+                -1.0,
+                0.0,
+                0.0,
+                1.0,
+                -1.0,
+                1.0,
+                0.0,
+                -1.0,
+                1.0,
+                0.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0,
             ],
             dtype="f4",
         )
@@ -720,8 +732,7 @@ class Compositor:
             if len(hex_value) != 6:
                 raise ValueError("Expected six-digit colour")
             return tuple(
-                int(hex_value[offset:offset + 2], 16) / 255.0
-                for offset in (0, 2, 4)
+                int(hex_value[offset : offset + 2], 16) / 255.0 for offset in (0, 2, 4)
             )
         except (TypeError, ValueError):
             return (0.91, 0.89, 0.84)
@@ -733,9 +744,9 @@ class Compositor:
         height, width, components = frame.shape
         texture = self.source_textures.get(source_id)
         if (
-                texture is None
-                or texture.size != (width, height)
-                or texture.components != components
+            texture is None
+            or texture.size != (width, height)
+            or texture.components != components
         ):
             if texture is not None:
                 texture.release()
@@ -775,13 +786,13 @@ class Compositor:
         self.size = (width, height)
 
     def _apply_effects(
-            self,
-            texture: moderngl.Texture,
-            target_fbo: int,
-            width: int,
-            height: int,
-            effects: EffectSettings,
-            time_seconds: float,
+        self,
+        texture: moderngl.Texture,
+        target_fbo: int,
+        width: int,
+        height: int,
+        effects: EffectSettings,
+        time_seconds: float,
     ) -> None:
         destination = self.ctx.detect_framebuffer(glo=int(target_fbo))
         destination.use()
@@ -789,7 +800,8 @@ class Compositor:
         texture.use(location=0)
         displacement_texture = (
             self.source_textures.get(effects.displacement_source_id)
-            if effects.displacement_source_id else None
+            if effects.displacement_source_id
+            else None
         )
         if displacement_texture is None:
             self.particle_stub.use(location=1)
@@ -819,11 +831,16 @@ class Compositor:
             "u_solarize": effects.solarize,
             "u_mix": effects.mix if effects.enabled else 0.0,
             "u_displacement_enabled": int(
-                displacement_texture is not None and abs(effects.displacement_amount) > 0.0001
+                displacement_texture is not None
+                and abs(effects.displacement_amount) > 0.0001
             ),
             "u_displacement_luma": int(effects.displacement_luma),
             "u_transform_mode": {
-                "none": 0, "kaleidoscope": 1, "polar": 2, "mosaic": 3, "pixel_sort": 4,
+                "none": 0,
+                "kaleidoscope": 1,
+                "polar": 2,
+                "mosaic": 3,
+                "pixel_sort": 4,
             }.get(effects.transform_mode, 0),
             "u_transform_mix": effects.transform_mix,
             "u_kaleidoscope_slices": float(effects.kaleidoscope_slices),
@@ -842,15 +859,15 @@ class Compositor:
         self.post_vao.render(mode=moderngl.TRIANGLE_STRIP)
 
     def render(
-            self,
-            layers: list[Layer],
-            target_fbo: int,
-            width: int,
-            height: int,
-            effects: EffectSettings | None = None,
-            time_seconds: float = 0.0,
-            canvas_width: int = 1920,
-            canvas_height: int = 1080,
+        self,
+        layers: list[Layer],
+        target_fbo: int,
+        width: int,
+        height: int,
+        effects: EffectSettings | None = None,
+        time_seconds: float = 0.0,
+        canvas_width: int = 1920,
+        canvas_height: int = 1080,
     ) -> None:
         self._resize_targets(width, height)
         self.composite_program["u_canvas_scale"].value = canvas_fit_scale(
@@ -869,19 +886,17 @@ class Compositor:
         particle_budget = self.MAX_TOTAL_PRTLS
         active_particle_systems = 0
         source_layers = {
-            layer.source_id: layer
-            for layer in ordered_layers
-            if layer.source_id
+            layer.source_id: layer for layer in ordered_layers if layer.source_id
         }
 
         # Simulation state and output targets belong to this Compositor's GL context.
         # Particle allocation is deterministic by layer order and globally bounded.
         for particle_layer in ordered_layers:
             if (
-                    particle_layer.source_type != "generator"
-                    or particle_layer.generator_type != "particle_system_2"
-                    or not particle_layer.visible
-                    or particle_layer.opacity <= 0.0
+                particle_layer.source_type != "generator"
+                or particle_layer.generator_type != "particle_system_2"
+                or not particle_layer.visible
+                or particle_layer.opacity <= 0.0
             ):
                 continue
             if active_particle_systems >= self.MAX_PRTL_SYSS or particle_budget <= 0:
@@ -902,14 +917,17 @@ class Compositor:
                     system = ParticleSystem2(self.ctx, self.vertex_buffer)
                     self.particle_systems[particle_layer.id] = system
                 except Exception:
-                    _LOG.exception("Could not initialize Particle System 2.0 for %s",
-                                   particle_layer.name)
+                    _LOG.exception(
+                        "Could not initialize Particle System 2.0 for %s",
+                        particle_layer.name,
+                    )
                     continue
             try:
                 emitter_source_id = str(settings["emitter_source_id"])
                 emitter_source = (
                     self.source_textures.get(emitter_source_id)
-                    if emitter_source_id else None
+                    if emitter_source_id
+                    else None
                 )
                 source_layer = source_layers.get(emitter_source_id)
                 source_transform = (
@@ -918,7 +936,8 @@ class Compositor:
                         tuple(float(value) for value in source_layer.scale),
                         float(source_layer.rotation),
                     )
-                    if source_layer is not None else None
+                    if source_layer is not None
+                    else None
                 )
                 texture = system.render(
                     settings,
@@ -930,7 +949,9 @@ class Compositor:
                     emitter_source_transform=source_transform,
                 )
             except Exception:
-                _LOG.exception("Particle System 2.0 render failed for %s", particle_layer.name)
+                _LOG.exception(
+                    "Particle System 2.0 render failed for %s", particle_layer.name
+                )
                 system.release()
                 self.particle_systems.pop(particle_layer.id, None)
                 self.particle_system_last_active.pop(particle_layer.id, None)
@@ -938,7 +959,9 @@ class Compositor:
             if texture is not None:
                 particle_outputs[particle_layer.id] = texture
                 active_particle_ids.add(particle_layer.id)
-                self.particle_system_last_active[particle_layer.id] = float(time_seconds)
+                self.particle_system_last_active[particle_layer.id] = float(
+                    time_seconds
+                )
                 particle_budget -= requested
                 active_particle_systems += 1
 
@@ -946,7 +969,7 @@ class Compositor:
             layer.id
             for layer in ordered_layers
             if layer.source_type == "generator"
-               and layer.generator_type == "particle_system_2"
+            and layer.generator_type == "particle_system_2"
         }
         for layer_id in tuple(self.particle_systems):
             last_active = self.particle_system_last_active.get(layer_id)
@@ -957,8 +980,8 @@ class Compositor:
             )
             removed = layer_id not in live_particle_ids
             expired = (
-                    layer_id not in active_particle_ids
-                    and inactive_for > self.PRTL_RETENTION_SECONDS
+                layer_id not in active_particle_ids
+                and inactive_for > self.PRTL_RETENTION_SECONDS
             )
             if removed or expired:
                 self.particle_systems.pop(layer_id).release()
@@ -969,11 +992,11 @@ class Compositor:
             if not layer.visible or layer.opacity <= 0.0:
                 continue
             is_particle_layer = (
-                    layer.source_type == "generator" and layer.generator_type == "particles"
+                layer.source_type == "generator" and layer.generator_type == "particles"
             )
             is_particle_system = (
-                    layer.source_type == "generator"
-                    and layer.generator_type == "particle_system_2"
+                layer.source_type == "generator"
+                and layer.generator_type == "particle_system_2"
             )
             layer_texture = (
                 particle_outputs.get(layer.id)
@@ -994,9 +1017,13 @@ class Compositor:
                 self.particle_stub.use(location=1)
             mask_texture = (
                 self.source_textures.get(layer.overlay_mask_source)
-                if layer.overlay_mask_source else None
+                if layer.overlay_mask_source
+                else None
             )
-            if mask_texture is not None and layer.overlay_mask_mode in {"alpha", "luma"}:
+            if mask_texture is not None and layer.overlay_mask_mode in {
+                "alpha",
+                "luma",
+            }:
                 mask_texture.use(location=2)
                 self.composite_program["u_mask_enabled"].value = 1
                 self.composite_program["u_mask_mode"].value = (
@@ -1015,7 +1042,9 @@ class Compositor:
                 layer.blend_mode, 0
             )
             self.composite_program["u_time"].value = float(time_seconds)
-            animation = layer.generator_settings if layer.source_type == "generator" else {}
+            animation = (
+                layer.generator_settings if layer.source_type == "generator" else {}
+            )
             self.composite_program["u_animation"].value = animation_code(animation)
             self.composite_program["u_animation_speed"].value = float(
                 animation.get("animation_speed", 0.0)
@@ -1023,7 +1052,9 @@ class Compositor:
             self.composite_program["u_animation_amount"].value = float(
                 animation.get("animation_amount", 0.0)
             )
-            generator_kind = layer.generator_type if layer.source_type == "generator" else None
+            generator_kind = (
+                layer.generator_type if layer.source_type == "generator" else None
+            )
             self.composite_program["u_generator_type"].value = {
                 "particles": 1,
                 "text": 2,
@@ -1045,13 +1076,26 @@ class Compositor:
 
             if generator_kind == "particles":
                 settings = animation
-                self.composite_program["u_particle_density"].value = float(settings["density"])
-                self.composite_program["u_particle_speed"].value = float(settings["speed"])
-                self.composite_program["u_particle_size"].value = float(settings["size"])
-                self.composite_program["u_particle_spread"].value = float(settings["spread"])
-                self.composite_program["u_particle_trail"].value = float(settings["trail"])
+                self.composite_program["u_particle_density"].value = float(
+                    settings["density"]
+                )
+                self.composite_program["u_particle_speed"].value = float(
+                    settings["speed"]
+                )
+                self.composite_program["u_particle_size"].value = float(
+                    settings["size"]
+                )
+                self.composite_program["u_particle_spread"].value = float(
+                    settings["spread"]
+                )
+                self.composite_program["u_particle_trail"].value = float(
+                    settings["trail"]
+                )
                 self.composite_program["u_particle_mode"].value = {
-                    "drift": 0, "rise": 1, "fall": 2, "orbit": 3,
+                    "drift": 0,
+                    "rise": 1,
+                    "fall": 2,
+                    "orbit": 3,
                 }.get(str(settings.get("mode", "drift")), 0)
                 self.composite_program["u_particle_primary"].value = self._rgb(
                     str(settings["primary_color"])
@@ -1061,9 +1105,17 @@ class Compositor:
                 )
 
             layer_fx = normalize_layer_effects(layer.layer_effects)
-            stage_codes = {"monochrome": 1, "invert": 2, "threshold": 3,
-                           "posterize": 4, "scanlines": 5, "hue": 6,
-                           "contrast": 7, "saturation": 8, "brightness": 9}
+            stage_codes = {
+                "monochrome": 1,
+                "invert": 2,
+                "threshold": 3,
+                "posterize": 4,
+                "scanlines": 5,
+                "hue": 6,
+                "contrast": 7,
+                "saturation": 8,
+                "brightness": 9,
+            }
             active_stages = [stage for stage in layer_fx["stages"] if stage["enabled"]]
             stage_types = [stage_codes[stage["type"]] for stage in active_stages]
             stage_amounts = [float(stage["amount"]) for stage in active_stages]
@@ -1074,19 +1126,21 @@ class Compositor:
             self.composite_program["u_fx_stage_amount"].value = tuple(
                 stage_amounts + [0.0] * (8 - len(stage_amounts))
             )
-            self.composite_program["u_layer_fx_enabled"].value = int(layer_fx["enabled"])
+            self.composite_program["u_layer_fx_enabled"].value = int(
+                layer_fx["enabled"]
+            )
             for uniform, key in (
-                    ("u_layer_fx_mix", "mix"),
-                    ("u_layer_fx_monochrome", "monochrome"),
-                    ("u_layer_fx_invert", "invert"),
-                    ("u_layer_fx_threshold", "threshold"),
-                    ("u_layer_fx_posterize", "posterize"),
-                    ("u_layer_fx_hue", "hue"),
-                    ("u_layer_fx_saturation", "saturation"),
-                    ("u_layer_fx_contrast", "contrast"),
-                    ("u_layer_fx_brightness", "brightness"),
-                    ("u_layer_fx_scanlines", "scanlines"),
-                    ("u_layer_fx_chromatic", "chromatic"),
+                ("u_layer_fx_mix", "mix"),
+                ("u_layer_fx_monochrome", "monochrome"),
+                ("u_layer_fx_invert", "invert"),
+                ("u_layer_fx_threshold", "threshold"),
+                ("u_layer_fx_posterize", "posterize"),
+                ("u_layer_fx_hue", "hue"),
+                ("u_layer_fx_saturation", "saturation"),
+                ("u_layer_fx_contrast", "contrast"),
+                ("u_layer_fx_brightness", "brightness"),
+                ("u_layer_fx_scanlines", "scanlines"),
+                ("u_layer_fx_chromatic", "chromatic"),
             ):
                 self.composite_program[uniform].value = float(layer_fx[key])
             self.composite_vao.render(mode=moderngl.TRIANGLE_STRIP)
@@ -1095,7 +1149,7 @@ class Compositor:
         active_effects = effects or EffectSettings()
         active_effects.clamp()
         feedback_active = (
-                active_effects.feedback_enabled and active_effects.feedback_amount > 0.0001
+            active_effects.feedback_enabled and active_effects.feedback_amount > 0.0001
         )
         post_target_fbo = (
             self.post_framebuffer.glo

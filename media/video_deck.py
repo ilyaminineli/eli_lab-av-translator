@@ -64,13 +64,13 @@ class VideoDeck:
         ]
 
     def load(
-            self,
-            path: str | Path,
-            asset_id: str | None = None,
-            collection_id: str | None = None,
-            segment_start: float = 0.0,
-            segment_end: float | None = None,
-            loop: bool | None = None,
+        self,
+        path: str | Path,
+        asset_id: str | None = None,
+        collection_id: str | None = None,
+        segment_start: float = 0.0,
+        segment_end: float | None = None,
+        loop: bool | None = None,
     ) -> None:
         source = Path(path).expanduser().resolve()
         if not source.is_file():
@@ -207,7 +207,9 @@ class VideoDeck:
             "seek_fallbacks": decoder.seek_fallbacks if decoder else 0,
             "decode_time_ms": decoder.decode_time_ms if decoder else 0.0,
             "conversion_time_ms": decoder.conversion_time_ms if decoder else 0.0,
-            "retired_workers": sum(item.worker_alive for item in self._retired_decoders),
+            "retired_workers": sum(
+                item.worker_alive for item in self._retired_decoders
+            ),
         }
 
     def close(self) -> None:

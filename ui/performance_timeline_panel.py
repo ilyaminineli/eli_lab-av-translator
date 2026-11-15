@@ -162,9 +162,7 @@ class PerformanceTimelinePanel(QWidget):
         self.payload_edit = QPlainTextEdit()
         self.payload_edit.setMaximumHeight(100)
         self.payload_edit.setPlaceholderText("{}")
-        self.payload_edit.setToolTip(
-            ui_text(_PAYLOAD_TOOLTIPS["phrase_marker"])
-        )
+        self.payload_edit.setToolTip(ui_text(_PAYLOAD_TOOLTIPS["phrase_marker"]))
         form.addRow("PAYLOAD · JSON", self.payload_edit)
 
         self.event_enabled = QCheckBox("Event enabled")

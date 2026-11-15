@@ -471,7 +471,9 @@ class ParticleSystem2:
     MAX_SUBSTEPS = 4
     OUTPUT_SCALE = 0.5
 
-    def __init__(self, context: moderngl.Context, vertex_buffer: moderngl.Buffer) -> None:
+    def __init__(
+        self, context: moderngl.Context, vertex_buffer: moderngl.Buffer
+    ) -> None:
         self.ctx = context
         self.simulation_program = context.program(
             vertex_shader=_FULLSCREEN_VERTEX,
@@ -519,9 +521,7 @@ class ParticleSystem2:
         self.path_texture: moderngl.Texture | None = None
         self.path_signature: tuple[tuple[float, float], ...] | None = None
         self._active_emitter_source: moderngl.Texture | None = None
-        self._active_emitter_source_transform = (
-            (0.5, 0.5), (1.0, 1.0), 0.0
-        )
+        self._active_emitter_source_transform = ((0.5, 0.5), (1.0, 1.0), 0.0)
         self.trail_textures: list[moderngl.Texture] = []
         self.trail_framebuffers: list[moderngl.Framebuffer] = []
         self.output_size = (0, 0)
@@ -540,8 +540,7 @@ class ParticleSystem2:
             if len(hex_value) != 6:
                 raise ValueError("Expected six-digit colour")
             return tuple(
-                int(hex_value[offset:offset + 2], 16) / 255.0
-                for offset in (0, 2, 4)
+                int(hex_value[offset : offset + 2], 16) / 255.0 for offset in (0, 2, 4)
             )
         except (TypeError, ValueError):
             return (0.91, 0.89, 0.84)
@@ -590,21 +589,15 @@ class ParticleSystem2:
             ),
         ]
         targets = [
-            self.ctx.texture(
-                size, 4, target_pixels.tobytes(), alignment=1, dtype="f4"
-            ),
-            self.ctx.texture(
-                size, 4, target_pixels.tobytes(), alignment=1, dtype="f4"
-            ),
+            self.ctx.texture(size, 4, target_pixels.tobytes(), alignment=1, dtype="f4"),
+            self.ctx.texture(size, 4, target_pixels.tobytes(), alignment=1, dtype="f4"),
         ]
         for texture in states + metadata + targets:
             texture.filter = (moderngl.NEAREST, moderngl.NEAREST)
             texture.repeat_x = False
             texture.repeat_y = False
         framebuffers = [
-            self.ctx.framebuffer(
-                color_attachments=[states[i], metadata[i], targets[i]]
-            )
+            self.ctx.framebuffer(color_attachments=[states[i], metadata[i], targets[i]])
             for i in range(2)
         ]
         return _Population(
@@ -641,13 +634,13 @@ class ParticleSystem2:
         self.path_signature = signature
 
     def _ensure_populations(
-            self,
-            particle_count: int,
-            population_count: int,
-            seed: int,
-            emitter_type: str,
-            emitter_source_id: str,
-            path_signature: tuple[tuple[float, float], ...],
+        self,
+        particle_count: int,
+        population_count: int,
+        seed: int,
+        emitter_type: str,
+        emitter_source_id: str,
+        path_signature: tuple[tuple[float, float], ...],
     ) -> None:
         signature = (
             particle_count,
@@ -665,7 +658,7 @@ class ParticleSystem2:
             count = base_count + (1 if index < remainder else 0)
             if count <= 0:
                 continue
-            population_seed = (seed + index * 104729) % (2 ** 31 - 1)
+            population_seed = (seed + index * 104729) % (2**31 - 1)
             self.populations.append(self._create_population(count, population_seed))
         self.signature = signature
         self.accumulator = 0.0
@@ -695,12 +688,12 @@ class ParticleSystem2:
         self.trail_index = 0
 
     def _simulation_uniforms(
-            self,
-            population: _Population,
-            settings: dict[str, object],
-            time_seconds: float,
-            delta: float,
-            population_index: int,
+        self,
+        population: _Population,
+        settings: dict[str, object],
+        time_seconds: float,
+        delta: float,
+        population_index: int,
     ) -> None:
         program = self.simulation_program
         center = tuple(float(value) for value in settings["emitter_center"])
@@ -733,13 +726,17 @@ class ParticleSystem2:
                 "contour": 6,
             }.get(str(settings["emitter_type"]), 0),
             "u_source_enabled": int(
-                settings["emitter_type"] in {
-                    "video_luminance", "image_silhouette", "contour",
+                settings["emitter_type"]
+                in {
+                    "video_luminance",
+                    "image_silhouette",
+                    "contour",
                 }
                 and self._active_emitter_source is not None
             ),
             "u_source_map_mode": (
-                2 if settings["emitter_type"] == "contour"
+                2
+                if settings["emitter_type"] == "contour"
                 else {
                     "luminance": 0,
                     "alpha": 1,
@@ -752,10 +749,16 @@ class ParticleSystem2:
             "u_path_point_count": len(self.path_signature or ()),
             "u_reform_strength": float(settings["reform_strength"]),
             "u_source_texel_size": (
-                1.0 / max(1, int(self._active_emitter_source.size[0]))
-                if self._active_emitter_source is not None else 1.0,
-                1.0 / max(1, int(self._active_emitter_source.size[1]))
-                if self._active_emitter_source is not None else 1.0,
+                (
+                    1.0 / max(1, int(self._active_emitter_source.size[0]))
+                    if self._active_emitter_source is not None
+                    else 1.0
+                ),
+                (
+                    1.0 / max(1, int(self._active_emitter_source.size[1]))
+                    if self._active_emitter_source is not None
+                    else 1.0
+                ),
             ),
             "u_emitter_source_position": self._active_emitter_source_transform[0],
             "u_emitter_source_scale": self._active_emitter_source_transform[1],
@@ -774,7 +777,7 @@ class ParticleSystem2:
             }.get(str(settings["direction"]), 0),
             "u_lifetime": float(settings["lifetime"]),
             "u_emission_rate": (
-                    float(settings["emission_rate"]) / max(1, len(self.populations))
+                float(settings["emission_rate"]) / max(1, len(self.populations))
             ),
             "u_speed": float(settings["speed"]) * (0.78 + population_index * 0.16),
             "u_spread": float(settings["spread"]),
@@ -782,7 +785,10 @@ class ParticleSystem2:
             "u_turbulence": float(settings["turbulence"]),
             "u_turbulence_scale": float(settings["turbulence_scale"]),
             "u_force_type": {
-                "none": 0, "attract": 1, "repel": 2, "orbit": 3,
+                "none": 0,
+                "attract": 1,
+                "repel": 2,
+                "orbit": 3,
             }.get(str(settings["force_type"]), 0),
             "u_force_center": tuple(float(value) for value in settings["force_center"]),
             "u_force_strength": float(settings["force_strength"]),
@@ -793,10 +799,10 @@ class ParticleSystem2:
             program[uniform].value = value
 
     def _step(
-            self,
-            settings: dict[str, object],
-            time_seconds: float,
-            delta: float,
+        self,
+        settings: dict[str, object],
+        time_seconds: float,
+        delta: float,
     ) -> None:
         for index, population in enumerate(self.populations):
             write_index = 1 - population.index
@@ -812,10 +818,10 @@ class ParticleSystem2:
             population.index = write_index
 
     def _draw_population(
-            self,
-            population: _Population,
-            settings: dict[str, object],
-            population_index: int,
+        self,
+        population: _Population,
+        settings: dict[str, object],
+        population_index: int,
     ) -> None:
         program = self.particle_program
         population.states[population.index].use(location=0)
@@ -852,16 +858,16 @@ class ParticleSystem2:
         )
 
     def render(
-            self,
-            settings: dict[str, object],
-            width: int,
-            height: int,
-            time_seconds: float,
-            particle_limit: int | None = None,
-            emitter_source: moderngl.Texture | None = None,
-            emitter_source_transform: tuple[
-                                          tuple[float, float], tuple[float, float], float
-                                      ] | None = None,
+        self,
+        settings: dict[str, object],
+        width: int,
+        height: int,
+        time_seconds: float,
+        particle_limit: int | None = None,
+        emitter_source: moderngl.Texture | None = None,
+        emitter_source_transform: (
+            tuple[tuple[float, float], tuple[float, float], float] | None
+        ) = None,
     ) -> moderngl.Texture | None:
         normalized = normalize_settings("particle_system_2", settings)
         requested = int(normalized["particle_count"])
@@ -873,9 +879,10 @@ class ParticleSystem2:
 
         self._ensure_path_texture(normalized["path_points"])
         self._active_emitter_source = emitter_source
-        self._active_emitter_source_transform = (
-                emitter_source_transform
-                or ((0.5, 0.5), (1.0, 1.0), 0.0)
+        self._active_emitter_source_transform = emitter_source_transform or (
+            (0.5, 0.5),
+            (1.0, 1.0),
+            0.0,
         )
         path_signature = self.path_signature or ()
         self._ensure_populations(
@@ -899,10 +906,7 @@ class ParticleSystem2:
             self.FIXED_STEP * self.MAX_SUBSTEPS,
         )
         steps = 0
-        while (
-                self.accumulator >= self.FIXED_STEP
-                and steps < self.MAX_SUBSTEPS
-        ):
+        while self.accumulator >= self.FIXED_STEP and steps < self.MAX_SUBSTEPS:
             self._step(normalized, now - self.accumulator, self.FIXED_STEP)
             self.accumulator -= self.FIXED_STEP
             steps += 1

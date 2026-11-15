@@ -99,7 +99,9 @@ def test_control_tick_passes_latest_macro_values_to_auto_performance() -> None:
     assert director._macro_values["density"] == 0.82
 
 
-def test_generator_preview_dimensions_are_bounded_and_full_resolution_is_available() -> None:
+def test_generator_preview_dimensions_are_bounded_and_full_resolution_is_available() -> (
+    None
+):
     service = GeneratorRasterService()
     try:
         assert service._dimensions("geometry") == (1200, 675)
@@ -119,11 +121,15 @@ def test_gpu_uniform_changes_reuse_static_generator_fingerprint() -> None:
 
         settings["animation_speed"] = float(settings["animation_speed"]) + 0.5
 
-        assert service.fingerprint_for("geometry-layer", "geometry", settings) == original
+        assert (
+            service.fingerprint_for("geometry-layer", "geometry", settings) == original
+        )
 
         settings["line_width"] = float(settings["line_width"]) + 1.0
 
-        assert service.fingerprint_for("geometry-layer", "geometry", settings) != original
+        assert (
+            service.fingerprint_for("geometry-layer", "geometry", settings) != original
+        )
     finally:
         service.shutdown()
         service._worker_thread.join(timeout=2.0)
@@ -137,12 +143,13 @@ def test_waveform_content_changes_remain_part_of_raster_fingerprint() -> None:
 
         settings["amplitude"] = min(0.48, float(settings["amplitude"]) + 0.05)
 
-        assert service.fingerprint_for("waveform-layer", "waveform", settings) != original
+        assert (
+            service.fingerprint_for("waveform-layer", "waveform", settings) != original
+        )
         assert service._max_waveform_update_hz == 4.0
     finally:
         service.shutdown()
         service._worker_thread.join(timeout=2.0)
-
 
 
 def test_project_canvas_is_letterboxed_as_16_by_9_on_a_4_by_3_output() -> None:

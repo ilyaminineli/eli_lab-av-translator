@@ -28,7 +28,6 @@ class ToolTipFilter(QObject):
         return False
 
 
-
 class WheelGuard(QObject):
     """Keep wheel scrolling from changing values in hovered controls.
 
@@ -49,9 +48,8 @@ class WheelGuard(QObject):
         return None
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
-        if (
-            event.type() != QEvent.Type.Wheel
-            or not isinstance(watched, self._PROTECTED_CONTROLS)
+        if event.type() != QEvent.Type.Wheel or not isinstance(
+            watched, self._PROTECTED_CONTROLS
         ):
             return False
 
@@ -65,9 +63,7 @@ class WheelGuard(QObject):
         wheel = event
         viewport = scroll_area.viewport()
         global_position = wheel.globalPosition()
-        local_position = QPointF(
-            viewport.mapFromGlobal(global_position.toPoint())
-        )
+        local_position = QPointF(viewport.mapFromGlobal(global_position.toPoint()))
         forwarded = QWheelEvent(
             local_position,
             global_position,

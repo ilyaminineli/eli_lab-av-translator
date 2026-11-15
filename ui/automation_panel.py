@@ -119,7 +119,9 @@ class AutomationPanel(QWidget):
         self.director_group.setToolTip("UNIFIED MUSICAL / GENERATIVE DIRECTOR")
         director_form = QFormLayout(self.director_group)
         director_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
-        director_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
+        director_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.director_active_label = QLabel("ACTIVE")
         self.variation_scope_label = QLabel("")
         self.keep_anchor_check = QCheckBox("Prefer a recognizable visual anchor")
@@ -174,7 +176,6 @@ class AutomationPanel(QWidget):
         director_form.addRow("BREAKDOWN TRANSITION MIN", self.breakdown_min_spin)
         director_form.addRow("BREAKDOWN TRANSITION MAX", self.breakdown_max_spin)
         layout.addWidget(self.director_group)
-
 
         self.start_button = QPushButton("START AUTOMATIC SESSION")
         self.stop_button = QPushButton("STOP AUTOMATION")

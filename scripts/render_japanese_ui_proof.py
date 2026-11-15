@@ -43,7 +43,12 @@ def render_preview(destination: Path) -> None:
         font_family = next(
             (
                 family
-                for family in ("Yu Gothic UI", "Meiryo UI", "BIZ UDGothic", "Noto Sans JP")
+                for family in (
+                    "Yu Gothic UI",
+                    "Meiryo UI",
+                    "BIZ UDGothic",
+                    "Noto Sans JP",
+                )
                 if family in installed
             ),
             "",
@@ -60,9 +65,7 @@ def render_preview(destination: Path) -> None:
     font_metrics = QFontMetrics(proof_font)
     sample = "映像を、演奏する。日本語タイポグラフィ"
     missing_glyphs = [
-        character
-        for character in sample
-        if not font_metrics.inFontUcs4(ord(character))
+        character for character in sample if not font_metrics.inFontUcs4(ord(character))
     ]
     if missing_glyphs:
         raise RuntimeError(

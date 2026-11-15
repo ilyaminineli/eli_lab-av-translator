@@ -9,9 +9,9 @@ _LOG = logging.getLogger(__name__)
 
 
 def generate_thumbnail(
-        video_path: str | Path,
-        asset_id: str,
-        max_size: tuple[int, int] = (320, 180),
+    video_path: str | Path,
+    asset_id: str,
+    max_size: tuple[int, int] = (320, 180),
 ) -> Path | None:
     """Decode one frame and save a cached JPEG thumbnail.
 
@@ -33,7 +33,9 @@ def generate_thumbnail(
 
     try:
         with av.open(str(video_path)) as container:
-            stream = next((item for item in container.streams if item.type == "video"), None)
+            stream = next(
+                (item for item in container.streams if item.type == "video"), None
+            )
             if stream is None:
                 return None
             frame = next(container.decode(stream), None)

@@ -109,7 +109,9 @@ class ModulatorBankPanel(QWidget):
         self.save_preset_button = QPushButton("SAVE AS")
         self.delete_preset_button = QPushButton("DELETE PRESET")
         self.load_preset_button.setToolTip("Load the selected modulator preset")
-        self.save_preset_button.setToolTip("Save the current modulator as a user preset")
+        self.save_preset_button.setToolTip(
+            "Save the current modulator as a user preset"
+        )
         self.delete_preset_button.setToolTip("Delete the selected user preset")
         preset_buttons.addWidget(self.load_preset_button)
         preset_buttons.addWidget(self.save_preset_button)
@@ -174,7 +176,9 @@ class ModulatorBankPanel(QWidget):
         self.follower_group.setToolTip("CONTROL FOLLOWER · SONIC PI / AUDIO")
         follower_form = QFormLayout(self.follower_group)
         follower_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
-        follower_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
+        follower_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.input_source_combo = QComboBox()
         for source_id, label in FOLLOWER_SOURCES.items():
             self.input_source_combo.addItem(label, source_id)
@@ -199,7 +203,9 @@ class ModulatorBankPanel(QWidget):
         self.envelope_group = QGroupBox("ENVELOPE · ADSR")
         envelope_form = QFormLayout(self.envelope_group)
         envelope_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
-        envelope_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
+        envelope_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.trigger_combo = QComboBox()
         for source_id, label in TRIGGER_SOURCES.items():
             self.trigger_combo.addItem(label, source_id)
@@ -226,7 +232,9 @@ class ModulatorBankPanel(QWidget):
         self.sequence_group.setToolTip("STEP SEQUENCER / RHYTHM GRID")
         sequence_form = QFormLayout(self.sequence_group)
         sequence_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
-        sequence_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
+        sequence_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.steps_edit = QLineEdit()
         self.steps_edit.setPlaceholderText("1, 0, 0.5, 0")
         self.division_spin = self._double_spin(1.0 / 96.0, 64.0, 0.25, 4)
@@ -249,7 +257,9 @@ class ModulatorBankPanel(QWidget):
         self.euclidean_group.setToolTip("EUCLIDEAN RHYTHM GENERATOR")
         euclidean_form = QFormLayout(self.euclidean_group)
         euclidean_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
-        euclidean_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
+        euclidean_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.euclidean_pulses = QSpinBox()
         self.euclidean_pulses.setRange(0, 64)
         self.euclidean_pulses.setValue(3)
@@ -283,7 +293,9 @@ class ModulatorBankPanel(QWidget):
         assignment_group.setToolTip("ASSIGN TO SELECTED LAYER")
         assignment_form = QFormLayout(assignment_group)
         assignment_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
-        assignment_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
+        assignment_form.setFieldGrowthPolicy(
+            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
+        )
         self.assignment_layer_label = QLabel("No layer selected")
         self.assignment_layer_label.setWordWrap(True)
         self.assignment_target_combo = QComboBox()
@@ -842,8 +854,9 @@ class ModulatorBankPanel(QWidget):
         if layer is None:
             set_ui_text(self.assignment_layer_label, "No layer selected")
         else:
-            set_ui_text(self.assignment_layer_label, 
-                f"{layer.name} · {'LOCKED' if layer.locked else 'READY'}"
+            set_ui_text(
+                self.assignment_layer_label,
+                f"{layer.name} · {'LOCKED' if layer.locked else 'READY'}",
             )
         assignable = bool(
             layer
@@ -881,7 +894,9 @@ class ModulatorBankPanel(QWidget):
         try:
             self.application.add_layer_performance_modifier(layer.id, modifier)
         except (TypeError, ValueError, KeyError) as exc:
-            QMessageBox.warning(self, ui_text("Modulator assignment"), ui_text(str(exc)))
+            QMessageBox.warning(
+                self, ui_text("Modulator assignment"), ui_text(str(exc))
+            )
             return
         self.assignment_created.emit(layer.id)
 
@@ -902,8 +917,9 @@ class ModulatorBankPanel(QWidget):
             if input_value is None:
                 set_ui_text(self.input_live_label, f"INPUT · {input_name} · NO SIGNAL")
             else:
-                set_ui_text(self.input_live_label, 
-                    f"INPUT · {input_name} · {float(input_value):.3f}"
+                set_ui_text(
+                    self.input_live_label,
+                    f"INPUT · {input_name} · {float(input_value):.3f}",
                 )
         elif definition.kind == "envelope":
             trigger_value = self.application._modulation_sources().get(
@@ -913,11 +929,14 @@ class ModulatorBankPanel(QWidget):
                 definition.trigger_source, definition.trigger_source
             )
             if trigger_value is None:
-                set_ui_text(self.input_live_label, f"TRIGGER · {trigger_name} · NO SIGNAL")
+                set_ui_text(
+                    self.input_live_label, f"TRIGGER · {trigger_name} · NO SIGNAL"
+                )
             else:
-                set_ui_text(self.input_live_label, 
+                set_ui_text(
+                    self.input_live_label,
                     f"TRIGGER · {trigger_name} · {float(trigger_value):.3f} "
-                    f"/ THR {definition.trigger_threshold:.2f}"
+                    f"/ THR {definition.trigger_threshold:.2f}",
                 )
         else:
             timebase = (

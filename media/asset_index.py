@@ -1,4 +1,5 @@
 """Searchable index for bundled and user-provided visual assets."""
+
 from __future__ import annotations
 
 import hashlib
@@ -25,7 +26,9 @@ class VisualAsset:
 
 def _classify(path: Path, root: Path) -> tuple[str, tuple[str, ...], tuple[str, ...]]:
     relative = path.relative_to(root)
-    parts = [part.lower().replace("_", " ").replace("-", " ") for part in relative.parts[:-1]]
+    parts = [
+        part.lower().replace("_", " ").replace("-", " ") for part in relative.parts[:-1]
+    ]
     stem = path.stem.lower().replace("_", " ").replace("-", " ")
     context = " ".join(parts + [stem])
     tags = set(parts)
@@ -45,11 +48,18 @@ def _classify(path: Path, root: Path) -> tuple[str, tuple[str, ...], tuple[str, 
         purposes.update(("specular map", "material"))
     if any(word in context for word in ("mask", "matte", "alpha", "silhouette")):
         purposes.update(("mask", "track matte"))
-    if any(word in context for word in ("metal", "wood", "stone", "concrete", "bark", "clay")):
+    if any(
+        word in context
+        for word in ("metal", "wood", "stone", "concrete", "bark", "clay")
+    ):
         purposes.update(("material", "background", "geometry"))
-    if any(word in context for word in ("particle", "dust", "smoke", "atmosphere", "spark")):
+    if any(
+        word in context for word in ("particle", "dust", "smoke", "atmosphere", "spark")
+    ):
         purposes.update(("particles", "atmosphere", "overlay"))
-    if any(word in context for word in ("wall", "floor", "ceiling", "sky", "landscape")):
+    if any(
+        word in context for word in ("wall", "floor", "ceiling", "sky", "landscape")
+    ):
         purposes.update(("background", "environment"))
     category = parts[0] if parts else "uncategorized"
     return category, tuple(sorted(tags)), tuple(sorted(purposes))
@@ -88,12 +98,19 @@ class VisualAssetIndex:
         self.assets = list(found.values())
         return list(self.assets)
 
-    def search(self, query: str = "", purpose: str | None = None,
-               kind: str | None = None, category: str | None = None) -> list[VisualAsset]:
+    def search(
+        self,
+        query: str = "",
+        purpose: str | None = None,
+        kind: str | None = None,
+        category: str | None = None,
+    ) -> list[VisualAsset]:
         terms = [term.lower() for term in query.split() if term]
         result = []
         for asset in self.assets:
-            haystack = " ".join((asset.name, asset.category, *asset.tags, *asset.purposes)).lower()
+            haystack = " ".join(
+                (asset.name, asset.category, *asset.tags, *asset.purposes)
+            ).lower()
             if terms and not all(term in haystack for term in terms):
                 continue
             if purpose and purpose.lower() not in asset.purposes:

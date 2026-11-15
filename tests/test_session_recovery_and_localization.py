@@ -87,13 +87,15 @@ def test_settings_dialog_exposes_language_hints_and_recovery() -> None:
 
 def test_japanese_catalog_and_english_fallback() -> None:
     assert tr("menu.settings", "ja") == "設定"
-    assert tr("about.tagline", "ja") == "映像・生成表現・音楽をつなぐライブ映像制作ツール。"
+    assert (
+        tr("about.tagline", "ja")
+        == "映像・生成表現・音楽をつなぐライブ映像制作ツール。"
+    )
     assert tr("menu.settings", "en") == "Settings"
     assert tr("missing.key", "ja") == "missing.key"
     assert ui_text("PERF MODIFIERS", "ja") == "レイヤー別モディファイア"
     assert ui_text("TEXT MOTION", "ja") == "テキストモーション"
     assert ui_text("MASTER FX", "ja") == "マスターFX"
-
 
 
 def test_widget_translation_covers_controls_and_preserves_user_input() -> None:
@@ -168,8 +170,6 @@ def test_timeline_payload_explanation_is_japanese_hover_help_only() -> None:
         application.shutdown()
 
 
-
-
 def test_overlay_format_note_is_hover_only_and_localized(tmp_path) -> None:
     qt_app = QApplication.instance() or QApplication([])
     qt_app.setProperty("ui_language", "ja")
@@ -193,8 +193,6 @@ def test_overlay_format_note_is_hover_only_and_localized(tmp_path) -> None:
         if panel is not None:
             panel.close()
         application.shutdown()
-
-
 
 
 def test_palette_combo_keeps_internal_key_when_japanese_label_is_shown() -> None:
@@ -238,10 +236,12 @@ def test_dynamic_text_can_switch_between_languages_without_losing_source() -> No
 
 
 def test_japanese_dynamic_status_templates() -> None:
-    assert ui_text("Indexed 12 video file(s).", "ja") == "動画ファイルを12件索引化しました。"
+    assert (
+        ui_text("Indexed 12 video file(s).", "ja")
+        == "動画ファイルを12件索引化しました。"
+    )
     assert ui_text("CONNECTED · USB MIDI", "ja") == "接続中 · USB MIDI"
     assert ui_text("TEXT PIPELINE · READY", "ja") == "テキスト処理 · 準備完了"
-
 
 
 def test_dynamic_dialog_and_multiline_media_prompts_translate() -> None:
@@ -297,7 +297,6 @@ def test_recovery_snapshot_does_not_auto_start_performance_or_decks(
         application.shutdown()
 
 
-
 def test_final_application_seal_is_packaged() -> None:
     assert ICON_PATH.name == "eli-lab-mark.ico"
     assert ICON_PATH.is_file()
@@ -334,12 +333,11 @@ def test_theme_uses_responsive_group_and_control_metrics() -> None:
     assert "Segoe UI" in english
 
 
-
 def test_package_and_build_metadata_are_consistent() -> None:
     root = Path(__file__).resolve().parents[1]
-    project = tomllib.loads(
-        (root / "pyproject.toml").read_text(encoding="utf-8")
-    )["project"]
+    project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))[
+        "project"
+    ]
     runtime_requirements = {
         line.strip()
         for line in (root / "requirements.txt").read_text(encoding="utf-8").splitlines()
@@ -350,19 +348,22 @@ def test_package_and_build_metadata_are_consistent() -> None:
         for line in (root / "requirements-dev.txt")
         .read_text(encoding="utf-8")
         .splitlines()
-        if line.strip() and not line.lstrip().startswith("#")
+        if line.strip()
+        and not line.lstrip().startswith("#")
         and not line.lstrip().startswith("-r ")
     }
-    build_requirements = (
-        root / "requirements-build-pyinstaller.txt"
-    ).read_text(encoding="utf-8")
+    build_requirements = (root / "requirements-build-pyinstaller.txt").read_text(
+        encoding="utf-8"
+    )
     spec = (root / "AVTranslator.spec").read_text(encoding="utf-8")
     build_script = (root / "scripts" / "build_pyinstaller.py").read_text(
         encoding="utf-8"
     )
 
     assert project["version"] == APP_VER
-    assert project["dependencies"] and set(project["dependencies"]) == runtime_requirements
+    assert (
+        project["dependencies"] and set(project["dependencies"]) == runtime_requirements
+    )
     assert set(project["optional-dependencies"]["dev"]) == dev_requirements
     assert "PyInstaller==" in build_requirements
     assert "from config import APP_NAME, ICON_PATH" in spec
@@ -409,7 +410,6 @@ def test_performance_macro_strip_uses_three_column_layout() -> None:
         application.shutdown()
 
 
-
 def test_wheel_over_controls_scrolls_panel_without_changing_values() -> None:
     qt_app = QApplication.instance() or QApplication([])
     scroll_area = QScrollArea()
@@ -436,9 +436,7 @@ def test_wheel_over_controls_scrolls_panel_without_changing_values() -> None:
 
     def wheel_over(widget: QWidget) -> None:
         local_position = QPointF(widget.width() / 2, widget.height() / 2)
-        global_position = QPointF(
-            widget.mapToGlobal(local_position.toPoint())
-        )
+        global_position = QPointF(widget.mapToGlobal(local_position.toPoint()))
         event = QWheelEvent(
             local_position,
             global_position,

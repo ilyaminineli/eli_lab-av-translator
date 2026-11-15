@@ -63,19 +63,15 @@ class MediaLibrary:
                 f"SELECT {columns} FROM {table_name}"
             )
             connection.execute(f"DROP TABLE {table_name}")
-            connection.execute(
-                f"ALTER TABLE {temporary_name} RENAME TO {table_name}"
-            )
+            connection.execute(f"ALTER TABLE {temporary_name} RENAME TO {table_name}")
 
     def __init__(
-            self,
-            database_path: str | Path | None = None,
-            thumbnail_directory: str | Path | None = None,
+        self,
+        database_path: str | Path | None = None,
+        thumbnail_directory: str | Path | None = None,
     ) -> None:
         self.database_path = Path(database_path or MEDIA_DB_PATH).expanduser()
-        self.thumbnail_directory = Path(
-            thumbnail_directory or THUMB_DIR
-        ).expanduser()
+        self.thumbnail_directory = Path(thumbnail_directory or THUMB_DIR).expanduser()
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
         self.thumbnail_directory.mkdir(parents=True, exist_ok=True)
         self.scanner = MediaScanner()
@@ -100,8 +96,7 @@ class MediaLibrary:
         with self._connection() as connection:
             connection.execute("PRAGMA journal_mode = WAL")
             connection.execute("PRAGMA synchronous = NORMAL")
-            connection.execute(
-                """
+            connection.execute("""
                 CREATE TABLE IF NOT EXISTS assets (
                     id TEXT PRIMARY KEY,
                     path TEXT NOT NULL UNIQUE,
@@ -117,21 +112,18 @@ class MediaLibrary:
                     file_size INTEGER NOT NULL,
                     modified_at REAL NOT NULL
                 )
-                """
-            )
+                """)
             connection.execute(
                 "CREATE INDEX IF NOT EXISTS idx_assets_collection ON assets(collection_id)"
             )
-            connection.execute(
-                """
+            connection.execute("""
                 CREATE TABLE IF NOT EXISTS collections (
                     id TEXT PRIMARY KEY,
                     root_path TEXT NOT NULL,
                     name TEXT NOT NULL,
                     imported_at REAL NOT NULL
                 )
-                """
-            )
+                """)
 
             # Earlier 0.6.0 builds accidentally declared text columns as TXT, which
             # SQLite treats as BLOB affinity. Rebuild only those known tables while
@@ -142,13 +134,11 @@ class MediaLibrary:
             )
 
             # Upgrade older media databases which only stored collection IDs on assets.
-            legacy_ids = connection.execute(
-                """
+            legacy_ids = connection.execute("""
                 SELECT collection_id, MIN(path) AS sample_path
                 FROM assets
                 GROUP BY collection_id
-                """
-            ).fetchall()
+                """).fetchall()
             for row in legacy_ids:
                 sample = Path(row["sample_path"])
                 root = sample.parent
@@ -156,7 +146,10 @@ class MediaLibrary:
                 # Recover it by matching the historical collection hash against
                 # the sample file's ancestor directories.
                 for candidate in sample.parents:
-                    if self.scanner.collection_id_for(candidate) == row["collection_id"]:
+                    if (
+                        self.scanner.collection_id_for(candidate)
+                        == row["collection_id"]
+                    ):
                         root = candidate
                         break
                 connection.execute(
@@ -167,7 +160,9 @@ class MediaLibrary:
                     (row["collection_id"], str(root), root.name or str(root), time()),
                 )
 
-    def add_folder(self, folder: str | Path, recursive: bool = True) -> list[MediaAsset]:
+    def add_folder(
+        self, folder: str | Path, recursive: bool = True
+    ) -> list[MediaAsset]:
         root = Path(folder).expanduser().resolve()
         assets = self.scanner.scan_folder(root, recursive=recursive)
         if not assets:
@@ -212,10 +207,19 @@ class MediaLibrary:
                         modified_at=excluded.modified_at
                     """,
                     (
-                        asset.id, asset.path, asset.collection_id, asset.name,
-                        asset.duration, asset.width, asset.height, asset.fps,
-                        asset.codec, asset.thumbnail_path, asset.status,
-                        asset.file_size, asset.modified_at,
+                        asset.id,
+                        asset.path,
+                        asset.collection_id,
+                        asset.name,
+                        asset.duration,
+                        asset.width,
+                        asset.height,
+                        asset.fps,
+                        asset.codec,
+                        asset.thumbnail_path,
+                        asset.status,
+                        asset.file_size,
+                        asset.modified_at,
                     ),
                 )
             connection.execute(
@@ -244,15 +248,13 @@ class MediaLibrary:
     def list_collections(self) -> list[dict[str, object]]:
         """Return imported folders with their current indexed asset counts."""
         with self._connection() as connection:
-            rows = connection.execute(
-                """
+            rows = connection.execute("""
                 SELECT c.id, c.root_path, c.name, COUNT(a.id) AS asset_count
                 FROM collections AS c
                 LEFT JOIN assets AS a ON a.collection_id = c.id
                 GROUP BY c.id, c.root_path, c.name
                 ORDER BY c.name COLLATE NOCASE, c.root_path COLLATE NOCASE
-                """
-            ).fetchall()
+                """).fetchall()
         return [dict(row) for row in rows]
 
     def get_asset(self, asset_id: str) -> MediaAsset | None:
@@ -279,9 +281,7 @@ class MediaLibrary:
                 "DELETE FROM assets WHERE collection_id=?", (collection_id,)
             )
             removed = max(0, cursor.rowcount)
-            connection.execute(
-                "DELETE FROM collections WHERE id=?", (collection_id,)
-            )
+            connection.execute("DELETE FROM collections WHERE id=?", (collection_id,))
         self.cleanup_thumbnail_cache()
         return removed
 
@@ -298,19 +298,14 @@ class MediaLibrary:
         """Prune records whose source files no longer exist."""
         with self._connection() as connection:
             rows = connection.execute("SELECT id, path FROM assets").fetchall()
-            missing = [
-                row["id"] for row in rows
-                if not Path(row["path"]).is_file()
-            ]
+            missing = [row["id"] for row in rows if not Path(row["path"]).is_file()]
             connection.executemany(
                 "DELETE FROM assets WHERE id=?", [(item,) for item in missing]
             )
-            connection.execute(
-                """
+            connection.execute("""
                 DELETE FROM collections
                 WHERE id NOT IN (SELECT DISTINCT collection_id FROM assets)
-                """
-            )
+                """)
         self.cleanup_thumbnail_cache()
         return len(missing)
 

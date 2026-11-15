@@ -1,65 +1,154 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#090909">
-<title>Windows setup and operation — eli_lab AVTranslator</title>
-<meta name="description" content="Install AVTranslator, prepare Windows, connect a projector and troubleshoot Japanese fonts.">
-<meta property="og:title" content="Windows setup and operation — eli_lab AVTranslator">
-<meta property="og:description" content="Install AVTranslator, prepare Windows, connect a projector and troubleshoot Japanese fonts.">
-<meta property="og:type" content="website">
-<link rel="stylesheet" href="../style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#090909">
+    <title>Windows setup and operation — eli_lab AVTranslator</title>
+    <meta name="description"
+        content="Install AVTranslator, prepare Windows, connect a projector and troubleshoot Japanese fonts.">
+    <meta property="og:title" content="Windows setup and operation — eli_lab AVTranslator">
+    <meta property="og:description"
+        content="Install AVTranslator, prepare Windows, connect a projector and troubleshoot Japanese fonts.">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="../style.css">
     <link rel="icon" type="image/x-icon" href="../../resources/icons/eli-lab-mark.ico">
 </head>
-<body>
-<a class="skip-link" href="#main-content">Skip to content</a>
-<header class="masthead">
-<a class="wordmark" href="../../index.html"><img class="wordmark-mark" src="../../resources/icons/eli-lab-mark.ico" alt="" aria-hidden="true"><span class="wordmark-name">eli_lab <span>AVTranslator</span></span></a>
-<div class="masthead-meta"><span class="edition">LIVE AUDIOVISUAL INSTRUMENT</span><span class="edition-rule"></span><span class="edition-no">FIELD GUIDE / 0.6</span></div>
-<nav class="primary-nav"><a href="../../index.html">HOME</a><a href="../features.html">FEATURES</a><a href="../manual.html">MANUAL</a><a href="../wiki.html">WIKI</a><a href="windows-setup.html">WINDOWS SETUP</a><a href="sonic-pi.html">SONIC PI</a><a href="../downloads.html">DOWNLOADS</a><a href="../about.html">ABOUT</a><a class="language-switch" href="../ja/guides/windows-setup.html" lang="ja">日本語</a></nav>
-</header>
-<div class="page-index"><span>INDEX</span><span class="index-line"></span><span>WINDOWS-SETUP</span><span class="index-line"></span><span>15 NOV 2026</span></div>
-<main id="main-content" class="site-main">
-<div class="document-shell">
-<aside class="document-rail"><p class="rail-heading">DOCUMENTS / 00—</p>
-<a href="../features.html">Product overview</a><a href="../manual.html">Field manual</a><a href="../wiki.html">Wiki / reference</a><a href="windows-setup.html">Windows setup</a><a href="sonic-pi.html">Sonic Pi integration</a>
-<div class="rail-rule"></div>
-<a class="rail-release" href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">LATEST RELEASE ↗</a>
-</aside>
-<article class="document-content">
-<div class="document-topline"><span>FIELD GUIDE</span><span class="document-topline-rule"></span><span>WINDOWS-SETUP</span></div>
 
-<h1>Windows setup and operation</h1>
-<p class="document-lede">Prepare the performance computer, launch the application, and verify the visual output before a show.</p>
-<h2>01 — Target system</h2>
-<ul><li>Windows 11, 64-bit.</li><li>Graphics driver supporting OpenGL 3.3 Core Profile.</li><li>SSD storage; NVMe is recommended for larger footage libraries.</li><li>HDMI or supported USB-C DisplayPort output for a projector.</li><li>Sonic Pi installed separately when using SONATA Expanded.</li><li>H.264 MP4 footage recommended for initial validation.</li></ul>
-<p>For multi-deck performance, 32 GB RAM is recommended, especially with integrated graphics. 16 GB may be sufficient for lighter sessions. Four simultaneous high-bitrate 4K streams are not guaranteed on an integrated GPU.</p>
-<h2>02 — Install the one-file executable</h2>
-<ol><li>Obtain the Windows x64 executable from a trusted release or build artifact.</li><li>Copy it to a local folder on the performance computer.</li><li>Double-click to start it. On first launch, allow time for extraction and Windows Defender scanning.</li><li>Writable data, the media database, thumbnails and logs are created under <code>%LOCALAPPDATA%\eli_lab\AVTranslator\</code>.</li></ol>
-<p>The target computer does not need Python, pip, PyInstaller or FFmpeg. Sonic Pi, graphics/audio drivers, user video files and user-added asset folders are not included in the executable.</p>
-<h2>03 — Japanese interface fonts</h2>
-<p>Japanese mode prefers Yu Gothic UI, Meiryo UI / Meiryo, MS UI Gothic / MS PGothic / MS Gothic and BIZ UDGothic, then Noto Sans JP and system fallbacks.</p>
-<p>Some Windows installations do not include Japanese supplemental fonts by default. When Japanese text appears as empty squares or boxes:</p>
-<ol><li>Open <strong>Settings → System → Optional features</strong>.</li><li>Choose <strong>View features</strong> beside Add an optional feature.</li><li>Search for and install <strong>Japanese Supplemental Fonts</strong>.</li><li>Restart AVTranslator so Qt can refresh the available font list.</li></ol>
-<p>You can open the page directly with <code>ms-settings:optionalfeatures</code>. Installing the fonts does not require changing the Windows display language.</p>
-<h2>04 — Prepare footage and projects</h2>
-<p>A <code>.eliav</code> project and an <code>.eliset</code> performance set store composition state and source paths; they do not embed original video files.</p>
-<ol><li>Copy video and user-asset folders to the new computer.</li><li>Import the folders into the Media Library.</li><li>Reassign or relink the four decks and media overlays if absolute paths changed.</li><li>Save a fresh project and performance set on the new computer.</li></ol>
-<h2>05 — Connect the projector</h2>
-<ol><li>Connect HDMI before opening fullscreen output.</li><li>In Windows Display Settings, choose <strong>Extend these displays</strong>.</li><li>Begin validation at 1920×1080, 60 Hz.</li><li>Choose <strong>View → PROJECTOR OUTPUT → Display N</strong>.</li><li>Confirm the status bar reports the active projector renderer and FPS.</li><li>Press Escape in the projector output to close it.</li></ol>
-<p>Preview and projector use separate OpenGL contexts but share application state. Verify the exact laptop, GPU and projector combination before a production-critical show.</p>
-<h2>06 — Launch an autonomous performance</h2>
-<ol><li>Prepare a composition with video decks and/or generator layers.</li><li>In AUD / CTRL choose System Loopback for actual audio-band and onset analysis, or Sonic Pi macros when local capture is unavailable or unnecessary.</li><li>In AUTO PERF choose a style, musical sync and duration.</li><li>Press <strong>PERF MODE</strong>.</li><li>Run SONATA Expanded in Sonic Pi.</li><li>Confirm the application moves from ARMED to LIVE and receiver/audio status is healthy.</li><li>Open projector output. Stop SONATA to end the AUTO pass, then press <strong>STOP PERF MODE</strong> when finished.</li></ol>
-<h2>07 — Diagnostics and troubleshooting</h2>
-<p>The one-file build supports <code>--self-check</code>. It checks required package imports, FFmpeg availability, H.264 decoding and bundled resources, but does not initialize OpenGL or test HDMI output.</p>
-<ul><li><strong>OpenGL fails:</strong> update the graphics driver and confirm OpenGL 3.3 Core Profile support.</li><li><strong>Playback drops frames:</strong> begin with one or two 1080p H.264 clips, use a local SSD, connect AC power and compare decode/upload counters.</li><li><strong>Audio loopback unavailable:</strong> refresh Windows input devices. Sonic Pi transport and macros can still work, but true band/onset analysis needs loopback.</li><li><strong>Projector on wrong display:</strong> confirm Extend mode, reopen output after display changes, and verify supported refresh rates.</li><li><strong>Media missing:</strong> project files store paths; copy original folders and re-import/reassign them.</li></ul>
-<p>The application log is stored under <code>%LOCALAPPDATA%\eli_lab\AVTranslator\logs\av-translator.log</code>.</p>
-<div class="document-endmark"><span>e·</span> END OF ENTRY</div>
-</article>
-</div>
-</main>
-<footer class="site-footer"><div class="footer-left"><img class="footer-mark" src="../../resources/icons/eli-lab-mark.ico" alt="" aria-hidden="true"><span>eli_lab AVTranslator</span><span class="footer-muted">A LIVE IMAGE / SOUND SYSTEM</span></div><div class="footer-right"><a href="https://github.com/ilyaminineli/eli_lab-av-translator">SOURCE ↗</a><a href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">RELEASES ↗</a><span>© 2026 eli_lab</span></div></footer>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="masthead">
+        <a class="wordmark" href="../../index.html"><img class="wordmark-mark"
+                src="../../resources/icons/eli-lab-mark.ico" alt="" aria-hidden="true"><span
+                class="wordmark-name">eli_lab <span>AVTranslator</span></span></a>
+        <div class="masthead-meta"><span class="edition">LIVE AUDIOVISUAL INSTRUMENT</span><span
+                class="edition-rule"></span><span class="edition-no">FIELD GUIDE / 0.6</span></div>
+        <nav class="primary-nav"><a href="../../index.html">HOME</a><a href="../features.html">FEATURES</a><a
+                href="../manual.html">MANUAL</a><a href="../wiki.html">WIKI</a><a href="windows-setup.html">WINDOWS
+                SETUP</a><a href="sonic-pi.html">SONIC PI</a><a href="../downloads.html">DOWNLOADS</a><a
+                href="../about.html">ABOUT</a><a class="language-switch" href="../ja/guides/windows-setup.html"
+                lang="ja">日本語</a></nav>
+    </header>
+    <div class="page-index"><span>INDEX</span><span class="index-line"></span><span>WINDOWS-SETUP</span><span
+            class="index-line"></span><span>15 NOV 2026</span></div>
+    <main id="main-content" class="site-main">
+        <div class="document-shell">
+            <aside class="document-rail">
+                <p class="rail-heading">DOCUMENTS / 00—</p>
+                <a href="../features.html">Product overview</a><a href="../manual.html">Field manual</a><a
+                    href="../wiki.html">Wiki / reference</a><a href="windows-setup.html">Windows setup</a><a
+                    href="sonic-pi.html">Sonic Pi integration</a>
+                <div class="rail-rule"></div>
+                <a class="rail-release" href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">LATEST
+                    RELEASE ↗</a>
+            </aside>
+            <article class="document-content">
+                <div class="document-topline"><span>FIELD GUIDE</span><span
+                        class="document-topline-rule"></span><span>WINDOWS-SETUP</span></div>
+
+                <h1>Windows setup and operation</h1>
+                <p class="document-lede">Prepare the performance computer, launch the application, and verify the visual
+                    output before a show.</p>
+                <h2>01 — Target system</h2>
+                <ul>
+                    <li>Windows 11, 64-bit.</li>
+                    <li>Graphics driver supporting OpenGL 3.3 Core Profile.</li>
+                    <li>SSD storage; NVMe is recommended for larger footage libraries.</li>
+                    <li>HDMI or supported USB-C DisplayPort output for a projector.</li>
+                    <li>Sonic Pi installed separately when using SONATA Expanded.</li>
+                    <li>H.264 MP4 footage recommended for initial validation.</li>
+                </ul>
+                <p>For multi-deck performance, 32 GB RAM is recommended, especially with integrated graphics. 16 GB may
+                    be sufficient for lighter sessions. Four simultaneous high-bitrate 4K streams are not guaranteed on
+                    an integrated GPU.</p>
+                <h2>02 — Install the one-file executable</h2>
+                <ol>
+                    <li>Obtain the Windows x64 executable from a trusted release or build artifact.</li>
+                    <li>Copy it to a local folder on the performance computer.</li>
+                    <li>Double-click to start it. On first launch, allow time for extraction and Windows Defender
+                        scanning.</li>
+                    <li>Writable data, the media database, thumbnails and logs are created under
+                        <code>%LOCALAPPDATA%\eli_lab\AVTranslator\</code>.</li>
+                </ol>
+                <p>The target computer does not need Python, pip, PyInstaller or FFmpeg. Sonic Pi, graphics/audio
+                    drivers, user video files and user-added asset folders are not included in the executable.</p>
+                <h2>03 — Japanese interface fonts</h2>
+                <p>Japanese mode prefers Yu Gothic UI, Meiryo UI / Meiryo, MS UI Gothic / MS PGothic / MS Gothic and BIZ
+                    UDGothic, then Noto Sans JP and system fallbacks.</p>
+                <p>Some Windows installations do not include Japanese supplemental fonts by default. When Japanese text
+                    appears as empty squares or boxes:</p>
+                <ol>
+                    <li>Open <strong>Settings → System → Optional features</strong>.</li>
+                    <li>Choose <strong>View features</strong> beside Add an optional feature.</li>
+                    <li>Search for and install <strong>Japanese Supplemental Fonts</strong>.</li>
+                    <li>Restart AVTranslator so Qt can refresh the available font list.</li>
+                </ol>
+                <p>You can open the page directly with <code>ms-settings:optionalfeatures</code>. Installing the fonts
+                    does not require changing the Windows display language.</p>
+                <h2>04 — Prepare footage and projects</h2>
+                <p>A <code>.eliav</code> project and an <code>.eliset</code> performance set store composition state and
+                    source paths; they do not embed original video files.</p>
+                <ol>
+                    <li>Copy video and user-asset folders to the new computer.</li>
+                    <li>Import the folders into the Media Library.</li>
+                    <li>Reassign or relink the four decks and media overlays if absolute paths changed.</li>
+                    <li>Save a fresh project and performance set on the new computer.</li>
+                </ol>
+                <h2>05 — Connect the projector</h2>
+                <ol>
+                    <li>Connect HDMI before opening fullscreen output.</li>
+                    <li>In Windows Display Settings, choose <strong>Extend these displays</strong>.</li>
+                    <li>Begin validation at 1920×1080, 60 Hz.</li>
+                    <li>Choose <strong>View → PROJECTOR OUTPUT → Display N</strong>.</li>
+                    <li>Confirm the status bar reports the active projector renderer and FPS.</li>
+                    <li>Press Escape in the projector output to close it.</li>
+                </ol>
+                <p>Preview and projector use separate OpenGL contexts but share application state. Verify the exact
+                    laptop, GPU and projector combination before a production-critical show.</p>
+                <h2>06 — Launch an autonomous performance</h2>
+                <ol>
+                    <li>Prepare a composition with video decks and/or generator layers.</li>
+                    <li>In AUD / CTRL choose System Loopback for actual audio-band and onset analysis, or Sonic Pi
+                        macros when local capture is unavailable or unnecessary.</li>
+                    <li>In AUTO PERF choose a style, musical sync and duration.</li>
+                    <li>Press <strong>PERF MODE</strong>.</li>
+                    <li>Run SONATA Expanded in Sonic Pi.</li>
+                    <li>Confirm the application moves from ARMED to LIVE and receiver/audio status is healthy.</li>
+                    <li>Open projector output. Stop SONATA to end the AUTO pass, then press <strong>STOP PERF
+                            MODE</strong> when finished.</li>
+                </ol>
+                <h2>07 — Diagnostics and troubleshooting</h2>
+                <p>The one-file build supports <code>--self-check</code>. It checks required package imports, FFmpeg
+                    availability, H.264 decoding and bundled resources, but does not initialize OpenGL or test HDMI
+                    output.</p>
+                <ul>
+                    <li><strong>OpenGL fails:</strong> update the graphics driver and confirm OpenGL 3.3 Core Profile
+                        support.</li>
+                    <li><strong>Playback drops frames:</strong> begin with one or two 1080p H.264 clips, use a local
+                        SSD, connect AC power and compare decode/upload counters.</li>
+                    <li><strong>Audio loopback unavailable:</strong> refresh Windows input devices. Sonic Pi transport
+                        and macros can still work, but true band/onset analysis needs loopback.</li>
+                    <li><strong>Projector on wrong display:</strong> confirm Extend mode, reopen output after display
+                        changes, and verify supported refresh rates.</li>
+                    <li><strong>Media missing:</strong> project files store paths; copy original folders and
+                        re-import/reassign them.</li>
+                </ul>
+                <p>The application log is stored under
+                    <code>%LOCALAPPDATA%\eli_lab\AVTranslator\logs\av-translator.log</code>.</p>
+                <div class="document-endmark"><span>e·</span> END OF ENTRY</div>
+            </article>
+        </div>
+    </main>
+    <footer class="site-footer">
+        <div class="footer-left"><img class="footer-mark" src="../../resources/icons/eli-lab-mark.ico" alt=""
+                aria-hidden="true"><span>eli_lab AVTranslator</span><span class="footer-muted">A LIVE IMAGE / SOUND
+                SYSTEM</span></div>
+        <div class="footer-right"><a href="https://github.com/ilyaminineli/eli_lab-av-translator">SOURCE ↗</a><a
+                href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">RELEASES ↗</a><span>© 2026
+                eli_lab</span></div>
+    </footer>
 </body>
+
 </html>

@@ -11,12 +11,8 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="Send a deterministic /eli_lab/v1 Sonic Pi test performance."
     )
-    parser.add_argument(
-        "--host", default="127.0.0.1", help="AVTranslator bind address"
-    )
-    parser.add_argument(
-        "--port", type=int, default=57121, help="AVTranslator OSC port"
-    )
+    parser.add_argument("--host", default="127.0.0.1", help="AVTranslator bind address")
+    parser.add_argument("--port", type=int, default=57121, help="AVTranslator OSC port")
     parser.add_argument("--session-id", default="", help="Optional unique session ID")
     parser.add_argument(
         "--no-stop", action="store_true", help="Leave transport running"

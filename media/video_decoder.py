@@ -15,15 +15,15 @@ class VideoDecoder:
     """Timestamp-paced decoder with bounded preview output and segment playback."""
 
     def __init__(
-            self,
-            path: str | Path,
-            frame_queue: FrameQueue,
-            loop: bool = True,
-            segment_start: float = 0.0,
-            segment_end: float | None = None,
-            max_output_width: int = MAX_DECODE_WIDTH,
-            max_output_height: int = MAX_DECODE_HEIGHT,
-            max_output_fps: float | None = MAX_DECODE_FPS,
+        self,
+        path: str | Path,
+        frame_queue: FrameQueue,
+        loop: bool = True,
+        segment_start: float = 0.0,
+        segment_end: float | None = None,
+        max_output_width: int = MAX_DECODE_WIDTH,
+        max_output_height: int = MAX_DECODE_HEIGHT,
+        max_output_fps: float | None = MAX_DECODE_FPS,
     ) -> None:
         self.path = Path(path).expanduser().resolve()
         self.frame_queue = frame_queue
@@ -31,13 +31,13 @@ class VideoDecoder:
         self.segment_start = max(0.0, float(segment_start))
         self.segment_end = (
             max(self.segment_start + 0.05, float(segment_end))
-            if segment_end is not None else None
+            if segment_end is not None
+            else None
         )
         self.max_output_width = max(2, int(max_output_width))
         self.max_output_height = max(2, int(max_output_height))
         self.max_output_fps = (
-            max(1.0, float(max_output_fps))
-            if max_output_fps is not None else None
+            max(1.0, float(max_output_fps)) if max_output_fps is not None else None
         )
         self._condition = threading.Condition()
         self._thread: threading.Thread | None = None
@@ -80,7 +80,9 @@ class VideoDecoder:
         with self._condition:
             if self._thread is not None and self._thread.is_alive():
                 if not self._running:
-                    raise RuntimeError("Decoder is still shutting down; load a new deck instance.")
+                    raise RuntimeError(
+                        "Decoder is still shutting down; load a new deck instance."
+                    )
                 self._playing = autoplay
                 self._condition.notify_all()
                 return
@@ -138,7 +140,11 @@ class VideoDecoder:
             self._playing = False
             self._condition.notify_all()
             thread = self._thread
-        if thread is not None and thread.is_alive() and thread is not threading.current_thread():
+        if (
+            thread is not None
+            and thread.is_alive()
+            and thread is not threading.current_thread()
+        ):
             thread.join(timeout=max(0.0, float(timeout)))
         stopped = thread is None or not thread.is_alive()
         if stopped:
@@ -202,7 +208,11 @@ class VideoDecoder:
                 try:
                     with av.open(str(self.path)) as container:
                         stream = next(
-                            (item for item in container.streams if item.type == "video"),
+                            (
+                                item
+                                for item in container.streams
+                                if item.type == "video"
+                            ),
                             None,
                         )
                         if stream is None:
@@ -229,7 +239,9 @@ class VideoDecoder:
                                         exc,
                                     )
 
-                        average_rate = float(stream.average_rate) if stream.average_rate else 30.0
+                        average_rate = (
+                            float(stream.average_rate) if stream.average_rate else 30.0
+                        )
                         first_timestamp: float | None = None
                         timeline_start = 0.0
                         frame_index = 0
@@ -244,8 +256,8 @@ class VideoDecoder:
                             except StopIteration:
                                 break
                             self.decode_time_ms += (
-                                                           time.perf_counter() - decode_started
-                                                   ) * 1000.0
+                                time.perf_counter() - decode_started
+                            ) * 1000.0
 
                             with self._condition:
                                 if not self._running:
@@ -265,7 +277,10 @@ class VideoDecoder:
 
                             if timestamp + 0.03 < seek_to:
                                 continue
-                            if self.segment_end is not None and timestamp >= self.segment_end:
+                            if (
+                                self.segment_end is not None
+                                and timestamp >= self.segment_end
+                            ):
                                 break
 
                             if first_timestamp is None:
@@ -283,19 +298,23 @@ class VideoDecoder:
 
                             frame_interval = (
                                 1.0 / self.max_output_fps
-                                if self.max_output_fps is not None else 0.0
+                                if self.max_output_fps is not None
+                                else 0.0
                             )
                             if (
-                                    last_published_timestamp is not None
-                                    and frame_interval > 0
-                                    and timestamp - last_published_timestamp < frame_interval * 0.92
+                                last_published_timestamp is not None
+                                and frame_interval > 0
+                                and timestamp - last_published_timestamp
+                                < frame_interval * 0.92
                             ):
                                 self.skipped_output_frames += 1
                                 continue
 
                             conversion_started = time.perf_counter()
                             pixels = self._preview_pixels(frame)
-                            conversion_elapsed = time.perf_counter() - conversion_started
+                            conversion_elapsed = (
+                                time.perf_counter() - conversion_started
+                            )
                             self.conversion_time_ms += conversion_elapsed * 1000.0
                             height, width, _ = pixels.shape
                             self.frame_queue.push_latest(

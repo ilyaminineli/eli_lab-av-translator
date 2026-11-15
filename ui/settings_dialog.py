@@ -57,8 +57,7 @@ class SettingsDialog(QDialog):
         root.addWidget(session_group)
 
         buttons = QDialogButtonBox(
-            QDialogButtonBox.StandardButton.Ok
-            | QDialogButtonBox.StandardButton.Cancel,
+            QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel,
             parent=self,
         )
         buttons.button(QDialogButtonBox.StandardButton.Ok).setText(

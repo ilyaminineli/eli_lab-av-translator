@@ -179,9 +179,7 @@ class PerformanceView(QOpenGLWidget):
         painter.fillRect(self.rect(), QColor("#101114"))
         painter.setPen(QColor("#E5E5E8"))
         title_font = QFont()
-        title_font.setFamilies(
-            ["Newsreader", "Yu Mincho", "Noto Serif JP", "Georgia"]
-        )
+        title_font.setFamilies(["Newsreader", "Yu Mincho", "Noto Serif JP", "Georgia"])
         title_font.setStyleHint(QFont.StyleHint.Serif)
         title_font.setBold(True)
         title_font.setPointSize(12)

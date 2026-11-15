@@ -13,11 +13,11 @@ class ImageOverlayPlayer:
     """Read a still or Qt-supported animated image and publish RGBA frames."""
 
     def __init__(
-            self,
-            path: str | Path,
-            loop: bool = True,
-            speed: float = 1.0,
-            frame_hold: int = 1,
+        self,
+        path: str | Path,
+        loop: bool = True,
+        speed: float = 1.0,
+        frame_hold: int = 1,
     ) -> None:
         self.path = Path(path).expanduser().resolve()
         self.loop = bool(loop)
@@ -49,7 +49,7 @@ class ImageOverlayPlayer:
         stride = rgba.bytesPerLine()
         raw = rgba.bits().tobytes()
         rows = np.frombuffer(raw, dtype=np.uint8).reshape(height, stride)
-        return rows[:, :width * 4].reshape(height, width, 4).copy()
+        return rows[:, : width * 4].reshape(height, width, 4).copy()
 
     def _delay_seconds(self) -> float:
         delay_ms = int(self.reader.nextImageDelay())
@@ -58,10 +58,10 @@ class ImageOverlayPlayer:
         return max(0.02, min(10.0, delay_ms / 1000.0)) / self.speed * self.frame_hold
 
     def configure_playback(
-            self,
-            speed: float,
-            frame_hold: int,
-            loop: bool | None = None,
+        self,
+        speed: float,
+        frame_hold: int,
+        loop: bool | None = None,
     ) -> None:
         self.speed = max(0.1, min(4.0, float(speed)))
         self.frame_hold = max(1, min(24, int(frame_hold)))

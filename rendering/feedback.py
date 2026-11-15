@@ -128,7 +128,9 @@ class FeedbackEngine:
 
     HISTORY_LEN = 5
 
-    def __init__(self, context: moderngl.Context, vertex_buffer: moderngl.Buffer) -> None:
+    def __init__(
+        self, context: moderngl.Context, vertex_buffer: moderngl.Buffer
+    ) -> None:
         self.ctx = context
         self.program = context.program(
             vertex_shader=_VERTEX_SHADER,
@@ -184,13 +186,13 @@ class FeedbackEngine:
             self.reset_generation = int(reset_generation)
 
     def render(
-            self,
-            current_texture: moderngl.Texture,
-            target_fbo: int,
-            width: int,
-            height: int,
-            settings: EffectSettings,
-            time_seconds: float,
+        self,
+        current_texture: moderngl.Texture,
+        target_fbo: int,
+        width: int,
+        height: int,
+        settings: EffectSettings,
+        time_seconds: float,
     ) -> None:
         settings.clamp()
         self.resize(width, height, settings.feedback_reset_generation)
@@ -203,9 +205,7 @@ class FeedbackEngine:
         read_index = (write_index - 1 - delay) % self.HISTORY_LEN
         history_valid = int(self.history_count > delay)
         output = (
-            destination
-            if settings.feedback_frozen
-            else self.framebuffers[write_index]
+            destination if settings.feedback_frozen else self.framebuffers[write_index]
         )
         output.use()
         self.ctx.viewport = (0, 0, max(1, int(width)), max(1, int(height)))

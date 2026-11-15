@@ -5,7 +5,14 @@ import random
 from pathlib import Path
 
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QAction, QFontMetrics, QGuiApplication, QIcon, QKeySequence, QShortcut
+from PySide6.QtGui import (
+    QAction,
+    QFontMetrics,
+    QGuiApplication,
+    QIcon,
+    QKeySequence,
+    QShortcut,
+)
 from PySide6.QtWidgets import (
     QApplication,
     QDialog,
@@ -117,9 +124,7 @@ class MainWindow(QMainWindow):
         )
         self._ui_settings = QSettings()
         self._language = str(self._ui_settings.value("ui/language_v1", "en"))
-        self._show_hints = self._ui_settings.value(
-            "ui/show_hints_v1", True, type=bool
-        )
+        self._show_hints = self._ui_settings.value("ui/show_hints_v1", True, type=bool)
         self._restore_session_enabled = self._ui_settings.value(
             "session/restore_v1", True, type=bool
         )
@@ -449,9 +454,7 @@ class MainWindow(QMainWindow):
         # Reuse the existing renderer instead of creating a second OpenGL view.
         # The projector and local preview retain their existing independent contexts.
         self.performance_view.setParent(None)
-        self.preview_dock.setWidget(
-            QLabel("LOCAL PREVIEW")
-        )
+        self.preview_dock.setWidget(QLabel("LOCAL PREVIEW"))
         self.preview_dock.hide()
         self.performance_aspect_preview = AspectRatioPreview(
             self.performance_view,
@@ -488,14 +491,8 @@ class MainWindow(QMainWindow):
         prepare_tabs.setDocumentMode(True)
         self.media_browser.setParent(None)
         self.asset_library_panel.setParent(None)
-        self.media_dock.setWidget(
-            QLabel("MEDIA LIBRARY")
-        )
-        self.asset_library_dock.setWidget(
-            QLabel(
-                "VISUAL ASSET LIBRARY"
-            )
-        )
+        self.media_dock.setWidget(QLabel("MEDIA LIBRARY"))
+        self.asset_library_dock.setWidget(QLabel("VISUAL ASSET LIBRARY"))
         self.media_dock.hide()
         self.asset_library_dock.hide()
         prepare_tabs.addTab(self.media_browser, "MEDIA")
@@ -600,9 +597,7 @@ class MainWindow(QMainWindow):
         """Widen legacy compact layouts once when their operator dock is cramped."""
         if not self._is_compact_workspace():
             return
-        if self._ui_settings.value(
-            "ui/compact_operator_layout_v1", False, type=bool
-        ):
+        if self._ui_settings.value("ui/compact_operator_layout_v1", False, type=bool):
             return
 
         width = max(self.width(), self.minimumWidth())
@@ -855,7 +850,9 @@ class MainWindow(QMainWindow):
                 self.performance_control_panel.osc_port_spin.setValue(
                     int(receiver["port"])
                 )
-            set_ui_text(self.performance_mode_button, "■ STOP PERF MODE", self._language)
+            set_ui_text(
+                self.performance_mode_button, "■ STOP PERF MODE", self._language
+            )
             self.performance_control_panel.refresh_monitor()
             self._show_status_message(
                 "Performance Mode armed · run SONATA Expanded in Sonic Pi. "
@@ -943,9 +940,7 @@ class MainWindow(QMainWindow):
         self.performance_control_panel.refresh_routes()
         self.modulator_bank_panel.refresh()
         self.performance_timeline_panel.refresh(force=True)
-        self._show_status_message(
-            f"Performance set loaded · {Path(path).name}", 5000
-        )
+        self._show_status_message(f"Performance set loaded · {Path(path).name}", 5000)
 
     def _populate_projector_menu(self, menu) -> None:
         menu.clear()
@@ -994,20 +989,22 @@ class MainWindow(QMainWindow):
                 lambda value: set_ui_text(self.status_label, value, self._language)
             )
             if window.performance_view.engine.initialized:
-                set_ui_text(self.status_label, 
-                    f"PROJECTOR READY · {window.performance_view.engine.renderer_name}"
+                set_ui_text(
+                    self.status_label,
+                    f"PROJECTOR READY · {window.performance_view.engine.renderer_name}",
                 )
             elif window.performance_view._initialization_error:
-                set_ui_text(self.status_label, 
-                    f"PROJECTOR ERROR · {window.performance_view._initialization_error}"
+                set_ui_text(
+                    self.status_label,
+                    f"PROJECTOR ERROR · {window.performance_view._initialization_error}",
                 )
             else:
-                set_ui_text(self.status_label, 
-                    "PROJECTOR OPEN · waiting for its OpenGL context"
+                set_ui_text(
+                    self.status_label, "PROJECTOR OPEN · waiting for its OpenGL context"
                 )
             window.closed.connect(self._projector_output_closed)
-            set_ui_text(self.workspace_output_label, 
-                f"OUTPUT  ·  PROJECTOR  ·  {screen.name()}"
+            set_ui_text(
+                self.workspace_output_label, f"OUTPUT  ·  PROJECTOR  ·  {screen.name()}"
             )
             self._show_status_message(
                 (
@@ -1027,17 +1024,17 @@ class MainWindow(QMainWindow):
     def _projector_output_closed(self) -> None:
         set_ui_text(self.workspace_output_label, "OUTPUT  ·  LOCAL")
         if self.performance_view.engine.initialized:
-            set_ui_text(self.status_label, 
-                f"LOCAL PREVIEW READY · {self.performance_view.engine.renderer_name}"
+            set_ui_text(
+                self.status_label,
+                f"LOCAL PREVIEW READY · {self.performance_view.engine.renderer_name}",
             )
         elif self.performance_view._initialization_error:
-            set_ui_text(self.status_label, 
-                f"LOCAL PREVIEW ERROR · {self.performance_view._initialization_error}"
+            set_ui_text(
+                self.status_label,
+                f"LOCAL PREVIEW ERROR · {self.performance_view._initialization_error}",
             )
         else:
-            set_ui_text(self.status_label, 
-                ui_text("LOCAL PREVIEW · IDLE")
-            )
+            set_ui_text(self.status_label, ui_text("LOCAL PREVIEW · IDLE"))
         if self._restore_local_preview_on_close:
             self.workspace_tabs.setCurrentIndex(0)
         self._restore_local_preview_on_close = False
@@ -1262,8 +1259,9 @@ class MainWindow(QMainWindow):
                 )
         control_revision = self.application.performance_control.revision
         if control_revision != self._last_control_revision:
-            set_ui_text(self.control_status_label, 
-                self.application.performance_control.status_text()
+            set_ui_text(
+                self.control_status_label,
+                self.application.performance_control.status_text(),
             )
             self._last_control_revision = control_revision
         if self.application.performance_control.scene_id != previous_scene:
@@ -1522,13 +1520,10 @@ class MainWindow(QMainWindow):
         dialog = QDialog(self)
         dialog.setObjectName("aboutDialog")
         dialog.setWindowTitle(f"{APP_NAME} {APP_VER}")
-        dialog.setWindowFlags(
-            Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint
-        )
+        dialog.setWindowFlags(Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
         dialog.setModal(True)
         dialog.setMinimumWidth(440)
-        dialog.setStyleSheet(
-            """
+        dialog.setStyleSheet("""
             QDialog#aboutDialog {
                 background: #0b0b0b;
                 color: #eeeeee;
@@ -1559,8 +1554,7 @@ class MainWindow(QMainWindow):
                 min-width: 82px;
                 min-height: 28px;
             }
-            """
-        )
+            """)
         root = QVBoxLayout(dialog)
         root.setContentsMargins(1, 1, 1, 1)
         root.setSpacing(0)

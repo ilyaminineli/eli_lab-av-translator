@@ -1,78 +1,215 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="dark">
-<meta name="theme-color" content="#090909">
-<title>Sonic Pi / SONATA integration — eli_lab AVTranslator</title>
-<meta name="description" content="Connect Sonic Pi and AVTranslator with the versioned OSC control protocol.">
-<meta property="og:title" content="Sonic Pi / SONATA integration — eli_lab AVTranslator">
-<meta property="og:description" content="Connect Sonic Pi and AVTranslator with the versioned OSC control protocol.">
-<meta property="og:type" content="website">
-<link rel="stylesheet" href="../style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#090909">
+    <title>Sonic Pi / SONATA integration — eli_lab AVTranslator</title>
+    <meta name="description" content="Connect Sonic Pi and AVTranslator with the versioned OSC control protocol.">
+    <meta property="og:title" content="Sonic Pi / SONATA integration — eli_lab AVTranslator">
+    <meta property="og:description"
+        content="Connect Sonic Pi and AVTranslator with the versioned OSC control protocol.">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="../style.css">
     <link rel="icon" type="image/x-icon" href="../../resources/icons/eli-lab-mark.ico">
 </head>
-<body>
-<a class="skip-link" href="#main-content">Skip to content</a>
-<header class="masthead">
-<a class="wordmark" href="../../index.html"><img class="wordmark-mark" src="../../resources/icons/eli-lab-mark.ico" alt="" aria-hidden="true"><span class="wordmark-name">eli_lab <span>AVTranslator</span></span></a>
-<div class="masthead-meta"><span class="edition">LIVE AUDIOVISUAL INSTRUMENT</span><span class="edition-rule"></span><span class="edition-no">FIELD GUIDE / 0.6</span></div>
-<nav class="primary-nav"><a href="../../index.html">HOME</a><a href="../features.html">FEATURES</a><a href="../manual.html">MANUAL</a><a href="../wiki.html">WIKI</a><a href="windows-setup.html">WINDOWS SETUP</a><a href="sonic-pi.html">SONIC PI</a><a href="../downloads.html">DOWNLOADS</a><a href="../about.html">ABOUT</a><a class="language-switch" href="../ja/guides/sonic-pi.html" lang="ja">日本語</a></nav>
-</header>
-<div class="page-index"><span>INDEX</span><span class="index-line"></span><span>SONIC-PI</span><span class="index-line"></span><span>15 NOV 2026</span></div>
-<main id="main-content" class="site-main">
-<div class="document-shell">
-<aside class="document-rail"><p class="rail-heading">DOCUMENTS / 00—</p>
-<a href="../features.html">Product overview</a><a href="../manual.html">Field manual</a><a href="../wiki.html">Wiki / reference</a><a href="windows-setup.html">Windows setup</a><a href="sonic-pi.html">Sonic Pi integration</a>
-<div class="rail-rule"></div>
-<a class="rail-release" href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">LATEST RELEASE ↗</a>
-</aside>
-<article class="document-content">
-<div class="document-topline"><span>FIELD GUIDE</span><span class="document-topline-rule"></span><span>SONIC-PI</span></div>
 
-<h1>Sonic Pi / SONATA integration</h1>
-<p class="document-lede">Use Sonic Pi as the musical clock and control source while AVTranslator performs the image.</p>
-<h2>01 — What the connection does</h2>
-<p>SONATA Expanded sends transport, bar-clock, scene, macro, cue and heartbeat messages. AVTranslator receives them at the versioned <code>/eli_lab/v1</code> OSC namespace. Sonic Pi remains responsible for audio playback; AVTranslator uses musical intent to change visual scenes and parameters.</p>
-<p>The M4 sender is installed at musical control points only. It does not instrument the 93 synth/drum loops.</p>
-<h2>02 — Sender configuration</h2>
-<p>At the top of <code>SONATA_expanded.rb</code>, verify:</p>
-<ul><li><code>$sp_av_enabled = true</code> — set false for audio-only rehearsal.</li><li><code>$sp_av_host = "127.0.0.1"</code> — AVTranslator address.</li><li><code>$sp_av_port = 57121</code> — match the receiver port shown in AUD / CTRL.</li></ul>
-<p>Same-computer use defaults to loopback. For remote Sonic Pi, bind AVTranslator to its reachable LAN IPv4 address and set <code>$sp_av_host</code> to that address. Do not use 127.0.0.1 for a remote sender.</p>
-<h2>03 — One-button autonomous connection</h2>
-<ol><li>Prepare the composition. In AUD / CTRL choose System Loopback for actual audio-band/onset analysis, or use Sonic Pi macros when local capture is unavailable.</li><li>Verify receiver address and port. Use <strong>COPY SONATA SETTINGS</strong> to copy them into the patch.</li><li>Press <strong>PERF MODE</strong>. AVTranslator starts or reuses the OSC receiver, starts requested local audio capture, installs default modulation curves/routes when required, and arms automation.</li><li>Run <code>SONATA_expanded.rb</code> in Sonic Pi.</li><li>The first transport/start or accepted bar-clock packet moves AVTranslator from ARMED to LIVE. Scenes, phrase cues and macro values then drive visual changes.</li><li>Stop SONATA to stop automation. Press <strong>STOP PERF MODE</strong> to release resources owned by the mode.</li></ol>
-<h2>04 — Musical clock and form</h2>
-<div class="reference-list">
-<a><span>01</span><div><h3>TEMPO</h3><p>92 BPM</p></div></a>
-<a><span>02</span><div><h3>METER</h3><p>4 beats per bar</p></div></a>
-<a><span>03</span><div><h3>FORM</h3><p>384 bars · approximately 16 minutes 42 seconds</p></div></a>
-<a><span>04</span><div><h3>SCENES</h3><p>16 scene changes, including the final end marker</p></div></a>
-</div>
-<p>The bar clock increments <code>sp_b_count</code>, cues <code>sp_b</code>, then sleeps for four beats. Scene changes update <code>sp_sc</code> and <code>sp_int</code>, then cue <code>sp_sc_change</code>. The synchronized macro loop updates energy, cutoff and phrase index. OSC <code>bar_index</code> is 1-based; the initial pre-clock scene marker uses bar 0.</p>
-<h2>05 — OSC protocol</h2>
-<p>Every event begins with a session ID string and positive sequence number. Sequence numbers increase across all event types for one patch run. Restarting the patch creates a new session ID.</p>
-<table><thead><tr><th>Address</th><th>Event</th><th>Purpose</th></tr></thead><tbody>
-<tr><td><code>/transport/start</code></td><td>transport.start</td><td>BPM and beats per bar</td></tr>
-<tr><td><code>/transport/stop</code></td><td>transport.stop</td><td>Stop transport</td></tr>
-<tr><td><code>/transport/tempo</code></td><td>transport.tempo</td><td>Update BPM</td></tr>
-<tr><td><code>/clock/bar</code></td><td>clock.bar</td><td>1-based bar, BPM and meter</td></tr>
-<tr><td><code>/scene/select</code></td><td>scene.select</td><td>Scene ID, intensity and bar</td></tr>
-<tr><td><code>/scene/intensity</code></td><td>scene.intensity</td><td>Normalized scene intensity</td></tr>
-<tr><td><code>/macro/set</code></td><td>macro.set</td><td>Registered macro name and 0–1 value</td></tr>
-<tr><td><code>/cue/trigger</code></td><td>cue.trigger</td><td>Named cue</td></tr>
-<tr><td><code>/source/heartbeat</code></td><td>source.heartbeat</td><td>Sender heartbeat</td></tr>
-</tbody></table>
-<p>Built-in macro names are <code>chaos</code>, <code>density</code>, <code>depth</code>, <code>decay</code>, <code>pressure</code> and <code>fragment</code>. The existing patch also sends normalized <code>energy</code> and <code>cutoff</code>. Values are clamped/validated in the receiver; unknown names and out-of-range values are rejected.</p>
-<h2>06 — Receiver safety</h2>
-<ul><li>Default bind is loopback; other interfaces require explicit selection.</li><li>Only known addresses, exact argument counts, strict OSC types and safe numeric ranges are accepted.</li><li>A bounded replay history rejects superseded sessions and duplicate/out-of-order sequences.</li><li>Input is rate-limited to 60 messages/second by default.</li><li>The OSC worker submits validated events to a queue; Qt widgets, composition state and OpenGL resources are not touched from the worker.</li><li>A stale sender can be recovered by restarting SONATA with a fresh session ID.</li></ul>
-<h2>07 — Rehearsal checklist</h2>
-<ol><li>Start AVTranslator, press PERF MODE and confirm the receiver is listening on the intended address/port.</li><li>Run SONATA and confirm ARMED changes to LIVE.</li><li>Check BPM 92, bar positions 1–384, scene changes, energy/cutoff values and phrase cues.</li><li>Restart SONATA and confirm a fresh session is accepted while delayed packets from the old session are rejected.</li><li>Press STOP PERF MODE and confirm Sonic Pi audio continues. Re-arm before the next run.</li></ol>
-<p>Protocol and sender insertion are implemented. The full 384-bar performance still requires manual rehearsal on the target Sonic Pi and AVTranslator computers.</p>
-<div class="document-endmark"><span>e·</span> END OF ENTRY</div>
-</article>
-</div>
-</main>
-<footer class="site-footer"><div class="footer-left"><img class="footer-mark" src="../../resources/icons/eli-lab-mark.ico" alt="" aria-hidden="true"><span>eli_lab AVTranslator</span><span class="footer-muted">A LIVE IMAGE / SOUND SYSTEM</span></div><div class="footer-right"><a href="https://github.com/ilyaminineli/eli_lab-av-translator">SOURCE ↗</a><a href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">RELEASES ↗</a><span>© 2026 eli_lab</span></div></footer>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="masthead">
+        <a class="wordmark" href="../../index.html"><img class="wordmark-mark"
+                src="../../resources/icons/eli-lab-mark.ico" alt="" aria-hidden="true"><span
+                class="wordmark-name">eli_lab <span>AVTranslator</span></span></a>
+        <div class="masthead-meta"><span class="edition">LIVE AUDIOVISUAL INSTRUMENT</span><span
+                class="edition-rule"></span><span class="edition-no">FIELD GUIDE / 0.6</span></div>
+        <nav class="primary-nav"><a href="../../index.html">HOME</a><a href="../features.html">FEATURES</a><a
+                href="../manual.html">MANUAL</a><a href="../wiki.html">WIKI</a><a href="windows-setup.html">WINDOWS
+                SETUP</a><a href="sonic-pi.html">SONIC PI</a><a href="../downloads.html">DOWNLOADS</a><a
+                href="../about.html">ABOUT</a><a class="language-switch" href="../ja/guides/sonic-pi.html"
+                lang="ja">日本語</a></nav>
+    </header>
+    <div class="page-index"><span>INDEX</span><span class="index-line"></span><span>SONIC-PI</span><span
+            class="index-line"></span><span>15 NOV 2026</span></div>
+    <main id="main-content" class="site-main">
+        <div class="document-shell">
+            <aside class="document-rail">
+                <p class="rail-heading">DOCUMENTS / 00—</p>
+                <a href="../features.html">Product overview</a><a href="../manual.html">Field manual</a><a
+                    href="../wiki.html">Wiki / reference</a><a href="windows-setup.html">Windows setup</a><a
+                    href="sonic-pi.html">Sonic Pi integration</a>
+                <div class="rail-rule"></div>
+                <a class="rail-release" href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">LATEST
+                    RELEASE ↗</a>
+            </aside>
+            <article class="document-content">
+                <div class="document-topline"><span>FIELD GUIDE</span><span
+                        class="document-topline-rule"></span><span>SONIC-PI</span></div>
+
+                <h1>Sonic Pi / SONATA integration</h1>
+                <p class="document-lede">Use Sonic Pi as the musical clock and control source while AVTranslator
+                    performs the image.</p>
+                <h2>01 — What the connection does</h2>
+                <p>SONATA Expanded sends transport, bar-clock, scene, macro, cue and heartbeat messages. AVTranslator
+                    receives them at the versioned <code>/eli_lab/v1</code> OSC namespace. Sonic Pi remains responsible
+                    for audio playback; AVTranslator uses musical intent to change visual scenes and parameters.</p>
+                <p>The M4 sender is installed at musical control points only. It does not instrument the 93 synth/drum
+                    loops.</p>
+                <h2>02 — Sender configuration</h2>
+                <p>At the top of <code>SONATA_expanded.rb</code>, verify:</p>
+                <ul>
+                    <li><code>$sp_av_enabled = true</code> — set false for audio-only rehearsal.</li>
+                    <li><code>$sp_av_host = "127.0.0.1"</code> — AVTranslator address.</li>
+                    <li><code>$sp_av_port = 57121</code> — match the receiver port shown in AUD / CTRL.</li>
+                </ul>
+                <p>Same-computer use defaults to loopback. For remote Sonic Pi, bind AVTranslator to its reachable LAN
+                    IPv4 address and set <code>$sp_av_host</code> to that address. Do not use 127.0.0.1 for a remote
+                    sender.</p>
+                <h2>03 — One-button autonomous connection</h2>
+                <ol>
+                    <li>Prepare the composition. In AUD / CTRL choose System Loopback for actual audio-band/onset
+                        analysis, or use Sonic Pi macros when local capture is unavailable.</li>
+                    <li>Verify receiver address and port. Use <strong>COPY SONATA SETTINGS</strong> to copy them into
+                        the patch.</li>
+                    <li>Press <strong>PERF MODE</strong>. AVTranslator starts or reuses the OSC receiver, starts
+                        requested local audio capture, installs default modulation curves/routes when required, and arms
+                        automation.</li>
+                    <li>Run <code>SONATA_expanded.rb</code> in Sonic Pi.</li>
+                    <li>The first transport/start or accepted bar-clock packet moves AVTranslator from ARMED to LIVE.
+                        Scenes, phrase cues and macro values then drive visual changes.</li>
+                    <li>Stop SONATA to stop automation. Press <strong>STOP PERF MODE</strong> to release resources owned
+                        by the mode.</li>
+                </ol>
+                <h2>04 — Musical clock and form</h2>
+                <div class="reference-list">
+                    <a><span>01</span>
+                        <div>
+                            <h3>TEMPO</h3>
+                            <p>92 BPM</p>
+                        </div>
+                    </a>
+                    <a><span>02</span>
+                        <div>
+                            <h3>METER</h3>
+                            <p>4 beats per bar</p>
+                        </div>
+                    </a>
+                    <a><span>03</span>
+                        <div>
+                            <h3>FORM</h3>
+                            <p>384 bars · approximately 16 minutes 42 seconds</p>
+                        </div>
+                    </a>
+                    <a><span>04</span>
+                        <div>
+                            <h3>SCENES</h3>
+                            <p>16 scene changes, including the final end marker</p>
+                        </div>
+                    </a>
+                </div>
+                <p>The bar clock increments <code>sp_b_count</code>, cues <code>sp_b</code>, then sleeps for four beats.
+                    Scene changes update <code>sp_sc</code> and <code>sp_int</code>, then cue <code>sp_sc_change</code>.
+                    The synchronized macro loop updates energy, cutoff and phrase index. OSC <code>bar_index</code> is
+                    1-based; the initial pre-clock scene marker uses bar 0.</p>
+                <h2>05 — OSC protocol</h2>
+                <p>Every event begins with a session ID string and positive sequence number. Sequence numbers increase
+                    across all event types for one patch run. Restarting the patch creates a new session ID.</p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Address</th>
+                            <th>Event</th>
+                            <th>Purpose</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>/transport/start</code></td>
+                            <td>transport.start</td>
+                            <td>BPM and beats per bar</td>
+                        </tr>
+                        <tr>
+                            <td><code>/transport/stop</code></td>
+                            <td>transport.stop</td>
+                            <td>Stop transport</td>
+                        </tr>
+                        <tr>
+                            <td><code>/transport/tempo</code></td>
+                            <td>transport.tempo</td>
+                            <td>Update BPM</td>
+                        </tr>
+                        <tr>
+                            <td><code>/clock/bar</code></td>
+                            <td>clock.bar</td>
+                            <td>1-based bar, BPM and meter</td>
+                        </tr>
+                        <tr>
+                            <td><code>/scene/select</code></td>
+                            <td>scene.select</td>
+                            <td>Scene ID, intensity and bar</td>
+                        </tr>
+                        <tr>
+                            <td><code>/scene/intensity</code></td>
+                            <td>scene.intensity</td>
+                            <td>Normalized scene intensity</td>
+                        </tr>
+                        <tr>
+                            <td><code>/macro/set</code></td>
+                            <td>macro.set</td>
+                            <td>Registered macro name and 0–1 value</td>
+                        </tr>
+                        <tr>
+                            <td><code>/cue/trigger</code></td>
+                            <td>cue.trigger</td>
+                            <td>Named cue</td>
+                        </tr>
+                        <tr>
+                            <td><code>/source/heartbeat</code></td>
+                            <td>source.heartbeat</td>
+                            <td>Sender heartbeat</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>Built-in macro names are <code>chaos</code>, <code>density</code>, <code>depth</code>,
+                    <code>decay</code>, <code>pressure</code> and <code>fragment</code>. The existing patch also sends
+                    normalized <code>energy</code> and <code>cutoff</code>. Values are clamped/validated in the
+                    receiver; unknown names and out-of-range values are rejected.</p>
+                <h2>06 — Receiver safety</h2>
+                <ul>
+                    <li>Default bind is loopback; other interfaces require explicit selection.</li>
+                    <li>Only known addresses, exact argument counts, strict OSC types and safe numeric ranges are
+                        accepted.</li>
+                    <li>A bounded replay history rejects superseded sessions and duplicate/out-of-order sequences.</li>
+                    <li>Input is rate-limited to 60 messages/second by default.</li>
+                    <li>The OSC worker submits validated events to a queue; Qt widgets, composition state and OpenGL
+                        resources are not touched from the worker.</li>
+                    <li>A stale sender can be recovered by restarting SONATA with a fresh session ID.</li>
+                </ul>
+                <h2>07 — Rehearsal checklist</h2>
+                <ol>
+                    <li>Start AVTranslator, press PERF MODE and confirm the receiver is listening on the intended
+                        address/port.</li>
+                    <li>Run SONATA and confirm ARMED changes to LIVE.</li>
+                    <li>Check BPM 92, bar positions 1–384, scene changes, energy/cutoff values and phrase cues.</li>
+                    <li>Restart SONATA and confirm a fresh session is accepted while delayed packets from the old
+                        session are rejected.</li>
+                    <li>Press STOP PERF MODE and confirm Sonic Pi audio continues. Re-arm before the next run.</li>
+                </ol>
+                <p>Protocol and sender insertion are implemented. The full 384-bar performance still requires manual
+                    rehearsal on the target Sonic Pi and AVTranslator computers.</p>
+                <div class="document-endmark"><span>e·</span> END OF ENTRY</div>
+            </article>
+        </div>
+    </main>
+    <footer class="site-footer">
+        <div class="footer-left"><img class="footer-mark" src="../../resources/icons/eli-lab-mark.ico" alt=""
+                aria-hidden="true"><span>eli_lab AVTranslator</span><span class="footer-muted">A LIVE IMAGE / SOUND
+                SYSTEM</span></div>
+        <div class="footer-right"><a href="https://github.com/ilyaminineli/eli_lab-av-translator">SOURCE ↗</a><a
+                href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">RELEASES ↗</a><span>© 2026
+                eli_lab</span></div>
+    </footer>
 </body>
+
 </html>

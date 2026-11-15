@@ -99,9 +99,7 @@ def local_target(page: str, href: str) -> Path | None:
     if parsed.scheme or parsed.netloc or not parsed.path:
         return None
     parent = posixpath.dirname(page)
-    resolved = posixpath.normpath(
-        posixpath.join(parent, unquote(parsed.path))
-    )
+    resolved = posixpath.normpath(posixpath.join(parent, unquote(parsed.path)))
     if resolved == ".":
         resolved = "index.html"
     return ROOT / resolved
@@ -157,8 +155,10 @@ def main() -> int:
             (inspector.has_charset, "UTF-8 charset"),
             (inspector.has_viewport, "responsive viewport meta"),
             (inspector.lang == expected_lang, f"lang={expected_lang}"),
-            (not any(token in html for token in ("{{", "{%", "---\n")),
-             "no template/front-matter syntax"),
+            (
+                not any(token in html for token in ("{{", "{%", "---\n")),
+                "no template/front-matter syntax",
+            ),
             (bool(inspector.stylesheets), "stylesheet link"),
             (inspector.has_favicon, "application seal favicon"),
         )

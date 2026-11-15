@@ -9,8 +9,18 @@ from media.models import MediaAsset
 
 _LOG = logging.getLogger(__name__)
 SUPPORTED_VID_EXNS = {
-    ".mp4", ".mov", ".mkv", ".avi", ".webm", ".m4v", ".mpg", ".mpeg",
-    ".wmv", ".mts", ".m2ts", ".ogv",
+    ".mp4",
+    ".mov",
+    ".mkv",
+    ".avi",
+    ".webm",
+    ".m4v",
+    ".mpg",
+    ".mpeg",
+    ".wmv",
+    ".mts",
+    ".m2ts",
+    ".ogv",
 }
 
 
@@ -22,7 +32,9 @@ class MediaScanner:
         root = Path(folder).expanduser().resolve()
         return hashlib.sha1(str(root).casefold().encode("utf-8")).hexdigest()[:16]
 
-    def scan_folder(self, folder: str | Path, recursive: bool = True) -> list[MediaAsset]:
+    def scan_folder(
+        self, folder: str | Path, recursive: bool = True
+    ) -> list[MediaAsset]:
         root = Path(folder).expanduser().resolve()
         if not root.is_dir():
             raise NotADirectoryError(f"Media folder does not exist: {root}")
@@ -68,7 +80,9 @@ class MediaScanner:
 
         try:
             with av.open(str(path)) as container:
-                video_streams = [stream for stream in container.streams if stream.type == "video"]
+                video_streams = [
+                    stream for stream in container.streams if stream.type == "video"
+                ]
                 if not video_streams:
                     return {"status": "unsupported"}
                 stream = video_streams[0]

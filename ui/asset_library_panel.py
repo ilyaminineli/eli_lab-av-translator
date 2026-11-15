@@ -107,7 +107,9 @@ class AssetLibraryPanel(QWidget):
         self.refresh()
 
     def add_folder(self) -> None:
-        folder = QFileDialog.getExistingDirectory(self, ui_text("Add visual asset folder"))
+        folder = QFileDialog.getExistingDirectory(
+            self, ui_text("Add visual asset folder")
+        )
         if not folder:
             return
         try:
@@ -215,7 +217,9 @@ class AssetLibraryPanel(QWidget):
         try:
             layer = self.application.add_library_asset_overlay(item.data(256))
         except Exception as exc:
-            QMessageBox.warning(self, ui_text("Asset could not be added"), ui_text(str(exc)))
+            QMessageBox.warning(
+                self, ui_text("Asset could not be added"), ui_text(str(exc))
+            )
             return
         self.composition_changed.emit()
         set_ui_text(self.detail_label, f"Added {layer.name} as a composition overlay.")

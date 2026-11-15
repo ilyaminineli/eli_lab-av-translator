@@ -286,8 +286,6 @@ class PerformanceControlPanel(QWidget):
         macro_layout.addWidget(self.macro_status_label, status_row, 0, 1, 2)
         root.addWidget(self.performance_macro_group)
 
-
-
         self.performance_scene_group = QGroupBox("VJ SCENE BANK")
         scene_form = QFormLayout(self.performance_scene_group)
         scene_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
@@ -357,9 +355,7 @@ class PerformanceControlPanel(QWidget):
         self.osc_group.setToolTip("SONIC PI CONNECTION · OSC /eli_lab/v1")
         osc_form = QFormLayout(self.osc_group)
         osc_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
-        osc_form.setFieldGrowthPolicy(
-            QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
-        )
+        osc_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.osc_bind_edit = QLineEdit("127.0.0.1")
         self.osc_port_spin = QSpinBox()
         self.osc_port_spin.setRange(1024, 65535)
@@ -564,7 +560,9 @@ class PerformanceControlPanel(QWidget):
         modulation_layout.addWidget(self.route_list)
         preset_buttons = QVBoxLayout()
         self.audio_reactive_button = QPushButton("AUDIO ROUTES")
-        self.audio_reactive_button.setToolTip("Add the recommended audio-reactive routes")
+        self.audio_reactive_button.setToolTip(
+            "Add the recommended audio-reactive routes"
+        )
         self.sonic_pi_reactive_button = QPushButton("SONIC PI ROUTES")
         self.sonic_pi_reactive_button.setToolTip("Add the recommended Sonic Pi routes")
         preset_buttons.addWidget(self.audio_reactive_button)
@@ -670,10 +668,13 @@ class PerformanceControlPanel(QWidget):
         if index >= 0:
             self.midi_device_combo.setCurrentIndex(index)
         self.midi_device_combo.blockSignals(False)
-        set_ui_text(self.midi_status_label, 
-            f"{len(devices)} input(s) available."
-            if devices
-            else "No inputs found · install the optional MIDI extra to enable hardware input."
+        set_ui_text(
+            self.midi_status_label,
+            (
+                f"{len(devices)} input(s) available."
+                if devices
+                else "No inputs found · install the optional MIDI extra to enable hardware input."
+            ),
         )
 
     def _start_midi(self) -> None:
@@ -686,8 +687,9 @@ class PerformanceControlPanel(QWidget):
             self.midi_stop_button.setEnabled(True)
             set_ui_text(self.midi_status_label, f"CONNECTED · {device}")
         else:
-            set_ui_text(self.midi_status_label, 
-                f"MIDI unavailable · {self.application.midi_input.error or 'backend error'}"
+            set_ui_text(
+                self.midi_status_label,
+                f"MIDI unavailable · {self.application.midi_input.error or 'backend error'}",
             )
 
     def _stop_midi(self) -> None:
@@ -766,9 +768,10 @@ class PerformanceControlPanel(QWidget):
             scene_id,
             morph_seconds=self.performance_scene_morph.value(),
         ):
-            set_ui_text(self.midi_status_label, 
+            set_ui_text(
+                self.midi_status_label,
                 f"VJ scene scheduled · {item.text()} · transition "
-                f"{self.performance_scene_morph.value():g}s"
+                f"{self.performance_scene_morph.value():g}s",
             )
         else:
             set_ui_text(self.midi_status_label, "Scene recall could not be scheduled.")
@@ -776,8 +779,9 @@ class PerformanceControlPanel(QWidget):
     def _random_performance_scene(self) -> None:
         scene = self.application.random_performance_scene()
         if scene is None:
-            set_ui_text(self.midi_status_label, 
-                "No compatible VJ scenes · capture scenes with the current layer topology."
+            set_ui_text(
+                self.midi_status_label,
+                "No compatible VJ scenes · capture scenes with the current layer topology.",
             )
             return
         set_ui_text(self.midi_status_label, f"Random compatible scene · {scene.label}")
@@ -921,7 +925,9 @@ class PerformanceControlPanel(QWidget):
         except (TypeError, ValueError) as exc:
             set_ui_text(self.midi_status_label, f"Invalid mapping · {exc}")
             return
-        set_ui_text(self.midi_status_label, f"LEARNING · move a controller for {target}")
+        set_ui_text(
+            self.midi_status_label, f"LEARNING · move a controller for {target}"
+        )
 
     def refresh_midi_mappings(self, force: bool = False) -> None:
         mappings = self.application.midi_mapping_engine.mappings
@@ -1010,8 +1016,9 @@ class PerformanceControlPanel(QWidget):
             set_ui_text(self.midi_status_label, f"Invalid mapping · {exc}")
             return
         self.refresh_midi_mappings(force=True)
-        set_ui_text(self.midi_status_label, 
-            "MIDI mapping updated · save the performance set to persist it."
+        set_ui_text(
+            self.midi_status_label,
+            "MIDI mapping updated · save the performance set to persist it.",
         )
 
     def _remove_selected_midi_mapping(self) -> None:
@@ -1230,8 +1237,9 @@ class PerformanceControlPanel(QWidget):
         # Sonic Pi sends to the AVTranslator host, so a same-computer setup uses loopback.
         config = f'$sp_av_host = "{host}"\n$sp_av_port = {port}'
         QApplication.clipboard().setText(config)
-        set_ui_text(self.osc_status_label, 
-            "SONATA host/port copied. Paste into SONATA_expanded.rb and rerun the patch."
+        set_ui_text(
+            self.osc_status_label,
+            "SONATA host/port copied. Paste into SONATA_expanded.rb and rerun the patch.",
         )
 
     def _install_route_preset(self, definitions: tuple[tuple, ...], label: str) -> None:
@@ -1273,10 +1281,11 @@ class PerformanceControlPanel(QWidget):
             added += 1
         self.refresh_routes()
         self.application.apply_modulation()
-        set_ui_text(self.modulation_status, 
+        set_ui_text(
+            self.modulation_status,
             f"{label}: {added} route(s) added; {skipped} existing custom route(s) preserved. "
             "Generator targets affect the currently selected compatible generator; "
-            "Auto targets affect the running Auto Performance session."
+            "Auto targets affect the running Auto Performance session.",
         )
 
     def _install_audio_reactive_routes(self) -> None:
@@ -1338,13 +1347,14 @@ class PerformanceControlPanel(QWidget):
         )
         address = snapshot["last_address"] or "—"
         session = snapshot["active_session"] or "—"
-        set_ui_text(self.osc_status_label, 
+        set_ui_text(
+            self.osc_status_label,
             f"{snapshot['status']} · {snapshot['bind_address']}:{snapshot['port']} · {freshness}\n"
             f"RX {snapshot['received']} · OK {snapshot['accepted']} · "
             f"REJECT {snapshot['rejected']} · DROP {snapshot['dropped']} · "
             f"RATE {snapshot['rate_limited']}\n"
             f"LAST {address} · SESSION {session}"
-            + (f"\n{snapshot['last_error']}" if snapshot["last_error"] else "")
+            + (f"\n{snapshot['last_error']}" if snapshot["last_error"] else ""),
         )
         running = bool(snapshot["running"])
         self.osc_start_button.setEnabled(not running)
@@ -1367,8 +1377,9 @@ class PerformanceControlPanel(QWidget):
         if selected is None and any(
             route.target_id == target_id for route in self.application.modulation.routes
         ):
-            set_ui_text(self.modulation_status, 
-                "That target already has a route. Select it to edit, or choose another target."
+            set_ui_text(
+                self.modulation_status,
+                "That target already has a route. Select it to edit, or choose another target.",
             )
             return
         try:
@@ -1499,9 +1510,10 @@ class PerformanceControlPanel(QWidget):
             updated.input_source = str(combo.currentData() or "")
             self.application.update_performance_macro(updated)
             self.application.apply_modulation()
-            set_ui_text(self.macro_status_label, 
+            set_ui_text(
+                self.macro_status_label,
                 f"{current.name} input · "
-                f"{self.source_labels.get(updated.input_source, 'Manual control')}"
+                f"{self.source_labels.get(updated.input_source, 'Manual control')}",
             )
         except (KeyError, TypeError, ValueError) as exc:
             set_ui_text(self.macro_status_label, f"Macro source not applied · {exc}")
@@ -1522,9 +1534,10 @@ class PerformanceControlPanel(QWidget):
                 QKeySequence.SequenceFormat.PortableText
             )
             self.application.update_performance_macro(updated)
-            set_ui_text(self.macro_status_label, 
+            set_ui_text(
+                self.macro_status_label,
                 f"{updated.name} keyboard toggle · "
-                f"{updated.keyboard_shortcut or 'unassigned'}"
+                f"{updated.keyboard_shortcut or 'unassigned'}",
             )
         except (KeyError, TypeError, ValueError) as exc:
             set_ui_text(self.macro_status_label, f"Shortcut not applied · {exc}")
@@ -1630,23 +1643,27 @@ class PerformanceControlPanel(QWidget):
     def refresh_monitor(self) -> None:
         mode = self.application.performance_mode_snapshot()
         if not mode["enabled"]:
-            set_ui_text(self.performance_mode_status_label, 
-                "OFF · press PERF MODE in the main toolbar to arm the show."
+            set_ui_text(
+                self.performance_mode_status_label,
+                "OFF · press PERF MODE in the main toolbar to arm the show.",
             )
         elif mode["phase"] == "live":
             automation = "RUNNING" if mode["automation_running"] else "ARMED"
-            set_ui_text(self.performance_mode_status_label, 
-                f"LIVE · SONIC PI · AUTO {automation} · {mode['audio_status']}"
+            set_ui_text(
+                self.performance_mode_status_label,
+                f"LIVE · SONIC PI · AUTO {automation} · {mode['audio_status']}",
             )
         elif mode["phase"] == "degraded":
-            set_ui_text(self.performance_mode_status_label, 
-                f"DEGRADED · {mode['error'] or 'check receiver and audio status'}"
+            set_ui_text(
+                self.performance_mode_status_label,
+                f"DEGRADED · {mode['error'] or 'check receiver and audio status'}",
             )
         else:
             automation = "ARMED" if mode["automation_armed"] else "READY"
-            set_ui_text(self.performance_mode_status_label, 
+            set_ui_text(
+                self.performance_mode_status_label,
                 f"ARMED · waiting for SONATA · AUTO {automation} · "
-                f"{mode['audio_status']}"
+                f"{mode['audio_status']}",
             )
         diagnostics = self.application.performance_diagnostics()
         osc = diagnostics["osc"]
@@ -1676,9 +1693,10 @@ class PerformanceControlPanel(QWidget):
                 else "PAUSE" if control.transport_paused else "STOP"
             )
             phrase = (max(0, control.bar_index - 1) // transport.phrase_bars) + 1
-            set_ui_text(self.transport_status, 
+            set_ui_text(
+                self.transport_status,
                 f"{transport_state} · SONIC PI · {control.bpm:g} BPM · "
-                f"BAR {control.bar_index} · PHRASE {phrase}"
+                f"BAR {control.bar_index} · PHRASE {phrase}",
             )
         else:
             transport_state = (
@@ -1686,10 +1704,11 @@ class PerformanceControlPanel(QWidget):
                 if transport.running and not transport.paused
                 else "PAUSE" if transport.paused else "STOP"
             )
-            set_ui_text(self.transport_status, 
+            set_ui_text(
+                self.transport_status,
                 f"{transport_state} · {transport.bpm:g} BPM · BAR {transport.bar_index} · "
                 f"BEAT {transport.beat_index + 1}/{transport.beats_per_bar} · "
-                f"PHRASE {transport.phrase_index}"
+                f"PHRASE {transport.phrase_index}",
             )
         state = self.application.audio_capture.state
         if (
@@ -1702,9 +1721,10 @@ class PerformanceControlPanel(QWidget):
             state = self.application.audio_capture.state
         name = self.application.audio_capture.selected_device_name
         error = self.application.audio_capture.error or self._audio_discovery_error
-        set_ui_text(self.audio_state_label, 
+        set_ui_text(
+            self.audio_state_label,
             f"{state.value.upper()} · {name or 'No source'}"
-            + (f" · {error}" if error else "")
+            + (f" · {error}" if error else ""),
         )
         active = state in {AudioCaptureState.RUNNING, AudioCaptureState.STARTING}
         self.audio_start_button.setEnabled(not active)
@@ -1714,10 +1734,13 @@ class PerformanceControlPanel(QWidget):
             bar.setValue(round(float(features.get(key, 0.0) or 0.0) * 100))
         bpm = features.get("bpm")
         confidence = float(features.get("beat_confidence", 0.0) or 0.0)
-        set_ui_text(self.audio_tempo_label, 
-            f"Tempo estimate · {bpm:g} BPM · confidence {confidence:.2f}"
-            if bpm is not None
-            else "Tempo estimate · listening for transients…"
+        set_ui_text(
+            self.audio_tempo_label,
+            (
+                f"Tempo estimate · {bpm:g} BPM · confidence {confidence:.2f}"
+                if bpm is not None
+                else "Tempo estimate · listening for transients…"
+            ),
         )
         self.refresh_osc_status()
         self.refresh_performance_scenes()
@@ -1726,17 +1749,21 @@ class PerformanceControlPanel(QWidget):
         learn = getattr(self.application, "_midi_learn_request", None)
         learned = getattr(self.application, "_midi_learn_last_event", "")
         if learn is not None:
-            set_ui_text(self.midi_status_label, 
-                f"LEARNING · move a controller for {learn['target']}"
+            set_ui_text(
+                self.midi_status_label,
+                f"LEARNING · move a controller for {learn['target']}",
             )
         elif learned:
             set_ui_text(self.midi_status_label, f"LEARNED · {learned}")
         outputs = self.application.modulation.outputs()
-        set_ui_text(self.modulation_status, 
-            " · ".join(
-                f"{TARGET_SPECS[key].label}: {value:.2f}"
-                for key, value in outputs.items()
-            )
-            if outputs
-            else "No modulation outputs active. Enable audio or select a control source."
+        set_ui_text(
+            self.modulation_status,
+            (
+                " · ".join(
+                    f"{TARGET_SPECS[key].label}: {value:.2f}"
+                    for key, value in outputs.items()
+                )
+                if outputs
+                else "No modulation outputs active. Enable audio or select a control source."
+            ),
         )

@@ -260,7 +260,6 @@ def test_layout_director_selects_relationship_aware_patterns() -> None:
     assert "shared_center" in relationships or "orbit" in relationships
 
 
-
 def test_layer_cooldown_is_adaptive_and_can_be_disabled() -> None:
     director = AutomationDirector(seed=21)
     director.settings = AutomationSettings(
@@ -344,8 +343,9 @@ def test_layout_randomization_respects_manual_override_window() -> None:
     assert director._layers[0].position == original
 
 
-
-def test_transform_override_keeps_peak_particle_baseline_but_generator_edit_invalidates() -> None:
+def test_transform_override_keeps_peak_particle_baseline_but_generator_edit_invalidates() -> (
+    None
+):
     director = AutomationDirector(seed=25)
     director._peak_particle_base["layer-0"] = ("density", 20.0, "particles")
 

@@ -358,7 +358,9 @@ class MediaBrowser(QWidget):
         answer = QMessageBox.question(
             self,
             ui_text("Remove missing files"),
-            ui_text("Remove library entries whose source files can no longer be found?"),
+            ui_text(
+                "Remove library entries whose source files can no longer be found?"
+            ),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.No,
         )

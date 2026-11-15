@@ -78,21 +78,20 @@ def test_manual_layout_randomizer_uses_video_generator_and_overlay_layers() -> N
             layer.blend_mode,
             layer.z_index,
         )
-        for layer in layers if layer.locked or not layer.visible
+        for layer in layers
+        if layer.locked or not layer.visible
     }
 
     manager = PerformanceManager(seed=29)
     changed = manager.randomize_layout(layers)
 
     assert changed == 4
-    assert next(
-        layer for layer in layers if layer.id == "video-background"
-    ).z_index == -1
+    assert (
+        next(layer for layer in layers if layer.id == "video-background").z_index == -1
+    )
     text_layer = next(layer for layer in layers if layer.id == "text-headline")
     highest_other_visible_layer = max(
-        layer.z_index
-        for layer in layers
-        if layer.visible and layer.id != text_layer.id
+        layer.z_index for layer in layers if layer.visible and layer.id != text_layer.id
     )
     assert text_layer.z_index > highest_other_visible_layer
     assert text_layer.scale[0] >= 1.02
@@ -109,7 +108,9 @@ def test_manual_layout_randomizer_uses_video_generator_and_overlay_layers() -> N
             ) == protected[layer.id]
 
 
-def test_manual_layout_randomizer_does_not_mutate_locked_or_hidden_only_layers() -> None:
+def test_manual_layout_randomizer_does_not_mutate_locked_or_hidden_only_layers() -> (
+    None
+):
     layers = [
         Layer(id="locked", source_type="video", locked=True),
         Layer(id="hidden", source_type="video", visible=False),
@@ -135,7 +136,6 @@ def test_default_text_pool_sample_contains_eight_fragments() -> None:
     assert len([line for line in sample.splitlines() if line.strip()]) == 8
 
 
-
 def test_video_deck_grid_reflows_at_compact_and_wide_widths() -> None:
     assert deck_columns_for_width(420) == 1
     assert deck_columns_for_width(820) == 2
@@ -150,16 +150,14 @@ def test_video_deck_grid_reflows_at_compact_and_wide_widths() -> None:
     assert application is not None
 
 
-
 def test_media_library_repairs_legacy_txt_columns_without_losing_indexed_data(
-        tmp_path,
+    tmp_path,
 ) -> None:
     database_path = tmp_path / "media.sqlite3"
     thumbnail_directory = tmp_path / "thumbnails"
 
     with sqlite3.connect(database_path) as connection:
-        connection.executescript(
-            """
+        connection.executescript("""
             CREATE TABLE assets (
                 id TXT PRIMARY KEY,
                 path TXT NOT NULL UNIQUE,
@@ -182,8 +180,7 @@ def test_media_library_repairs_legacy_txt_columns_without_losing_indexed_data(
                 imported_at REAL NOT NULL
             );
             CREATE INDEX idx_assets_collection ON assets(collection_id);
-            """
-        )
+            """)
         connection.execute(
             """
             INSERT INTO assets (
@@ -192,8 +189,19 @@ def test_media_library_repairs_legacy_txt_columns_without_losing_indexed_data(
             ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
-                "asset-1", "/media/example.mp4", "collection-1", "example.mp4",
-                12.5, 1920, 1080, 30.0, "h264", None, "ready", 1234, 42.0,
+                "asset-1",
+                "/media/example.mp4",
+                "collection-1",
+                "example.mp4",
+                12.5,
+                1920,
+                1080,
+                30.0,
+                "h264",
+                None,
+                "ready",
+                1234,
+                42.0,
             ),
         )
         connection.execute(
@@ -233,19 +241,27 @@ def test_media_library_repairs_legacy_txt_columns_without_losing_indexed_data(
         ).fetchone()
 
     for name in (
-            "id", "path", "collection_id", "name", "codec",
-            "thumbnail_path", "status",
+        "id",
+        "path",
+        "collection_id",
+        "name",
+        "codec",
+        "thumbnail_path",
+        "status",
     ):
         assert asset_columns[name] == "TEXT"
     for name in ("id", "root_path", "name"):
         assert collection_columns[name] == "TEXT"
 
     assert tuple(asset) == (
-        "asset-1", "/media/example.mp4", "collection-1", "example.mp4", "h264"
+        "asset-1",
+        "/media/example.mp4",
+        "collection-1",
+        "example.mp4",
+        "h264",
     )
     assert tuple(collection) == ("collection-1", "/media", "media")
     assert index is not None
-
 
 
 def test_monochrome_icon_set_renders_and_keeps_accessible_actions() -> None:
@@ -262,9 +278,27 @@ def test_monochrome_icon_set_renders_and_keeps_accessible_actions() -> None:
         assert f'url("{icon_path}")' in stylesheet
     parent = QWidget()
     icon_names = (
-        "play", "pause", "stop", "load", "restart", "shuffle", "layout",
-        "sparkles", "lock", "unlock", "trash", "apply", "reset", "settings",
-        "warning", "library", "image", "menu", "close", "float", "dock",
+        "play",
+        "pause",
+        "stop",
+        "load",
+        "restart",
+        "shuffle",
+        "layout",
+        "sparkles",
+        "lock",
+        "unlock",
+        "trash",
+        "apply",
+        "reset",
+        "settings",
+        "warning",
+        "library",
+        "image",
+        "menu",
+        "close",
+        "float",
+        "dock",
     )
 
     for name in icon_names:
@@ -272,9 +306,7 @@ def test_monochrome_icon_set_renders_and_keeps_accessible_actions() -> None:
         assert not icon.isNull()
         assert not icon.pixmap(24, 24, QIcon.Mode.Disabled).isNull()
 
-    checked_icon = app_icon("lock").pixmap(
-        24, 24, QIcon.Mode.Normal, QIcon.State.On
-    )
+    checked_icon = app_icon("lock").pixmap(24, 24, QIcon.Mode.Normal, QIcon.State.On)
     assert not checked_icon.isNull()
 
     for icon_name in ("dock-close.svg", "dock-float.svg", "dock-dock.svg"):

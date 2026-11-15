@@ -25,7 +25,9 @@ SPEC = ROOT / "AVTranslator.spec"
 EXE = ROOT / "dist" / f"{APP_NAME}.exe"
 
 
-def run(command: list[str], *, timeout: int | None = None) -> subprocess.CompletedProcess[str]:
+def run(
+    command: list[str], *, timeout: int | None = None
+) -> subprocess.CompletedProcess[str]:
     print("\n> " + subprocess.list2cmdline(command), flush=True)
     return subprocess.run(
         command,
@@ -87,10 +89,17 @@ def relaunch_in_project_venv() -> None:
 
 def validate_environment() -> None:
     if os.name != "nt":
-        raise SystemExit("This profile builds a native Windows executable and must run on Windows.")
+        raise SystemExit(
+            "This profile builds a native Windows executable and must run on Windows."
+        )
     if struct.calcsize("P") * 8 != 64:
-        raise SystemExit("A 64-bit Python interpreter is required for the Windows x64 executable.")
-    if sys.implementation.name != "cpython" or not (3, 12) <= sys.version_info[:2] < (3, 15):
+        raise SystemExit(
+            "A 64-bit Python interpreter is required for the Windows x64 executable."
+        )
+    if sys.implementation.name != "cpython" or not (3, 12) <= sys.version_info[:2] < (
+        3,
+        15,
+    ):
         raise SystemExit(
             "This AVTranslator PyInstaller profile supports 64-bit CPython 3.12, 3.13 or 3.14.\n"
             f"Current interpreter: {sys.version.split()[0]} ({sys.implementation.name})."
@@ -112,9 +121,7 @@ def validate_environment() -> None:
     if missing:
         raise SystemExit("Missing required project/build files:\n" + "\n".join(missing))
 
-    project_data = tomllib.loads(
-        (ROOT / "pyproject.toml").read_text(encoding="utf-8")
-    )
+    project_data = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))
     project_version = str(project_data.get("project", {}).get("version", ""))
     if project_version != APP_VER:
         raise SystemExit(
@@ -156,44 +163,79 @@ def main() -> int:
             "and Windows SDK must be installed.",
             flush=True,
         )
-        run([
-            python, "-m", "pip", "install",
-            "--no-binary=python-rtmidi", "-r", str(MIDI_REQUIREMENTS),
-        ])
+        run(
+            [
+                python,
+                "-m",
+                "pip",
+                "install",
+                "--no-binary=python-rtmidi",
+                "-r",
+                str(MIDI_REQUIREMENTS),
+            ]
+        )
     run([python, "-m", "pip", "check"])
 
     # Verify the expected runtime imports before starting packaging.
-    run([
-        python, "-c",
-        "import PySide6, moderngl, glcontext, av, numpy, soundcard, pythonosc, mido; "
-        "print('Core runtime imports: PASS'); "
-        "import importlib.util; "
-        "print('Native MIDI backend:', "
-        "'available' if importlib.util.find_spec('rtmidi') "
-        "else 'not installed (optional)')",
-    ])
+    run(
+        [
+            python,
+            "-c",
+            "import PySide6, moderngl, glcontext, av, numpy, soundcard, pythonosc, mido; "
+            "print('Core runtime imports: PASS'); "
+            "import importlib.util; "
+            "print('Native MIDI backend:', "
+            "'available' if importlib.util.find_spec('rtmidi') "
+            "else 'not installed (optional)')",
+        ]
+    )
 
-    run([
-        python, "-m", "compileall", "-q", "main.py", "config.py",
-        "core", "effects", "generators", "media", "rendering", "ui",
-    ])
+    run(
+        [
+            python,
+            "-m",
+            "compileall",
+            "-q",
+            "main.py",
+            "config.py",
+            "core",
+            "effects",
+            "generators",
+            "media",
+            "rendering",
+            "ui",
+        ]
+    )
 
     # PyInstaller's spec collects Qt, FFmpeg/PyAV, ModernGL/glcontext,
     # SoundCard, OSC/Mido, and the app resources/icon/dictionaries.
-    run([
-        python, "-m", "PyInstaller", "--clean", "--noconfirm",
-        "--distpath", str(ROOT / "dist"),
-        "--workpath", str(ROOT / "build" / "pyinstaller"),
-        str(SPEC),
-    ])
+    run(
+        [
+            python,
+            "-m",
+            "PyInstaller",
+            "--clean",
+            "--noconfirm",
+            "--distpath",
+            str(ROOT / "dist"),
+            "--workpath",
+            str(ROOT / "build" / "pyinstaller"),
+            str(SPEC),
+        ]
+    )
 
     if not EXE.is_file():
-        raise SystemExit(f"PyInstaller completed without producing the expected executable: {EXE}")
+        raise SystemExit(
+            f"PyInstaller completed without producing the expected executable: {EXE}"
+        )
 
     print("\nRunning packaged --self-check ...", flush=True)
     check = subprocess.run(
-        [str(EXE), "--self-check"], cwd=ROOT, text=True,
-        capture_output=True, timeout=240,
+        [str(EXE), "--self-check"],
+        cwd=ROOT,
+        text=True,
+        capture_output=True,
+        timeout=240,
     )
     if check.returncode != 0:
         details = "\n".join(part for part in (check.stdout, check.stderr) if part)
@@ -205,6 +247,7 @@ def main() -> int:
 
     try:
         import importlib
+
         importlib.import_module("rtmidi")
         midi_available = True
     except Exception:
@@ -236,9 +279,7 @@ def main() -> int:
         f"Built (UTC): {datetime.now(UTC).isoformat()}\n"
         f"Python: {sys.version.split()[0]} x64\n"
         f"PyInstaller: {__import__('PyInstaller').__version__}\n"
-        "Resolved packages:\n"
-        + "\n".join(package_report)
-        + "\n"
+        "Resolved packages:\n" + "\n".join(package_report) + "\n"
         f"Native MIDI backend: {'included' if midi_available else 'not included (optional)'}\n"
         f"Executable: {EXE}\n"
         f"Icon: {ICON_PATH}\n"
@@ -256,7 +297,9 @@ def main() -> int:
     print(f"Executable: {EXE}")
     print(f"Size:       {size_mib:.1f} MiB")
     print(f"SHA-256:    {digest}")
-    print(f"MIDI:       {'included' if midi_available else 'not included (optional backend)'}")
+    print(
+        f"MIDI:       {'included' if midi_available else 'not included (optional backend)'}"
+    )
     print(f"Report:     {report_path}")
     print("=" * 72)
     return 0
@@ -266,5 +309,9 @@ if __name__ == "__main__":
     try:
         raise SystemExit(main())
     except subprocess.CalledProcessError as exc:
-        print("\nBUILD FAILED while running:", subprocess.list2cmdline(exc.cmd), file=sys.stderr)
+        print(
+            "\nBUILD FAILED while running:",
+            subprocess.list2cmdline(exc.cmd),
+            file=sys.stderr,
+        )
         raise SystemExit(exc.returncode or 1) from exc

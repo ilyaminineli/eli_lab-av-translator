@@ -5,7 +5,6 @@ from typing import Any
 
 from PySide6.QtCore import Qt
 
-
 _ENGLISH: dict[str, str] = {
     "menu.file": "File",
     "menu.view": "View",
@@ -130,7 +129,6 @@ _JA_TEXT: dict[str, str] = {
     "MASTER FX": "マスターFX",
     "GEOMETRY": "ジオメトリ",
     "FEEDBACK": "フィードバック",
-
     # Asset library
     "Search textures, materials, masks…": "テクスチャ、マテリアル、マスクを検索…",
     "ADD ASSET FOLDER…": "素材フォルダーを追加…",
@@ -144,7 +142,6 @@ _JA_TEXT: dict[str, str] = {
     "Indexing bundled and user visual assets…": "内蔵素材とユーザー素材を索引化中…",
     "No indexed assets match this search.": "検索条件に一致する素材はありません。",
     "Asset could not be added": "素材を追加できませんでした",
-
     # Automation and visual director
     "30 minutes": "30分",
     "45 minutes": "45分",
@@ -195,7 +192,6 @@ _JA_TEXT: dict[str, str] = {
     "STOP AUTOMATION": "オートメーションを停止",
     "Ready · import a footage folder to begin.": "準備完了 · 映像フォルダーを読み込んでください。",
     "Use slower layout transitions during breakdowns": "ブレイク中はレイアウト変化をゆっくりにする",
-
     # Decks and media
     "NO MEDIA": "メディアなし",
     "EMPTY": "空",
@@ -216,7 +212,6 @@ _JA_TEXT: dict[str, str] = {
     "Remove folder from media library": "メディアライブラリからフォルダーを削除",
     "Remove missing files": "見つからないファイルを削除",
     "Clear media library": "メディアライブラリを消去",
-
     # Effects and compositing
     "LOOK": "ルック",
     "RESET": "リセット",
@@ -275,7 +270,6 @@ _JA_TEXT: dict[str, str] = {
     "Motion-driven warp": "動きに連動するワープ",
     "Datamosh block displacement": "データモッシュのブロック変位",
     "Temporal delay (frames)": "時間遅延（フレーム）",
-
     # Generator and typography controls
     "ADD GENERATOR / OVERLAY": "ジェネレーター／オーバーレイを追加",
     "+ GEOMETRY": "+ ジオメトリ",
@@ -542,7 +536,6 @@ _JA_TEXT: dict[str, str] = {
     "MASK SOURCE": "マスクソース",
     "APPLY GENERATOR SETTINGS": "ジェネレーター設定を適用",
     "No source": "ソースなし",
-
     # Layers and performance modifiers
     "Visible": "表示",
     "Layer": "レイヤー",
@@ -579,7 +572,6 @@ _JA_TEXT: dict[str, str] = {
     "Positive": "正方向",
     "Bipolar": "双極",
     "SAVE AS PRESET…": "プリセットとして保存…",
-
     # Modulator bank
     "MOD BANK · REUSABLE SOURCES": "モジュレーター · 再利用可能なソース",
     "+ LFO": "+ LFO",
@@ -664,7 +656,6 @@ _JA_TEXT: dict[str, str] = {
     "FREE-RUN CLOCK": "フリーランクロック",
     "OUTPUT · —": "出力 · —",
     "OUTPUT · NO INPUT": "出力 · 入力なし",
-
     # Performance controls
     "AUTO PERFORMANCE MODE": "自動パフォーマンスモード",
     "OFF · arm the show from the main Performance toolbar.": "OFF",
@@ -736,7 +727,6 @@ _JA_TEXT: dict[str, str] = {
     "Next phrase": "次のフレーズ",
     "Ease in": "イーズイン",
     "Ease out": "イーズアウト",
-
     # Timeline
     "BAR / BEAT SHOW PLAN": "小節／ビートのショープラン",
     "ARM TIMELINE": "タイムラインをアーム",
@@ -764,7 +754,6 @@ _JA_TEXT: dict[str, str] = {
     "PARTICLE TRANSFORMATION": "パーティクル変形",
     "FINAL RECAPITULATION": "最終リプライズ",
     "Clear performance timeline": "パフォーマンスタイムラインを消去",
-
     # Tooltips: explanatory copy remains available only on hover.
     "Reset the master look to its default values": "マスタールックを初期値に戻します",
     "Clear the temporal feedback buffer": "時間フィードバックのバッファを消去します",
@@ -849,68 +838,149 @@ _JA_TEXT: dict[str, str] = {
 
 
 _JA_FORMATS: tuple[tuple[str, str], ...] = (
-    ("Indexed {count} visual assets across {folders} folders.", "ビジュアル素材を{count}件、{folders}個のフォルダーから索引化しました。"),
+    (
+        "Indexed {count} visual assets across {folders} folders.",
+        "ビジュアル素材を{count}件、{folders}個のフォルダーから索引化しました。",
+    ),
     ("Asset indexing failed: {error}", "素材の索引作成に失敗しました: {error}"),
-    ("Added {name} as a composition overlay.", "{name}を構成オーバーレイとして追加しました。"),
-    ("Scanning {folder}… {count} folder(s) queued.", "{folder}をスキャン中… 待機中のフォルダー: {count}件。"),
+    (
+        "Added {name} as a composition overlay.",
+        "{name}を構成オーバーレイとして追加しました。",
+    ),
+    (
+        "Scanning {folder}… {count} folder(s) queued.",
+        "{folder}をスキャン中… 待機中のフォルダー: {count}件。",
+    ),
     ("Indexed {count} video file(s).", "動画ファイルを{count}件索引化しました。"),
     ("Scan failed: {error}", "スキャンに失敗しました: {error}"),
     ("All folders · {count} clips", "すべてのフォルダー · {count}クリップ"),
-    ("Removed {count} indexed clip(s). Source files were kept.", "索引から{count}クリップを削除しました。元ファイルは保持されています。"),
-    ("Removed {count} missing file record(s).", "見つからないファイルの記録を{count}件削除しました。"),
-    ("Removed {count} unused thumbnail(s).", "未使用のサムネイルを{count}件削除しました。"),
-    ("Library cleared · removed {count} index record(s). Source files were kept.", "ライブラリを消去しました · {count}件の索引記録を削除しました。元ファイルは保持されています。"),
+    (
+        "Removed {count} indexed clip(s). Source files were kept.",
+        "索引から{count}クリップを削除しました。元ファイルは保持されています。",
+    ),
+    (
+        "Removed {count} missing file record(s).",
+        "見つからないファイルの記録を{count}件削除しました。",
+    ),
+    (
+        "Removed {count} unused thumbnail(s).",
+        "未使用のサムネイルを{count}件削除しました。",
+    ),
+    (
+        "Library cleared · removed {count} index record(s). Source files were kept.",
+        "ライブラリを消去しました · {count}件の索引記録を削除しました。元ファイルは保持されています。",
+    ),
     ("ERROR · {error}", "エラー · {error}"),
     ("LAYER · {name}", "レイヤー · {name}"),
-    ("Display configuration changed · {count} display(s) detected", "ディスプレイ設定が変更されました · {count}台を検出"),
+    (
+        "Display configuration changed · {count} display(s) detected",
+        "ディスプレイ設定が変更されました · {count}台を検出",
+    ),
     ("Assigned {count} video deck(s).", "動画を{count}個のデッキに割り当てました。"),
-    ("Generated a new freeform collage · {count} visual layer(s).", "新しい自由配置コラージュを生成しました · {count}レイヤー。"),
-    ("Text committed · {count} characters. Rasterization continues in the background.", "テキストを確定しました · {count}文字。ラスタライズはバックグラウンドで続行します。"),
-    ("Editing {name} · opacity and blend mode update live.", "{name}を編集中 · 不透明度と合成モードは即時反映されます。"),
-    ("Applied overlay playback and appearance settings to {name}.", "{name}にオーバーレイの再生・外観設定を適用しました。"),
-    ("Applied {name}. Static content updates once; animation remains GPU-side.", "{name}に設定を適用しました。静的コンテンツを更新し、アニメーションはGPU側で処理します。"),
+    (
+        "Generated a new freeform collage · {count} visual layer(s).",
+        "新しい自由配置コラージュを生成しました · {count}レイヤー。",
+    ),
+    (
+        "Text committed · {count} characters. Rasterization continues in the background.",
+        "テキストを確定しました · {count}文字。ラスタライズはバックグラウンドで続行します。",
+    ),
+    (
+        "Editing {name} · opacity and blend mode update live.",
+        "{name}を編集中 · 不透明度と合成モードは即時反映されます。",
+    ),
+    (
+        "Applied overlay playback and appearance settings to {name}.",
+        "{name}にオーバーレイの再生・外観設定を適用しました。",
+    ),
+    (
+        "Applied {name}. Static content updates once; animation remains GPU-side.",
+        "{name}に設定を適用しました。静的コンテンツを更新し、アニメーションはGPU側で処理します。",
+    ),
     ("Could not add overlay: {error}", "オーバーレイを追加できませんでした: {error}"),
     ("Performance set saved · {path}", "パフォーマンスセットを保存しました · {path}"),
-    ("Performance set loaded · {name}", "パフォーマンスセットを読み込みました · {name}"),
-    ("Projector output opened on {name}. Press Escape on the output to close it.", "{name}にプロジェクター出力を開きました。出力画面でEscapeキーを押すと閉じます。"),
+    (
+        "Performance set loaded · {name}",
+        "パフォーマンスセットを読み込みました · {name}",
+    ),
+    (
+        "Projector output opened on {name}. Press Escape on the output to close it.",
+        "{name}にプロジェクター出力を開きました。出力画面でEscapeキーを押すと閉じます。",
+    ),
     ("LOCAL PREVIEW READY · {renderer}", "ローカルプレビュー準備完了 · {renderer}"),
     ("PROJECTOR READY · {renderer}", "プロジェクター準備完了 · {renderer}"),
     ("LOCAL PREVIEW ERROR · {error}", "ローカルプレビューエラー · {error}"),
     ("PROJECTOR ERROR · {error}", "プロジェクターエラー · {error}"),
-    ("RUNNING · {count} deck(s) automated. Layouts, generator text and layer FX will evolve automatically.", "実行中 · {count}個のデッキを自動操作しています。レイアウト、生成テキスト、レイヤーFXが自動的に変化します。"),
+    (
+        "RUNNING · {count} deck(s) automated. Layouts, generator text and layer FX will evolve automatically.",
+        "実行中 · {count}個のデッキを自動操作しています。レイアウト、生成テキスト、レイヤーFXが自動的に変化します。",
+    ),
     ("Could not start · {error}", "開始できませんでした · {error}"),
     ("SONIC PI · {action}", "SONIC PI · {action}"),
     ("RUNNING · {action} · {time}", "実行中 · {action} · {time}"),
     ("RUNNING · {action} · {time} remaining", "実行中 · {action} · 残り{time}"),
     ("Performance Macro · {name}", "パフォーマンスマクロ · {name}"),
-    ("Remove '{name}' and its assignments from all layers?", "'{name}'とすべてのレイヤーへの割り当てを削除しますか？"),
+    (
+        "Remove '{name}' and its assignments from all layers?",
+        "'{name}'とすべてのレイヤーへの割り当てを削除しますか？",
+    ),
     ("Delete user preset '{name}'?", "ユーザープリセット'{name}'を削除しますか？"),
-    ("Imported {count} modulator preset(s).", "モジュレータープリセットを{count}件インポートしました。"),
-    ("Remove {name} from the library index?\n\nThis removes its entries and cached thumbnails only. Your original video files and folders will NOT be deleted. Clips already loaded into decks continue playing.", "{name}をライブラリの索引から削除しますか？\n\n索引エントリーとキャッシュ済みサムネイルのみを削除します。元の動画ファイルやフォルダーは削除されません。デッキで読み込み済みのクリップは再生を続けます。"),
-    ("Remove every indexed folder and clip from the media library?\n\nThis does NOT delete original source videos. Clips already loaded into decks continue playing.", "メディアライブラリ内のすべてのフォルダーとクリップを削除しますか？\n\n元の動画ファイルは削除されません。デッキで読み込み済みのクリップは再生を続けます。"),
+    (
+        "Imported {count} modulator preset(s).",
+        "モジュレータープリセットを{count}件インポートしました。",
+    ),
+    (
+        "Remove {name} from the library index?\n\nThis removes its entries and cached thumbnails only. Your original video files and folders will NOT be deleted. Clips already loaded into decks continue playing.",
+        "{name}をライブラリの索引から削除しますか？\n\n索引エントリーとキャッシュ済みサムネイルのみを削除します。元の動画ファイルやフォルダーは削除されません。デッキで読み込み済みのクリップは再生を続けます。",
+    ),
+    (
+        "Remove every indexed folder and clip from the media library?\n\nThis does NOT delete original source videos. Clips already loaded into decks continue playing.",
+        "メディアライブラリ内のすべてのフォルダーとクリップを削除しますか？\n\n元の動画ファイルは削除されません。デッキで読み込み済みのクリップは再生を続けます。",
+    ),
     ("Could not start · {error}", "開始できませんでした · {error}"),
-    ("Stopped · video decks keep their current playback.", "停止しました · 動画デッキは現在の再生状態を維持します。"),
-    ("{path}\nTags: {tags}\nPurposes: {purposes}", "{path}\nタグ: {tags}\n用途: {purposes}"),
-    ("Ready · {count} playable video clip(s) available.", "準備完了 · 再生可能な動画: {count}件。"),
+    (
+        "Stopped · video decks keep their current playback.",
+        "停止しました · 動画デッキは現在の再生状態を維持します。",
+    ),
+    (
+        "{path}\nTags: {tags}\nPurposes: {purposes}",
+        "{path}\nタグ: {tags}\n用途: {purposes}",
+    ),
+    (
+        "Ready · {count} playable video clip(s) available.",
+        "準備完了 · 再生可能な動画: {count}件。",
+    ),
     ("{count} input(s) available.", "利用可能な入力デバイス: {count}件。"),
     ("CONNECTED · {device}", "接続中 · {device}"),
     ("MIDI unavailable · {error}", "MIDIを利用できません · {error}"),
     ("Scene not captured · {error}", "シーンを登録できませんでした · {error}"),
     ("Captured VJ scene · {label}", "VJシーンを登録しました · {label}"),
-    ("VJ scene scheduled · {label} · transition {duration}s", "VJシーンを予約しました · {label} · トランジション {duration}秒"),
+    (
+        "VJ scene scheduled · {label} · transition {duration}s",
+        "VJシーンを予約しました · {label} · トランジション {duration}秒",
+    ),
     ("Random compatible scene · {label}", "互換シーンをランダム選択 · {label}"),
     ("Invalid mapping · {error}", "無効なマッピング · {error}"),
-    ("LEARNING · move a controller for {target}", "学習中 · {target}にコントローラー操作を入力してください"),
+    (
+        "LEARNING · move a controller for {target}",
+        "学習中 · {target}にコントローラー操作を入力してください",
+    ),
     ("LEARNED · {event}", "学習済み · {event}"),
     ("Audio unavailable · {error}", "音声入力を利用できません · {error}"),
     ("OSC unavailable · {error}", "OSCを利用できません · {error}"),
-    ("Tempo estimate · {bpm} BPM · confidence {confidence}", "テンポ推定 · {bpm} BPM · 信頼度 {confidence}"),
+    (
+        "Tempo estimate · {bpm} BPM · confidence {confidence}",
+        "テンポ推定 · {bpm} BPM · 信頼度 {confidence}",
+    ),
     ("INPUT · {name} · NO SIGNAL", "入力 · {name} · 信号なし"),
     ("TRIGGER · {name} · NO SIGNAL", "トリガー · {name} · 信号なし"),
     ("INPUT · {timebase}", "入力 · {timebase}"),
     ("OUTPUT · {value}  ·  {status}", "出力 · {value} · {status}"),
     ("TEXT PIPELINE · {state}{suffix}", "テキスト処理 · {state}{suffix}"),
-    ("ARMED · {transport} · BAR {bar} · BEAT {beat}", "アーム中 · {transport} · 小節 {bar} · ビート {beat}"),
+    (
+        "ARMED · {transport} · BAR {bar} · BEAT {beat}",
+        "アーム中 · {transport} · 小節 {bar} · ビート {beat}",
+    ),
     ("DISARMED · BAR {bar} · BEAT {beat}", "解除中 · 小節 {bar} · ビート {beat}"),
     ("EVENT NOT ADDED · {error}", "イベントを追加できませんでした · {error}"),
     ("ADDED · BAR {bar} · {label}", "追加しました · 小節 {bar} · {label}"),
@@ -918,8 +988,14 @@ _JA_FORMATS: tuple[tuple[str, str], ...] = (
     ("UPDATED · BAR {bar}", "更新しました · 小節 {bar}"),
     ("COULD NOT UPDATE EVENT · {error}", "イベントを更新できませんでした · {error}"),
     ("STRUCTURE NOT INSERTED · {error}", "構成を挿入できませんでした · {error}"),
-    ("INSERTED · 8 structure markers · add action events on the same bars", "8個の構成マーカーを挿入しました · 同じ小節にアクションイベントを追加してください"),
-    ("No clips in this view. Add a folder or change the filter.", "この表示にはクリップがありません。フォルダーを追加するか、フィルターを変更してください。"),
+    (
+        "INSERTED · 8 structure markers · add action events on the same bars",
+        "8個の構成マーカーを挿入しました · 同じ小節にアクションイベントを追加してください",
+    ),
+    (
+        "No clips in this view. Add a folder or change the filter.",
+        "この表示にはクリップがありません。フォルダーを追加するか、フィルターを変更してください。",
+    ),
     ("{count} asset(s) in selected view.", "選択中の表示 · 素材 {count}件"),
     ("{count} MIDI mapping(s)", "MIDIマッピング · {count}件"),
 )
@@ -1036,14 +1112,10 @@ def apply_widget_translations(root: Any, language: str = "en") -> None:
             source = original(widget, "_eli_i18n_group_title", widget.title())
             widget.setTitle(ui_text(str(source), language))
         if isinstance(widget, QLineEdit):
-            source = original(
-                widget, "_eli_i18n_placeholder", widget.placeholderText()
-            )
+            source = original(widget, "_eli_i18n_placeholder", widget.placeholderText())
             widget.setPlaceholderText(ui_text(str(source), language))
         if isinstance(widget, (QPlainTextEdit, QTextEdit)):
-            source = original(
-                widget, "_eli_i18n_placeholder", widget.placeholderText()
-            )
+            source = original(widget, "_eli_i18n_placeholder", widget.placeholderText())
             widget.setPlaceholderText(ui_text(str(source), language))
         if isinstance(widget, QComboBox):
             # Store each item's source label in a private item-data role.
@@ -1057,9 +1129,7 @@ def apply_widget_translations(root: Any, language: str = "en") -> None:
                 widget.setItemText(index, ui_text(str(source), language))
         if isinstance(widget, QTabWidget):
             current_tabs = [widget.tabText(i) for i in range(widget.count())]
-            source_tabs = original(
-                widget, "_eli_i18n_tabs", current_tabs
-            )
+            source_tabs = original(widget, "_eli_i18n_tabs", current_tabs)
             for index, source in enumerate(source_tabs):
                 if index < widget.count():
                     widget.setTabText(index, ui_text(str(source), language))
@@ -1085,14 +1155,10 @@ def apply_widget_translations(root: Any, language: str = "en") -> None:
                         header_item.setData(index, header_role, str(source))
                     header_item.setText(index, ui_text(str(source), language))
         if isinstance(widget, QProgressBar):
-            source_format = original(
-                widget, "_eli_i18n_format", widget.format()
-            )
+            source_format = original(widget, "_eli_i18n_format", widget.format())
             widget.setFormat(ui_text(str(source_format), language))
 
-        source_tooltip = original(
-            widget, "_eli_i18n_tooltip", widget.toolTip()
-        )
+        source_tooltip = original(widget, "_eli_i18n_tooltip", widget.toolTip())
         if source_tooltip:
             widget.setToolTip(ui_text(str(source_tooltip), language))
         source_accessible = original(
@@ -1107,8 +1173,6 @@ def apply_widget_translations(root: Any, language: str = "en") -> None:
         source_tip = original(action, "_eli_i18n_tooltip", action.toolTip())
         if source_tip:
             action.setToolTip(ui_text(str(source_tip), language))
-        source_status = original(
-            action, "_eli_i18n_status_tip", action.statusTip()
-        )
+        source_status = original(action, "_eli_i18n_status_tip", action.statusTip())
         if source_status:
             action.setStatusTip(ui_text(str(source_status), language))

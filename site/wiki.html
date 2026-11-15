@@ -1,55 +1,105 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="dark"><meta name="theme-color" content="#090909">
-<title>Wiki and reference — eli_lab AVTranslator</title><meta name="description" content="Technical references for AVTranslator.">
-<meta property="og:title" content="Wiki and reference — eli_lab AVTranslator"><meta property="og:description" content="Technical references for AVTranslator."><meta property="og:type" content="website">
-<link rel="stylesheet" href="style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
+    <meta name="theme-color" content="#090909">
+    <title>Wiki and reference — eli_lab AVTranslator</title>
+    <meta name="description" content="Technical references for AVTranslator.">
+    <meta property="og:title" content="Wiki and reference — eli_lab AVTranslator">
+    <meta property="og:description" content="Technical references for AVTranslator.">
+    <meta property="og:type" content="website">
+    <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/x-icon" href="../resources/icons/eli-lab-mark.ico">
 </head>
-<body>
-<a class="skip-link" href="#main-content">Skip to content</a>
-<header class="masthead">
-<a class="wordmark" href="../index.html"><img class="wordmark-mark" src="../resources/icons/eli-lab-mark.ico" alt="" aria-hidden="true"><span class="wordmark-name">eli_lab <span>AVTranslator</span></span></a>
-<div class="masthead-meta"><span class="edition">LIVE AUDIOVISUAL INSTRUMENT</span><span class="edition-rule"></span><span class="edition-no">FIELD GUIDE / 0.6</span></div>
-<nav class="primary-nav"><a href="../index.html">HOME</a><a href="features.html">FEATURES</a><a href="manual.html">MANUAL</a><a href="wiki.html">WIKI</a><a href="guides/windows-setup.html">WINDOWS SETUP</a><a href="guides/sonic-pi.html">SONIC PI</a><a href="downloads.html">DOWNLOADS</a><a href="about.html">ABOUT</a><a class="language-switch" href="ja/wiki.html" lang="ja">日本語</a></nav>
-</header>
-<div class="page-index"><span>INDEX</span><span class="index-line"></span><span>WIKI.HTML</span><span class="index-line"></span><span>14 NOV 2026</span></div>
-<main id="main-content" class="site-main">
-<div class="document-shell">
-<aside class="document-rail"><p class="rail-heading">DOCUMENTS / 00—</p>
-<a href="features.html">Product overview</a><a href="manual.html">Field manual</a><a href="wiki.html">Wiki / reference</a><a href="downloads.html">Downloads</a>
-<a href="guides/windows-setup.html">Windows setup <span>EN</span></a><a href="guides/sonic-pi.html">Sonic Pi / OSC <span>EN</span></a>
-<div class="rail-rule"></div><a class="rail-release" href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">LATEST RELEASE ↗</a>
-</aside>
-<article class="document-content">
-<div class="document-topline"><span>DOCUMENTATION</span><span class="document-topline-rule"></span><span>WIKI.HTML</span></div>
 
-<h1>Wiki / reference</h1><p class="document-lede">Technical notes, subsystem references and implementation guides.</p>
-<h2>System overview</h2><ul>
-<li><a href="features.html">Architecture</a> — application layers, rendering, frame flow and service lifecycle.</li>
-<li><a href="wiki.html">Roadmap</a> — milestone state, active work and acceptance boundaries.</li>
-<li><a href="features.html">M0 — Rendering core</a> — Qt interface, OpenGL compositor and project foundation.</li>
-<li><a href="features.html">M1 — Video collage</a> — four-deck video playback, segments and collage layout.</li></ul>
-<h2>Generators and visual material</h2><ul>
-<li><a href="features.html">M2 — Generative visuals</a> — geometry, Text Art, waveform, particles, overlays and rasterization.</li>
-<li><a href="features.html">M6 — Typography</a> — text layout, writing direction, typeface and animated typography.</li>
-<li><a href="features.html">M6 — Visual transformations</a> — effect and transformation systems.</li>
-<li><a href="features.html">M6 — Particle simulation</a> — particle-system controls and simulation.</li></ul>
-<h2>Performance and control</h2><ul>
-<li><a href="manual.html">M3 — Audio-reactive foundation</a> — audio analysis and transport sources.</li>
-<li><a href="manual.html">M5 — Autonomous performance</a> — AUTO PERF and musical direction.</li>
-<li><a href="manual.html">M5 — Performance environment</a> — performance controls and runtime workflow.</li>
-<li><a href="manual.html">M5 — Modulator Bank</a> — LFO, envelope, steps, rhythm and follower.</li>
-<li><a href="manual.html">M6 — Advanced controls</a> — macros and advanced routing.</li>
-<li><a href="manual.html">M6 — Live timeline</a> — bar/beat event scheduling.</li>
-<li><a href="guides/sonic-pi.html">Sonic Pi / SONATA integration</a> — OSC protocol and setup.</li></ul>
-<h2>Project and installation</h2><ul>
-<li><a href="manual.html">Project format</a> — .eliav and .eliset.</li>
-<li><a href="guides/windows-setup.html">Windows setup</a> — installation, operation and troubleshooting.</li>
-<li><a href="guides/windows-setup.html">Windows executable build</a> — local PyInstaller process.</li></ul>
-<p>Use the <a href="manual.html">Field manual</a> for first-session tasks. Check Roadmap validation notes before relying on a feature in a production-critical installation.</p>
-</article></div></main>
-<footer class="site-footer"><div class="footer-left"><img class="footer-mark" src="../resources/icons/eli-lab-mark.ico" alt="" aria-hidden="true"><span>eli_lab AVTranslator</span><span class="footer-muted">A LIVE IMAGE / SOUND SYSTEM</span></div><div class="footer-right"><a href="https://github.com/ilyaminineli/eli_lab-av-translator">SOURCE ↗</a><a href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">RELEASES ↗</a><span>© 2026 eli_lab</span></div></footer>
-</body></html>
+<body>
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <header class="masthead">
+        <a class="wordmark" href="../index.html"><img class="wordmark-mark" src="../resources/icons/eli-lab-mark.ico"
+                alt="" aria-hidden="true"><span class="wordmark-name">eli_lab <span>AVTranslator</span></span></a>
+        <div class="masthead-meta"><span class="edition">LIVE AUDIOVISUAL INSTRUMENT</span><span
+                class="edition-rule"></span><span class="edition-no">FIELD GUIDE / 0.6</span></div>
+        <nav class="primary-nav"><a href="../index.html">HOME</a><a href="features.html">FEATURES</a><a
+                href="manual.html">MANUAL</a><a href="wiki.html">WIKI</a><a href="guides/windows-setup.html">WINDOWS
+                SETUP</a><a href="guides/sonic-pi.html">SONIC PI</a><a href="downloads.html">DOWNLOADS</a><a
+                href="about.html">ABOUT</a><a class="language-switch" href="ja/wiki.html" lang="ja">日本語</a></nav>
+    </header>
+    <div class="page-index"><span>INDEX</span><span class="index-line"></span><span>WIKI.HTML</span><span
+            class="index-line"></span><span>14 NOV 2026</span></div>
+    <main id="main-content" class="site-main">
+        <div class="document-shell">
+            <aside class="document-rail">
+                <p class="rail-heading">DOCUMENTS / 00—</p>
+                <a href="features.html">Product overview</a><a href="manual.html">Field manual</a><a
+                    href="wiki.html">Wiki / reference</a><a href="downloads.html">Downloads</a>
+                <a href="guides/windows-setup.html">Windows setup <span>EN</span></a><a
+                    href="guides/sonic-pi.html">Sonic Pi / OSC <span>EN</span></a>
+                <div class="rail-rule"></div><a class="rail-release"
+                    href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">LATEST RELEASE ↗</a>
+            </aside>
+            <article class="document-content">
+                <div class="document-topline"><span>DOCUMENTATION</span><span
+                        class="document-topline-rule"></span><span>WIKI.HTML</span></div>
+
+                <h1>Wiki / reference</h1>
+                <p class="document-lede">Technical notes, subsystem references and implementation guides.</p>
+                <h2>System overview</h2>
+                <ul>
+                    <li><a href="features.html">Architecture</a> — application layers, rendering, frame flow and service
+                        lifecycle.</li>
+                    <li><a href="wiki.html">Roadmap</a> — milestone state, active work and acceptance boundaries.</li>
+                    <li><a href="features.html">M0 — Rendering core</a> — Qt interface, OpenGL compositor and project
+                        foundation.</li>
+                    <li><a href="features.html">M1 — Video collage</a> — four-deck video playback, segments and collage
+                        layout.</li>
+                </ul>
+                <h2>Generators and visual material</h2>
+                <ul>
+                    <li><a href="features.html">M2 — Generative visuals</a> — geometry, Text Art, waveform, particles,
+                        overlays and rasterization.</li>
+                    <li><a href="features.html">M6 — Typography</a> — text layout, writing direction, typeface and
+                        animated typography.</li>
+                    <li><a href="features.html">M6 — Visual transformations</a> — effect and transformation systems.
+                    </li>
+                    <li><a href="features.html">M6 — Particle simulation</a> — particle-system controls and simulation.
+                    </li>
+                </ul>
+                <h2>Performance and control</h2>
+                <ul>
+                    <li><a href="manual.html">M3 — Audio-reactive foundation</a> — audio analysis and transport sources.
+                    </li>
+                    <li><a href="manual.html">M5 — Autonomous performance</a> — AUTO PERF and musical direction.</li>
+                    <li><a href="manual.html">M5 — Performance environment</a> — performance controls and runtime
+                        workflow.</li>
+                    <li><a href="manual.html">M5 — Modulator Bank</a> — LFO, envelope, steps, rhythm and follower.</li>
+                    <li><a href="manual.html">M6 — Advanced controls</a> — macros and advanced routing.</li>
+                    <li><a href="manual.html">M6 — Live timeline</a> — bar/beat event scheduling.</li>
+                    <li><a href="guides/sonic-pi.html">Sonic Pi / SONATA integration</a> — OSC protocol and setup.</li>
+                </ul>
+                <h2>Project and installation</h2>
+                <ul>
+                    <li><a href="manual.html">Project format</a> — .eliav and .eliset.</li>
+                    <li><a href="guides/windows-setup.html">Windows setup</a> — installation, operation and
+                        troubleshooting.</li>
+                    <li><a href="guides/windows-setup.html">Windows executable build</a> — local PyInstaller process.
+                    </li>
+                </ul>
+                <p>Use the <a href="manual.html">Field manual</a> for first-session tasks. Check Roadmap validation
+                    notes before relying on a feature in a production-critical installation.</p>
+            </article>
+        </div>
+    </main>
+    <footer class="site-footer">
+        <div class="footer-left"><img class="footer-mark" src="../resources/icons/eli-lab-mark.ico" alt=""
+                aria-hidden="true"><span>eli_lab AVTranslator</span><span class="footer-muted">A LIVE IMAGE / SOUND
+                SYSTEM</span></div>
+        <div class="footer-right"><a href="https://github.com/ilyaminineli/eli_lab-av-translator">SOURCE ↗</a><a
+                href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">RELEASES ↗</a><span>© 2026
+                eli_lab</span></div>
+    </footer>
+</body>
+
+</html>

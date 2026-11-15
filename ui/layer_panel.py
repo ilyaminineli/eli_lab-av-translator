@@ -163,7 +163,9 @@ class LayerPanel(QWidget):
         modifier_buttons.setColumnStretch(0, 1)
         modifier_buttons.setColumnStretch(1, 1)
         modifier_layout.addLayout(modifier_buttons)
-        self.modifier_remove_button.setToolTip("Remove the selected performance modifier")
+        self.modifier_remove_button.setToolTip(
+            "Remove the selected performance modifier"
+        )
         modifier_layout.addWidget(self.modifier_remove_button)
         controls_layout.addWidget(self.performance_modifiers_group)
         self._modifier_signature: tuple = ()
@@ -194,14 +196,20 @@ class LayerPanel(QWidget):
         self.fx_stage_down = QPushButton("DOWN")
         self.fx_stage_add.setToolTip("Add the selected effect stage")
         self.fx_stage_remove.setToolTip("Remove the selected effect stage")
-        self.fx_stage_up.setToolTip("Move the selected effect stage earlier in the stack")
-        self.fx_stage_down.setToolTip("Move the selected effect stage later in the stack")
-        for index, button in enumerate((
-            self.fx_stage_add,
-            self.fx_stage_remove,
-            self.fx_stage_up,
-            self.fx_stage_down,
-        )):
+        self.fx_stage_up.setToolTip(
+            "Move the selected effect stage earlier in the stack"
+        )
+        self.fx_stage_down.setToolTip(
+            "Move the selected effect stage later in the stack"
+        )
+        for index, button in enumerate(
+            (
+                self.fx_stage_add,
+                self.fx_stage_remove,
+                self.fx_stage_up,
+                self.fx_stage_down,
+            )
+        ):
             stage_actions.addWidget(button, index // 2, index % 2)
         stage_actions.setColumnStretch(0, 1)
         stage_actions.setColumnStretch(1, 1)
@@ -212,7 +220,9 @@ class LayerPanel(QWidget):
         self.fx_chain_save = QPushButton("SAVE CHAIN")
         self.fx_chain_export = QPushButton("EXPORT")
         self.fx_chain_import = QPushButton("IMPORT")
-        self.fx_chain_save.setToolTip("Save the current layer effect chain as a reusable preset")
+        self.fx_chain_save.setToolTip(
+            "Save the current layer effect chain as a reusable preset"
+        )
         self.fx_chain_export.setToolTip("Export layer effect presets")
         self.fx_chain_import.setToolTip("Import layer effect presets")
         chain_actions.addWidget(self.fx_chain_save, 0, 0)
@@ -314,10 +324,10 @@ class LayerPanel(QWidget):
         safe_title = html.escape(str(title))
         safe_value = html.escape(str(int(value)))
         return (
-            '<span style="font-family:\'DM Mono\',\'Consolas\',monospace;'
+            "<span style=\"font-family:'DM Mono','Consolas',monospace;"
             'font-size:8pt;color:#969696;">'
             f"{safe_title}</span>&nbsp;"
-            '<span style="font-family:\'DM Mono\',\'Consolas\',monospace;'
+            "<span style=\"font-family:'DM Mono','Consolas',monospace;"
             'font-size:8.5pt;color:#eeeeee;">'
             f"{safe_value}</span>"
         )
@@ -838,6 +848,7 @@ class LayerPanel(QWidget):
                 row.adjustSize()
                 item.setSizeHint(row.sizeHint())
                 self.modifier_list.addItem(item)
+
                 def toggle_modifier(
                     state: bool,
                     owner: str = layer.id,
