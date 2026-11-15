@@ -483,9 +483,11 @@ def configure_application_theme(
     app.installEventFilter(tooltip_filter)
     app._eli_tooltip_filter = tooltip_filter
 
-    wheel_guard = WheelGuard(app)
-    app.installEventFilter(wheel_guard)
-    app._eli_wheel_guard = wheel_guard
+    wheel_guard = getattr(app, "_eli_wheel_guard", None)
+    if not isinstance(wheel_guard, WheelGuard):
+        wheel_guard = WheelGuard(app)
+        app.installEventFilter(wheel_guard)
+        app._eli_wheel_guard = wheel_guard
 
     icon_directory = (RESOURCE_DIR / "icons").resolve()
     close_icon = (icon_directory / "dock-close.svg").as_posix()
