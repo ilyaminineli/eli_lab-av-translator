@@ -169,6 +169,19 @@ The application log is:
 
 Projects store source paths, not copies of video files. Copy the original folders and import/reassign them on the target computer.
 
+### One-file EXE fails while extracting an FFmpeg DLL
+
+Errors such as `Failed to extract swscale-*.dll` with `decompression resulted in return code -1` are often caused by a write failure in the one-file temporary extraction directory. Check free space on the drive used by `$env:TEMP`, not only the drive containing the EXE. Close other AVTranslator instances and remove only stale `_MEI*` extraction folders that are not in use. For a test launch from a roomy F: volume:
+
+```powershell
+New-Item -ItemType Directory -Force F:\AVTranslatorTemp | Out-Null
+$env:TEMP = "F:\AVTranslatorTemp"
+$env:TMP = $env:TEMP
+& ".\dist\eli_lab AVTranslator.exe"
+```
+
+If it still fails with ample free space, compare the executable SHA-256 with its build report and rebuild; a different zlib error code may indicate archive corruption rather than a write-space problem.
+
 ### Windows Defender/SmartScreen warns about the EXE
 
 One-file applications extract their payload to a temporary directory and may trigger an unfamiliar-app scan. Obtain the EXE from the trusted build source and compare its SHA-256 build report. Do not disable Defender globally to run an unverified executable.
