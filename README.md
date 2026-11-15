@@ -28,30 +28,45 @@ The Quality workflow performs Python compilation, Ruff, pytest regression tests 
 
 See [docs/PRODUCT_OVERVIEW.md](docs/PRODUCT_OVERVIEW.md) for a non-technical explanation and target audiences, [docs/WEBSITE_PLAN.md](docs/WEBSITE_PLAN.md) for the website content architecture, and [docs/ROADMAP.md](docs/ROADMAP.md) for milestone state and remaining acceptance gates. Implementation detail is in the [M5 Autonomous Performance guide](docs/M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance Environment](docs/M5_PERFORMANCE_ENVIRONMENT.md), [Architecture](docs/ARCHITECTURE.md) and [M5 Completion Handoff](docs/M5_COMPLETION_HANDOFF.md).
 
-## Build and run on Windows
+## Build for Windows and Linux
 
-The supported local one-file build is **PyInstaller** through the repository script:
+The supported local one-file build uses **PyInstaller** through the same cross-platform script.
 
-```powershell
-# Create the project-local environment once; choose an installed 64-bit CPython.
-py -3.14 -m venv .venv
+Windows x64 (64-bit CPython 3.12–3.14):
+
+~~~powershell
+py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m pip install --upgrade pip
-
-# Build, self-check the executable and write a SHA-256 build report.
 .\.venv\Scripts\python.exe .\scripts\build_pyinstaller.py
-```
+~~~
 
-Use `py -3.12` or `py -3.13` instead when that is the selected interpreter. The script requires the repository-local `.venv`; it switches back to that environment if another Python environment is active. Native MIDI input is optional; `--with-midi` attempts to compile the native `python-rtmidi` backend and requires Visual Studio C++ Build Tools.
+Linux x86_64 (64-bit CPython 3.12–3.14):
 
-Output:
+~~~bash
+python3.12 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python scripts/build_pyinstaller.py
+~~~
 
-`dist\eli_lab AVTranslator.exe`
+The script uses the repository-local .venv and installs the pinned runtime/build requirements. Native MIDI input remains optional; Sonic Pi OSC integration does not require python-rtmidi.
 
-The target computer needs Windows 11 x64 and a current graphics driver supporting OpenGL 3.3 Core. It does not need Python, pip, PyInstaller or FFmpeg. Sonic Pi, video media, projects, audio devices and user-added asset folders remain external.
+A single GitHub Actions run can build both platforms in parallel: open **Actions → Cross-platform Versioned Builds**, choose a ZIP compression method, and run the workflow. It uploads versioned Windows x64 and Linux x86_64 archives plus their build reports. The version is read from config.py and checked against pyproject.toml.
 
-Full steps and limitations: [Windows PyInstaller build guide](docs/BUILD_PYINSTALLER_WINDOWS.md) and [Windows setup guide](docs/SETUP_WINDOWS.md). For the repeatable UI/control stress suite and target-machine soak-test checklist, see [Windows stability testing](docs/WINDOWS_STABILITY_TESTING.md). The PyInstaller profile pins the PyAV hook set and redirects pip/build temporary storage into the project build directory to reduce duplicate DLL payloads and avoid a full system TEMP volume.
+The release packager supports Stored, Deflate, BZIP2 and LZMA ZIP compression. Deflate level 6 is the default. Example Windows packaging command:
 
-The GitHub **Windows Onefile Build** workflow is manual-dispatch only. It does not run on ordinary pull-request or push updates. The local `scripts/build_pyinstaller.py` command above is the normal build path.
+~~~powershell
+.\.venv\Scripts\python.exe .\scripts\package_release.py --binary ".\dist\eli_lab AVTranslator.exe" --platform windows-x64 --compression deflate --level 6
+~~~
+
+Example Linux packaging command:
+
+~~~bash
+.venv/bin/python scripts/package_release.py --binary "dist/eli_lab AVTranslator" --platform linux-x86_64 --compression deflate --level 6
+~~~
+
+Full guide: [Cross-platform versioned builds](docs/BUILD_CROSS_PLATFORM.md). The [Windows PyInstaller guide](docs/BUILD_PYINSTALLER_WINDOWS.md) retains Windows-specific troubleshooting, and the [Windows setup guide](docs/SETUP_WINDOWS.md) covers the installed application. For repeatable UI/control stress tests and target-machine soak testing, see [Windows stability testing](docs/WINDOWS_STABILITY_TESTING.md).
+
+Windows output: **dist\eli_lab AVTranslator.exe**. Linux output: **dist/eli_lab AVTranslator**. Linux builds target Ubuntu 22.04-compatible x86_64 environments; system OpenGL/X11/audio libraries and a suitable graphics driver remain required on the Linux target.
 
 ## Performance workflow
 
@@ -75,11 +90,11 @@ See [M2 Generative Visuals](docs/M2_GENERATIVE_VISUALS.md) and [M5 Autonomous Pe
 
 ## System requirements and practical limits
 
-- Windows 11 x64 for the packaged performance build.
+- Windows 11 x64 or a compatible Linux x86_64 distribution (Ubuntu 22.04 is the packaged Linux baseline).
 - OpenGL 3.3 Core Profile and a current graphics driver.
 - 16 GB RAM for lighter sessions; 32 GB recommended for multi-deck work, especially with integrated graphics.
 - SSD/NVMe storage for the application database, thumbnails and footage.
-- Start validation with H.264 720p/1080p clips. Four simultaneous high-bitrate 4K streams are not guaranteed on integrated graphics.
+- The live video pipeline targets HQ 1080p: 1920×1080 decode ceiling at 30 FPS and a 30 FPS renderer. Use footage close to 1080p for the sharpest full-screen projection; smaller source clips are preserved at native resolution rather than artificially upscaled by the decoder. 4K output is not a project target.
 - HDMI or supported USB-C DisplayPort output for projector use.
 - Sonic Pi installed separately for SONATA integration.
 
