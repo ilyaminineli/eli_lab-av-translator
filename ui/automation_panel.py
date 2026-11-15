@@ -20,6 +20,7 @@ from PySide6.QtWidgets import (
 from core.automation import AutomationSettings
 from media.library import MediaLibrary
 from ui.i18n import set_ui_text
+from ui.panel_layout import configure_inspector_form
 
 
 class AutomationPanel(QWidget):
@@ -40,6 +41,7 @@ class AutomationPanel(QWidget):
         layout.setContentsMargins(8, 8, 8, 8)
         form = QFormLayout()
 
+        configure_inspector_form(form)
         self.collection_combo = QComboBox()
         form.addRow("FOOTAGE", self.collection_combo)
 
@@ -118,6 +120,7 @@ class AutomationPanel(QWidget):
         self.director_group = QGroupBox("AUTO DIRECTOR")
         self.director_group.setToolTip("UNIFIED MUSICAL / GENERATIVE DIRECTOR")
         director_form = QFormLayout(self.director_group)
+        configure_inspector_form(director_form)
         director_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         director_form.setFieldGrowthPolicy(
             QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow
