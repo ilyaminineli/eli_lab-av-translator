@@ -1,4 +1,4 @@
-eli_lab AV Translator — documentation pointer
+eli_lab AVTranslator — documentation pointer
 
 The canonical project overview is README.md.
 The supported Windows x64 one-file build is PyInstaller, using the repository-local environment:

@@ -2,7 +2,7 @@
 
 ## Product and runtime boundaries
 
-eli_lab AV Translator is a Windows-first live audiovisual/VJ performance environment. The application combines four independent video decks, composition layers, procedural generators, overlays, GPU effects and renderer-independent performance controls. M5 adds autonomous show orchestration and a shared asynchronous generator-raster pipeline. M6 is planned to make the operator experience more like a dedicated live VJ mixer.
+eli_lab AVTranslator is a Windows-first live audiovisual/VJ performance environment. The application combines four independent video decks, composition layers, procedural generators, overlays, GPU effects and renderer-independent performance controls. M5 adds autonomous show orchestration and a shared asynchronous generator-raster pipeline. M6 is planned to make the operator experience more like a dedicated live VJ mixer.
 
 The main ownership boundaries are:
 
@@ -89,7 +89,7 @@ Read-only packaged resources (icons, textures, sketches and dictionaries) are re
 
 Writable data is kept separately under:
 
-`%LOCALAPPDATA%\eli_lab\AV Translator\`
+`%LOCALAPPDATA%\eli_lab\AVTranslator\`
 
 This includes the SQLite media database, thumbnail cache and logs. User footage, project files and user-added asset roots remain external and are never written into the temporary one-file extraction directory.
 

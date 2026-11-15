@@ -50,7 +50,7 @@ class ProjectManager:
         source = Path(path).expanduser().resolve()
         payload = json.loads(source.read_text(encoding="utf-8"))
         if payload.get("format") != PROJECT_FORMAT:
-            raise ValueError("This file is not an eli_lab AV Translator project.")
+            raise ValueError("This file is not an eli_lab AVTranslator project.")
         version = int(payload.get("schema_version", 0))
         if version > PROJECT_SCHEMA_VER:
             raise ValueError(

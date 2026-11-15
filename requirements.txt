@@ -1,4 +1,4 @@
-# Runtime dependencies for eli_lab AV Translator.
+# Runtime dependencies for eli_lab AVTranslator.
 # Keep these constraints aligned with [project].dependencies in pyproject.toml.
 PySide6>=6.7
 moderngl>=5.10

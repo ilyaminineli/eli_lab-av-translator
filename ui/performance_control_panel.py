@@ -1199,7 +1199,7 @@ class PerformanceControlPanel(QWidget):
     def _copy_sonata_settings(self) -> None:
         host = self.osc_bind_edit.text().strip() or "127.0.0.1"
         port = self.osc_port_spin.value()
-        # Sonic Pi sends to the AV Translator host, so a same-computer setup uses loopback.
+        # Sonic Pi sends to the AVTranslator host, so a same-computer setup uses loopback.
         config = f'$sp_av_host = "{host}"\n$sp_av_port = {port}'
         QApplication.clipboard().setText(config)
         set_ui_text(self.osc_status_label, 

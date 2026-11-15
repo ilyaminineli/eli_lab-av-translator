@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#090909">
-<title>Sonic Pi / SONATA 接続 — eli_lab AV Translator</title>
-<meta name="description" content="Sonic PiとAV TranslatorをOSCで接続し、音楽時間に合わせて映像を操作する。">
-<meta property="og:title" content="Sonic Pi / SONATA 接続 — eli_lab AV Translator">
-<meta property="og:description" content="Sonic PiとAV TranslatorをOSCで接続し、音楽時間に合わせて映像を操作する。">
+<title>Sonic Pi / SONATA 接続 — eli_lab AVTranslator</title>
+<meta name="description" content="Sonic PiとAVTranslatorをOSCで接続し、音楽時間に合わせて映像を操作する。">
+<meta property="og:title" content="Sonic Pi / SONATA 接続 — eli_lab AVTranslator">
+<meta property="og:description" content="Sonic PiとAVTranslatorをOSCで接続し、音楽時間に合わせて映像を操作する。">
 <meta property="og:type" content="website">
 <link rel="stylesheet" href="../../style.css">
 </head>
 <body>
 <a class="skip-link" href="#main-content">本文へ移動</a>
 <header class="masthead">
-<a class="wordmark" href="../index.html"><span class="wordmark-mark">e·</span><span class="wordmark-name">eli_lab <span>AV TRANSLATOR</span></span></a>
+<a class="wordmark" href="../index.html"><span class="wordmark-mark">e·</span><span class="wordmark-name">eli_lab <span>AVTranslator</span></span></a>
 <div class="masthead-meta"><span class="edition">ライブ映像制作環境</span><span class="edition-rule"></span><span class="edition-no">FIELD GUIDE / 0.6</span></div>
 <nav class="primary-nav"><a href="../index.html">ホーム</a><a href="../features.html">機能</a><a href="../manual.html">マニュアル</a><a href="../wiki.html">Wiki</a><a href="windows-setup.html">Windows 設定</a><a href="sonic-pi.html">Sonic Pi</a><a href="../downloads.html">ダウンロード</a><a class="language-switch" href="../../guides/sonic-pi.html" lang="en">EN</a></nav>
 </header>
@@ -31,16 +31,16 @@
 <div class="document-topline"><span>操作ガイド</span><span class="document-topline-rule"></span><span>SONIC-PI</span></div>
 
 <h1>Sonic Pi / SONATA 接続</h1>
-<p class="document-lede">Sonic Piを音楽のクロックとコントロールソースとして使い、AV Translatorで映像を演奏します。</p>
+<p class="document-lede">Sonic Piを音楽のクロックとコントロールソースとして使い、AVTranslatorで映像を演奏します。</p>
 <h2>01 — 接続の役割</h2>
-<p>SONATA Expandedはトランスポート、小節クロック、シーン、マクロ、キュー、ハートビートを送信します。AV Translatorはバージョン付きOSC名前空間<code>/eli_lab/v1</code>で受信します。音声再生はSonic Piが担当し、AV Translatorは音楽的な情報を使って映像シーンやパラメーターを変化させます。</p>
+<p>SONATA Expandedはトランスポート、小節クロック、シーン、マクロ、キュー、ハートビートを送信します。AVTranslatorはバージョン付きOSC名前空間<code>/eli_lab/v1</code>で受信します。音声再生はSonic Piが担当し、AVTranslatorは音楽的な情報を使って映像シーンやパラメーターを変化させます。</p>
 <p>M4送信処理は音楽的な制御ポイントのみに追加されています。93個のシンセ／ドラムループ自体には介入しません。</p>
 <h2>02 — 送信設定</h2>
 <p><code>SONATA_expanded.rb</code>の先頭で次の値を確認します。</p>
-<ul><li><code>$sp_av_enabled = true</code> — 音声のみでリハーサルする場合はfalse。</li><li><code>$sp_av_host = "127.0.0.1"</code> — AV Translatorのアドレス。</li><li><code>$sp_av_port = 57121</code> — AUD / CTRLに表示される受信ポートと合わせます。</li></ul>
-<p>同じPCで使う場合はループバックが初期値です。別PCのSonic Piから送る場合は、AV Translator側をLANから到達できるIPv4アドレスにバインドし、<code>$sp_av_host</code>にも同じアドレスを指定します。リモート送信で127.0.0.1は使わないでください。</p>
+<ul><li><code>$sp_av_enabled = true</code> — 音声のみでリハーサルする場合はfalse。</li><li><code>$sp_av_host = "127.0.0.1"</code> — AVTranslatorのアドレス。</li><li><code>$sp_av_port = 57121</code> — AUD / CTRLに表示される受信ポートと合わせます。</li></ul>
+<p>同じPCで使う場合はループバックが初期値です。別PCのSonic Piから送る場合は、AVTranslator側をLANから到達できるIPv4アドレスにバインドし、<code>$sp_av_host</code>にも同じアドレスを指定します。リモート送信で127.0.0.1は使わないでください。</p>
 <h2>03 — ワンボタン自動接続</h2>
-<ol><li>構成を準備します。実際の音声帯域・オンセット解析にはAUD / CTRLでSystem Loopbackを選びます。ローカルキャプチャが利用できない場合はSonic Piマクロを使用します。</li><li>受信アドレスとポートを確認します。<strong>COPY SONATA SETTINGS</strong>でパッチへコピーできます。</li><li><strong>PERF MODE</strong>を押します。AV TranslatorはOSC受信機を開始または再利用し、必要な音声キャプチャ、デフォルトのモジュレーションカーブ／ルートを準備して自動演奏をアームします。</li><li>Sonic Piで<code>SONATA_expanded.rb</code>を実行します。</li><li>最初のtransport/startまたは受理された小節クロックでARMEDからLIVEへ切り替わります。シーン、フレーズキュー、マクロ値が映像を変化させます。</li><li>SONATAを停止すると自動演奏が停止します。最後に<strong>STOP PERF MODE</strong>を押してモードが所有するリソースを解放します。</li></ol>
+<ol><li>構成を準備します。実際の音声帯域・オンセット解析にはAUD / CTRLでSystem Loopbackを選びます。ローカルキャプチャが利用できない場合はSonic Piマクロを使用します。</li><li>受信アドレスとポートを確認します。<strong>COPY SONATA SETTINGS</strong>でパッチへコピーできます。</li><li><strong>PERF MODE</strong>を押します。AVTranslatorはOSC受信機を開始または再利用し、必要な音声キャプチャ、デフォルトのモジュレーションカーブ／ルートを準備して自動演奏をアームします。</li><li>Sonic Piで<code>SONATA_expanded.rb</code>を実行します。</li><li>最初のtransport/startまたは受理された小節クロックでARMEDからLIVEへ切り替わります。シーン、フレーズキュー、マクロ値が映像を変化させます。</li><li>SONATAを停止すると自動演奏が停止します。最後に<strong>STOP PERF MODE</strong>を押してモードが所有するリソースを解放します。</li></ol>
 <h2>04 — 音楽クロックと構成</h2>
 <div class="reference-list">
 <a><span>01</span><div><h3>TEMPO</h3><p>92 BPM</p></div></a>
@@ -66,12 +66,12 @@
 <h2>06 — 受信側の安全性</h2>
 <ul><li>初期バインドはループバックです。別インターフェースは明示的に選択します。</li><li>既知のアドレス、正確な引数数、OSC型、数値範囲のみ受け付けます。</li><li>有界の再送履歴で古いセッション、重複、順序違いのパケットを拒否します。</li><li>入力は初期値で毎秒60メッセージに制限されます。</li><li>OSCワーカーは検証済みイベントをキューへ送ります。Qtウィジェット、構成状態、OpenGLリソースをワーカーから直接操作しません。</li><li>送信がstaleになった場合はSONATAを新しいセッションIDで再起動します。</li></ul>
 <h2>07 — リハーサル確認</h2>
-<ol><li>AV Translatorを起動してPERF MODEを押し、指定アドレス／ポートで受信していることを確認します。</li><li>SONATAを実行し、ARMEDからLIVEへ変わることを確認します。</li><li>BPM 92、小節1〜384、シーン変更、energy/cutoff、フレーズキューを確認します。</li><li>SONATAを再起動し、新しいセッションが受理され、古いセッションの遅延パケットが拒否されることを確認します。</li><li>STOP PERF MODEを押してもSonic Piの音声が続くことを確認します。次の実行前に再アームします。</li></ol>
-<p>プロトコルと送信処理の実装は完了していますが、384小節の全編は対象のSonic Pi／AV Translator環境で手動リハーサルが必要です。</p>
+<ol><li>AVTranslatorを起動してPERF MODEを押し、指定アドレス／ポートで受信していることを確認します。</li><li>SONATAを実行し、ARMEDからLIVEへ変わることを確認します。</li><li>BPM 92、小節1〜384、シーン変更、energy/cutoff、フレーズキューを確認します。</li><li>SONATAを再起動し、新しいセッションが受理され、古いセッションの遅延パケットが拒否されることを確認します。</li><li>STOP PERF MODEを押してもSonic Piの音声が続くことを確認します。次の実行前に再アームします。</li></ol>
+<p>プロトコルと送信処理の実装は完了していますが、384小節の全編は対象のSonic Pi／AVTranslator環境で手動リハーサルが必要です。</p>
 <div class="document-endmark"><span>e·</span> END OF ENTRY</div>
 </article>
 </div>
 </main>
-<footer class="site-footer"><div class="footer-left"><span class="footer-mark">e·</span><span>eli_lab AV Translator</span><span class="footer-muted">A LIVE IMAGE / SOUND SYSTEM</span></div><div class="footer-right"><a href="https://github.com/ilyaminineli/eli_lab-av-translator">SOURCE ↗</a><a href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">RELEASES ↗</a><span>© 2026 eli_lab</span></div></footer>
+<footer class="site-footer"><div class="footer-left"><span class="footer-mark">e·</span><span>eli_lab AVTranslator</span><span class="footer-muted">A LIVE IMAGE / SOUND SYSTEM</span></div><div class="footer-right"><a href="https://github.com/ilyaminineli/eli_lab-av-translator">SOURCE ↗</a><a href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">RELEASES ↗</a><span>© 2026 eli_lab</span></div></footer>
 </body>
 </html>

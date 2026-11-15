@@ -1,4 +1,4 @@
-# eli_lab AV Translator — Product Roadmap
+# eli_lab AVTranslator — Product Roadmap
 
 **Roadmap snapshot:** 14 November 2026  
 **Current priority:** M7 — Unified Generative Audiovisual Instrument. The complete design brief is in [docs/M7.md](M7.md). Development is on the dedicated `m7/unified-visual-director` branch. M5/M6 hardware acceptance and the independent Video Mixer release gate remain open; master-output recording/audio muxing is a separate deferred deliverable.

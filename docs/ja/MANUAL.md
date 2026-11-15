@@ -41,9 +41,9 @@ lang: ja
 
 ## 05 — Sonic Pi を接続する
 
-AV Translator は `/eli_lab/v1` OSC プロトコルを受信します。Sonic Pi は音楽再生を担当し、AV Translator はトランスポート、キュー、マクロの情報を受け取って映像を制御します。
+AVTranslator は `/eli_lab/v1` OSC プロトコルを受信します。Sonic Pi は音楽再生を担当し、AVTranslator はトランスポート、キュー、マクロの情報を受け取って映像を制御します。
 
-同じPCで使用する場合は `127.0.0.1` から始めます。別PCを使う場合は、AV Translator が動作するPCのLANアドレスを指定してください。
+同じPCで使用する場合は `127.0.0.1` から始めます。別PCを使う場合は、AVTranslator が動作するPCのLANアドレスを指定してください。
 
 詳細は [Sonic Pi / SONATA integration guide](../SONIC_PI_SONATA_INTEGRATION.md) を参照してください。
 

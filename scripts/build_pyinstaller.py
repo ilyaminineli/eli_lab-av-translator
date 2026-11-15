@@ -14,7 +14,7 @@ PROJECT_PYTHON = ROOT / ".venv" / "Scripts" / "python.exe"
 REQUIREMENTS = ROOT / "requirements-build-pyinstaller.txt"
 MIDI_REQUIREMENTS = ROOT / "requirements-build-pyinstaller-midi.txt"
 SPEC = ROOT / "AVTranslator.spec"
-EXE = ROOT / "dist" / "eli_lab AV Translator.exe"
+EXE = ROOT / "dist" / "eli_lab AVTranslator.exe"
 
 
 def run(command: list[str], *, timeout: int | None = None) -> subprocess.CompletedProcess[str]:
@@ -38,7 +38,7 @@ def sha256_file(path: Path) -> str:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Build eli_lab AV Translator as a Windows x64 one-file executable."
+        description="Build eli_lab AVTranslator as a Windows x64 one-file executable."
     )
     parser.add_argument(
         "--with-midi",
@@ -65,7 +65,7 @@ def relaunch_in_project_venv() -> None:
     expected = PROJECT_PYTHON.resolve()
     if current != expected:
         print(
-            "Using the AV Translator project's own .venv instead of the currently "
+            "Using the AVTranslator project's own .venv instead of the currently "
             "activated interpreter:\n"
             f"  {expected}",
             flush=True,
@@ -84,7 +84,7 @@ def validate_environment() -> None:
         raise SystemExit("A 64-bit Python interpreter is required for the Windows x64 executable.")
     if sys.implementation.name != "cpython" or not (3, 12) <= sys.version_info[:2] < (3, 15):
         raise SystemExit(
-            "This AV Translator PyInstaller profile supports 64-bit CPython 3.12, 3.13 or 3.14.\n"
+            "This AVTranslator PyInstaller profile supports 64-bit CPython 3.12, 3.13 or 3.14.\n"
             f"Current interpreter: {sys.version.split()[0]} ({sys.implementation.name})."
         )
 
@@ -119,13 +119,13 @@ def main() -> int:
     python = str(PROJECT_PYTHON.resolve())
 
     print("=" * 72)
-    print("eli_lab AV Translator — local PyInstaller one-file build")
+    print("eli_lab AVTranslator — local PyInstaller one-file build")
     print(f"Python: {sys.version.split()[0]} x64")
     print(f"Environment: {PROJECT_PYTHON}")
     print(f"Native MIDI backend requested: {'yes' if args.with_midi else 'no'}")
     print("=" * 72)
 
-    # Install the app's runtime packages and PyInstaller into the AV Translator-local .venv.
+    # Install the app's runtime packages and PyInstaller into the AVTranslator-local .venv.
     run([python, "-m", "pip", "install", "--upgrade", "pip"])
     run([python, "-m", "pip", "install", "-r", str(REQUIREMENTS)])
     if args.with_midi:
@@ -178,7 +178,7 @@ def main() -> int:
         raise SystemExit(
             "The packaged executable failed --self-check "
             f"(exit code {check.returncode}).\n{details}\n"
-            "Inspect %LOCALAPPDATA%\\eli_lab\\AV Translator\\logs if available."
+            "Inspect %LOCALAPPDATA%\\eli_lab\\AVTranslator\\logs if available."
         )
 
     try:
@@ -190,7 +190,7 @@ def main() -> int:
     size_mib = EXE.stat().st_size / (1024 * 1024)
     digest = sha256_file(EXE)
     report = (
-        "eli_lab AV Translator — PyInstaller build report\n"
+        "eli_lab AVTranslator — PyInstaller build report\n"
         f"Built (UTC): {datetime.now(UTC).isoformat()}\n"
         f"Python: {sys.version.split()[0]} x64\n"
         f"PyInstaller: {__import__('PyInstaller').__version__}\n"

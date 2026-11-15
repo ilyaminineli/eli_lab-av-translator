@@ -72,13 +72,13 @@ def render_preview(destination: Path) -> None:
     print(f"Japanese UI proof font: {font_family}")
 
     window = QWidget()
-    window.setWindowTitle("eli_lab AV Translator — 日本語 UI")
+    window.setWindowTitle("eli_lab AVTranslator — 日本語 UI")
     window.resize(1280, 720)
     root = QVBoxLayout(window)
     root.setContentsMargins(42, 36, 42, 36)
     root.setSpacing(20)
 
-    index = QLabel("eli_lab / AV TRANSLATOR    —    JAPANESE UI PROOF")
+    index = QLabel("eli_lab / AVTranslator    —    JAPANESE UI PROOF")
     index.setObjectName("mutedLabel")
     root.addWidget(index)
 

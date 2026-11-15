@@ -1,8 +1,8 @@
-# eli_lab AV Translator
+# eli_lab AVTranslator
 
 **A live audiovisual instrument for building video collages, generative graphics and typographic scenes that move with music.**
 
-eli_lab AV Translator is a Windows desktop environment for making visuals behave like part of a live performance. It brings video footage, text, procedural graphics, image overlays and visual effects into one composition. That composition can react to audio, follow musical time, receive control messages from Sonic Pi or MIDI, and be sent to a local preview or an external projector.
+eli_lab AVTranslator is a Windows desktop environment for making visuals behave like part of a live performance. It brings video footage, text, procedural graphics, image overlays and visual effects into one composition. That composition can react to audio, follow musical time, receive control messages from Sonic Pi or MIDI, and be sent to a local preview or an external projector.
 
 It is closer to a visual performance instrument than to a conventional video editor. The goal is not to assemble a finished film on a timeline. The goal is to create a visual system that can be played, changed and shaped while music is happening.
 

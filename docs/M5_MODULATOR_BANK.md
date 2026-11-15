@@ -69,7 +69,7 @@ The bank includes built-in presets for Sonic Pi energy and cutoff followers, slo
 - **EXPT USER PSETS** writes custom presets to a portable JSON file.
 - **IMPORT PSETS** adds presets from an exported JSON file. Built-in presets cannot be deleted; user presets can.
 
-Active modulators and user presets are saved in the current AV Translator project. Imported/exported preset files can be reused in other projects.
+Active modulators and user presets are saved in the current AVTranslator project. Imported/exported preset files can be reused in other projects.
 
 ## Assignment response
 

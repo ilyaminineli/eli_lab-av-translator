@@ -4,7 +4,7 @@
 **Baseline reviewed:** `main` at `358dc597c76e9ee11344f5c13c8361667a07fafe` (12 November 2026)  
 **M5 feature PR:** [#19 — Separate text editing from asynchronous generator rasterization](https://github.com/ilyaminineli/eli_lab-av-translator/pull/19), merged as `ecc6f86bb896e9c8ff1cd23d083683fdfdef8e14`  
 **Quality:** [Workflow #116 passed](https://github.com/ilyaminineli/eli_lab-av-translator/actions/runs/43132442896) on the reviewed `main` head (compile + Ruff only).  
-**Connection topology:** Sonic Pi and AV Translator on the same computer.
+**Connection topology:** Sonic Pi and AVTranslator on the same computer.
 
 ## Status
 
@@ -33,17 +33,17 @@ Use loopback. No LAN address is required.
 
 | Setting | Value |
 | --- | --- |
-| AV Translator OSC bind address | `127.0.0.1` |
-| AV Translator OSC UDP port | `57121` |
+| AVTranslator OSC bind address | `127.0.0.1` |
+| AVTranslator OSC UDP port | `57121` |
 | SONATA `$sp_av_enabled` | `true` |
 | SONATA `$sp_av_host` | `"127.0.0.1"` |
 | SONATA `$sp_av_port` | `57121` |
 
-Sonic Pi's own incoming OSC port (commonly `4560`) is not the destination for these messages. SONATA sends outbound OSC to AV Translator on port `57121`.
+Sonic Pi's own incoming OSC port (commonly `4560`) is not the destination for these messages. SONATA sends outbound OSC to AVTranslator on port `57121`.
 
 ## Live start sequence
 
-1. Launch AV Translator.
+1. Launch AVTranslator.
 2. Open **AUD / CTRL** and confirm the OSC receiver is configured for `127.0.0.1:57121`.
 3. Choose **System loopback** if the show needs FFT/audio-band/onset analysis of Sonic Pi's actual output. Choose the macros-only option if SONATA's normalized energy/cutoff controls are sufficient.
 4. Press **PERF MODE**. Confirm the mode is **ARMED** and the receiver is listening.

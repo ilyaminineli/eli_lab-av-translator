@@ -10,7 +10,7 @@ The site should be bilingual-ready. English and Japanese should be treated as eq
 
 ## Core message
 
-**eli_lab AV Translator is a live audiovisual instrument for building video collages, generative graphics and typographic scenes that move with music.**
+**eli_lab AVTranslator is a live audiovisual instrument for building video collages, generative graphics and typographic scenes that move with music.**
 
 Use this as the homepage's main description. Keep the distinction clear: this is a performance environment, not a conventional non-linear video editor or an audio workstation.
 
@@ -24,7 +24,7 @@ Bring footage, typography, procedural graphics and visual effects into one live 
 
 ### Supporting paragraph
 
-eli_lab AV Translator is a Windows desktop instrument for live audiovisual work. Build a visual system from four video decks, generators, text, overlays and effects. Let it respond to a musical structure, perform it by hand, or combine both approaches.
+eli_lab AVTranslator is a Windows desktop instrument for live audiovisual work. Build a visual system from four video decks, generators, text, overlays and effects. Let it respond to a musical structure, perform it by hand, or combine both approaches.
 
 ### Primary links
 

@@ -1,5 +1,5 @@
 # -*- mode: python ; coding: utf-8 -*-
-"""Windows x64 one-file build for eli_lab AV Translator (CPython 3.12-3.14)."""
+"""Windows x64 one-file build for eli_lab AVTranslator (CPython 3.12-3.14)."""
 
 from pathlib import Path
 import importlib.util
@@ -20,7 +20,7 @@ required_paths = (
 )
 missing = [str(path) for path in required_paths if not path.exists()]
 if missing:
-    raise FileNotFoundError("Required AV Translator build inputs are missing:\n" + "\n".join(missing))
+    raise FileNotFoundError("Required AVTranslator build inputs are missing:\n" + "\n".join(missing))
 
 datas = [
     (str(ROOT / "resources"), "resources"),
@@ -100,7 +100,7 @@ exe = EXE(
     analysis.binaries,
     analysis.datas,
     [],
-    name="eli_lab AV Translator",
+    name="eli_lab AVTranslator",
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

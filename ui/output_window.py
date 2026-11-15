@@ -13,7 +13,7 @@ class OutputWindow(QMainWindow):
 
     def __init__(self, application: Application, screen, parent=None) -> None:
         super().__init__(parent)
-        self.setWindowTitle("eli_lab AV Translator · Projector Output")
+        self.setWindowTitle("eli_lab AVTranslator · Projector Output")
         self.setWindowFlags(Qt.WindowType.Window)
         self.setCentralWidget(PerformanceView(application, self))
         self.performance_view: PerformanceView = self.centralWidget()

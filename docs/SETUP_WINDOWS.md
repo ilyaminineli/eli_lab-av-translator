@@ -1,6 +1,6 @@
 # Windows setup and operation
 
-There are two common ways to use AV Translator:
+There are two common ways to use AVTranslator:
 
 - **Performance computer:** copy and run the Windows x64 one-file executable. Python and development tools are not required.
 - **Development/build computer:** run from source or build the executable using the repository-local Python environment.
@@ -26,7 +26,7 @@ For multi-deck performance, 32 GB RAM is recommended, especially on systems with
 4. On first launch, allow time for one-file extraction and Windows Defender scanning.
 5. Writable application data, the media database, thumbnails and logs are created under:
 
-   `%LOCALAPPDATA%\eli_lab\AV Translator\`
+   `%LOCALAPPDATA%\eli_lab\AVTranslator\`
 
 The target computer does not need Python, pip, PyInstaller or FFmpeg. The executable bundles the Python application/runtime, Qt/PySide6, rendering/media/audio/OSC/MIDI dependencies and bundled visual resources/dictionaries.
 
@@ -41,7 +41,7 @@ Some Windows installations do not include the Japanese supplemental fonts by def
 1. Open **Settings → System → Optional features**.
 2. Choose **View features** beside Add an optional feature.
 3. Search for and install **Japanese Supplemental Fonts**.
-4. Close and restart AV Translator so Qt can refresh the available system font list.
+4. Close and restart AVTranslator so Qt can refresh the available system font list.
 
 You can open the Optional features page directly with `ms-settings:optionalfeatures`. Installing these fonts does not require changing the Windows display language. Microsoft lists Meiryo, Meiryo UI, MS Gothic, MS PGothic, MS UI Gothic and Yu Mincho among the Japanese supplemental families. [Microsoft's Windows font guidance](https://learn.microsoft.com/en-us/windows/deployment/windows-missing-fonts) explains the optional-font installation path.
 
@@ -63,7 +63,7 @@ A project JSON file alone is not a portable copy of the video media.
 
 1. Connect HDMI before opening the fullscreen output.
 2. In Windows Display Settings, choose **Extend these displays**.
-3. Start AV Translator.
+3. Start AVTranslator.
 4. Begin with 1920×1080 at 60 Hz for the first validation. Test higher resolutions only after checking the actual laptop and projector specifications.
 5. Select **View → PROJECTOR OUTPUT → Display N**.
 6. Confirm the status bar reports the active projector renderer and FPS.
@@ -118,14 +118,14 @@ A green quality workflow is not a runtime, GUI, OpenGL, musical or hardware acce
 The one-file build supports:
 
 ```powershell
-& ".\dist\eli_lab AV Translator.exe" --self-check
+& ".\dist\eli_lab AVTranslator.exe" --self-check
 ```
 
 It reports whether required Python packages import, which FFmpeg libraries are present, whether H.264 decoding is available and whether bundled icons/textures/sketches/dictionaries are present. It does not initialize an OpenGL context or test HDMI/projector output.
 
 The application log is:
 
-`%LOCALAPPDATA%\eli_lab\AV Translator\logs\av-translator.log`
+`%LOCALAPPDATA%\eli_lab\AVTranslator\logs\av-translator.log`
 
 ## 10. Troubleshooting
 

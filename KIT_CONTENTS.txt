@@ -1,4 +1,4 @@
-AV Translator PyInstaller Python 3.14 compatibility kit
+AVTranslator PyInstaller Python 3.14 compatibility kit
 
 Files:
 - AVTranslator.spec

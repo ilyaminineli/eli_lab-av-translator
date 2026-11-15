@@ -42,7 +42,7 @@ Use `py -3.12` or `py -3.13` instead if preferred. Do not substitute another pro
 
 Output:
 
-`dist\eli_lab AV Translator.exe`
+`dist\eli_lab AVTranslator.exe`
 
 No compatibility patch to `main.py` is required. The current self-check treats native `rtmidi` as optional.
 

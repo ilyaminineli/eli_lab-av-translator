@@ -71,4 +71,4 @@ Manual edits temporarily yield the affected layer modifiers for three seconds so
 
 ## Project persistence
 
-Modifier definitions are saved with each layer. Runtime smoothing, live meter values and temporary manual-override timers are not persisted. While saving, AV Translator writes the pre-modulation parameter values into the project snapshot; the live composition continues running unchanged. Reopening a project starts with its saved baseline and its modifier definitions, ready for a new transport/audio/Sonic Pi session.
+Modifier definitions are saved with each layer. Runtime smoothing, live meter values and temporary manual-override timers are not persisted. While saving, AVTranslator writes the pre-modulation parameter values into the project snapshot; the live composition continues running unchanged. Reopening a project starts with its saved baseline and its modifier definitions, ready for a new transport/audio/Sonic Pi session.

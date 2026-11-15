@@ -57,7 +57,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.application = application
         self.output_manager = OutputWindowManager(application, self)
-        self.setWindowTitle(f"eli_lab AV Translator {APP_VER}")
+        self.setWindowTitle(f"eli_lab AVTranslator {APP_VER}")
         screen = QGuiApplication.primaryScreen()
         available = screen.availableGeometry() if screen is not None else None
         if available is not None:
@@ -197,7 +197,7 @@ class MainWindow(QMainWindow):
         brand_mark.setObjectName("brandMark")
         brand_mark.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         brand_mark.setToolTip("絵 · visual composition")
-        brand_name = QLabel("eli_lab\nAV TRANSLATOR", brand_widget)
+        brand_name = QLabel("eli_lab\nAVTranslator", brand_widget)
         brand_name.setObjectName("brandName")
         brand_name.setAlignment(Qt.AlignmentFlag.AlignVCenter)
         brand_layout.addWidget(brand_mark)
@@ -1306,7 +1306,7 @@ class MainWindow(QMainWindow):
     def open_project(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
             self,
-            ui_text("Open AV Translator project", self._language),
+            ui_text("Open AVTranslator project", self._language),
             "",
             "ELI AV Project (*.eliav);;JSON files (*.json)",
         )
@@ -1341,7 +1341,7 @@ class MainWindow(QMainWindow):
     def save_project_as(self) -> None:
         path, _ = QFileDialog.getSaveFileName(
             self,
-            ui_text("Save AV Translator project", self._language),
+            ui_text("Save AVTranslator project", self._language),
             "Untitled.eliav",
             "ELI AV Project (*.eliav)",
         )

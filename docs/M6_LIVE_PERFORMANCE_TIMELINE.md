@@ -27,7 +27,7 @@ The existing InternalTransport emits bar and beat events. The timeline consumes 
 
 ### Sonic Pi transport
 
-The existing `/eli_lab/v1/clock/bar` message reports a bar index, BPM and beats per bar. The current SONATA integration sends a bar clock rather than one OSC message for each beat. Between bar messages, AV Translator interpolates the beat position from the last received bar timestamp and the reported BPM using the monotonic application clock.
+The existing `/eli_lab/v1/clock/bar` message reports a bar index, BPM and beats per bar. The current SONATA integration sends a bar clock rather than one OSC message for each beat. Between bar messages, AVTranslator interpolates the beat position from the last received bar timestamp and the reported BPM using the monotonic application clock.
 
 This is musical-clock interpolation, not an exact hardware/MIDI clock or frame-sync guarantee. Event dispatch is bounded by the application tick cadence. A fresh bar packet is expected at least once per bar; timeline interpolation is suspended when the most recent bar packet is older than approximately 1.5 bars. If a timeline is armed before the first external bar packet, the first packet establishes the current song position. Earlier events are treated as elapsed rather than fired as a burst.
 

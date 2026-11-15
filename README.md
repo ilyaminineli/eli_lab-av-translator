@@ -1,4 +1,4 @@
-# eli_lab AV Translator
+# eli_lab AVTranslator
 
 **Windows-first audiovisual performance environment for live video collage, procedural visuals, typography, audio reactivity and Sonic Pi-controlled shows.**
 
@@ -45,7 +45,7 @@ Use `py -3.12` or `py -3.13` instead when that is the selected interpreter. The 
 
 Output:
 
-`dist\eli_lab AV Translator.exe`
+`dist\eli_lab AVTranslator.exe`
 
 The target computer needs Windows 11 x64 and a current graphics driver supporting OpenGL 3.3 Core. It does not need Python, pip, PyInstaller or FFmpeg. Sonic Pi, video media, projects, audio devices and user-added asset folders remain external.
 
@@ -89,7 +89,7 @@ Performance depends on the exact CPU/GPU, codec, media bitrate, display mode and
 
 Writable application data, the SQLite media index, thumbnails and logs live under:
 
-`%LOCALAPPDATA%\eli_lab\AV Translator\`
+`%LOCALAPPDATA%\eli_lab\AVTranslator\`
 
 `.eliav` project files and `.eliset` performance sets store settings and media paths, not the original video files. When moving to another computer, copy the source media folders and relink/re-import them if absolute paths changed.
 

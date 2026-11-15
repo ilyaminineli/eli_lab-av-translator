@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="dark">
 <meta name="theme-color" content="#090909">
-<title>Windows セットアップと操作 — eli_lab AV Translator</title>
+<title>Windows セットアップと操作 — eli_lab AVTranslator</title>
 <meta name="description" content="Windowsへのインストール、日本語フォント、プロジェクター接続とトラブルシューティング。">
-<meta property="og:title" content="Windows セットアップと操作 — eli_lab AV Translator">
+<meta property="og:title" content="Windows セットアップと操作 — eli_lab AVTranslator">
 <meta property="og:description" content="Windowsへのインストール、日本語フォント、プロジェクター接続とトラブルシューティング。">
 <meta property="og:type" content="website">
 <link rel="stylesheet" href="../../style.css">
@@ -15,7 +15,7 @@
 <body>
 <a class="skip-link" href="#main-content">本文へ移動</a>
 <header class="masthead">
-<a class="wordmark" href="../index.html"><span class="wordmark-mark">e·</span><span class="wordmark-name">eli_lab <span>AV TRANSLATOR</span></span></a>
+<a class="wordmark" href="../index.html"><span class="wordmark-mark">e·</span><span class="wordmark-name">eli_lab <span>AVTranslator</span></span></a>
 <div class="masthead-meta"><span class="edition">ライブ映像制作環境</span><span class="edition-rule"></span><span class="edition-no">FIELD GUIDE / 0.6</span></div>
 <nav class="primary-nav"><a href="../index.html">ホーム</a><a href="../features.html">機能</a><a href="../manual.html">マニュアル</a><a href="../wiki.html">Wiki</a><a href="windows-setup.html">Windows 設定</a><a href="sonic-pi.html">Sonic Pi</a><a href="../downloads.html">ダウンロード</a><a class="language-switch" href="../../guides/windows-setup.html" lang="en">EN</a></nav>
 </header>
@@ -36,12 +36,12 @@
 <ul><li>Windows 11、64-bit。</li><li>OpenGL 3.3 Core Profile対応のグラフィックスドライバー。</li><li>映像ライブラリが大きい場合はSSD、できればNVMe。</li><li>プロジェクター用のHDMIまたは対応USB-C DisplayPort出力。</li><li>SONATA Expandedを使う場合はSonic Piを別途インストール。</li><li>最初の動作確認にはH.264 MP4素材を推奨。</li></ul>
 <p>複数デッキを使う場合は32 GB RAMを推奨します。軽いセッションでは16 GBでも十分な場合があります。内蔵GPUで高ビットレートの4K映像を4本同時に再生できる保証はありません。</p>
 <h2>02 — 実行ファイルのインストール</h2>
-<ol><li>信頼できるリリースまたはビルド成果物からWindows x64版EXEを入手します。</li><li>パフォーマンス用PCのローカルフォルダーへコピーします。</li><li>ダブルクリックで起動します。初回起動では展開とWindows Defenderの確認に時間がかかる場合があります。</li><li>書き込み可能なデータ、メディアDB、サムネイル、ログは<code>%LOCALAPPDATA%\eli_lab\AV Translator\</code>に作成されます。</li></ol>
+<ol><li>信頼できるリリースまたはビルド成果物からWindows x64版EXEを入手します。</li><li>パフォーマンス用PCのローカルフォルダーへコピーします。</li><li>ダブルクリックで起動します。初回起動では展開とWindows Defenderの確認に時間がかかる場合があります。</li><li>書き込み可能なデータ、メディアDB、サムネイル、ログは<code>%LOCALAPPDATA%\eli_lab\AVTranslator\</code>に作成されます。</li></ol>
 <p>実行PCにPython、pip、PyInstaller、FFmpegは不要です。Sonic Pi、グラフィックス／オーディオドライバー、ユーザーの動画素材、追加アセットフォルダーはEXEに含まれません。</p>
 <h2>03 — 日本語インターフェースのフォント</h2>
 <p>日本語モードではYu Gothic UI、Meiryo UI / Meiryo、MS UI Gothic / MS PGothic / MS Gothic、BIZ UDGothicを優先し、その後Noto Sans JPとシステムフォントへフォールバックします。</p>
 <p>Windowsの構成によっては、日本語の追加フォントが標準インストールされていません。日本語が□や空の四角で表示される場合：</p>
-<ol><li><strong>設定 → システム → オプション機能</strong>を開きます。</li><li>「オプション機能を追加」の横にある<strong>機能を表示</strong>を選びます。</li><li><strong>Japanese Supplemental Fonts</strong>を検索してインストールします。</li><li>Qtが利用可能なフォントを再検出できるよう、AV Translatorを再起動します。</li></ol>
+<ol><li><strong>設定 → システム → オプション機能</strong>を開きます。</li><li>「オプション機能を追加」の横にある<strong>機能を表示</strong>を選びます。</li><li><strong>Japanese Supplemental Fonts</strong>を検索してインストールします。</li><li>Qtが利用可能なフォントを再検出できるよう、AVTranslatorを再起動します。</li></ol>
 <p><code>ms-settings:optionalfeatures</code>から直接開けます。Windowsの表示言語を日本語に変更する必要はありません。</p>
 <h2>04 — 映像素材とプロジェクトの準備</h2>
 <p><code>.eliav</code>プロジェクトと<code>.eliset</code>パフォーマンスセットには構成状態と素材パスが保存されます。元の動画ファイルは埋め込まれません。</p>
@@ -54,11 +54,11 @@
 <h2>07 — 診断とトラブルシューティング</h2>
 <p>パッケージ版は<code>--self-check</code>に対応します。必要パッケージ、FFmpeg、H.264デコード、同梱リソースを確認しますが、OpenGL初期化やHDMI出力は検証しません。</p>
 <ul><li><strong>OpenGLが起動しない：</strong>グラフィックスドライバーを更新し、OpenGL 3.3 Core Profile対応を確認します。</li><li><strong>再生が遅い：</strong>まず1080p H.264を1〜2本で確認し、ローカルSSDとAC電源を使用してデコード／アップロードの負荷を確認します。</li><li><strong>ループバックが使えない：</strong>Windowsの入力デバイス一覧を更新します。Sonic Piのトランスポートとマクロは動作しますが、実音声の帯域・オンセット解析にはループバックが必要です。</li><li><strong>プロジェクターが別画面に出る：</strong>拡張表示を確認し、ディスプレイ構成変更後に出力を開き直します。</li><li><strong>メディアが見つからない：</strong>プロジェクトはパスを保存します。元フォルダーをコピーして再登録／再割り当てします。</li></ul>
-<p>ログは<code>%LOCALAPPDATA%\eli_lab\AV Translator\logs\av-translator.log</code>に保存されます。</p>
+<p>ログは<code>%LOCALAPPDATA%\eli_lab\AVTranslator\logs\av-translator.log</code>に保存されます。</p>
 <div class="document-endmark"><span>e·</span> END OF ENTRY</div>
 </article>
 </div>
 </main>
-<footer class="site-footer"><div class="footer-left"><span class="footer-mark">e·</span><span>eli_lab AV Translator</span><span class="footer-muted">A LIVE IMAGE / SOUND SYSTEM</span></div><div class="footer-right"><a href="https://github.com/ilyaminineli/eli_lab-av-translator">SOURCE ↗</a><a href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">RELEASES ↗</a><span>© 2026 eli_lab</span></div></footer>
+<footer class="site-footer"><div class="footer-left"><span class="footer-mark">e·</span><span>eli_lab AVTranslator</span><span class="footer-muted">A LIVE IMAGE / SOUND SYSTEM</span></div><div class="footer-right"><a href="https://github.com/ilyaminineli/eli_lab-av-translator">SOURCE ↗</a><a href="https://github.com/ilyaminineli/eli_lab-av-translator/releases">RELEASES ↗</a><span>© 2026 eli_lab</span></div></footer>
 </body>
 </html>

@@ -4,7 +4,7 @@ import logging
 import os
 from pathlib import Path
 
-APP_NAME = "eli_lab AV Translator"
+APP_NAME = "eli_lab AVTranslator"
 APP_VER = "0.6.0"
 APP_AUTHOR = "Ilya Minin (Eli)"
 APP_STUDIO = "eli_lab"
@@ -51,7 +51,7 @@ else:
         os.environ.get("XDG_DATA_HOME", Path.home() / ".local" / "share")
     )
 
-DATA_DIR = _app_data_root / "eli_lab" / "AV Translator"
+DATA_DIR = _app_data_root / "eli_lab" / "AVTranslator"
 CACHE_DIR = DATA_DIR / "cache"
 THUMB_DIR = CACHE_DIR / "thumbnails"
 MEDIA_DB_PATH = DATA_DIR / "media-library.sqlite3"

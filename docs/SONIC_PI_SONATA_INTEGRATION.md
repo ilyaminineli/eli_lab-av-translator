@@ -1,4 +1,4 @@
-# SONATA Expanded — Sonic Pi / AV Translator Integration Notes
+# SONATA Expanded — Sonic Pi / AVTranslator Integration Notes
 
 ## Source inspected
 
@@ -16,7 +16,7 @@ The M4 sender is installed in the live patch at the musical control points only.
 - The bar clock increments `sp_b_count`, cues `sp_b`, then sleeps for four beats.
 - Scene changes update `sp_sc` and `sp_int`, then cue `sp_sc_change`.
 - The synchronized macro loop updates `sx_m_e` (energy), `sx_m_c` (filter cutoff) and `sx_macro_phr` (phrase index).
-- The local `F:` sample root remains Sonic Pi's responsibility; AV Translator does not index those samples.
+- The local `F:` sample root remains Sonic Pi's responsibility; AVTranslator does not index those samples.
 
 ## Stable scene IDs and intensities
 
@@ -46,10 +46,10 @@ The M4 sender is installed in the live patch at the musical control points only.
 At the top of `SONATA_expanded.rb`, the helper exposes three values:
 
 - `$sp_av_enabled = true` — set to `false` for an audio-only rehearsal.
-- `$sp_av_host = "127.0.0.1"` — explicit AV Translator bind address.
+- `$sp_av_host = "127.0.0.1"` — explicit AVTranslator bind address.
 - `$sp_av_port = 57121` — match the UDP port shown in the AUD / CTRL dock.
 
-A unique session identifier is generated at patch start from a wall-clock timestamp with a microsecond component; it does not depend on the patch's seeded musical random generator, so rapid restarts receive distinct IDs. A shared sequence counter increments for each outgoing message inside a short mutex-protected sender section, so concurrent musical loops cannot reuse or reorder sequence numbers. The helper uses Sonic Pi's `osc_send(host, port, path, *args)` API and does not depend on Sonic Pi's incoming OSC port. If AV Translator is closed, local UDP sends are harmless; the patch's audio structure and cues continue to run.
+A unique session identifier is generated at patch start from a wall-clock timestamp with a microsecond component; it does not depend on the patch's seeded musical random generator, so rapid restarts receive distinct IDs. A shared sequence counter increments for each outgoing message inside a short mutex-protected sender section, so concurrent musical loops cannot reuse or reorder sequence numbers. The helper uses Sonic Pi's `osc_send(host, port, path, *args)` API and does not depend on Sonic Pi's incoming OSC port. If AVTranslator is closed, local UDP sends are harmless; the patch's audio structure and cues continue to run.
 
 ## One-button autonomous connection
 
@@ -61,7 +61,7 @@ A unique session identifier is generated at patch start from a wall-clock timest
 
 The mode may also reuse an OSC receiver that was started manually. It will not close a receiver or audio stream that was already running before Performance Mode took ownership. Sonic Pi is an OSC control source, not an audio-device entry: normalized energy/cutoff and transport continue to work without local audio capture, while system loopback adds real audio-band/onset analysis.
 
-For a remote Sonic Pi computer, bind to the AV Translator computer's reachable LAN IPv4 address and set $sp_av_host to the same address. Do not use 127.0.0.1 for a remote sender; loopback only reaches the machine on which the receiver runs.
+For a remote Sonic Pi computer, bind to the AVTranslator computer's reachable LAN IPv4 address and set $sp_av_host to the same address. Do not use 127.0.0.1 for a remote sender; loopback only reaches the machine on which the receiver runs.
 
 ## Version 1 wire protocol
 
@@ -109,7 +109,7 @@ A lost packet does not block the clock: the next bar or macro packet is handled 
 
 ## Test without Sonic Pi
 
-With AV Translator running and OSC started on loopback port 57121:
+With AVTranslator running and OSC started on loopback port 57121:
 
     python scripts/osc_test_sender.py --host 127.0.0.1 --port 57121
 
@@ -117,7 +117,7 @@ The script sends start, bar, scene, energy/cutoff, heartbeat, phrase and end eve
 
 ## Live rehearsal checklist
 
-1. Start AV Translator and press PERF MODE. Confirm the receiver is listening on `127.0.0.1:57121` and the mode is ARMED.
+1. Start AVTranslator and press PERF MODE. Confirm the receiver is listening on `127.0.0.1:57121` and the mode is ARMED.
 2. In Sonic Pi, leave `$sp_av_enabled = true`, verify host and port, then run SONATA. Confirm the mode moves to LIVE.
 3. Confirm BPM 92, bar positions 1 through 384, all 16 scene IDs, energy/cutoff movement, four-bar phrase cues and final stop.
 4. Stop/restart the patch and confirm the new session is accepted while delayed packets from the prior session are rejected.

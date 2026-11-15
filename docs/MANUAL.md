@@ -46,9 +46,9 @@ See [M5 — Performance environment](M5_PERFORMANCE_ENVIRONMENT.md), [M6 — Adv
 
 ## 05 — Connect Sonic Pi
 
-The application receives versioned OSC messages at the `/eli_lab/v1` protocol. Sonic Pi remains responsible for music playback; AV Translator uses its transport, cues and macro messages to shape visuals.
+The application receives versioned OSC messages at the `/eli_lab/v1` protocol. Sonic Pi remains responsible for music playback; AVTranslator uses its transport, cues and macro messages to shape visuals.
 
-For a same-computer setup, begin with `127.0.0.1` and the configured receiver port. For a two-computer arrangement, use the AV Translator computer's reachable LAN address.
+For a same-computer setup, begin with `127.0.0.1` and the configured receiver port. For a two-computer arrangement, use the AVTranslator computer's reachable LAN address.
 
 Follow the [Sonic Pi / SONATA integration guide](SONIC_PI_SONATA_INTEGRATION.md) before a performance.
 
