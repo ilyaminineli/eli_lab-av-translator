@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import os
+import shutil
 import struct
 import subprocess
 import sys
@@ -23,6 +24,16 @@ REQUIREMENTS = ROOT / "requirements-build-pyinstaller.txt"
 MIDI_REQUIREMENTS = ROOT / "requirements-build-pyinstaller-midi.txt"
 SPEC = ROOT / "AVTranslator.spec"
 EXE = ROOT / "dist" / f"{APP_NAME}.exe"
+BUILD_TEMP_DIR = Path(
+    os.path.expandvars(
+        os.environ.get("AVT_BUILD_TEMP_DIR", str(ROOT / "build" / "tmp"))
+    )
+).expanduser().resolve()
+PIP_CACHE_DIR = Path(
+    os.path.expandvars(
+        os.environ.get("AVT_PIP_CACHE_DIR", str(BUILD_TEMP_DIR / "pip-cache"))
+    )
+).expanduser().resolve()
 
 
 def run(
@@ -36,6 +47,60 @@ def run(
         check=True,
         timeout=timeout,
     )
+
+
+def configure_build_storage() -> None:
+    """Keep pip/build temporary files on an explicitly writable volume.
+
+    The project may live on F: while Windows TEMP points to a nearly-full C:.
+    Redirect pip's temporary build environments and wheel cache into the
+    repository build area by default; callers can override either directory.
+    """
+    BUILD_TEMP_DIR.mkdir(parents=True, exist_ok=True)
+    PIP_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+
+    temp_path = str(BUILD_TEMP_DIR)
+    cache_path = str(PIP_CACHE_DIR)
+    os.environ["TEMP"] = temp_path
+    os.environ["TMP"] = temp_path
+    os.environ["TMPDIR"] = temp_path
+    os.environ["PIP_CACHE_DIR"] = cache_path
+
+    gib = 1024**3
+    build_free = shutil.disk_usage(ROOT).free
+    temp_free = shutil.disk_usage(BUILD_TEMP_DIR).free
+    cache_free = shutil.disk_usage(PIP_CACHE_DIR).free
+    print(f"Build directory: {ROOT}")
+    print(f"Build-volume free space: {build_free / gib:.1f} GiB")
+    print(f"Build temporary directory: {BUILD_TEMP_DIR}")
+    print(f"Temporary-volume free space: {temp_free / gib:.1f} GiB")
+    print(f"pip cache: {PIP_CACHE_DIR}")
+    print(f"pip-cache volume free space: {cache_free / gib:.1f} GiB")
+
+    minimum_free = 2 * gib
+    if build_free < minimum_free:
+        raise SystemExit(
+            "Insufficient free space on the project/build volume. "
+            "At least 2 GiB is required before packaging; 5 GiB or more is recommended. "
+            "Free space or move the repository/build directory to a roomier volume."
+        )
+    if temp_free < minimum_free:
+        raise SystemExit(
+            "Insufficient free space for pip/PyInstaller temporary files. "
+            "At least 2 GiB is required; set AVT_BUILD_TEMP_DIR to a directory "
+            "on a volume with more free space."
+        )
+    if cache_free < minimum_free:
+        raise SystemExit(
+            "Insufficient free space for the pip cache. "
+            "Set AVT_PIP_CACHE_DIR to a directory on a volume with more free space."
+        )
+    if build_free < 5 * gib or temp_free < 5 * gib or cache_free < 5 * gib:
+        print(
+            "WARNING: less than 5 GiB is free on at least one build volume. "
+            "A full Qt/FFmpeg one-file build may need additional working space.",
+            flush=True,
+        )
 
 
 def sha256_file(path: Path) -> str:
@@ -145,6 +210,7 @@ def main() -> int:
     args = parse_args()
     relaunch_in_project_venv()
     validate_environment()
+    configure_build_storage()
     python = str(PROJECT_PYTHON.resolve())
 
     print("=" * 72)
@@ -167,6 +233,7 @@ def main() -> int:
             "pip",
             "install",
             "--no-deps",
+            "--no-build-isolation",
             "--force-reinstall",
             "-e",
             str(ROOT),
@@ -279,6 +346,9 @@ def main() -> int:
         "python-osc",
         "mido",
         "PyInstaller",
+        "pyinstaller-hooks-contrib",
+        "setuptools",
+        "wheel",
         "python-rtmidi",
     )
     package_report: list[str] = []
@@ -294,6 +364,7 @@ def main() -> int:
         f"Built (UTC): {datetime.now(UTC).isoformat()}\n"
         f"Python: {sys.version.split()[0]} x64\n"
         f"PyInstaller: {__import__('PyInstaller').__version__}\n"
+        f"Build temp directory: {BUILD_TEMP_DIR}\n"
         "Resolved packages:\n" + "\n".join(package_report) + "\n"
         f"Native MIDI backend: {'included' if midi_available else 'not included (optional)'}\n"
         f"Executable: {EXE}\n"

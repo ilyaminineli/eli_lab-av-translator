@@ -1,9 +1,15 @@
 # Runtime dependencies plus PyInstaller. This profile targets CPython 3.12-3.14 x64.
 -r requirements.txt
 
-# Mido's pure-Python layer is included. The native python-rtmidi backend is optional
-# because PyPI currently publishes its Windows binary wheel for CPython 3.12 only.
+# Build-system requirements from pyproject.toml. Installed into the project venv
+# so the editable metadata refresh can use --no-build-isolation without creating
+# a second temporary build environment.
+setuptools>=69
+wheel
+
+# Mido's pure-Python layer is included. The native python-rtmidi backend is optional.
 mido>=1.3,<2
 
-# PyInstaller 6.15+ supports Python 3.14; this build pins a tested current release.
+# Pin PyInstaller and its hook set so PyAV's av.libs collection remains reproducible.
 PyInstaller==6.22.3
+pyinstaller-hooks-contrib==2026.9

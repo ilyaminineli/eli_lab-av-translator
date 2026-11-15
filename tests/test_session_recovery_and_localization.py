@@ -358,6 +358,32 @@ def test_inspector_dock_tab_titles_are_compact_and_stable() -> None:
     assert all(len(label) <= 7 for label in _DOCK_TAB_TITLES.values())
 
 
+def test_build_temp_storage_is_redirected_to_project_build_area(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from scripts import build_pyinstaller
+
+    build_temp = tmp_path / "build" / "tmp"
+    pip_cache = build_temp / "pip-cache"
+    monkeypatch.setattr(build_pyinstaller, "ROOT", tmp_path)
+    monkeypatch.setattr(build_pyinstaller, "BUILD_TEMP_DIR", build_temp)
+    monkeypatch.setattr(build_pyinstaller, "PIP_CACHE_DIR", pip_cache)
+    real_usage = build_pyinstaller.shutil.disk_usage(tmp_path)
+    enough_space = real_usage._replace(free=6 * 1024**3)
+    monkeypatch.setattr(
+        build_pyinstaller.shutil, "disk_usage", lambda _path: enough_space
+    )
+
+    build_pyinstaller.configure_build_storage()
+
+    assert build_temp.is_dir()
+    assert pip_cache.is_dir()
+    assert os.environ["TEMP"] == str(build_temp)
+    assert os.environ["TMP"] == str(build_temp)
+    assert os.environ["TMPDIR"] == str(build_temp)
+    assert os.environ["PIP_CACHE_DIR"] == str(pip_cache)
+
+
 def test_package_and_build_metadata_are_consistent() -> None:
     root = Path(__file__).resolve().parents[1]
     project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))[
@@ -390,7 +416,12 @@ def test_package_and_build_metadata_are_consistent() -> None:
         project["dependencies"] and set(project["dependencies"]) == runtime_requirements
     )
     assert set(project["optional-dependencies"]["dev"]) == dev_requirements
-    assert "PyInstaller==" in build_requirements
+    assert "mido>=1.3,<2" in project["optional-dependencies"]["midi"]
+    assert "python-rtmidi==1.5.8" in project["optional-dependencies"]["midi"]
+    assert "PyInstaller==6.22.3" in build_requirements
+    assert "pyinstaller-hooks-contrib==2026.9" in build_requirements
+    assert "setuptools>=69" in build_requirements
+    assert "wheel" in build_requirements
     assert "from config import APP_NAME, ICON_PATH" in spec
     assert "name=APP_NAME" in spec
     assert "ICON = ICON_PATH" in spec
@@ -398,8 +429,18 @@ def test_package_and_build_metadata_are_consistent() -> None:
     assert "APP_VER" in build_script
     assert "ICON_PATH" in build_script
     assert "--no-deps" in build_script
+    assert "--no-build-isolation" in build_script
     assert "--force-reinstall" in build_script
+    assert "AVT_BUILD_TEMP_DIR" in build_script
+    assert "PIP_CACHE_DIR" in build_script
     assert ICON_PATH.is_file()
+
+    # PyInstaller's hook-av preserves the wheel's av.libs directory. The spec
+    # must not add a second top-level binary copy of those same FFmpeg DLLs.
+    assert "sysconfig" not in spec
+    assert 'site_packages.glob("av.libs")' not in spec
+    assert '(str(dll), ".")' not in spec
+    assert "PyInstaller" in spec
 
 
 def test_eliding_status_label_keeps_full_diagnostic_text() -> None:
