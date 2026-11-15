@@ -1,20 +1,26 @@
 # -*- mode: python ; coding: utf-8 -*-
 """Windows x64 one-file build for eli_lab AVTranslator (CPython 3.12-3.14)."""
 
-from pathlib import Path
 import importlib.util
+import sys
 import sysconfig
+from pathlib import Path
 
 from PyInstaller.utils.hooks import collect_all
 
 ROOT = Path(SPECPATH).resolve()
-ICON = ROOT / "resources" / "icons" / "eli-lab-mark.ico"
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from config import APP_NAME, ICON_PATH  # noqa: E402
+
+ICON = ICON_PATH
 
 required_paths = (
     ROOT / "main.py",
     ROOT / "config.py",
     ROOT / "resources",
-    ROOT / "resources" / "icons" / "eli-lab-mark.ico",
+    ICON_PATH,
     ROOT / "dictionary",
     ROOT / "THIRD_PARTY_NOTICES.md",
 )
@@ -100,7 +106,7 @@ exe = EXE(
     analysis.binaries,
     analysis.datas,
     [],
-    name="eli_lab AVTranslator",
+    name=APP_NAME,
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
