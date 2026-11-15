@@ -400,7 +400,7 @@ QLabel#sectionHeading {
 QLabel, QAbstractItemView, QToolTip,
 QGroupBox::title, QDockWidget::title, QTabBar::tab,
 QLabel#eyebrow, QLabel#mutedLabel, QLabel#brandName, QStatusBar,
-QPushButton, QToolButton, QCheckBox, QRadioButton,
+QPushButton, QToolButton, QCheckBox, QRadioButton, QProgressBar,
 QMenuBar, QMenu, QHeaderView::section,
 QComboBox, QSpinBox, QDoubleSpinBox {
     font-family: "DM Mono", "Yu Gothic UI", "Meiryo UI", "Noto Sans JP", monospace;
