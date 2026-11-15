@@ -4,11 +4,11 @@
 
 **Static website:** [English homepage](index.html) · [Japanese homepage](site/ja/index.html) · [Features](site/features.html) · [Field manual](site/manual.html) · [Wiki](site/wiki.html) · [Windows setup](site/guides/windows-setup.html) · [Sonic Pi guide](site/guides/sonic-pi.html). The site is plain HTML/CSS under `site/`, with the real homepage in the repository root and a `.nojekyll` marker. It is ready for GitHub Pages **Deploy from a branch → main → /(root)**. Once Pages is enabled, the project URL is `https://ilyaminineli.github.io/eli_lab-av-translator/`. The Markdown source documents are kept under [docs/](docs/) and the website structure is described in [docs/WEBSITE_PLAN.md](docs/WEBSITE_PLAN.md).
 
-## Project status — 14 November 2026
+## Project status — 15 November 2026
 
 The `main` branch contains the M0–M6 rendering, video, generator, performance-control and live-workspace foundations, plus the first M7 implementation increments. [PR #34](https://github.com/ilyaminineli/eli_lab-av-translator/pull/34) merged the unified visual director and the initial PERF / COMPOSE / PREPARE workspace shell. [PR #35](https://github.com/ilyaminineli/eli_lab-av-translator/pull/35) hardened timeline/macro runtime handling, bounded generator raster work, and introduced the monochrome workspace theme and 16:9 local preview frame.
 
-The freeform multi-source collage layouts, responsive four-deck cards, compact actions, headline-led Text Art and About/version update were merged to `main` in [PR #36](https://github.com/ilyaminineli/eli_lab-av-translator/pull/36).
+The freeform multi-source collage layouts, responsive four-deck cards, compact actions, headline-led Text Art and About/version update were merged to `main` in [PR #36](https://github.com/ilyaminineli/eli_lab-av-translator/pull/36). The operator-workspace follow-up added the final 絵 seal, responsive dock sizing, wheel-safe controls and complete English/Japanese navigation in [PR #40](https://github.com/ilyaminineli/eli_lab-av-translator/pull/40), then applied the website-aligned desktop typography hierarchy in [PR #42](https://github.com/ilyaminineli/eli_lab-av-translator/pull/42).
 
 The Quality workflow performs Python compilation, Ruff and regression tests. Those checks do not replace target-Windows GUI, OpenGL/GPU, four-deck, Sonic Pi, projector and sustained-performance acceptance. Hardware validation remains an explicit release gate; do not treat static CI as a hardware sign-off.
 
@@ -24,7 +24,7 @@ The Quality workflow performs Python compilation, Ruff and regression tests. Tho
 - **M5 — Text raster controls:** live preview, Apply Immediately, commit-on-pause, 25/50/75/100% preview quality, optional 1600×900 final raster, 1–20 Hz text-job rate limit, freeze, last-valid-texture fallback and pipeline status.
 - **M6 — Live performance controls:** six normalized 0–1 Performance Macros (CHAOS, DENSITY (DNST), DEPTH (DPTH), DECAY (DEC), PRESSURE and FRAGMENT (FRAG)), Modulator Bank source assignments, MIDI/OSC/keyboard input, VJ scenes and a bar/beat live performance timeline.
 - **M7-A — Unified visual director:** composition-aware variation across video, generators and overlays; dynamic all-layer variation budgets, spatial relationships, optional anchors, activity feedback, per-layer cooldowns and manual-override precedence.
-- **M7-B — Operator workspace foundation:** central PERF / COMPOSE / PREPARE workspaces, a shared macro strip, compact/responsive workspace constraints and the monochrome Qt Material base theme.
+- **M7-B — Operator workspace foundation:** central PERF / COMPOSE / PREPARE workspaces, a shared macro strip, responsive operator docks, wheel-safe controls, the final 絵 seal and a website-aligned monochrome type system.
 
 See [docs/PRODUCT_OVERVIEW.md](docs/PRODUCT_OVERVIEW.md) for a non-technical explanation and target audiences, [docs/WEBSITE_PLAN.md](docs/WEBSITE_PLAN.md) for the website content architecture, and [docs/ROADMAP.md](docs/ROADMAP.md) for milestone state and remaining acceptance gates. Implementation detail is in the [M5 Autonomous Performance guide](docs/M5_AUTONOMOUS_PERFORMANCE.md), [M5 Performance Environment](docs/M5_PERFORMANCE_ENVIRONMENT.md), [Architecture](docs/ARCHITECTURE.md) and [M5 Completion Handoff](docs/M5_COMPLETION_HANDOFF.md).
 
@@ -95,7 +95,7 @@ Writable application data, the SQLite media index, thumbnails and logs live unde
 
 ## Validation boundary and known omissions
 
-- The Quality workflow runs Python compilation and Ruff. It does not run a GUI, create an OpenGL context, execute SONATA or test target hardware.
+- The Quality workflow runs Python compilation, Ruff, pytest regression tests and a Japanese UI typography proof. It does not run an interactive live GUI, create a performance OpenGL session, execute SONATA or sign off target hardware.
 - The full 384-bar SONATA rehearsal and session restart/stale-packet recovery remain manual validation.
 - Physical-input/system-loopback discovery, device loss/reconnect and sustained capture remain hardware validation.
 - Four-deck continuous typing with multiple generators, effects, audio reactivity and projector output has not yet been measured as a formal stress-acceptance run.
