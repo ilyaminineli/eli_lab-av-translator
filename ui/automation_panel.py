@@ -117,6 +117,8 @@ class AutomationPanel(QWidget):
 
         self.director_group = QGroupBox("UNIFIED MUSICAL / GENERATIVE DIRECTOR")
         director_form = QFormLayout(self.director_group)
+        director_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
+        director_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.director_active_label = QLabel("ACTIVE")
         self.variation_scope_label = QLabel("")
         self.keep_anchor_check = QCheckBox("Prefer a recognizable visual anchor")
