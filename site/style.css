@@ -15,7 +15,8 @@ a{color:inherit;text-decoration:none} a:hover{color:var(--bright)}
 .skip-link:focus{top:12px}
 .masthead{width:var(--page);margin:0 auto;min-height:112px;display:grid;grid-template-columns:1fr auto;align-items:center;border-bottom:1px solid var(--rule)}
 .wordmark{display:inline-flex;align-items:center;gap:12px;width:fit-content}
-.wordmark-mark,.footer-mark{font:500 33px/1 var(--display);letter-spacing:-.12em}
+.wordmark-mark{display:block;width:38px;height:38px;flex:0 0 38px;object-fit:contain}
+.footer-mark{display:block;width:25px;height:25px;flex:0 0 25px;object-fit:contain}
 .wordmark-name{font:500 14px/1.2 var(--mono);letter-spacing:.08em}
 .wordmark-name span{display:block;margin-top:5px;color:var(--muted);font-size:9px;letter-spacing:.2em}
 .masthead-meta{display:flex;align-items:center;justify-content:flex-end;gap:12px;color:var(--muted);font:9px var(--mono);letter-spacing:.12em;text-align:right}
@@ -80,7 +81,7 @@ a{color:inherit;text-decoration:none} a:hover{color:var(--bright)}
 .download-index span{color:var(--muted)}.download-index b{color:#dedede;font-weight:400;text-align:right}
 .home-endnote{min-height:48px;display:flex;align-items:center;justify-content:space-between;font-size:8px;color:var(--dim)}
 .site-footer{width:var(--page);margin:0 auto;min-height:92px;display:flex;align-items:center;justify-content:space-between;gap:24px;border-top:1px solid var(--rule);color:#c8c8c8;font:9px var(--mono);letter-spacing:.1em}
-.footer-left,.footer-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap}.footer-mark{font-size:23px}
+.footer-left,.footer-right{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
 .footer-muted,.footer-right span{color:var(--dim);font-size:8px}.footer-right a:hover{color:#fff}
 
 /* Markdown document reader */
