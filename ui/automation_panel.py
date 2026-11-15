@@ -115,7 +115,8 @@ class AutomationPanel(QWidget):
         layout.addWidget(self.overlay_check)
         layout.addWidget(self.palette_check)
 
-        self.director_group = QGroupBox("UNIFIED MUSICAL / GENERATIVE DIRECTOR")
+        self.director_group = QGroupBox("AUTO DIRECTOR")
+        self.director_group.setToolTip("UNIFIED MUSICAL / GENERATIVE DIRECTOR")
         director_form = QFormLayout(self.director_group)
         director_form.setRowWrapPolicy(QFormLayout.RowWrapPolicy.WrapLongRows)
         director_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
