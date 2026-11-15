@@ -49,6 +49,7 @@ jobs:
           ui/icons.py
           ui/layer_panel.py
           ui/main_window.py
+          ui/panel_layout.py
           ui/media_browser.py
           ui/modulator_bank_panel.py
           ui/performance_control_panel.py
