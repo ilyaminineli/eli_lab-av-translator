@@ -358,6 +358,27 @@ def test_inspector_dock_tab_titles_are_compact_and_stable() -> None:
     assert all(len(label) <= 7 for label in _DOCK_TAB_TITLES.values())
 
 
+def test_build_temp_storage_is_redirected_to_project_build_area(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from scripts import build_pyinstaller
+
+    build_temp = tmp_path / "build" / "tmp"
+    pip_cache = build_temp / "pip-cache"
+    monkeypatch.setattr(build_pyinstaller, "ROOT", tmp_path)
+    monkeypatch.setattr(build_pyinstaller, "BUILD_TEMP_DIR", build_temp)
+    monkeypatch.setattr(build_pyinstaller, "PIP_CACHE_DIR", pip_cache)
+
+    build_pyinstaller.configure_build_storage()
+
+    assert build_temp.is_dir()
+    assert pip_cache.is_dir()
+    assert os.environ["TEMP"] == str(build_temp)
+    assert os.environ["TMP"] == str(build_temp)
+    assert os.environ["TMPDIR"] == str(build_temp)
+    assert os.environ["PIP_CACHE_DIR"] == str(pip_cache)
+
+
 def test_package_and_build_metadata_are_consistent() -> None:
     root = Path(__file__).resolve().parents[1]
     project = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))[
