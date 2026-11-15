@@ -5,7 +5,7 @@ import random
 from pathlib import Path
 
 from PySide6.QtCore import QSettings, Qt, QTimer
-from PySide6.QtGui import QAction, QGuiApplication, QIcon, QKeySequence, QShortcut
+from PySide6.QtGui import QAction, QFontMetrics, QGuiApplication, QIcon, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
     QDialog,
@@ -53,6 +53,38 @@ from ui.theme import apply_application_language
 from ui.transport_bar import TransportBar
 
 _LOG = logging.getLogger(__name__)
+
+
+class ElidingLabel(QLabel):
+    """Keep status text readable while preserving the complete value on hover."""
+
+    def __init__(self, text: str = "", parent=None) -> None:
+        self._full_text = str(text)
+        super().__init__("", parent)
+        self.setMinimumWidth(0)
+        self.setSizePolicy(
+            QSizePolicy.Policy.Ignored,
+            QSizePolicy.Policy.Preferred,
+        )
+        self.setText(self._full_text)
+
+    def setText(self, text: str) -> None:
+        self._full_text = str(text)
+        self.setToolTip(self._full_text)
+        self._apply_elision()
+
+    def resizeEvent(self, event) -> None:
+        super().resizeEvent(event)
+        self._apply_elision()
+
+    def _apply_elision(self) -> None:
+        width = max(0, self.contentsRect().width())
+        display = QFontMetrics(self.font()).elidedText(
+            self._full_text,
+            Qt.TextElideMode.ElideRight,
+            width,
+        )
+        super().setText(display)
 
 
 class MainWindow(QMainWindow):
@@ -220,7 +252,7 @@ class MainWindow(QMainWindow):
         toolbar.addWidget(self.performance_mode_button)
         self.addToolBar(Qt.ToolBarArea.TopToolBarArea, toolbar)
 
-        self.control_status_label = QLabel(
+        self.control_status_label = ElidingLabel(
             self.application.performance_control.status_text()
         )
         self._last_control_revision = self.application.performance_control.revision
@@ -233,12 +265,9 @@ class MainWindow(QMainWindow):
             "Control state · transport, scene, macro and synchronization diagnostics"
         )
         self.statusBar().addPermanentWidget(self.control_status_label, 1)
-        self.status_label = QLabel(ui_text("LOCAL PREVIEW · IDLE"))
+        self.status_label = ElidingLabel(ui_text("LOCAL PREVIEW · IDLE"))
         self.status_label.setMinimumWidth(0)
         self.status_label.setMaximumWidth(230)
-        self.status_label.setToolTip(
-            "Local preview / projector render state. Hover for the full renderer message."
-        )
         self.statusBar().addPermanentWidget(self.status_label)
         self.performance_view.render_status_changed.connect(
             lambda value: set_ui_text(self.status_label, value, self._language)
