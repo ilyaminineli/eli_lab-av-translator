@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 
 APP_NAME = "eli_lab AVTranslator"
-APP_VER = "0.6.0"
+APP_VER = "0.6.5"
 APP_AUTHOR = "Eli Minin"
 APP_STUDIO = "eli_lab"
 APP_COPYRIGHT = "© 2026 Eli Minin · eli_lab"
