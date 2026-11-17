@@ -36,12 +36,12 @@ def _clusters(value: str) -> list[str]:
         modifier = 0x1F3FB <= codepoint <= 0x1F3FF
         regional = 0x1F1E6 <= codepoint <= 0x1F1FF
         if not result or (
-            not combining
-            and not variation
-            and not modifier
-            and not join_next
-            and codepoint != 0x200D
-            and not (regional and regional_count % 2)
+                not combining
+                and not variation
+                and not modifier
+                and not join_next
+                and codepoint != 0x200D
+                and not (regional and regional_count % 2)
         ):
             result.append(character)
         else:
@@ -93,9 +93,9 @@ def _pen(color: str, width: float) -> QPen:
 
 
 def _draw_path(
-    painter: QPainter,
-    path: QPainterPath,
-    style: dict[str, Any],
+        painter: QPainter,
+        path: QPainterPath,
+        style: dict[str, Any],
 ) -> None:
     stroke_width = max(0.0, float(style.get("stroke_width", 0.0)))
     stroke_color = str(style.get("stroke_color", "#211B2A"))
@@ -110,11 +110,11 @@ def _draw_path(
 
 
 def _draw_horizontal(
-    painter: QPainter,
-    settings: dict[str, Any],
-    styles: list[dict[str, Any]],
-    width: int,
-    height: int,
+        painter: QPainter,
+        settings: dict[str, Any],
+        styles: list[dict[str, Any]],
+        width: int,
+        height: int,
 ) -> None:
     margin = 96.0
     x = margin
@@ -129,7 +129,7 @@ def _draw_horizontal(
         advance_height = metrics.height() * line_spacing
         line_height = max(line_height, advance_height)
         for paragraph_index, paragraph in enumerate(
-            str(style.get("text", "")).split("\n")
+                str(style.get("text", "")).split("\n")
         ):
             if paragraph_index:
                 x = margin
@@ -186,12 +186,12 @@ def _vertical_rotated(cluster: str) -> bool:
 
 
 def _draw_vertical(
-    painter: QPainter,
-    settings: dict[str, Any],
-    styles: list[dict[str, Any]],
-    width: int,
-    height: int,
-    writing_mode: str,
+        painter: QPainter,
+        settings: dict[str, Any],
+        styles: list[dict[str, Any]],
+        width: int,
+        height: int,
+        writing_mode: str,
 ) -> None:
     direction = -1.0 if writing_mode == "vertical_rl" else 1.0
     maximum_size = max(_font(style, settings).pixelSize() for style in styles)
@@ -250,10 +250,10 @@ def _draw_vertical(
 
 
 def _path_for_settings(
-    settings: dict[str, Any],
-    width: int,
-    height: int,
-    mode: str,
+        settings: dict[str, Any],
+        width: int,
+        height: int,
+        mode: str,
 ) -> QPainterPath:
     path = QPainterPath()
     if mode in {"circle", "arc"}:
@@ -295,7 +295,7 @@ def _path_for_settings(
 
 
 def _path_samples(
-    path: QPainterPath, count: int = 768
+        path: QPainterPath, count: int = 768
 ) -> tuple[list[float], list[QPointF]]:
     points = [path.pointAtPercent(index / count) for index in range(count + 1)]
     distances = [0.0]
@@ -308,11 +308,11 @@ def _path_samples(
 
 
 def _point_at_distance(
-    distance: float,
-    distances: list[float],
-    points: list[QPointF],
-    *,
-    wrap: bool,
+        distance: float,
+        distances: list[float],
+        points: list[QPointF],
+        *,
+        wrap: bool,
 ) -> tuple[QPointF, float]:
     total = distances[-1]
     if total <= 0.001:
@@ -332,12 +332,12 @@ def _point_at_distance(
 
 
 def _draw_on_path(
-    painter: QPainter,
-    settings: dict[str, Any],
-    styles: list[dict[str, Any]],
-    width: int,
-    height: int,
-    mode: str,
+        painter: QPainter,
+        settings: dict[str, Any],
+        styles: list[dict[str, Any]],
+        width: int,
+        height: int,
+        mode: str,
 ) -> None:
     path = _path_for_settings(settings, width, height, mode)
     distances, samples = _path_samples(path)
@@ -383,10 +383,10 @@ def _draw_on_path(
 
 
 def draw_typography(
-    painter: QPainter,
-    settings: dict[str, Any],
-    width: int,
-    height: int,
+        painter: QPainter,
+        settings: dict[str, Any],
+        width: int,
+        height: int,
 ) -> None:
     """Render the non-legacy typography layouts on the raster worker."""
     styles = _styles(settings)

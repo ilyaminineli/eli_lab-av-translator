@@ -18,11 +18,11 @@ class ProjectManager:
         self.last_app_state: dict[str, Any] = {}
 
     def save(
-        self,
-        path: str | Path,
-        composition: Composition,
-        decks: list[dict[str, Any]] | None = None,
-        app_state: dict[str, Any] | None = None,
+            self,
+            path: str | Path,
+            composition: Composition,
+            decks: list[dict[str, Any]] | None = None,
+            app_state: dict[str, Any] | None = None,
     ) -> Path:
         destination = Path(path).expanduser().resolve()
         destination.parent.mkdir(parents=True, exist_ok=True)

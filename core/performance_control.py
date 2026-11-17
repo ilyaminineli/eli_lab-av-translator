@@ -141,11 +141,11 @@ class PerformanceControlState:
 
     @staticmethod
     def _number(
-        payload: dict[str, Any],
-        key: str,
-        default: float | None = None,
-        minimum: float | None = None,
-        maximum: float | None = None,
+            payload: dict[str, Any],
+            key: str,
+            default: float | None = None,
+            minimum: float | None = None,
+            maximum: float | None = None,
     ) -> float:
         raw = payload.get(key, default)
         if isinstance(raw, bool) or not isinstance(raw, (int, float)):
@@ -161,11 +161,11 @@ class PerformanceControlState:
 
     @staticmethod
     def _integer(
-        payload: dict[str, Any],
-        key: str,
-        default: int | None = None,
-        minimum: int | None = None,
-        maximum: int | None = None,
+            payload: dict[str, Any],
+            key: str,
+            default: int | None = None,
+            minimum: int | None = None,
+            maximum: int | None = None,
     ) -> int:
         raw = payload.get(key, default)
         if isinstance(raw, bool) or not isinstance(raw, int):

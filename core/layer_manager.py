@@ -6,7 +6,7 @@ from core.event_bus import EventBus
 
 class LayerManager:
     def __init__(
-        self, composition: Composition, events: EventBus | None = None
+            self, composition: Composition, events: EventBus | None = None
     ) -> None:
         self.composition = composition
         self.events = events

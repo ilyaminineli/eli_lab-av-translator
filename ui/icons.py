@@ -207,11 +207,11 @@ def app_icon(name: str, size: int = 24, color: str = ICON_COLOR) -> QIcon:
 
 
 def icon_button(
-    parent: QWidget,
-    name: str,
-    tooltip: str,
-    size: int = 30,
-    checkable: bool = False,
+        parent: QWidget,
+        name: str,
+        tooltip: str,
+        size: int = 30,
+        checkable: bool = False,
 ) -> QToolButton:
     button = QToolButton(parent)
     button.setIcon(app_icon(name))

@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import random
 import re
-import unicodedata
 from functools import lru_cache
 from pathlib import Path
+
+import unicodedata
 
 from config import PROJECT_ROOT
 
@@ -392,9 +393,9 @@ def _dictionary_candidates(root: Path, language: str, theme: str) -> list[str]:
 
 @lru_cache(maxsize=32)
 def _cached_dictionary_candidates(
-    language: str,
-    theme: str,
-    signature: tuple[tuple[str, int, int], ...],
+        language: str,
+        theme: str,
+        signature: tuple[tuple[str, int, int], ...],
 ) -> tuple[str, ...]:
     """Build a bounded dictionary index once per language/theme/file version."""
     files = [Path(path) for path, _mtime, _size in signature]
@@ -441,10 +442,10 @@ def _cached_dictionary_candidates(
                                 part
                                 for part in parts
                                 if any(
-                                    "\u3040" <= char <= "\u30ff"
-                                    or "\u4e00" <= char <= "\u9fff"
-                                    for char in part
-                                )
+                                "\u3040" <= char <= "\u30ff"
+                                or "\u4e00" <= char <= "\u9fff"
+                                for char in part
+                            )
                             ),
                             "",
                         )
@@ -462,12 +463,12 @@ def _cached_dictionary_candidates(
 
 
 def random_text_sample(
-    language: str = "bilingual",
-    theme: str = "random",
-    count: int = 8,
-    seed: int | None = None,
-    dictionary_path: str | Path | None = None,
-    use_dictionary: bool = True,
+        language: str = "bilingual",
+        theme: str = "random",
+        count: int = 8,
+        seed: int | None = None,
+        dictionary_path: str | Path | None = None,
+        use_dictionary: bool = True,
 ) -> str:
     """Return a seeded English/Japanese phrase set, optionally enriched from local dictionaries."""
     if language not in {"english", "japanese", "bilingual"}:

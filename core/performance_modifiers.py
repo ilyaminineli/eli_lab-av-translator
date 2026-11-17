@@ -276,12 +276,12 @@ class LayerPerformanceModifierEngine:
         return value
 
     def notify_manual_override(
-        self,
-        layer_id: str,
-        target_ids: set[str],
-        modifier_records: list[dict[str, object]],
-        duration_seconds: float = 3.0,
-        now: float | None = None,
+            self,
+            layer_id: str,
+            target_ids: set[str],
+            modifier_records: list[dict[str, object]],
+            duration_seconds: float = 3.0,
+            now: float | None = None,
     ) -> None:
         stamp = time.monotonic() if now is None else float(now)
         affected_ids: set[str] = set()
@@ -300,10 +300,10 @@ class LayerPerformanceModifierEngine:
                 self._live_values.pop(runtime_key, None)
 
     def claimed_targets(
-        self,
-        layer,
-        now: float | None = None,
-        available_sources: set[str] | None = None,
+            self,
+            layer,
+            now: float | None = None,
+            available_sources: set[str] | None = None,
     ) -> set[str]:
         if layer is None:
             return set()
@@ -321,14 +321,14 @@ class LayerPerformanceModifierEngine:
                 ("modulator.", "macro.", "performance_macro.")
             )
             source_available = (
-                available_sources is None
-                or not source_requires_presence
-                or modifier.source_id in available_sources
+                    available_sources is None
+                    or not source_requires_presence
+                    or modifier.source_id in available_sources
             )
             if (
-                modifier.enabled
-                and source_available
-                and stamp >= self._manual_until.get((layer_id, modifier.target_id), 0.0)
+                    modifier.enabled
+                    and source_available
+                    and stamp >= self._manual_until.get((layer_id, modifier.target_id), 0.0)
             ):
                 result.add(modifier.target_id)
         return result
@@ -371,12 +371,12 @@ class LayerPerformanceModifierEngine:
         return dict(self._base_values)
 
     def evaluate(
-        self,
-        layers: list[object],
-        sources: dict[str, float],
-        get_target,
-        set_target,
-        now: float | None = None,
+            self,
+            layers: list[object],
+            sources: dict[str, float],
+            get_target,
+            set_target,
+            now: float | None = None,
     ) -> dict[tuple[str, str], float]:
         stamp = time.monotonic() if now is None else float(now)
         contributions: dict[tuple[str, str], float] = {}

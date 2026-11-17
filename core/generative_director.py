@@ -24,7 +24,7 @@ class VisualActivity:
             layer
             for layer in layers
             if bool(getattr(layer, "visible", True))
-            and not bool(getattr(layer, "locked", False))
+               and not bool(getattr(layer, "locked", False))
         ]
         if not eligible:
             return cls(0, 0.0, 0.0, 0.0, 0.0, 0.0)
@@ -87,7 +87,7 @@ class VisualActivity:
 
         overlap_values: list[float] = []
         for index, first in enumerate(boxes):
-            for second in boxes[index + 1 :]:
+            for second in boxes[index + 1:]:
                 intersection_width = max(
                     0.0,
                     min(first[2], second[2]) - max(first[0], second[0]),
@@ -176,7 +176,7 @@ class GenerativeVariationDirector:
         return self._transition_revision
 
     def choose_anchor(
-        self, layers: Iterable[object], enabled: bool = True
+            self, layers: Iterable[object], enabled: bool = True
     ) -> str | None:
         candidates = [layer for layer in layers if self._eligible(layer)]
         current = next(
@@ -220,14 +220,14 @@ class GenerativeVariationDirector:
         return self._anchor_layer_id
 
     def select_layers(
-        self,
-        layers: Iterable[object],
-        maximum: int,
-        rng: random.Random,
-        *,
-        keep_anchor: bool = False,
-        prefer_particles: bool = False,
-        anchor_persistence: float = 0.0,
+            self,
+            layers: Iterable[object],
+            maximum: int,
+            rng: random.Random,
+            *,
+            keep_anchor: bool = False,
+            prefer_particles: bool = False,
+            anchor_persistence: float = 0.0,
     ) -> tuple[str, ...]:
         candidates = [layer for layer in layers if self._eligible(layer)]
         anchor_id = self.choose_anchor(
@@ -248,9 +248,9 @@ class GenerativeVariationDirector:
                 layer
                 for layer in candidates
                 if (
-                    getattr(layer, "source_type", "") == "generator"
-                    and getattr(layer, "generator_type", "")
-                    in {"particles", "particle_system_2"}
+                        getattr(layer, "source_type", "") == "generator"
+                        and getattr(layer, "generator_type", "")
+                        in {"particles", "particle_system_2"}
                 )
             ]
             particle_ids = {str(getattr(layer, "id", "")) for layer in particle_layers}
@@ -275,7 +275,7 @@ class GenerativeVariationDirector:
         return self._phrase_index
 
     def choose_palette(
-        self, palette_names: Iterable[str], rng: random.Random
+            self, palette_names: Iterable[str], rng: random.Random
     ) -> str | None:
         names = tuple(str(name) for name in palette_names if str(name))
         if not names:
@@ -289,8 +289,8 @@ class GenerativeVariationDirector:
         selected = rng.choice(available or list(names))
         if self.palette_memory_phrases > 0:
             if (
-                self._palette_history
-                and self._palette_history[-1][0] == self._phrase_index
+                    self._palette_history
+                    and self._palette_history[-1][0] == self._phrase_index
             ):
                 self._palette_history[-1] = (self._phrase_index, selected)
             else:
@@ -303,7 +303,7 @@ class GenerativeVariationDirector:
 
     def effect_ready(self, enabled: bool = True) -> bool:
         return bool(enabled) and (
-            self._transition_revision > self._effect_transition_revision
+                self._transition_revision > self._effect_transition_revision
         )
 
     def mark_effect_applied(self) -> None:
@@ -311,11 +311,11 @@ class GenerativeVariationDirector:
 
     @staticmethod
     def particle_peak_factor(
-        section: str,
-        energy: float,
-        intensity: float,
-        density_macro: float = 0.0,
-        boost: float = 0.35,
+            section: str,
+            energy: float,
+            intensity: float,
+            density_macro: float = 0.0,
+            boost: float = 0.35,
     ) -> float:
         """Return a bounded multiplier for particle density/emission at peaks."""
         drive = max(float(energy), float(intensity), float(density_macro))
@@ -330,15 +330,15 @@ class GenerativeVariationDirector:
 
     @staticmethod
     def transition_duration(
-        section: str,
-        rng: random.Random,
-        *,
-        slow_breakdowns: bool = True,
-        normal_min: float = 0.65,
-        normal_max: float = 1.8,
-        breakdown_min: float = 5.0,
-        breakdown_max: float = 9.0,
-        depth: float = 0.0,
+            section: str,
+            rng: random.Random,
+            *,
+            slow_breakdowns: bool = True,
+            normal_min: float = 0.65,
+            normal_max: float = 1.8,
+            breakdown_min: float = 5.0,
+            breakdown_max: float = 9.0,
+            depth: float = 0.0,
     ) -> float:
         """Choose a smooth transition duration, extending breakdowns and DPTH."""
         if slow_breakdowns and section == "breakdown":

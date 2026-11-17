@@ -366,9 +366,9 @@ class ModulationRoute:
             self.source_id.removeprefix("performance_macro.").strip()
         )
         if (
-            self.source_id not in SOURCE_RANGES
-            and not is_bank_source
-            and not is_performance_macro
+                self.source_id not in SOURCE_RANGES
+                and not is_bank_source
+                and not is_performance_macro
         ):
             raise ValueError(f"Unknown modulation source: {self.source_id}")
         if self.target_id not in TARGET_SPECS:
@@ -385,8 +385,8 @@ class ModulationRoute:
             spec.maximum if self.output_max is None else float(self.output_max)
         )
         if not (
-            spec.minimum <= self.output_min <= spec.maximum
-            and spec.minimum <= self.output_max <= spec.maximum
+                spec.minimum <= self.output_min <= spec.maximum
+                and spec.minimum <= self.output_max <= spec.maximum
         ):
             raise ValueError(
                 f"Output range for {self.target_id} exceeds its registered safety range."
@@ -450,8 +450,8 @@ class ModulationMatrix:
         values.update(changes)
         updated = ModulationRoute.from_dict(values)
         if any(
-            item.route_id != route_id and item.target_id == updated.target_id
-            for item in self.routes
+                item.route_id != route_id and item.target_id == updated.target_id
+                for item in self.routes
         ):
             raise ValueError(
                 f"Target already has a modulation route: {updated.target_id}"
@@ -474,10 +474,10 @@ class ModulationMatrix:
                 return
 
     def manual_override(
-        self,
-        target_id: str,
-        duration_seconds: float = 3.0,
-        now: float | None = None,
+            self,
+            target_id: str,
+            duration_seconds: float = 3.0,
+            now: float | None = None,
     ) -> None:
         if target_id not in TARGET_SPECS:
             return
@@ -499,9 +499,9 @@ class ModulationMatrix:
         return route.output_min + value * (route.output_max - route.output_min)
 
     def evaluate(
-        self,
-        sources: dict[str, float],
-        now: float | None = None,
+            self,
+            sources: dict[str, float],
+            now: float | None = None,
     ) -> tuple[dict[str, float], set[str]]:
         stamp = time.monotonic() if now is None else float(now)
         outputs: dict[str, float] = {}
@@ -518,9 +518,9 @@ class ModulationMatrix:
             runtime = self._runtime.setdefault(route.route_id, _RouteRuntime())
             if raw is None:
                 if (
-                    runtime.last_output is not None
-                    and route.hold_ms > 0
-                    and stamp - runtime.last_seen <= route.hold_ms / 1000.0
+                        runtime.last_output is not None
+                        and route.hold_ms > 0
+                        and stamp - runtime.last_seen <= route.hold_ms / 1000.0
                 ):
                     mapped = runtime.last_output
                 else:

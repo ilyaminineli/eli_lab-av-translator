@@ -494,9 +494,9 @@ def apply_application_language(app: QApplication, language: str) -> None:
 
 
 def configure_application_theme(
-    app: QApplication,
-    show_hints: bool = True,
-    language: str = "en",
+        app: QApplication,
+        show_hints: bool = True,
+        language: str = "en",
 ) -> None:
     """Apply the monochrome editorial theme and system-first language fonts."""
     app.setStyle("Fusion")

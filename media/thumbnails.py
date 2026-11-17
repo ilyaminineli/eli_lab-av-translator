@@ -9,9 +9,9 @@ _LOG = logging.getLogger(__name__)
 
 
 def generate_thumbnail(
-    video_path: str | Path,
-    asset_id: str,
-    max_size: tuple[int, int] = (320, 180),
+        video_path: str | Path,
+        asset_id: str,
+        max_size: tuple[int, int] = (320, 180),
 ) -> Path | None:
     """Decode one frame and save a cached JPEG thumbnail.
 

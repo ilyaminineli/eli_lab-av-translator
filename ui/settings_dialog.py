@@ -17,11 +17,11 @@ from ui.panel_layout import configure_inspector_form
 
 class SettingsDialog(QDialog):
     def __init__(
-        self,
-        parent: QWidget | None = None,
-        language: str = "en",
-        show_hints: bool = True,
-        restore_session: bool = True,
+            self,
+            parent: QWidget | None = None,
+            language: str = "en",
+            show_hints: bool = True,
+            restore_session: bool = True,
     ) -> None:
         super().__init__(parent)
         self._language = language if language in {"en", "ja"} else "en"

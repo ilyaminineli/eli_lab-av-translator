@@ -183,9 +183,9 @@ def main() -> int:
         for href in inspector.links:
             parsed_href = urlsplit(href)
             if (
-                parsed_href.path.lower().endswith(".md")
-                and not parsed_href.scheme
-                and not parsed_href.netloc
+                    parsed_href.path.lower().endswith(".md")
+                    and not parsed_href.scheme
+                    and not parsed_href.netloc
             ):
                 problems.append(
                     f"{relative_path}: raw Markdown links are not public site routes: {href!r}"
