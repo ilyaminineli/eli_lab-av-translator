@@ -214,6 +214,7 @@ class VisualMutationContract:
         changed_properties: set[str] | list[str] | tuple[str, ...],
     ) -> None:
         """Raise when an operation violates the declared mutation boundary."""
+        self.normalize()
         selected_operation = _identifier(operation, "Mutation operation")
         changed = {str(value).strip() for value in changed_properties}
         if selected_operation in self.forbid:
