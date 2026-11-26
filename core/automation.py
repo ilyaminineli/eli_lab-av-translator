@@ -462,7 +462,7 @@ class AutomationDirector:
     def prepare_layer_lock(self, layer_id: str) -> bool:
         """Cancel live AUTO PERF work and restore temporary peak boost before locking."""
         self._layout_morphs.pop(layer_id, None)
-        stored = self._peak_particle_base.pop(layer_id, None)
+        stored = self._peak_particle_base.get(layer_id)
         self._active_variation_layer_ids = tuple(
             item for item in self._active_variation_layer_ids if item != layer_id
         )
@@ -475,6 +475,7 @@ class AutomationDirector:
             or layer.source_type != "generator"
             or layer.generator_type != kind
         ):
+            self._peak_particle_base.pop(layer_id, None)
             return False
         values = normalize_settings(kind, layer.generator_settings)
         values[field] = base_value
@@ -482,13 +483,12 @@ class AutomationDirector:
             layer_id,
             generator_settings=normalize_settings(kind, values),
         )
-        if (
-            updated is not None
-            and self.generator_settings_changed is not None
-            and self.mutation_adapter is None
-        ):
+        if updated is None:
+            return False
+        self._peak_particle_base.pop(layer_id, None)
+        if self.generator_settings_changed is not None and self.mutation_adapter is None:
             self.generator_settings_changed(updated)
-        return updated is not None
+        return True
 
     def notify_layer_manual_override(
         self,
