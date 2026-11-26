@@ -893,9 +893,11 @@ class AutomationDirector:
         )
         changed = False
         for layer in self._layers:
-            if self._is_manual_layer_override(layer.id, time.monotonic()):
-                # Pause automatic particle modulation during the manual-edit window.
-                # Keep the baseline unless the generator parameter itself was edited.
+            if layer.locked or self._is_manual_layer_override(
+                layer.id, time.monotonic()
+            ):
+                # Keep any cached peak baseline while locked; it was restored
+                # before the operator lock when the contract allowed the write.
                 continue
             stored = self._peak_particle_base.get(layer.id)
             kind = str(layer.generator_type or "")
