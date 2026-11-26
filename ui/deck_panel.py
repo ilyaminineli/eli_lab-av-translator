@@ -138,12 +138,12 @@ class DeckCard(QGroupBox):
             lambda: self.action_requested.emit(deck_id, "stop")
         )
         for button in (
-                self.load_button,
-                self.play_button,
-                self.pause_button,
-                self.hold_button,
-                self.restart_button,
-                self.stop_button,
+            self.load_button,
+            self.play_button,
+            self.pause_button,
+            self.hold_button,
+            self.restart_button,
+            self.stop_button,
         ):
             controls.addWidget(button)
         controls.addStretch(1)
@@ -193,19 +193,19 @@ class DeckCard(QGroupBox):
         )
 
     def update_state(
-            self,
-            path: str | None,
-            playing: bool,
-            paused: bool,
-            held: bool,
-            error: str | None,
-            loop: bool,
-            locked: bool,
-            position_seconds: float,
-            duration_seconds: float | None,
-            asset: MediaAsset | None,
-            has_frame: bool,
-            layer_name: str | None,
+        self,
+        path: str | None,
+        playing: bool,
+        paused: bool,
+        held: bool,
+        error: str | None,
+        loop: bool,
+        locked: bool,
+        position_seconds: float,
+        duration_seconds: float | None,
+        asset: MediaAsset | None,
+        has_frame: bool,
+        layer_name: str | None,
     ) -> None:
         set_ui_text(
             self.file_label,
@@ -357,10 +357,10 @@ class DeckPanel(QWidget):
         self.lock_changed.emit(deck_id, locked)
 
     def _asset_for_deck(
-            self,
-            deck_id: str,
-            asset_id: str | None,
-            refresh_cache: bool = False,
+        self,
+        deck_id: str,
+        asset_id: str | None,
+        refresh_cache: bool = False,
     ) -> MediaAsset | None:
         if refresh_cache or self._asset_ids.get(deck_id) != asset_id:
             self._asset_ids[deck_id] = asset_id

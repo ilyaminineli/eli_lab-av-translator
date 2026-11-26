@@ -234,16 +234,16 @@ class EffectSettings:
         self.tint = max(-1.0, min(1.0, float(self.tint)))
         self.hue = max(-180.0, min(180.0, float(self.hue)))
         for name in (
-                "vignette",
-                "grain",
-                "scanlines",
-                "chromatic",
-                "glitch",
-                "pixelate",
-                "posterize",
-                "invert",
-                "halftone",
-                "solarize",
+            "vignette",
+            "grain",
+            "scanlines",
+            "chromatic",
+            "glitch",
+            "pixelate",
+            "posterize",
+            "invert",
+            "halftone",
+            "solarize",
         ):
             setattr(self, name, max(0.0, min(1.0, float(getattr(self, name)))))
 
@@ -268,8 +268,8 @@ class EffectSettings:
         self.edge_amount = max(0.0, min(1.0, float(self.edge_amount)))
         self.dither = max(0.0, min(1.0, float(self.dither)))
         self.displacement_source_id = str(self.displacement_source_id or "").strip()[
-                                      :256
-                                      ]
+            :256
+        ]
         self.displacement_amount = max(-1.0, min(1.0, float(self.displacement_amount)))
         self.displacement_scale = max(0.1, min(8.0, float(self.displacement_scale)))
         self.displacement_luma = bool(self.displacement_luma)
@@ -285,10 +285,10 @@ class EffectSettings:
             -0.25, min(0.25, float(self.feedback_translate_y))
         )
         for name in (
-                "feedback_color_shift",
-                "feedback_distortion",
-                "feedback_motion_warp",
-                "feedback_datamosh",
+            "feedback_color_shift",
+            "feedback_distortion",
+            "feedback_motion_warp",
+            "feedback_datamosh",
         ):
             setattr(self, name, max(0.0, min(1.0, float(getattr(self, name)))))
         self.feedback_blend_mode = str(self.feedback_blend_mode).casefold()

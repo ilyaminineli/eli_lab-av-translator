@@ -156,13 +156,13 @@ class ModulatorBankPanel(QWidget):
         lfo_form.setFieldGrowthPolicy(QFormLayout.FieldGrowthPolicy.ExpandingFieldsGrow)
         self.waveform_combo = QComboBox()
         for value, label in (
-                ("sine", "Sine"),
-                ("triangle", "Triangle"),
-                ("saw_up", "Saw up"),
-                ("saw_down", "Saw down"),
-                ("square", "Square"),
-                ("pulse", "Pulse width"),
-                ("sample_hold", "Sample & hold"),
+            ("sine", "Sine"),
+            ("triangle", "Triangle"),
+            ("saw_up", "Saw up"),
+            ("saw_down", "Saw down"),
+            ("square", "Square"),
+            ("pulse", "Pulse width"),
+            ("sample_hold", "Sample & hold"),
         ):
             self.waveform_combo.addItem(label, value)
         self.lfo_rate_beats = self._double_spin(0.0625, 256.0, 4.0, 4)
@@ -375,10 +375,10 @@ class ModulatorBankPanel(QWidget):
 
     @staticmethod
     def _double_spin(
-            minimum: float,
-            maximum: float,
-            value: float,
-            decimals: int,
+        minimum: float,
+        maximum: float,
+        value: float,
+        decimals: int,
     ) -> QDoubleSpinBox:
         spin = QDoubleSpinBox()
         spin.setRange(minimum, maximum)
@@ -449,22 +449,22 @@ class ModulatorBankPanel(QWidget):
         definition = self._selected_definition()
         active = definition is not None
         for widget in (
-                self.name_edit,
-                self.enabled_check,
-                self.sync_combo,
-                self.reset_combo,
-                self.lfo_group,
-                self.follower_group,
-                self.envelope_group,
-                self.sequence_group,
-                self.apply_button,
-                self.duplicate_button,
-                self.remove_button,
-                self.save_preset_button,
-                self.assignment_target_combo,
-                self.assignment_depth,
-                self.assignment_polarity_combo,
-                self.assign_button,
+            self.name_edit,
+            self.enabled_check,
+            self.sync_combo,
+            self.reset_combo,
+            self.lfo_group,
+            self.follower_group,
+            self.envelope_group,
+            self.sequence_group,
+            self.apply_button,
+            self.duplicate_button,
+            self.remove_button,
+            self.save_preset_button,
+            self.assignment_target_combo,
+            self.assignment_depth,
+            self.assignment_polarity_combo,
+            self.assign_button,
         ):
             widget.setEnabled(active)
         if definition is None:
@@ -804,8 +804,8 @@ class ModulatorBankPanel(QWidget):
             }
             targets.extend(sorted(compatible.get(layer.generator_type, set())))
             if (
-                    layer.generator_type == "text"
-                    and layer.generator_settings.get("text_animation", "none") != "none"
+                layer.generator_type == "text"
+                and layer.generator_settings.get("text_animation", "none") != "none"
             ):
                 targets.extend(
                     (
@@ -837,8 +837,8 @@ class ModulatorBankPanel(QWidget):
                 "particles": "generator.particle_size",
             }.get(layer.generator_type, "layer.scale")
         if (
-                layer.source_type == "overlay"
-                and self.assignment_target_combo.findData("overlay.playback_speed") >= 0
+            layer.source_type == "overlay"
+            and self.assignment_target_combo.findData("overlay.playback_speed") >= 0
         ):
             return "overlay.playback_speed"
         return "layer.scale"

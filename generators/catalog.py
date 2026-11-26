@@ -128,7 +128,7 @@ def default_generator_settings(generator_type: str) -> dict[str, Any]:
 
 
 def normalize_settings(
-        generator_type: str, settings: dict[str, Any] | None
+    generator_type: str, settings: dict[str, Any] | None
 ) -> dict[str, Any]:
     """Merge user settings with safe defaults and clamp resource/visual ranges."""
     result = default_generator_settings(generator_type)
@@ -230,8 +230,8 @@ def normalize_settings(
                     break
                 run = {"text": run_text}
                 family = str(raw_run.get("font_family", result["font_family"]))[
-                         :128
-                         ].strip()
+                    :128
+                ].strip()
                 run["font_family"] = family or str(result["font_family"])
                 run["font_size"] = max(
                     12, min(420, int(raw_run.get("font_size", result["font_size"])))
@@ -245,8 +245,8 @@ def normalize_settings(
                     key=lambda weight: abs(weight - requested_run_weight),
                 )
                 for key, fallback in (
-                        ("color", result["primary_color"]),
-                        ("stroke_color", result["stroke_color"]),
+                    ("color", result["primary_color"]),
+                    ("stroke_color", result["stroke_color"]),
                 ):
                     value = str(raw_run.get(key, fallback)).strip()
                     run[key] = value[:32] if value.startswith("#") else fallback
@@ -266,7 +266,7 @@ def normalize_settings(
                 run["shadow"] = bool(raw_run.get("shadow", result["shadow"]))
                 text_runs.append(run)
         result["text_runs"] = text_runs
-        result["collage_seed"] = max(0, min(2 ** 31 - 1, int(result["collage_seed"])))
+        result["collage_seed"] = max(0, min(2**31 - 1, int(result["collage_seed"])))
         result["collage_font_variation"] = max(
             0.0, min(1.0, float(result["collage_font_variation"]))
         )
@@ -361,8 +361,8 @@ def normalize_settings(
         result["acceleration"] = pair(result["acceleration"], (0.0, 0.0), -2.0, 2.0)
         result["force_center"] = pair(result["force_center"], (0.5, 0.5), 0.0, 1.0)
         result["emitter_source_id"] = str(result["emitter_source_id"] or "").strip()[
-                                      :256
-                                      ]
+            :256
+        ]
         result["emitter_threshold"] = max(
             0.0, min(1.0, float(result["emitter_threshold"]))
         )
@@ -399,7 +399,7 @@ def normalize_settings(
         result["drag"] = max(0.0, min(4.0, float(result["drag"])))
         result["trail"] = max(0.0, min(1.0, float(result["trail"])))
         result["particle_size"] = max(1.0, min(48.0, float(result["particle_size"])))
-        result["seed"] = max(0, min(2 ** 31 - 1, int(result["seed"])))
+        result["seed"] = max(0, min(2**31 - 1, int(result["seed"])))
 
     if result.get("animation") not in _ANIMATIONS:
         result["animation"] = "none"

@@ -106,12 +106,12 @@ class GeneratorsPanel(QWidget):
         )
         self.add_overlay_button.setToolTip("Add an image or video overlay")
         for action_button in (
-                self.add_geometry_button,
-                self.add_text_button,
-                self.add_waveform_button,
-                self.add_particles_button,
-                self.add_particle_system_button,
-                self.add_overlay_button,
+            self.add_geometry_button,
+            self.add_text_button,
+            self.add_waveform_button,
+            self.add_particles_button,
+            self.add_particle_system_button,
+            self.add_overlay_button,
         ):
             action_button.setMinimumHeight(32)
             action_button.setSizePolicy(
@@ -179,10 +179,10 @@ class GeneratorsPanel(QWidget):
         raster_form.addRow("COMMIT", self.text_commit_pause_check)
         self.text_preview_quality_combo = QComboBox()
         for label, scale in (
-                ("Draft · 25%", 0.25),
-                ("Balanced · 50%", 0.5),
-                ("High · 75%", 0.75),
-                ("Maximum · 100%", 1.0),
+            ("Draft · 25%", 0.25),
+            ("Balanced · 50%", 0.5),
+            ("High · 75%", 0.75),
+            ("Maximum · 100%", 1.0),
         ):
             self.text_preview_quality_combo.addItem(label, scale)
         self.text_preview_quality_combo.setCurrentIndex(1)
@@ -270,10 +270,10 @@ class GeneratorsPanel(QWidget):
 
         self.weight_combo = QComboBox()
         for label, value in (
-                ("Regular", 400),
-                ("Medium", 500),
-                ("Bold", 700),
-                ("Black", 900),
+            ("Regular", 400),
+            ("Medium", 500),
+            ("Bold", 700),
+            ("Black", 900),
         ):
             self.weight_combo.addItem(label, value)
         text_form.addRow("WEIGHT", self.weight_combo)
@@ -366,13 +366,13 @@ class GeneratorsPanel(QWidget):
         random_form.addRow("LANGUAGE", self.random_language_combo)
         self.random_theme_combo = QComboBox()
         for label, value in (
-                ("Random mix", "random"),
-                ("Memory / 記憶", "memory"),
-                ("Body / 身体", "body"),
-                ("Signal / 信号", "signal"),
-                ("Ritual / 儀式", "ritual"),
-                ("Identity / 自己", "identity"),
-                ("Queer / クィア", "queer"),
+            ("Random mix", "random"),
+            ("Memory / 記憶", "memory"),
+            ("Body / 身体", "body"),
+            ("Signal / 信号", "signal"),
+            ("Ritual / 儀式", "ritual"),
+            ("Identity / 自己", "identity"),
+            ("Queer / クィア", "queer"),
         ):
             self.random_theme_combo.addItem(label, value)
         random_form.addRow("THEME", self.random_theme_combo)
@@ -614,7 +614,7 @@ class GeneratorsPanel(QWidget):
         system_form.addRow("SIZE OVER LIFETIME", self.particle_size_curve_combo)
         seed_row = QHBoxLayout()
         self.particle_seed_spin = QSpinBox()
-        self.particle_seed_spin.setRange(0, 2 ** 31 - 1)
+        self.particle_seed_spin.setRange(0, 2**31 - 1)
         self.particle_seed_spin.setValue(20261112)
         self.particle_random_seed_button = QPushButton("RANDOMIZE")
         seed_row.addWidget(self.particle_seed_spin, 1)
@@ -746,10 +746,10 @@ class GeneratorsPanel(QWidget):
         self.blend_mode_combo.currentTextChanged.connect(self._apply_layer_appearance)
         self.opacity_slider.valueChanged.connect(self._apply_layer_appearance)
         for control in (
-                self.overlay_in_spin,
-                self.overlay_out_spin,
-                self.overlay_speed_spin,
-                self.overlay_frame_hold_spin,
+            self.overlay_in_spin,
+            self.overlay_out_spin,
+            self.overlay_speed_spin,
+            self.overlay_frame_hold_spin,
         ):
             control.valueChanged.connect(self._apply_overlay_settings)
         self.overlay_loop_check.toggled.connect(self._apply_overlay_settings)
@@ -803,11 +803,11 @@ class GeneratorsPanel(QWidget):
 
     @staticmethod
     def _slider(
-            form: QFormLayout,
-            title: str,
-            minimum: int,
-            maximum: int,
-            default: int,
+        form: QFormLayout,
+        title: str,
+        minimum: int,
+        maximum: int,
+        default: int,
     ) -> tuple[QSlider, QLabel]:
         row = QHBoxLayout()
         slider = QSlider(Qt.Orientation.Horizontal)
@@ -824,29 +824,29 @@ class GeneratorsPanel(QWidget):
 
     def _connect_live_updates(self) -> None:
         for widget in (
-                self.font_combo,
-                self.weight_combo,
-                self.text_color_mode_combo,
-                self.text_layout_combo,
-                self.text_writing_mode_combo,
-                self.text_path_mode_combo,
-                self.alignment_combo,
-                self.vertical_alignment_combo,
-                self.stroke_color,
-                self.primary_color,
-                self.secondary_color,
-                self.background_color,
-                self.animation_combo,
-                self.geometry_pattern_combo,
-                self.waveform_pattern_combo,
-                self.particle_mode_combo,
-                self.particle_emitter_combo,
-                self.particle_emitter_source_combo,
-                self.particle_emitter_map_combo,
-                self.particle_emitter_attempts_combo,
-                self.particle_direction_combo,
-                self.particle_force_combo,
-                self.particle_size_curve_combo,
+            self.font_combo,
+            self.weight_combo,
+            self.text_color_mode_combo,
+            self.text_layout_combo,
+            self.text_writing_mode_combo,
+            self.text_path_mode_combo,
+            self.alignment_combo,
+            self.vertical_alignment_combo,
+            self.stroke_color,
+            self.primary_color,
+            self.secondary_color,
+            self.background_color,
+            self.animation_combo,
+            self.geometry_pattern_combo,
+            self.waveform_pattern_combo,
+            self.particle_mode_combo,
+            self.particle_emitter_combo,
+            self.particle_emitter_source_combo,
+            self.particle_emitter_map_combo,
+            self.particle_emitter_attempts_combo,
+            self.particle_direction_combo,
+            self.particle_force_combo,
+            self.particle_size_curve_combo,
         ):
             signal = getattr(widget, "textChanged", None)
             if signal is None:
@@ -861,65 +861,65 @@ class GeneratorsPanel(QWidget):
             lambda: self._sync_particle_emitter_sources()
         )
         for slider in (
-                self.text_size_slider,
-                self.tracking_slider,
-                self.line_spacing_slider,
-                self.text_outline_slider,
-                self.collage_variation_slider,
-                self.geometry_density_slider,
-                self.geometry_width_slider,
-                self.waveform_density_slider,
-                self.waveform_width_slider,
-                self.amplitude_slider,
-                self.frequency_slider,
-                self.particle_density_slider,
-                self.particle_speed_slider,
-                self.particle_size_slider,
-                self.particle_spread_slider,
-                self.particle_trail_slider,
-                self.particle_system_count_slider,
-                self.particle_emission_rate_slider,
-                self.particle_population_slider,
-                self.particle_emitter_radius_slider,
-                self.particle_emitter_threshold_slider,
-                self.particle_emitter_interval_slider,
-                self.particle_reform_slider,
-                self.particle_lifetime_slider,
-                self.particle_system_speed_slider,
-                self.particle_system_spread_slider,
-                self.particle_turbulence_slider,
-                self.particle_turbulence_scale_slider,
-                self.particle_force_strength_slider,
-                self.particle_force_radius_slider,
-                self.particle_drag_slider,
-                self.particle_system_trail_slider,
-                self.particle_system_size_slider,
-                self.speed_slider,
-                self.amount_slider,
+            self.text_size_slider,
+            self.tracking_slider,
+            self.line_spacing_slider,
+            self.text_outline_slider,
+            self.collage_variation_slider,
+            self.geometry_density_slider,
+            self.geometry_width_slider,
+            self.waveform_density_slider,
+            self.waveform_width_slider,
+            self.amplitude_slider,
+            self.frequency_slider,
+            self.particle_density_slider,
+            self.particle_speed_slider,
+            self.particle_size_slider,
+            self.particle_spread_slider,
+            self.particle_trail_slider,
+            self.particle_system_count_slider,
+            self.particle_emission_rate_slider,
+            self.particle_population_slider,
+            self.particle_emitter_radius_slider,
+            self.particle_emitter_threshold_slider,
+            self.particle_emitter_interval_slider,
+            self.particle_reform_slider,
+            self.particle_lifetime_slider,
+            self.particle_system_speed_slider,
+            self.particle_system_spread_slider,
+            self.particle_turbulence_slider,
+            self.particle_turbulence_scale_slider,
+            self.particle_force_strength_slider,
+            self.particle_force_radius_slider,
+            self.particle_drag_slider,
+            self.particle_system_trail_slider,
+            self.particle_system_size_slider,
+            self.speed_slider,
+            self.amount_slider,
         ):
             slider.valueChanged.connect(self._schedule_apply)
         self.text_animation_combo.currentIndexChanged.connect(
             self._schedule_text_motion_apply
         )
         for slider in (
-                self.text_animation_speed_slider,
-                self.text_animation_amount_slider,
-                self.text_animation_columns_slider,
+            self.text_animation_speed_slider,
+            self.text_animation_amount_slider,
+            self.text_animation_columns_slider,
         ):
             slider.valueChanged.connect(self._schedule_text_motion_apply)
         self.shadow_check.toggled.connect(self._schedule_apply)
         for spin_box in (
-                self.particle_emitter_width_spin,
-                self.particle_emitter_height_spin,
-                self.particle_acceleration_x_spin,
-                self.particle_acceleration_y_spin,
-                self.particle_seed_spin,
+            self.particle_emitter_width_spin,
+            self.particle_emitter_height_spin,
+            self.particle_acceleration_x_spin,
+            self.particle_acceleration_y_spin,
+            self.particle_seed_spin,
         ):
             spin_box.valueChanged.connect(self._schedule_apply)
         self.particle_random_seed_button.clicked.connect(self._randomize_particle_seed)
 
     def _sync_particle_emitter_sources(
-            self, selected_source: str | None = None
+        self, selected_source: str | None = None
     ) -> None:
         selected = (
             str(selected_source)
@@ -931,8 +931,8 @@ class GeneratorsPanel(QWidget):
         self.particle_emitter_source_combo.addItem("No source", "")
         for candidate in self.application.composition.layers:
             if (
-                    candidate.source_type not in {"video", "overlay"}
-                    or not candidate.source_id
+                candidate.source_type not in {"video", "overlay"}
+                or not candidate.source_id
             ):
                 continue
             media_kind = (
@@ -1008,7 +1008,7 @@ class GeneratorsPanel(QWidget):
         return parsed
 
     def _randomize_particle_seed(self) -> None:
-        self.particle_seed_spin.setValue(random.randint(0, 2 ** 31 - 1))
+        self.particle_seed_spin.setValue(random.randint(0, 2**31 - 1))
 
     def _schedule_apply(self, *_args) -> None:
         layer = self._selected_layer()
@@ -1020,11 +1020,11 @@ class GeneratorsPanel(QWidget):
     def _schedule_text_motion_apply(self, *_args) -> None:
         layer = self._selected_layer()
         if (
-                self._loading
-                or layer is None
-                or layer.source_type != "generator"
-                or layer.generator_type != "text"
-                or layer.locked
+            self._loading
+            or layer is None
+            or layer.source_type != "generator"
+            or layer.generator_type != "text"
+            or layer.locked
         ):
             return
         self._pending_text_motion_layer_id = layer.id
@@ -1039,10 +1039,10 @@ class GeneratorsPanel(QWidget):
             return
         layer = self.application.composition.get_layer(target_id)
         if (
-                layer is None
-                or layer.source_type != "generator"
-                or layer.generator_type != "text"
-                or layer.locked
+            layer is None
+            or layer.source_type != "generator"
+            or layer.generator_type != "text"
+            or layer.locked
         ):
             return
         settings = dict(layer.generator_settings)
@@ -1052,9 +1052,9 @@ class GeneratorsPanel(QWidget):
                     self.text_animation_combo.currentData() or "none"
                 ),
                 "text_animation_speed": self.text_animation_speed_slider.value()
-                                        / 100.0,
+                / 100.0,
                 "text_animation_amount": (
-                        self.text_animation_amount_slider.value() / 1000.0
+                    self.text_animation_amount_slider.value() / 1000.0
                 ),
                 "text_animation_columns": self.text_animation_columns_slider.value(),
             }
@@ -1070,9 +1070,9 @@ class GeneratorsPanel(QWidget):
         # GeneratorRasterService request is made by this path. Only pause
         # automation on shader parameters that actually changed.
         for key in (
-                "text_animation_speed",
-                "text_animation_amount",
-                "text_animation_columns",
+            "text_animation_speed",
+            "text_animation_amount",
+            "text_animation_columns",
         ):
             if settings.get(key) != normalized.get(key):
                 self.manual_target_changed.emit(f"generator.{key}")
@@ -1102,8 +1102,8 @@ class GeneratorsPanel(QWidget):
         if layer is None:
             return
         if (
-                self._pending_text_layer_id == layer.id
-                and self.text_commit_pause_check.isChecked()
+            self._pending_text_layer_id == layer.id
+            and self.text_commit_pause_check.isChecked()
         ):
             self.commit_text()
         self._apply_non_text_settings(target_layer=layer)
@@ -1139,14 +1139,14 @@ class GeneratorsPanel(QWidget):
             self._set_text_raster_status(phase)
 
     def _on_text_raster_ready(
-            self, layer_id: str, _revision: int, _fingerprint: str, _pixels: object
+        self, layer_id: str, _revision: int, _fingerprint: str, _pixels: object
     ) -> None:
         if layer_id == self.layer_combo.currentData():
             phase = "editing" if self._pending_text_layer_id == layer_id else "ready"
             self._set_text_raster_status(phase)
 
     def _on_text_raster_failed(
-            self, layer_id: str, _revision: int, _fingerprint: str, message: str
+        self, layer_id: str, _revision: int, _fingerprint: str, message: str
     ) -> None:
         if layer_id == self.layer_combo.currentData():
             phase = "editing" if self._pending_text_layer_id == layer_id else "failed"
@@ -1188,11 +1188,11 @@ class GeneratorsPanel(QWidget):
         self._sync_text_raster_status()
 
     def commit_text(
-            self,
-            *,
-            request_raster: bool = True,
-            force_render: bool = False,
-            full_resolution: bool = False,
+        self,
+        *,
+        request_raster: bool = True,
+        force_render: bool = False,
+        full_resolution: bool = False,
     ) -> None:
         """Commit the current editor buffer without rebuilding other controls."""
         self._text_commit_timer.stop()
@@ -1205,10 +1205,10 @@ class GeneratorsPanel(QWidget):
             else self._selected_layer()
         )
         if (
-                layer is None
-                or layer.source_type != "generator"
-                or layer.generator_type != "text"
-                or layer.locked
+            layer is None
+            or layer.source_type != "generator"
+            or layer.generator_type != "text"
+            or layer.locked
         ):
             return
         text_snapshot = (
@@ -1255,7 +1255,7 @@ class GeneratorsPanel(QWidget):
         language = str(self.random_language_combo.currentData())
         theme = str(self.random_theme_combo.currentData())
         count = int(self.random_count_combo.currentData())
-        self._collage_seed = random.randrange(0, 2 ** 31 - 1)
+        self._collage_seed = random.randrange(0, 2**31 - 1)
         self.text_edit.setPlainText(
             random_text_sample(
                 language,
@@ -1439,14 +1439,14 @@ class GeneratorsPanel(QWidget):
                 max(0, self.overlay_mask_source.findData(layer.overlay_mask_source))
             )
             for control in (
-                    self.overlay_in_spin,
-                    self.overlay_out_spin,
-                    self.overlay_speed_spin,
-                    self.overlay_frame_hold_spin,
-                    self.overlay_loop_check,
-                    self.overlay_scene_sync_check,
-                    self.overlay_mask_mode,
-                    self.overlay_mask_source,
+                self.overlay_in_spin,
+                self.overlay_out_spin,
+                self.overlay_speed_spin,
+                self.overlay_frame_hold_spin,
+                self.overlay_loop_check,
+                self.overlay_scene_sync_check,
+                self.overlay_mask_mode,
+                self.overlay_mask_source,
             ):
                 control.blockSignals(False)
 
@@ -1741,9 +1741,9 @@ class GeneratorsPanel(QWidget):
             self.amount_slider,
         )
         if any(
-                control.hasFocus()
-                or (isinstance(control, QSlider) and control.isSliderDown())
-                for control in editable_controls
+            control.hasFocus()
+            or (isinstance(control, QSlider) and control.isSliderDown())
+            for control in editable_controls
         ):
             return
         self.opacity_slider.blockSignals(True)
@@ -2010,10 +2010,10 @@ class GeneratorsPanel(QWidget):
     def _apply_overlay_settings(self, *_args) -> None:
         layer = self._selected_layer()
         if (
-                layer is None
-                or layer.source_type != "overlay"
-                or layer.locked
-                or self._loading
+            layer is None
+            or layer.source_type != "overlay"
+            or layer.locked
+            or self._loading
         ):
             return
         self.application.layer_manager.update_layer(
@@ -2043,10 +2043,10 @@ class GeneratorsPanel(QWidget):
     def apply_text_immediately(self) -> None:
         layer = self._selected_layer()
         if (
-                layer is None
-                or layer.source_type != "generator"
-                or layer.generator_type != "text"
-                or layer.locked
+            layer is None
+            or layer.source_type != "generator"
+            or layer.generator_type != "text"
+            or layer.locked
         ):
             return
         self._text_commit_timer.stop()
@@ -2078,11 +2078,11 @@ class GeneratorsPanel(QWidget):
         self._apply_non_text_settings()
 
     def _apply_non_text_settings(
-            self,
-            target_layer=None,
-            *,
-            force_text_raster: bool = False,
-            full_resolution: bool = False,
+        self,
+        target_layer=None,
+        *,
+        force_text_raster: bool = False,
+        full_resolution: bool = False,
     ) -> None:
         layer = target_layer or self._selected_layer()
         if layer is None or layer.locked:
@@ -2147,7 +2147,7 @@ class GeneratorsPanel(QWidget):
                     "text_layout": str(self.text_layout_combo.currentData()),
                     "collage_seed": self._collage_seed,
                     "collage_font_variation": self.collage_variation_slider.value()
-                                              / 100.0,
+                    / 100.0,
                     "font_family": self.font_combo.currentText().strip() or "Arial",
                     "font_size": self.text_size_slider.value(),
                     "font_weight": int(self.weight_combo.currentData()),
@@ -2205,20 +2205,20 @@ class GeneratorsPanel(QWidget):
                         self.particle_emitter_map_combo.currentData() or "luminance"
                     ),
                     "emitter_threshold": (
-                            self.particle_emitter_threshold_slider.value() / 100.0
+                        self.particle_emitter_threshold_slider.value() / 100.0
                     ),
                     "emitter_sample_attempts": int(
                         self.particle_emitter_attempts_combo.currentData() or 12
                     ),
                     "emitter_sample_interval": (
-                            self.particle_emitter_interval_slider.value() / 10.0
+                        self.particle_emitter_interval_slider.value() / 10.0
                     ),
                     "reform_strength": self.particle_reform_slider.value() / 100.0,
                     "path_points": self._read_particle_path_points(
                         settings.get("path_points", [])
                     ),
                     "emitter_radius": self.particle_emitter_radius_slider.value()
-                                      / 100.0,
+                    / 100.0,
                     "emitter_size": [
                         self.particle_emitter_width_spin.value(),
                         self.particle_emitter_height_spin.value(),
@@ -2233,10 +2233,10 @@ class GeneratorsPanel(QWidget):
                     ],
                     "turbulence": self.particle_turbulence_slider.value() / 100.0,
                     "turbulence_scale": self.particle_turbulence_scale_slider.value()
-                                        / 10.0,
+                    / 10.0,
                     "force_type": self.particle_force_combo.currentText(),
                     "force_strength": self.particle_force_strength_slider.value()
-                                      / 100.0,
+                    / 100.0,
                     "force_radius": self.particle_force_radius_slider.value() / 100.0,
                     "drag": self.particle_drag_slider.value() / 100.0,
                     "trail": self.particle_system_trail_slider.value() / 100.0,

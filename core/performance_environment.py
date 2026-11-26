@@ -104,13 +104,13 @@ class MIDIMappingEngine:
         return value
 
     def process(
-            self,
-            device_id: str,
-            message: str,
-            channel: int,
-            number: int,
-            value: float,
-            current_targets: dict[str, float] | None = None,
+        self,
+        device_id: str,
+        message: str,
+        channel: int,
+        number: int,
+        value: float,
+        current_targets: dict[str, float] | None = None,
     ) -> list[tuple[str, float]]:
         physical = float(value)
         if not math.isfinite(physical):
@@ -127,15 +127,15 @@ class MIDIMappingEngine:
             self._previous[item.mapping_id] = physical
             if item.pickup and item.target in current_targets:
                 target_norm = (float(current_targets[item.target]) - item.minimum) / (
-                        item.maximum - item.minimum
+                    item.maximum - item.minimum
                 )
                 crossed = (
-                        previous is not None
-                        and (previous - target_norm) * (physical - target_norm) <= 0
+                    previous is not None
+                    and (previous - target_norm) * (physical - target_norm) <= 0
                 )
                 close = abs(physical - target_norm) <= 0.015
                 if not (
-                        self._pickup_armed.get(item.mapping_id, False) or crossed or close
+                    self._pickup_armed.get(item.mapping_id, False) or crossed or close
                 ):
                     continue
                 self._pickup_armed[item.mapping_id] = True
@@ -183,14 +183,14 @@ class PerformanceScene:
             self.quantization = "bar"
         self.cue = str(self.cue).strip()
         if self.cue and (
-                len(self.cue) > 64
-                or any(
-            character
-            not in (
+            len(self.cue) > 64
+            or any(
+                character
+                not in (
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.:-"
+                )
+                for character in self.cue
             )
-            for character in self.cue
-        )
         ):
             raise ValueError(
                 "OSC scene cue must be 1–64 characters using letters, numbers, "
@@ -242,13 +242,13 @@ class PerformanceSetStore:
 
     @staticmethod
     def build_payload(
-            composition: dict[str, Any],
-            decks: list[dict[str, Any]],
-            effects: dict[str, Any],
-            automation_settings: dict[str, Any],
-            performance_settings: dict[str, Any],
-            scenes: list[PerformanceScene] | None = None,
-            midi_mappings: list[MIDIMapping] | None = None,
+        composition: dict[str, Any],
+        decks: list[dict[str, Any]],
+        effects: dict[str, Any],
+        automation_settings: dict[str, Any],
+        performance_settings: dict[str, Any],
+        scenes: list[PerformanceScene] | None = None,
+        midi_mappings: list[MIDIMapping] | None = None,
     ) -> dict[str, Any]:
         return {
             "format": PERF_SET_FORMAT,
@@ -292,13 +292,13 @@ class PerformanceSetStore:
                 f"Performance set version {version} is newer than supported."
             )
         for key, expected in (
-                ("composition", dict),
-                ("decks", list),
-                ("effects", dict),
-                ("automation_settings", dict),
-                ("performance_settings", dict),
-                ("scenes", list),
-                ("midi_mappings", list),
+            ("composition", dict),
+            ("decks", list),
+            ("effects", dict),
+            ("automation_settings", dict),
+            ("performance_settings", dict),
+            ("scenes", list),
+            ("midi_mappings", list),
         ):
             if key in data and not isinstance(data[key], expected):
                 raise ValueError(f"Invalid performance set field: {key}")

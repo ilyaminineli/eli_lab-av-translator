@@ -49,7 +49,7 @@ class WheelGuard(QObject):
 
     def eventFilter(self, watched: QObject, event: QEvent) -> bool:
         if event.type() != QEvent.Type.Wheel or not isinstance(
-                watched, self._PROTECTED_CONTROLS
+            watched, self._PROTECTED_CONTROLS
         ):
             return False
 

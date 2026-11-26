@@ -623,10 +623,10 @@ void main() {
 
 
 def canvas_fit_scale(
-        output_width: int,
-        output_height: int,
-        canvas_width: int,
-        canvas_height: int,
+    output_width: int,
+    output_height: int,
+    canvas_width: int,
+    canvas_height: int,
 ) -> tuple[float, float]:
     """Return normalized UV scale that letterboxes a canvas without distortion."""
     output_aspect = max(1, int(output_width)) / max(1, int(output_height))
@@ -732,7 +732,7 @@ class Compositor:
             if len(hex_value) != 6:
                 raise ValueError("Expected six-digit colour")
             return tuple(
-                int(hex_value[offset: offset + 2], 16) / 255.0 for offset in (0, 2, 4)
+                int(hex_value[offset : offset + 2], 16) / 255.0 for offset in (0, 2, 4)
             )
         except (TypeError, ValueError):
             return (0.91, 0.89, 0.84)
@@ -744,9 +744,9 @@ class Compositor:
         height, width, components = frame.shape
         texture = self.source_textures.get(source_id)
         if (
-                texture is None
-                or texture.size != (width, height)
-                or texture.components != components
+            texture is None
+            or texture.size != (width, height)
+            or texture.components != components
         ):
             if texture is not None:
                 texture.release()
@@ -786,13 +786,13 @@ class Compositor:
         self.size = (width, height)
 
     def _apply_effects(
-            self,
-            texture: moderngl.Texture,
-            target_fbo: int,
-            width: int,
-            height: int,
-            effects: EffectSettings,
-            time_seconds: float,
+        self,
+        texture: moderngl.Texture,
+        target_fbo: int,
+        width: int,
+        height: int,
+        effects: EffectSettings,
+        time_seconds: float,
     ) -> None:
         destination = self.ctx.detect_framebuffer(glo=int(target_fbo))
         destination.use()
@@ -859,15 +859,15 @@ class Compositor:
         self.post_vao.render(mode=moderngl.TRIANGLE_STRIP)
 
     def render(
-            self,
-            layers: list[Layer],
-            target_fbo: int,
-            width: int,
-            height: int,
-            effects: EffectSettings | None = None,
-            time_seconds: float = 0.0,
-            canvas_width: int = 1920,
-            canvas_height: int = 1080,
+        self,
+        layers: list[Layer],
+        target_fbo: int,
+        width: int,
+        height: int,
+        effects: EffectSettings | None = None,
+        time_seconds: float = 0.0,
+        canvas_width: int = 1920,
+        canvas_height: int = 1080,
     ) -> None:
         self._resize_targets(width, height)
         self.composite_program["u_canvas_scale"].value = canvas_fit_scale(
@@ -893,10 +893,10 @@ class Compositor:
         # Particle allocation is deterministic by layer order and globally bounded.
         for particle_layer in ordered_layers:
             if (
-                    particle_layer.source_type != "generator"
-                    or particle_layer.generator_type != "particle_system_2"
-                    or not particle_layer.visible
-                    or particle_layer.opacity <= 0.0
+                particle_layer.source_type != "generator"
+                or particle_layer.generator_type != "particle_system_2"
+                or not particle_layer.visible
+                or particle_layer.opacity <= 0.0
             ):
                 continue
             if active_particle_systems >= self.MAX_PRTL_SYSS or particle_budget <= 0:
@@ -969,7 +969,7 @@ class Compositor:
             layer.id
             for layer in ordered_layers
             if layer.source_type == "generator"
-               and layer.generator_type == "particle_system_2"
+            and layer.generator_type == "particle_system_2"
         }
         for layer_id in tuple(self.particle_systems):
             last_active = self.particle_system_last_active.get(layer_id)
@@ -980,8 +980,8 @@ class Compositor:
             )
             removed = layer_id not in live_particle_ids
             expired = (
-                    layer_id not in active_particle_ids
-                    and inactive_for > self.PRTL_RETENTION_SECONDS
+                layer_id not in active_particle_ids
+                and inactive_for > self.PRTL_RETENTION_SECONDS
             )
             if removed or expired:
                 self.particle_systems.pop(layer_id).release()
@@ -992,11 +992,11 @@ class Compositor:
             if not layer.visible or layer.opacity <= 0.0:
                 continue
             is_particle_layer = (
-                    layer.source_type == "generator" and layer.generator_type == "particles"
+                layer.source_type == "generator" and layer.generator_type == "particles"
             )
             is_particle_system = (
-                    layer.source_type == "generator"
-                    and layer.generator_type == "particle_system_2"
+                layer.source_type == "generator"
+                and layer.generator_type == "particle_system_2"
             )
             layer_texture = (
                 particle_outputs.get(layer.id)
@@ -1130,17 +1130,17 @@ class Compositor:
                 layer_fx["enabled"]
             )
             for uniform, key in (
-                    ("u_layer_fx_mix", "mix"),
-                    ("u_layer_fx_monochrome", "monochrome"),
-                    ("u_layer_fx_invert", "invert"),
-                    ("u_layer_fx_threshold", "threshold"),
-                    ("u_layer_fx_posterize", "posterize"),
-                    ("u_layer_fx_hue", "hue"),
-                    ("u_layer_fx_saturation", "saturation"),
-                    ("u_layer_fx_contrast", "contrast"),
-                    ("u_layer_fx_brightness", "brightness"),
-                    ("u_layer_fx_scanlines", "scanlines"),
-                    ("u_layer_fx_chromatic", "chromatic"),
+                ("u_layer_fx_mix", "mix"),
+                ("u_layer_fx_monochrome", "monochrome"),
+                ("u_layer_fx_invert", "invert"),
+                ("u_layer_fx_threshold", "threshold"),
+                ("u_layer_fx_posterize", "posterize"),
+                ("u_layer_fx_hue", "hue"),
+                ("u_layer_fx_saturation", "saturation"),
+                ("u_layer_fx_contrast", "contrast"),
+                ("u_layer_fx_brightness", "brightness"),
+                ("u_layer_fx_scanlines", "scanlines"),
+                ("u_layer_fx_chromatic", "chromatic"),
             ):
                 self.composite_program[uniform].value = float(layer_fx[key])
             self.composite_vao.render(mode=moderngl.TRIANGLE_STRIP)
@@ -1149,7 +1149,7 @@ class Compositor:
         active_effects = effects or EffectSettings()
         active_effects.clamp()
         feedback_active = (
-                active_effects.feedback_enabled and active_effects.feedback_amount > 0.0001
+            active_effects.feedback_enabled and active_effects.feedback_amount > 0.0001
         )
         post_target_fbo = (
             self.post_framebuffer.glo

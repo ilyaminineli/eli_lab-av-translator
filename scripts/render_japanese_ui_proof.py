@@ -44,11 +44,11 @@ def render_preview(destination: Path) -> None:
             (
                 family
                 for family in (
-                "Yu Gothic UI",
-                "Meiryo UI",
-                "BIZ UDGothic",
-                "Noto Sans JP",
-            )
+                    "Yu Gothic UI",
+                    "Meiryo UI",
+                    "BIZ UDGothic",
+                    "Noto Sans JP",
+                )
                 if family in installed
             ),
             "",

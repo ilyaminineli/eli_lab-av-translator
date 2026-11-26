@@ -352,17 +352,17 @@ class MainWindow(QMainWindow):
             self.generators_panel.refresh
         )
         for signal in (
-                self.generators_panel.composition_changed,
-                self.layer_panel.layers_changed,
-                self.layer_panel.layer_properties_changed,
-                self.effects_panel.manual_parameter_changed,
-                self.modulator_bank_panel.bank_changed,
-                self.modulator_bank_panel.assignment_created,
-                self.asset_library_panel.composition_changed,
-                self.deck_panel.action_requested,
-                self.deck_panel.loop_changed,
-                self.deck_panel.lock_changed,
-                self.performance_control_panel.macros_changed,
+            self.generators_panel.composition_changed,
+            self.layer_panel.layers_changed,
+            self.layer_panel.layer_properties_changed,
+            self.effects_panel.manual_parameter_changed,
+            self.modulator_bank_panel.bank_changed,
+            self.modulator_bank_panel.assignment_created,
+            self.asset_library_panel.composition_changed,
+            self.deck_panel.action_requested,
+            self.deck_panel.loop_changed,
+            self.deck_panel.lock_changed,
+            self.performance_control_panel.macros_changed,
         ):
             signal.connect(self._schedule_session_autosave)
 
@@ -549,7 +549,7 @@ class MainWindow(QMainWindow):
     def _sync_responsive_dock_constraints(self) -> None:
         """Relax dock minimums for 4:3 and compact projector workspaces."""
         if not getattr(self, "_responsive_layout_ready", False) or not hasattr(
-                self, "media_dock"
+            self, "media_dock"
         ):
             return
         compact = self._is_compact_workspace()
@@ -561,13 +561,13 @@ class MainWindow(QMainWindow):
         for dock in (self.media_dock, self.asset_library_dock):
             dock.setMinimumWidth(side_minimum)
         for dock in (
-                self.layer_dock,
-                self.effects_dock,
-                self.automation_dock,
-                self.preview_dock,
-                self.performance_control_dock,
-                self.modulator_bank_dock,
-                self.performance_timeline_dock,
+            self.layer_dock,
+            self.effects_dock,
+            self.automation_dock,
+            self.preview_dock,
+            self.performance_control_dock,
+            self.modulator_bank_dock,
+            self.performance_timeline_dock,
         ):
             dock.setMinimumWidth(right_minimum)
         self.deck_dock.setMinimumHeight(180 if compact else 220)
@@ -656,13 +656,13 @@ class MainWindow(QMainWindow):
                 "Could not restore the built-in dock-state snapshot; rebuilding sizes."
             )
         for dock in (
-                self.deck_dock,
-                self.layer_dock,
-                self.effects_dock,
-                self.automation_dock,
-                self.performance_control_dock,
-                self.modulator_bank_dock,
-                self.performance_timeline_dock,
+            self.deck_dock,
+            self.layer_dock,
+            self.effects_dock,
+            self.automation_dock,
+            self.performance_control_dock,
+            self.modulator_bank_dock,
+            self.performance_timeline_dock,
         ):
             dock.show()
         self.media_dock.hide()
@@ -824,9 +824,9 @@ class MainWindow(QMainWindow):
         view_menu.addAction(restore_layout_action)
         workspace_menu = view_menu.addMenu(tr("menu.workspace", self._language))
         for index, label, shortcut in (
-                (0, tr("workspace.perf", self._language), "Ctrl+1"),
-                (1, tr("workspace.compose", self._language), "Ctrl+2"),
-                (2, tr("workspace.prepare", self._language), "Ctrl+3"),
+            (0, tr("workspace.perf", self._language), "Ctrl+1"),
+            (1, tr("workspace.compose", self._language), "Ctrl+2"),
+            (2, tr("workspace.prepare", self._language), "Ctrl+3"),
         ):
             action = QAction(label, self)
             action.setShortcut(QKeySequence(shortcut))
@@ -838,13 +838,13 @@ class MainWindow(QMainWindow):
             workspace_menu.addAction(action)
         view_menu.addSeparator()
         for dock in (
-                self.deck_dock,
-                self.layer_dock,
-                self.effects_dock,
-                self.automation_dock,
-                self.performance_control_dock,
-                self.modulator_bank_dock,
-                self.performance_timeline_dock,
+            self.deck_dock,
+            self.layer_dock,
+            self.effects_dock,
+            self.automation_dock,
+            self.performance_control_dock,
+            self.modulator_bank_dock,
+            self.performance_timeline_dock,
         ):
             view_menu.addAction(dock.toggleViewAction())
 
@@ -894,8 +894,8 @@ class MainWindow(QMainWindow):
             duration = self.automation_panel.duration_combo.currentData()
             plan = PerformanceModePlan(
                 osc_bind_address=(
-                        self.performance_control_panel.osc_bind_edit.text().strip()
-                        or "127.0.0.1"
+                    self.performance_control_panel.osc_bind_edit.text().strip()
+                    or "127.0.0.1"
                 ),
                 osc_port=self.performance_control_panel.osc_port_spin.value(),
                 audio_device_id=audio_device_id,
@@ -1042,7 +1042,7 @@ class MainWindow(QMainWindow):
             if self.output_manager.window is not None:
                 self.output_manager.close()
             self._restore_local_preview_on_close = (
-                    self.workspace_tabs.currentIndex() == 0
+                self.workspace_tabs.currentIndex() == 0
             )
             window = self.output_manager.open_on_screen(screen)
             if self._restore_local_preview_on_close:
@@ -1233,10 +1233,10 @@ class MainWindow(QMainWindow):
         self.layer_panel.refresh()
 
     def start_automation(
-            self,
-            collection_id: str | None,
-            duration_seconds: float | None,
-            settings,
+        self,
+        collection_id: str | None,
+        duration_seconds: float | None,
+        settings,
     ) -> None:
         try:
             count = self.application.start_automation(
@@ -1559,9 +1559,9 @@ class MainWindow(QMainWindow):
 
     def _autosave_session(self, *_args) -> None:
         if (
-                not self._restore_session_enabled
-                or self._restoring_session
-                or self.application.current_project_path == self._recovery_path
+            not self._restore_session_enabled
+            or self._restoring_session
+            or self.application.current_project_path == self._recovery_path
         ):
             return
         previous_project_path = self.application.current_project_path

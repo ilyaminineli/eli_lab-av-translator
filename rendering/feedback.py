@@ -129,7 +129,7 @@ class FeedbackEngine:
     HISTORY_LEN = 5
 
     def __init__(
-            self, context: moderngl.Context, vertex_buffer: moderngl.Buffer
+        self, context: moderngl.Context, vertex_buffer: moderngl.Buffer
     ) -> None:
         self.ctx = context
         self.program = context.program(
@@ -186,13 +186,13 @@ class FeedbackEngine:
             self.reset_generation = int(reset_generation)
 
     def render(
-            self,
-            current_texture: moderngl.Texture,
-            target_fbo: int,
-            width: int,
-            height: int,
-            settings: EffectSettings,
-            time_seconds: float,
+        self,
+        current_texture: moderngl.Texture,
+        target_fbo: int,
+        width: int,
+        height: int,
+        settings: EffectSettings,
+        time_seconds: float,
     ) -> None:
         settings.clamp()
         self.resize(width, height, settings.feedback_reset_generation)

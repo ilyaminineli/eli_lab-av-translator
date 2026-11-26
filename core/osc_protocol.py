@@ -77,12 +77,12 @@ class OSCProtocolAdapter:
             return self._active_session
 
     def decode(
-            self, address: str, args: tuple[object, ...] | list[object]
+        self, address: str, args: tuple[object, ...] | list[object]
     ) -> ControlEvent:
         """Translate one OSC message into a validated, renderer-independent event."""
         if not isinstance(address, str) or not address.startswith(f"{_NAMESPACE}/"):
             raise ValueError("Unsupported OSC address or protocol namespace.")
-        parts = address[len(_NAMESPACE):].strip("/").split("/")
+        parts = address[len(_NAMESPACE) :].strip("/").split("/")
         route = "/".join(parts)
         values = tuple(args)
         if len(values) < 2:
@@ -198,11 +198,11 @@ class OSCReceiver:
     """Single-worker UDP OSC receiver that only submits ControlEvents to a bounded queue."""
 
     def __init__(
-            self,
-            submit_event: Callable[[ControlEvent], bool],
-            *,
-            max_messages_per_second: int = 60,
-            freshness_seconds: float = 5.0,
+        self,
+        submit_event: Callable[[ControlEvent], bool],
+        *,
+        max_messages_per_second: int = 60,
+        freshness_seconds: float = 5.0,
     ) -> None:
         self._submit_event = submit_event
         self.adapter = OSCProtocolAdapter()

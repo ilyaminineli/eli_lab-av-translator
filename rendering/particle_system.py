@@ -472,7 +472,7 @@ class ParticleSystem2:
     OUTPUT_SCALE = 0.5
 
     def __init__(
-            self, context: moderngl.Context, vertex_buffer: moderngl.Buffer
+        self, context: moderngl.Context, vertex_buffer: moderngl.Buffer
     ) -> None:
         self.ctx = context
         self.simulation_program = context.program(
@@ -540,7 +540,7 @@ class ParticleSystem2:
             if len(hex_value) != 6:
                 raise ValueError("Expected six-digit colour")
             return tuple(
-                int(hex_value[offset: offset + 2], 16) / 255.0 for offset in (0, 2, 4)
+                int(hex_value[offset : offset + 2], 16) / 255.0 for offset in (0, 2, 4)
             )
         except (TypeError, ValueError):
             return (0.91, 0.89, 0.84)
@@ -634,13 +634,13 @@ class ParticleSystem2:
         self.path_signature = signature
 
     def _ensure_populations(
-            self,
-            particle_count: int,
-            population_count: int,
-            seed: int,
-            emitter_type: str,
-            emitter_source_id: str,
-            path_signature: tuple[tuple[float, float], ...],
+        self,
+        particle_count: int,
+        population_count: int,
+        seed: int,
+        emitter_type: str,
+        emitter_source_id: str,
+        path_signature: tuple[tuple[float, float], ...],
     ) -> None:
         signature = (
             particle_count,
@@ -658,7 +658,7 @@ class ParticleSystem2:
             count = base_count + (1 if index < remainder else 0)
             if count <= 0:
                 continue
-            population_seed = (seed + index * 104729) % (2 ** 31 - 1)
+            population_seed = (seed + index * 104729) % (2**31 - 1)
             self.populations.append(self._create_population(count, population_seed))
         self.signature = signature
         self.accumulator = 0.0
@@ -688,12 +688,12 @@ class ParticleSystem2:
         self.trail_index = 0
 
     def _simulation_uniforms(
-            self,
-            population: _Population,
-            settings: dict[str, object],
-            time_seconds: float,
-            delta: float,
-            population_index: int,
+        self,
+        population: _Population,
+        settings: dict[str, object],
+        time_seconds: float,
+        delta: float,
+        population_index: int,
     ) -> None:
         program = self.simulation_program
         center = tuple(float(value) for value in settings["emitter_center"])
@@ -777,7 +777,7 @@ class ParticleSystem2:
             }.get(str(settings["direction"]), 0),
             "u_lifetime": float(settings["lifetime"]),
             "u_emission_rate": (
-                    float(settings["emission_rate"]) / max(1, len(self.populations))
+                float(settings["emission_rate"]) / max(1, len(self.populations))
             ),
             "u_speed": float(settings["speed"]) * (0.78 + population_index * 0.16),
             "u_spread": float(settings["spread"]),
@@ -799,10 +799,10 @@ class ParticleSystem2:
             program[uniform].value = value
 
     def _step(
-            self,
-            settings: dict[str, object],
-            time_seconds: float,
-            delta: float,
+        self,
+        settings: dict[str, object],
+        time_seconds: float,
+        delta: float,
     ) -> None:
         for index, population in enumerate(self.populations):
             write_index = 1 - population.index
@@ -818,10 +818,10 @@ class ParticleSystem2:
             population.index = write_index
 
     def _draw_population(
-            self,
-            population: _Population,
-            settings: dict[str, object],
-            population_index: int,
+        self,
+        population: _Population,
+        settings: dict[str, object],
+        population_index: int,
     ) -> None:
         program = self.particle_program
         population.states[population.index].use(location=0)
@@ -858,16 +858,16 @@ class ParticleSystem2:
         )
 
     def render(
-            self,
-            settings: dict[str, object],
-            width: int,
-            height: int,
-            time_seconds: float,
-            particle_limit: int | None = None,
-            emitter_source: moderngl.Texture | None = None,
-            emitter_source_transform: (
-                    tuple[tuple[float, float], tuple[float, float], float] | None
-            ) = None,
+        self,
+        settings: dict[str, object],
+        width: int,
+        height: int,
+        time_seconds: float,
+        particle_limit: int | None = None,
+        emitter_source: moderngl.Texture | None = None,
+        emitter_source_transform: (
+            tuple[tuple[float, float], tuple[float, float], float] | None
+        ) = None,
     ) -> moderngl.Texture | None:
         normalized = normalize_settings("particle_system_2", settings)
         requested = int(normalized["particle_count"])

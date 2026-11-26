@@ -307,10 +307,10 @@ class PerformanceControlPanel(QWidget):
         )
         self.performance_scene_quantization = QComboBox()
         for label, value in (
-                ("Immediate", "immediate"),
-                ("Next beat", "beat"),
-                ("Next bar", "bar"),
-                ("Next phrase", "phrase"),
+            ("Immediate", "immediate"),
+            ("Next beat", "beat"),
+            ("Next bar", "bar"),
+            ("Next phrase", "phrase"),
         ):
             self.performance_scene_quantization.addItem(label, value)
         self.performance_scene_morph = QDoubleSpinBox()
@@ -325,10 +325,10 @@ class PerformanceControlPanel(QWidget):
         )
         self.performance_scene_curve = QComboBox()
         for label, value in (
-                ("Linear", "linear"),
-                ("Smoothstep", "smoothstep"),
-                ("Ease in", "ease_in"),
-                ("Ease out", "ease_out"),
+            ("Linear", "linear"),
+            ("Smoothstep", "smoothstep"),
+            ("Ease in", "ease_in"),
+            ("Ease out", "ease_out"),
         ):
             self.performance_scene_curve.addItem(label, value)
         self.performance_scene_curve.setCurrentIndex(
@@ -470,11 +470,11 @@ class PerformanceControlPanel(QWidget):
         audio_layout.addWidget(self.audio_state_label)
         self.audio_meter_bars: dict[str, QProgressBar] = {}
         for key, label in (
-                ("rms", "RMS / ENERGY"),
-                ("low", "LOW"),
-                ("mid", "MID"),
-                ("high", "HIGH"),
-                ("onset", "ONSET"),
+            ("rms", "RMS / ENERGY"),
+            ("low", "LOW"),
+            ("mid", "MID"),
+            ("high", "HIGH"),
+            ("onset", "ONSET"),
         ):
             row = QHBoxLayout()
             row.addWidget(QLabel(label))
@@ -720,7 +720,7 @@ class PerformanceControlPanel(QWidget):
             for scene in scenes
         )
         if not force and signature == getattr(
-                self, "_performance_scene_signature", None
+            self, "_performance_scene_signature", None
         ):
             return
         selected = self.performance_scene_list.currentItem()
@@ -774,8 +774,8 @@ class PerformanceControlPanel(QWidget):
             return
         scene_id = str(item.data(Qt.ItemDataRole.UserRole))
         if self.application.schedule_performance_scene(
-                scene_id,
-                morph_seconds=self.performance_scene_morph.value(),
+            scene_id,
+            morph_seconds=self.performance_scene_morph.value(),
         ):
             set_ui_text(
                 self.midi_status_label,
@@ -963,10 +963,10 @@ class PerformanceControlPanel(QWidget):
         self.midi_mapping_list.clear()
         for mapping in mappings:
             label = (
-                    f"{mapping.device_id} · CH {mapping.channel + 1} · "
-                    f"{mapping.message.upper()} {mapping.number} → {mapping.target} · "
-                    f"{mapping.minimum:g}…{mapping.maximum:g} · {mapping.curve}"
-                    + (" · PICKUP" if mapping.pickup else "")
+                f"{mapping.device_id} · CH {mapping.channel + 1} · "
+                f"{mapping.message.upper()} {mapping.number} → {mapping.target} · "
+                f"{mapping.minimum:g}…{mapping.maximum:g} · {mapping.curve}"
+                + (" · PICKUP" if mapping.pickup else "")
             )
             item = QListWidgetItem(label)
             item.setData(Qt.ItemDataRole.UserRole, mapping.mapping_id)
@@ -1060,9 +1060,9 @@ class PerformanceControlPanel(QWidget):
 
         settings = self.application.audio_capture.settings
         for control, value in (
-                (self.sensitivity_spin, settings.sensitivity),
-                (self.audio_attack_spin, settings.attack_ms),
-                (self.audio_release_spin, settings.release_ms),
+            (self.sensitivity_spin, settings.sensitivity),
+            (self.audio_attack_spin, settings.attack_ms),
+            (self.audio_release_spin, settings.release_ms),
         ):
             control.blockSignals(True)
             control.setValue(value)
@@ -1102,10 +1102,10 @@ class PerformanceControlPanel(QWidget):
 
     @staticmethod
     def _float_spin(
-            minimum: float,
-            maximum: float,
-            step: float,
-            value: float,
+        minimum: float,
+        maximum: float,
+        step: float,
+        value: float,
     ) -> QDoubleSpinBox:
         spin = QDoubleSpinBox()
         spin.setRange(minimum, maximum)
@@ -1384,7 +1384,7 @@ class PerformanceControlPanel(QWidget):
         target_id = str(self.target_combo.currentData())
         selected = self.route_list.currentItem()
         if selected is None and any(
-                route.target_id == target_id for route in self.application.modulation.routes
+            route.target_id == target_id for route in self.application.modulation.routes
         ):
             set_ui_text(
                 self.modulation_status,
@@ -1462,15 +1462,15 @@ class PerformanceControlPanel(QWidget):
             control.blockSignals(False)
         self._target_changed()
         for control, value in (
-                (self.input_min_spin, route.input_min),
-                (self.input_max_spin, route.input_max),
-                (self.output_min_spin, route.output_min),
-                (self.output_max_spin, route.output_max),
-                (self.ceiling_spin, route.intensity_ceiling),
-                (self.smoothing_spin, route.smoothing_ms),
-                (self.attack_spin, route.attack_ms),
-                (self.release_spin, route.release_ms),
-                (self.hold_spin, route.hold_ms),
+            (self.input_min_spin, route.input_min),
+            (self.input_max_spin, route.input_max),
+            (self.output_min_spin, route.output_min),
+            (self.output_max_spin, route.output_max),
+            (self.ceiling_spin, route.intensity_ceiling),
+            (self.smoothing_spin, route.smoothing_ms),
+            (self.attack_spin, route.attack_ms),
+            (self.release_spin, route.release_ms),
+            (self.hold_spin, route.hold_ms),
         ):
             control.setValue(value)
         self.invert_check.setChecked(route.inverted)
@@ -1532,9 +1532,9 @@ class PerformanceControlPanel(QWidget):
         self.macros_changed.emit()
 
     def _performance_macro_shortcut_changed(
-            self,
-            macro_id: str,
-            sequence: QKeySequence,
+        self,
+        macro_id: str,
+        sequence: QKeySequence,
     ) -> None:
         current = self.application.performance_macro_engine.get(macro_id)
         if current is None:
@@ -1723,9 +1723,9 @@ class PerformanceControlPanel(QWidget):
             )
         state = self.application.audio_capture.state
         if (
-                self.application.audio_capture.source_kind in {"input", "loopback"}
-                and state == AudioCaptureState.RUNNING
-                and time.monotonic() - self._last_device_poll >= 3.0
+            self.application.audio_capture.source_kind in {"input", "loopback"}
+            and state == AudioCaptureState.RUNNING
+            and time.monotonic() - self._last_device_poll >= 3.0
         ):
             self._last_device_poll = time.monotonic()
             self.application.audio_capture.refresh_device_state()

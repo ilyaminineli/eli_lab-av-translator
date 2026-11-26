@@ -66,9 +66,9 @@ class MediaLibrary:
             connection.execute(f"ALTER TABLE {temporary_name} RENAME TO {table_name}")
 
     def __init__(
-            self,
-            database_path: str | Path | None = None,
-            thumbnail_directory: str | Path | None = None,
+        self,
+        database_path: str | Path | None = None,
+        thumbnail_directory: str | Path | None = None,
     ) -> None:
         self.database_path = Path(database_path or MEDIA_DB_PATH).expanduser()
         self.thumbnail_directory = Path(thumbnail_directory or THUMB_DIR).expanduser()
@@ -147,8 +147,8 @@ class MediaLibrary:
                 # the sample file's ancestor directories.
                 for candidate in sample.parents:
                     if (
-                            self.scanner.collection_id_for(candidate)
-                            == row["collection_id"]
+                        self.scanner.collection_id_for(candidate)
+                        == row["collection_id"]
                     ):
                         root = candidate
                         break
@@ -161,7 +161,7 @@ class MediaLibrary:
                 )
 
     def add_folder(
-            self, folder: str | Path, recursive: bool = True
+        self, folder: str | Path, recursive: bool = True
     ) -> list[MediaAsset]:
         root = Path(folder).expanduser().resolve()
         assets = self.scanner.scan_folder(root, recursive=recursive)

@@ -244,7 +244,7 @@ class PerformanceTimelineEvent:
                         raise ValueError(f"{name} must be between 0 and 86400 seconds.")
                     self.payload[name] = seconds
             if self.payload.get("segment_end") is not None and float(
-                    self.payload["segment_end"]
+                self.payload["segment_end"]
             ) <= float(self.payload.get("segment_start", 0.0)):
                 raise ValueError("Clip segment end must be later than its start.")
             loop_value = self.payload.get("loop", True)
@@ -322,9 +322,9 @@ class PerformanceTimelineEvent:
                 raise ValueError("Macro value must be normalized between 0 and 1.")
             duration_bars = self.payload.get("duration_bars", 4)
             if (
-                    isinstance(duration_bars, bool)
-                    or not isinstance(duration_bars, int)
-                    or not 1 <= duration_bars <= 256
+                isinstance(duration_bars, bool)
+                or not isinstance(duration_bars, int)
+                or not 1 <= duration_bars <= 256
             ):
                 raise ValueError("Macro duration must be between 1 and 256 bars.")
             self.payload = {
@@ -375,8 +375,8 @@ class PerformanceTimeline:
         self.events.sort(key=lambda item: (item.bar, item.beat))
 
     def add_event(
-            self,
-            event: PerformanceTimelineEvent | dict[str, object],
+        self,
+        event: PerformanceTimelineEvent | dict[str, object],
     ) -> str:
         item = (
             event
@@ -395,9 +395,9 @@ class PerformanceTimeline:
         return item.event_id
 
     def update_event(
-            self,
-            event_id: str,
-            changes: PerformanceTimelineEvent | dict[str, object],
+        self,
+        event_id: str,
+        changes: PerformanceTimelineEvent | dict[str, object],
     ) -> None:
         index = next(
             (i for i, item in enumerate(self.events) if item.event_id == event_id),
@@ -440,10 +440,10 @@ class PerformanceTimeline:
         self.state_revision += 1
 
     def arm(
-            self,
-            current_bar: int = 1,
-            current_beat: int = 1,
-            transport_running: bool = False,
+        self,
+        current_bar: int = 1,
+        current_beat: int = 1,
+        transport_running: bool = False,
     ) -> None:
         bar = max(1, min(MAX_TMLN_BR, int(current_bar)))
         beat = max(1, min(16, int(current_beat)))
@@ -463,10 +463,10 @@ class PerformanceTimeline:
         self.state_revision += 1
 
     def synchronize_position(
-            self,
-            bar: int,
-            beat: int,
-            beats_per_bar: int = 4,
+        self,
+        bar: int,
+        beat: int,
+        beats_per_bar: int = 4,
     ) -> None:
         """Prime a running show at a received clock position without replaying earlier bars."""
         bar_value = max(1, min(MAX_TMLN_BR, int(bar)))
@@ -515,10 +515,10 @@ class PerformanceTimeline:
         self.state_revision += 1
 
     def tick(
-            self,
-            bar: int,
-            beat: int,
-            beats_per_bar: int = 4,
+        self,
+        bar: int,
+        beat: int,
+        beats_per_bar: int = 4,
     ) -> list[PerformanceTimelineEvent]:
         current = (
             max(1, min(MAX_TMLN_BR, int(bar))),
@@ -535,18 +535,18 @@ class PerformanceTimeline:
                 event_id
                 for event_id in self._fired_ids
                 if (
-                        (
-                            item := next(
-                                (
-                                    candidate
-                                    for candidate in self.events
-                                    if candidate.event_id == event_id
-                                ),
-                                None,
-                            )
+                    (
+                        item := next(
+                            (
+                                candidate
+                                for candidate in self.events
+                                if candidate.event_id == event_id
+                            ),
+                            None,
                         )
-                        is not None
-                        and item.position < current
+                    )
+                    is not None
+                    and item.position < current
                 )
             }
             previous = (
@@ -560,9 +560,9 @@ class PerformanceTimeline:
             item
             for item in self.events
             if item.enabled
-               and item.event_id not in self._fired_ids
-               and self._last_position < item.position <= current
-               and item.beat <= max(1, min(16, int(beats_per_bar)))
+            and item.event_id not in self._fired_ids
+            and self._last_position < item.position <= current
+            and item.beat <= max(1, min(16, int(beats_per_bar)))
         ]
         for item in due:
             self._fired_ids.add(item.event_id)
@@ -572,10 +572,10 @@ class PerformanceTimeline:
         return due
 
     def record_result(
-            self,
-            event: PerformanceTimelineEvent,
-            success: bool,
-            message: str,
+        self,
+        event: PerformanceTimelineEvent,
+        success: bool,
+        message: str,
     ) -> None:
         self.last_event_label = event.label or TMLN_EVT_LABELS[event.event_type]
         self.last_event_type = event.event_type

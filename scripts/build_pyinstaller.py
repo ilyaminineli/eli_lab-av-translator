@@ -37,25 +37,31 @@ else:
 REQUIREMENTS = ROOT / "requirements-build-pyinstaller.txt"
 MIDI_REQUIREMENTS = ROOT / "requirements-build-pyinstaller-midi.txt"
 SPEC = ROOT / "AVTranslator.spec"
-BUILD_TEMP_DIR = Path(
-    os.path.expandvars(
-        os.environ.get("AVT_BUILD_TEMP_DIR", str(ROOT / "build" / "tmp"))
+BUILD_TEMP_DIR = (
+    Path(
+        os.path.expandvars(
+            os.environ.get("AVT_BUILD_TEMP_DIR", str(ROOT / "build" / "tmp"))
+        )
     )
-).expanduser().resolve()
-PIP_CACHE_DIR = Path(
-    os.path.expandvars(
-        os.environ.get("AVT_PIP_CACHE_DIR", str(BUILD_TEMP_DIR / "pip-cache"))
+    .expanduser()
+    .resolve()
+)
+PIP_CACHE_DIR = (
+    Path(
+        os.path.expandvars(
+            os.environ.get("AVT_PIP_CACHE_DIR", str(BUILD_TEMP_DIR / "pip-cache"))
+        )
     )
-).expanduser().resolve()
+    .expanduser()
+    .resolve()
+)
 
 
 def run(
-        command: list[str], *, timeout: int | None = None
+    command: list[str], *, timeout: int | None = None
 ) -> subprocess.CompletedProcess[str]:
     rendered = (
-        subprocess.list2cmdline(command)
-        if os.name == "nt"
-        else shlex.join(command)
+        subprocess.list2cmdline(command) if os.name == "nt" else shlex.join(command)
     )
     print("\n> " + rendered, flush=True)
     return subprocess.run(
@@ -84,7 +90,7 @@ def configure_build_storage() -> None:
     os.environ["TMPDIR"] = temp_path
     os.environ["PIP_CACHE_DIR"] = cache_path
 
-    gib = 1024 ** 3
+    gib = 1024**3
     build_free = shutil.disk_usage(ROOT).free
     temp_free = shutil.disk_usage(BUILD_TEMP_DIR).free
     cache_free = shutil.disk_usage(PIP_CACHE_DIR).free
@@ -189,8 +195,8 @@ def validate_environment() -> None:
             "A 64-bit Python interpreter is required for this native executable."
         )
     if sys.implementation.name != "cpython" or not (3, 12) <= sys.version_info[:2] < (
-            3,
-            15,
+        3,
+        15,
     ):
         raise SystemExit(
             "This AVTranslator PyInstaller profile supports 64-bit CPython 3.12, 3.13 or 3.14.\n"
@@ -381,19 +387,19 @@ def main() -> int:
         package_report.append(f"  {package_name}=={package_version}")
 
     report = (
-            f"{APP_NAME} {APP_VER} — PyInstaller build report\n"
-            f"Built (UTC): {datetime.now(UTC).isoformat()}\n"
-            f"Python: {sys.version.split()[0]} x64\n"
-            f"PyInstaller: {__import__('PyInstaller').__version__}\n"
-            f"Build temp directory: {BUILD_TEMP_DIR}\n"
-            "Resolved packages:\n" + "\n".join(package_report) + "\n"
-                                                                 f"Native MIDI backend: {'included' if midi_available else 'not included (optional)'}\n"
-                                                                 f"Platform: {PLATFORM_ID}\n"
-                                                                 f"Executable: {EXECUTABLE}\n"
-                                                                 f"Icon resource: {ICON_PATH}\n"
-                                                                 f"Size: {size_mib:.1f} MiB\n"
-                                                                 f"SHA-256: {digest}\n"
-                                                                 "Packaged self-check: PASS\n"
+        f"{APP_NAME} {APP_VER} — PyInstaller build report\n"
+        f"Built (UTC): {datetime.now(UTC).isoformat()}\n"
+        f"Python: {sys.version.split()[0]} x64\n"
+        f"PyInstaller: {__import__('PyInstaller').__version__}\n"
+        f"Build temp directory: {BUILD_TEMP_DIR}\n"
+        "Resolved packages:\n" + "\n".join(package_report) + "\n"
+        f"Native MIDI backend: {'included' if midi_available else 'not included (optional)'}\n"
+        f"Platform: {PLATFORM_ID}\n"
+        f"Executable: {EXECUTABLE}\n"
+        f"Icon resource: {ICON_PATH}\n"
+        f"Size: {size_mib:.1f} MiB\n"
+        f"SHA-256: {digest}\n"
+        "Packaged self-check: PASS\n"
     )
     report_path = ROOT / "build" / "pyinstaller-build-report.txt"
     report_path.parent.mkdir(parents=True, exist_ok=True)

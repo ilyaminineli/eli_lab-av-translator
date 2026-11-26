@@ -252,7 +252,7 @@ class Application:
             return
         settings = dict(layer.generator_settings)
         if self.generator_raster_service.has_latest_snapshot(
-                layer.id, layer.generator_type, settings
+            layer.id, layer.generator_type, settings
         ):
             return
         self.generator_raster_service.request(
@@ -324,7 +324,7 @@ class Application:
                 (item.z_index for item in self.composition.layers),
                 default=-1,
             )
-                    + 1,
+            + 1,
         )
         layer.source_id = f"generator:{layer.id}"
         install_default_performance_macro_modifiers([layer])
@@ -340,11 +340,11 @@ class Application:
         return len(self.visual_asset_index.roots)
 
     def search_visual_assets(
-            self,
-            query: str = "",
-            purpose: str | None = None,
-            kind: str | None = None,
-            category: str | None = None,
+        self,
+        query: str = "",
+        purpose: str | None = None,
+        kind: str | None = None,
+        category: str | None = None,
     ):
         return self.visual_asset_index.search(query, purpose, kind, category)
 
@@ -378,7 +378,7 @@ class Application:
                 (item.z_index for item in self.composition.layers),
                 default=-1,
             )
-                    + 1,
+            + 1,
         )
         try:
             self._attach_overlay_layer(layer)
@@ -657,7 +657,7 @@ class Application:
             state.audio_status = f"{audio_state} · Sonic Pi macros continue"
         elif state.audio_owned and audio_state == "running":
             state.audio_status = (
-                    self.audio_capture.selected_device_name or "audio input"
+                self.audio_capture.selected_device_name or "audio input"
             )
 
     def performance_snapshot(self) -> dict[str, int | float]:
@@ -684,10 +684,10 @@ class Application:
         }
 
     def start_automation(
-            self,
-            collection_id: str | None = None,
-            settings: AutomationSettings | None = None,
-            duration_seconds: float | None = 1800.0,
+        self,
+        collection_id: str | None = None,
+        settings: AutomationSettings | None = None,
+        duration_seconds: float | None = 1800.0,
     ) -> int:
         assets = self.media_library.list_assets(collection_id=collection_id)
         loaded = self.automation.start(
@@ -720,7 +720,7 @@ class Application:
         return True
 
     def start_osc_receiver(
-            self, bind_address: str = "127.0.0.1", port: int = 57121
+        self, bind_address: str = "127.0.0.1", port: int = 57121
     ) -> int:
         """Start the versioned Sonic Pi OSC ingress on a dedicated UDP port."""
         actual_port = self.osc_receiver.start(bind_address, port)
@@ -737,8 +737,8 @@ class Application:
         return stopped
 
     def start_performance_mode(
-            self,
-            plan: PerformanceModePlan | dict[str, Any] | None = None,
+        self,
+        plan: PerformanceModePlan | dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """Arm audio, Sonic Pi ingress, shared curves and unattended automation."""
         if plan is None:
@@ -765,9 +765,9 @@ class Application:
 
             audio_device_id = plan.audio_device_id
             if (
-                    not audio_device_id
-                    and plan.prefer_loopback
-                    and not plan.audio_test_signal
+                not audio_device_id
+                and plan.prefer_loopback
+                and not plan.audio_test_signal
             ):
                 try:
                     audio_device_id = next(
@@ -796,7 +796,7 @@ class Application:
                         )
                         audio_owned = True
                         audio_status = (
-                                self.audio_capture.selected_device_name or "audio input"
+                            self.audio_capture.selected_device_name or "audio input"
                         )
                     except Exception as exc:
                         # The visual show still operates from Sonic Pi energy/cutoff
@@ -849,9 +849,9 @@ class Application:
             )
             live_receiver = self.osc_receiver.snapshot()
             if (
-                    self.performance_control.source_id == "sonic_pi"
-                    and self.performance_control.transport_running
-                    and live_receiver.get("status") == "LIVE"
+                self.performance_control.source_id == "sonic_pi"
+                and self.performance_control.transport_running
+                and live_receiver.get("status") == "LIVE"
             ):
                 self._activate_armed_performance_automation()
                 self.performance_mode.mark_live(
@@ -906,8 +906,8 @@ class Application:
         return True
 
     def _automation_musical_context(
-            self,
-            sources: dict[str, float] | None = None,
+        self,
+        sources: dict[str, float] | None = None,
     ) -> tuple[float, float]:
         values = self._modulation_sources() if sources is None else sources
         energy = max(
@@ -993,8 +993,8 @@ class Application:
         if mode_active:
             if event.kind == "transport.stop":
                 if (
-                        self.performance_mode.plan.stop_automation_on_patch_stop
-                        and self._performance_automation_owned
+                    self.performance_mode.plan.stop_automation_on_patch_stop
+                    and self._performance_automation_owned
                 ):
                     self.stop_automation()
                 # Keep the show armed for a SONATA restart. The next
@@ -1054,8 +1054,8 @@ class Application:
         return self.performance_mode.snapshot()
 
     def add_performance_timeline_event(
-            self,
-            event: PerformanceTimelineEvent | dict[str, object],
+        self,
+        event: PerformanceTimelineEvent | dict[str, object],
     ) -> str:
         event_id = self.performance_timeline.add_event(event)
         self.events.publish(
@@ -1066,9 +1066,9 @@ class Application:
         return event_id
 
     def update_performance_timeline_event(
-            self,
-            event_id: str,
-            changes: PerformanceTimelineEvent | dict[str, object],
+        self,
+        event_id: str,
+        changes: PerformanceTimelineEvent | dict[str, object],
     ) -> None:
         self.performance_timeline.update_event(event_id, changes)
         self.events.publish(
@@ -1089,13 +1089,13 @@ class Application:
 
     def arm_performance_timeline(self) -> None:
         external_running = (
-                self.performance_control.source_id == "sonic_pi"
-                and self.performance_control.transport_running
-                and not self.performance_control.transport_paused
+            self.performance_control.source_id == "sonic_pi"
+            and self.performance_control.transport_running
+            and not self.performance_control.transport_paused
         )
         internal_running = self.transport.running and not self.transport.paused
         position_known = internal_running or (
-                external_running and self._external_clock_bar_at is not None
+            external_running and self._external_clock_bar_at is not None
         )
         if external_running and self._external_clock_bar_at is not None:
             bar, beat = self._external_timeline_position()
@@ -1124,10 +1124,10 @@ class Application:
         self.events.publish("performance.timeline.rewound")
 
     def _tick_performance_timeline(
-            self,
-            bar: int,
-            beat: int,
-            beats_per_bar: int,
+        self,
+        bar: int,
+        beat: int,
+        beats_per_bar: int,
     ) -> None:
         due = self.performance_timeline.tick(bar, beat, beats_per_bar)
         for event in due:
@@ -1167,10 +1167,10 @@ class Application:
             return
         control = self.performance_control
         if (
-                control.source_id != "sonic_pi"
-                or not control.transport_running
-                or control.transport_paused
-                or self._external_clock_bar_at is None
+            control.source_id != "sonic_pi"
+            or not control.transport_running
+            or control.transport_paused
+            or self._external_clock_bar_at is None
         ):
             return
         stamp = time.monotonic() if now is None else float(now)
@@ -1187,9 +1187,9 @@ class Application:
         self.active_palette = palette_name
         for layer in self.composition.layers:
             if (
-                    layer.locked
-                    or layer.source_type != "generator"
-                    or not layer.generator_type
+                layer.locked
+                or layer.source_type != "generator"
+                or not layer.generator_type
             ):
                 continue
             values = dict(layer.generator_settings)
@@ -1205,8 +1205,8 @@ class Application:
         return True
 
     def _execute_performance_timeline_event(
-            self,
-            event: PerformanceTimelineEvent,
+        self,
+        event: PerformanceTimelineEvent,
     ) -> tuple[bool, str]:
         payload = event.payload
         if event.event_type == "scene_marker":
@@ -1319,16 +1319,16 @@ class Application:
                             not item.locked
                             and item.source_type == "generator"
                             and item.generator_type == "text"
-                    )
+                        )
                     ),
                     None,
                 )
             )
             if (
-                    layer is None
-                    or layer.locked
-                    or layer.source_type != "generator"
-                    or layer.generator_type != "text"
+                layer is None
+                or layer.locked
+                or layer.source_type != "generator"
+                or layer.generator_type != "text"
             ):
                 return False, "No unlocked Text Art layer is available"
             from generators.text_pools import random_text_sample
@@ -1361,10 +1361,10 @@ class Application:
             macro_id = str(payload["macro_id"])
             duration_bars = int(payload.get("duration_bars", 4))
             hold_seconds = (
-                    duration_bars
-                    * max(1, int(self.performance_control.beats_per_bar))
-                    * 60.0
-                    / max(20.0, float(self.performance_control.bpm))
+                duration_bars
+                * max(1, int(self.performance_control.beats_per_bar))
+                * 60.0
+                / max(20.0, float(self.performance_control.bpm))
             )
             self.set_performance_macro_value(
                 macro_id,
@@ -1414,9 +1414,9 @@ class Application:
                     clock_meter = int(event.payload["beats_per_bar"])
                     bar_seconds = (60.0 / max(20.0, clock_bpm)) * max(1, clock_meter)
                     first_external_bar = (
-                            self._external_clock_bar_at is None
-                            or event.received_at - self._external_clock_bar_at
-                            > max(1.0, bar_seconds * 1.5)
+                        self._external_clock_bar_at is None
+                        or event.received_at - self._external_clock_bar_at
+                        > max(1.0, bar_seconds * 1.5)
                     )
                     self.transport.stop()
                     self.transport.set_tempo(clock_bpm)
@@ -1453,8 +1453,8 @@ class Application:
                                 hold_seconds=max(
                                     5.0,
                                     (
-                                            60.0
-                                            / max(20.0, float(self.performance_control.bpm))
+                                        60.0
+                                        / max(20.0, float(self.performance_control.bpm))
                                     )
                                     * max(
                                         1, int(self.performance_control.beats_per_bar)
@@ -1519,9 +1519,9 @@ class Application:
         return processed
 
     def start_internal_transport(
-            self,
-            bpm: float | None = None,
-            beats_per_bar: int | None = None,
+        self,
+        bpm: float | None = None,
+        beats_per_bar: int | None = None,
     ) -> None:
         if bpm is not None:
             self.transport.set_tempo(bpm)
@@ -1569,15 +1569,15 @@ class Application:
         self.process_control_events()
 
     def request_scene_selection(
-            self,
-            scene_id: str,
-            quantization: Quantization = "bar",
+        self,
+        scene_id: str,
+        quantization: Quantization = "bar",
     ) -> None:
         profile = self.scene_profiles.get(scene_id)
         if (
-                not self.transport.running
-                or self.transport.paused
-                or quantization == "immediate"
+            not self.transport.running
+            or self.transport.paused
+            or quantization == "immediate"
         ):
             self.submit_control_event(
                 ControlEvent(
@@ -1658,7 +1658,7 @@ class Application:
         self._selected_layer_id = next_id
 
     def start_audio_capture(
-            self, device_id: str | None = None, test_signal: bool = False
+        self, device_id: str | None = None, test_signal: bool = False
     ) -> None:
         if test_signal:
             self.audio_capture.start_test_signal(self.transport.bpm)
@@ -1676,10 +1676,10 @@ class Application:
         )
 
     def start_audio_replay(
-            self,
-            samples,
-            sample_rate: int,
-            repeat: bool = False,
+        self,
+        samples,
+        sample_rate: int,
+        repeat: bool = False,
     ) -> None:
         self.audio_capture.start_replay(samples, sample_rate, repeat=repeat)
         self._audio_sources.clear()
@@ -1739,8 +1739,8 @@ class Application:
         values = dict(self._audio_sources)
         now = time.monotonic()
         if (
-                self._audio_last_received_at <= 0.0
-                or now - self._audio_last_received_at > 1.5
+            self._audio_last_received_at <= 0.0
+            or now - self._audio_last_received_at > 1.5
         ):
             values = {
                 key: value
@@ -1749,9 +1749,9 @@ class Application:
             }
         values["transport.intensity"] = self.performance_control.intensity
         external_clock_active = (
-                self.performance_control.source_id == "sonic_pi"
-                and self.performance_control.transport_running
-                and self._external_clock_bar_at is not None
+            self.performance_control.source_id == "sonic_pi"
+            and self.performance_control.transport_running
+            and self._external_clock_bar_at is not None
         )
         beat_index = 0
         beat_phase = 0.0
@@ -1797,16 +1797,16 @@ class Application:
         else:
             bar_index = 0
         phrase_start = (
-                bar_index > 0
-                and (bar_index - 1) % phrase_bars == 0
-                and beat_index == 0
-                and clock_active
+            bar_index > 0
+            and (bar_index - 1) % phrase_bars == 0
+            and beat_index == 0
+            and clock_active
         )
         phrase_pulse = beat_pulse if phrase_start else 0.0
 
         if clock_active:
             beat_position = (
-                    max(0, bar_index - 1) * beats_per_bar + beat_index + beat_phase
+                max(0, bar_index - 1) * beats_per_bar + beat_index + beat_phase
             )
         else:
             beat_position = 0.0
@@ -1866,9 +1866,9 @@ class Application:
         }.get(field)
 
     def _get_layer_modifier_target(
-            self,
-            layer_id: str,
-            target_id: str,
+        self,
+        layer_id: str,
+        target_id: str,
     ) -> float | None:
         layer = self.composition.get_layer(layer_id)
         if layer is None:
@@ -1913,10 +1913,10 @@ class Application:
         return None
 
     def _set_layer_modifier_target(
-            self,
-            layer_id: str,
-            target_id: str,
-            value: float,
+        self,
+        layer_id: str,
+        target_id: str,
+        value: float,
     ) -> bool:
         layer = self.composition.get_layer(layer_id)
         if layer is None:
@@ -1996,9 +1996,9 @@ class Application:
         return False
 
     def add_layer_performance_modifier(
-            self,
-            layer_id: str,
-            modifier: LayerPerformanceModifier | dict[str, object],
+        self,
+        layer_id: str,
+        modifier: LayerPerformanceModifier | dict[str, object],
     ) -> str:
         layer = self.composition.get_layer(layer_id)
         if layer is None:
@@ -2010,8 +2010,8 @@ class Application:
         )
         item.normalize()
         if any(
-                raw.get("modifier_id") == item.modifier_id
-                for raw in layer.performance_modifiers
+            raw.get("modifier_id") == item.modifier_id
+            for raw in layer.performance_modifiers
         ):
             raise ValueError(f"Duplicate modifier ID: {item.modifier_id}")
         layer.performance_modifiers.append(item.to_dict())
@@ -2023,7 +2023,7 @@ class Application:
         return item.modifier_id
 
     def remove_layer_performance_modifier(
-            self, layer_id: str, modifier_id: str
+        self, layer_id: str, modifier_id: str
     ) -> bool:
         layer = self.composition.get_layer(layer_id)
         if layer is None:
@@ -2109,20 +2109,20 @@ class Application:
         for macro in self.performance_macro_engine.list_macros():
             source_id = macro.input_source
             if (
-                    source_id.startswith("modulator.")
-                    and self.modulator_bank.get(source_id.removeprefix("modulator."))
-                    is None
+                source_id.startswith("modulator.")
+                and self.modulator_bank.get(source_id.removeprefix("modulator."))
+                is None
             ):
                 updated = PerformanceMacro.from_dict(macro.to_dict())
                 updated.input_source = ""
                 self.performance_macro_engine.update_macro(updated)
 
     def set_performance_macro_value(
-            self,
-            macro_id: str,
-            value: float,
-            hold_seconds: float = 1.5,
-            now: float | None = None,
+        self,
+        macro_id: str,
+        value: float,
+        hold_seconds: float = 1.5,
+        now: float | None = None,
     ) -> float:
         """Set one normalized macro from a manual, MIDI, OSC or keyboard source."""
         result = self.performance_macro_engine.set_value(
@@ -2140,8 +2140,8 @@ class Application:
         return result
 
     def update_performance_macro(
-            self,
-            macro: PerformanceMacro | dict[str, object],
+        self,
+        macro: PerformanceMacro | dict[str, object],
     ) -> None:
         item = (
             macro
@@ -2177,10 +2177,10 @@ class Application:
         return definition.modulator_id
 
     def apply_modulator_preset(
-            self,
-            modulator_id: str,
-            name: str,
-            description: str = "",
+        self,
+        modulator_id: str,
+        name: str,
+        description: str = "",
     ) -> str:
         preset_id = self.modulator_bank.save_preset(modulator_id, name, description)
         self.events.publish(
@@ -2209,8 +2209,8 @@ class Application:
         return imported
 
     def apply_layer_performance_modifiers(
-            self,
-            now: float | None = None,
+        self,
+        now: float | None = None,
     ) -> dict[tuple[str, str], float]:
         sources = self._modulation_sources()
         sources.update(
@@ -2278,11 +2278,11 @@ class Application:
             layer = self.composition.get_layer(self._selected_layer_id or "")
             player = self._overlay_images.get(layer.id) if layer is not None else None
             if (
-                    layer is None
-                    or layer.locked
-                    or layer.source_type != "overlay"
-                    or player is None
-                    or not player.animated
+                layer is None
+                or layer.locked
+                or layer.source_type != "overlay"
+                or player is None
+                or not player.animated
             ):
                 return None
             field = target_id.split(".", 1)[1]
@@ -2386,11 +2386,11 @@ class Application:
             layer = self.composition.get_layer(self._selected_layer_id or "")
             player = self._overlay_images.get(layer.id) if layer is not None else None
             if (
-                    layer is None
-                    or layer.locked
-                    or layer.source_type != "overlay"
-                    or player is None
-                    or not player.animated
+                layer is None
+                or layer.locked
+                or layer.source_type != "overlay"
+                or player is None
+                or not player.animated
             ):
                 return False
             field = target_id.split(".", 1)[1]
@@ -2451,9 +2451,9 @@ class Application:
         return False
 
     def notify_layer_manual_override(
-            self,
-            layer_id: str,
-            duration_seconds: float = 3.0,
+        self,
+        layer_id: str,
+        duration_seconds: float = 3.0,
     ) -> None:
         layer = self.composition.get_layer(layer_id)
         if layer is None:
@@ -2476,9 +2476,9 @@ class Application:
             self.notify_manual_override("selected_layer.*", duration_seconds)
 
     def notify_manual_override(
-            self,
-            target_id: str,
-            duration_seconds: float = 3.0,
+        self,
+        target_id: str,
+        duration_seconds: float = 3.0,
     ) -> None:
         targets = (
             [key for key, spec in TARGET_SPECS.items() if spec.category == "master"]
@@ -2491,7 +2491,7 @@ class Application:
         )
         selected = self.composition.get_layer(self._selected_layer_id or "")
         if selected is not None and target_id.startswith(
-                ("selected_layer.", "generator.", "overlay.", "layer.")
+            ("selected_layer.", "generator.", "overlay.", "layer.")
         ):
             self.automation.notify_layer_manual_override(
                 selected.id,
@@ -2520,14 +2520,14 @@ class Application:
                 }
                 local_alias = selected_layer_aliases.get(target_id)
                 if (
-                        target_id == "generator.*"
-                        and local_target.startswith("generator.")
-                        or target_id == "overlay.*"
-                        and local_target.startswith("overlay.")
-                        or target_id == "selected_layer.*"
-                        and local_target.startswith("layer.")
-                        or local_target == local_alias
-                        or target_id == local_target
+                    target_id == "generator.*"
+                    and local_target.startswith("generator.")
+                    or target_id == "overlay.*"
+                    and local_target.startswith("overlay.")
+                    or target_id == "selected_layer.*"
+                    and local_target.startswith("layer.")
+                    or local_target == local_alias
+                    or target_id == local_target
                 ):
                     local_targets.add(local_target)
             modifier_engine.notify_manual_override(
@@ -2557,7 +2557,7 @@ class Application:
                 available_sources=set(sources),
             )
             if selected is not None
-               and self._get_layer_modifier_target(selected.id, target_id) is not None
+            and self._get_layer_modifier_target(selected.id, target_id) is not None
         }
         global_aliases = {
             "layer.opacity": "selected_layer.opacity",
@@ -2621,9 +2621,9 @@ class Application:
         self.events.publish("performance.modulation.updated")
 
     def update_modulation_route(
-            self,
-            route_id: str,
-            changes: dict[str, object],
+        self,
+        route_id: str,
+        changes: dict[str, object],
     ) -> None:
         existing = next(
             (route for route in self.modulation.routes if route.route_id == route_id),
@@ -2717,13 +2717,13 @@ class Application:
         )
 
     def begin_midi_learn(
-            self,
-            target: str,
-            device_id: str = "*",
-            minimum: float = 0.0,
-            maximum: float = 1.0,
-            curve: str = "linear",
-            pickup: bool = True,
+        self,
+        target: str,
+        device_id: str = "*",
+        minimum: float = 0.0,
+        maximum: float = 1.0,
+        curve: str = "linear",
+        pickup: bool = True,
     ) -> None:
         mapping = MIDIMapping(
             device_id=device_id,
@@ -2764,85 +2764,85 @@ class Application:
         values: dict[str, float] = {}
         for layer in self.composition.layers:
             for target in (
-                    "layer.opacity",
-                    "layer.rotation",
-                    "layer.scale",
-                    "layer.position_x",
-                    "layer.position_y",
-                    "generator.animation_speed",
-                    "generator.animation_amount",
-                    "generator.density",
-                    "generator.rotation",
-                    "generator.text_animation_speed",
-                    "generator.text_animation_amount",
-                    "generator.text_animation_columns",
-                    "generator.font_size",
-                    "generator.letter_spacing",
-                    "generator.waveform_amplitude",
-                    "generator.waveform_frequency",
-                    "generator.particle_speed",
-                    "generator.particle_size",
-                    "generator.particle_spread",
-                    "generator.particle_trail",
-                    "generator.particle_emission_rate",
-                    "generator.particle_system_size",
-                    "generator.particle_lifetime",
-                    "generator.particle_turbulence",
-                    "generator.particle_force_strength",
-                    "generator.particle_reform_strength",
-                    "layer_fx.mix",
-                    "layer_fx.monochrome",
-                    "layer_fx.threshold",
-                    "layer_fx.contrast",
-                    "layer_fx.brightness",
-                    "layer_fx.chromatic",
-                    "layer_fx.scanlines",
-                    "layer_fx.posterize",
-                    "layer_fx.invert",
-                    "layer_fx.hue",
-                    "layer_fx.saturation",
+                "layer.opacity",
+                "layer.rotation",
+                "layer.scale",
+                "layer.position_x",
+                "layer.position_y",
+                "generator.animation_speed",
+                "generator.animation_amount",
+                "generator.density",
+                "generator.rotation",
+                "generator.text_animation_speed",
+                "generator.text_animation_amount",
+                "generator.text_animation_columns",
+                "generator.font_size",
+                "generator.letter_spacing",
+                "generator.waveform_amplitude",
+                "generator.waveform_frequency",
+                "generator.particle_speed",
+                "generator.particle_size",
+                "generator.particle_spread",
+                "generator.particle_trail",
+                "generator.particle_emission_rate",
+                "generator.particle_system_size",
+                "generator.particle_lifetime",
+                "generator.particle_turbulence",
+                "generator.particle_force_strength",
+                "generator.particle_reform_strength",
+                "layer_fx.mix",
+                "layer_fx.monochrome",
+                "layer_fx.threshold",
+                "layer_fx.contrast",
+                "layer_fx.brightness",
+                "layer_fx.chromatic",
+                "layer_fx.scanlines",
+                "layer_fx.posterize",
+                "layer_fx.invert",
+                "layer_fx.hue",
+                "layer_fx.saturation",
             ):
                 current = self._get_layer_modifier_target(layer.id, target)
                 if current is not None:
                     values[f"layer.{layer.id}.{target}"] = current
         for target in (
-                "master.brightness",
-                "master.exposure",
-                "master.contrast",
-                "master.saturation",
-                "master.grain",
-                "master.glitch",
-                "master.vignette",
-                "master.hue",
-                "master.chromatic",
-                "master.scanlines",
-                "master.pixelate",
-                "master.posterize",
-                "master.invert",
-                "master.halftone",
-                "master.solarize",
-                "master.transform_mix",
-                "master.kaleidoscope_slices",
-                "master.kaleidoscope_rotation",
-                "master.kaleidoscope_zoom",
-                "master.mosaic_tiles",
-                "master.pixel_sort_amount",
-                "master.pixel_sort_threshold",
-                "master.edge_amount",
-                "master.dither",
-                "master.displacement_amount",
-                "master.displacement_scale",
-                "master.feedback_amount",
-                "master.feedback_decay",
-                "master.feedback_zoom",
-                "master.feedback_rotation",
-                "master.feedback_translate_x",
-                "master.feedback_translate_y",
-                "master.feedback_color_shift",
-                "master.feedback_distortion",
-                "master.feedback_motion_warp",
-                "master.feedback_datamosh",
-                "master.feedback_delay_frames",
+            "master.brightness",
+            "master.exposure",
+            "master.contrast",
+            "master.saturation",
+            "master.grain",
+            "master.glitch",
+            "master.vignette",
+            "master.hue",
+            "master.chromatic",
+            "master.scanlines",
+            "master.pixelate",
+            "master.posterize",
+            "master.invert",
+            "master.halftone",
+            "master.solarize",
+            "master.transform_mix",
+            "master.kaleidoscope_slices",
+            "master.kaleidoscope_rotation",
+            "master.kaleidoscope_zoom",
+            "master.mosaic_tiles",
+            "master.pixel_sort_amount",
+            "master.pixel_sort_threshold",
+            "master.edge_amount",
+            "master.dither",
+            "master.displacement_amount",
+            "master.displacement_scale",
+            "master.feedback_amount",
+            "master.feedback_decay",
+            "master.feedback_zoom",
+            "master.feedback_rotation",
+            "master.feedback_translate_x",
+            "master.feedback_translate_y",
+            "master.feedback_color_shift",
+            "master.feedback_distortion",
+            "master.feedback_motion_warp",
+            "master.feedback_datamosh",
+            "master.feedback_delay_frames",
         ):
             current = self._get_modulation_target(target)
             if current is not None:
@@ -2867,7 +2867,7 @@ class Application:
         return values
 
     def _handle_midi_event(
-            self, device_id: str, message: str, channel: int, number: int, value: float
+        self, device_id: str, message: str, channel: int, number: int, value: float
     ) -> None:
         request = self._midi_learn_request
         if request is not None and request["device_id"] in {"*", device_id}:
@@ -2898,7 +2898,7 @@ class Application:
             )
             return
         for target, mapped in self.midi_mapping_engine.process(
-                device_id, message, channel, number, value, self._midi_target_values()
+            device_id, message, channel, number, value, self._midi_target_values()
         ):
             self._apply_midi_target(target, mapped)
 
@@ -2954,13 +2954,13 @@ class Application:
         return False
 
     def capture_performance_scene(
-            self,
-            scene_id: str,
-            label: str = "",
-            quantization: Quantization = "bar",
-            cue: str = "",
-            tags: list[str] | None = None,
-            transition: dict[str, Any] | None = None,
+        self,
+        scene_id: str,
+        label: str = "",
+        quantization: Quantization = "bar",
+        cue: str = "",
+        tags: list[str] | None = None,
+        transition: dict[str, Any] | None = None,
     ) -> PerformanceScene:
         """Capture a complete VJ scene without copying source media or runtime handles."""
         scene_id = str(scene_id).strip()
@@ -2972,8 +2972,8 @@ class Application:
                 scene
                 for existing_id, scene in self.performance_scenes.items()
                 if existing_id != scene_id
-                   and cue
-                   and scene.cue.casefold() == cue.casefold()
+                and cue
+                and scene.cue.casefold() == cue.casefold()
             ),
             None,
         )
@@ -3017,11 +3017,11 @@ class Application:
             cue=cue,
             tags=selected_tags,
             transition=selected_transition
-                       or {
-                           "duration": 0.0,
-                           "curve": "smoothstep",
-                           "discrete": "cut",
-                       },
+            or {
+                "duration": 0.0,
+                "curve": "smoothstep",
+                "discrete": "cut",
+            },
         )
         scene.normalize()
         self.performance_scenes[scene.scene_id] = scene
@@ -3035,9 +3035,9 @@ class Application:
         return scene
 
     def schedule_performance_scene(
-            self,
-            scene_id: str,
-            morph_seconds: float | None = None,
+        self,
+        scene_id: str,
+        morph_seconds: float | None = None,
     ) -> bool:
         """Recall a scene immediately or at the selected internal/external clock boundary."""
         scene = self.performance_scenes.get(str(scene_id))
@@ -3054,9 +3054,9 @@ class Application:
 
         internal_clock = self.transport.running and not self.transport.paused
         external_clock = (
-                self.performance_control.source_id == "sonic_pi"
-                and self.performance_control.transport_running
-                and not self.performance_control.transport_paused
+            self.performance_control.source_id == "sonic_pi"
+            and self.performance_control.transport_running
+            and not self.performance_control.transport_paused
         )
         if internal_clock:
             self._pending_scene_morph_seconds[scene.scene_id] = duration
@@ -3120,11 +3120,11 @@ class Application:
             scene
             for scene in self.performance_scenes.values()
             if key
-               in {
-                   scene.cue.casefold(),
-                   scene.scene_id.casefold(),
-                   scene.label.casefold(),
-               }
+            in {
+                scene.cue.casefold(),
+                scene.scene_id.casefold(),
+                scene.label.casefold(),
+            }
         ]
         if len(matches) != 1:
             if len(matches) > 1:
@@ -3258,17 +3258,17 @@ class Application:
                 route
                 for route in self.modulation.routes
                 if (
-                        not route.source_id.startswith("modulator.")
-                        or route.source_id in known_sources
+                    not route.source_id.startswith("modulator.")
+                    or route.source_id in known_sources
                 )
             ]
             self.modulation.reset_runtime()
         install_default_performance_macro_routes(self.modulation)
 
     def recall_performance_scene(
-            self,
-            scene_id: str,
-            morph_seconds: float = 0.0,
+        self,
+        scene_id: str,
+        morph_seconds: float = 0.0,
     ) -> bool:
         scene = self.performance_scenes.get(str(scene_id))
         if scene is None:
@@ -3518,8 +3518,8 @@ class Application:
                     if str(modifier.get("name", "")).startswith("AUTO ·"):
                         modifier["enabled"] = False
         for (
-                layer_id,
-                target_id,
+            layer_id,
+            target_id,
         ), base_value in self.performance_modifier_engine.base_values().items():
             layer = composition_snapshot.get_layer(layer_id)
             if layer is None:
@@ -3572,7 +3572,7 @@ class Application:
         effect_state = app_state["effects"]
         automation_state = app_state["automation_settings"]
         for target_id, base_value in getattr(
-                self, "_modulation_base_values", {}
+            self, "_modulation_base_values", {}
         ).items():
             if target_id.startswith("master."):
                 field = target_id.split(".", 1)[1]
@@ -3771,8 +3771,8 @@ class Application:
                 route
                 for route in self.modulation.routes
                 if (
-                        not route.source_id.startswith("modulator.")
-                        or route.source_id in known_modulator_sources
+                    not route.source_id.startswith("modulator.")
+                    or route.source_id in known_modulator_sources
                 )
             ]
             self.modulation.reset_runtime()

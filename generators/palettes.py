@@ -71,7 +71,7 @@ def import_aco_palette(path: str | Path) -> list[str]:
                 byte_length = name_length * 2
                 if name_length > 1024 or offset + byte_length > len(data):
                     raise ValueError("ACO swatch name has an invalid length.")
-                raw_name = data[offset: offset + byte_length]
+                raw_name = data[offset : offset + byte_length]
                 offset += byte_length
                 name = raw_name.decode("utf-16-be", errors="replace").rstrip(chr(0))
             if colour_space == 0:
@@ -87,7 +87,7 @@ def import_aco_palette(path: str | Path) -> list[str]:
         raise ValueError("No RGB or grayscale swatches were found in this ACO file.")
     imported: list[str] = []
     for group_index in range(0, len(swatches), 4):
-        group = swatches[group_index: group_index + 4]
+        group = swatches[group_index : group_index + 4]
         if len(group) < 2:
             break
         while len(group) < 4:

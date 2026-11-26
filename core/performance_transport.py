@@ -138,11 +138,11 @@ class InternalTransport:
         return [ControlEvent("transport.stop", self.source, received_at=stamp)]
 
     def schedule_scene(
-            self,
-            scene_id: str,
-            intensity: float,
-            quantization: Quantization = "bar",
-            now: float | None = None,
+        self,
+        scene_id: str,
+        intensity: float,
+        quantization: Quantization = "bar",
+        now: float | None = None,
     ) -> ScheduledScene:
         stamp = time.monotonic() if now is None else float(now)
         value = float(intensity)
@@ -169,7 +169,7 @@ class InternalTransport:
         return item
 
     def tick(
-            self, now: float | None = None, max_catch_up_beats: int = 8
+        self, now: float | None = None, max_catch_up_beats: int = 8
     ) -> list[ControlEvent]:
         stamp = time.monotonic() if now is None else float(now)
         self.last_tick_at = stamp

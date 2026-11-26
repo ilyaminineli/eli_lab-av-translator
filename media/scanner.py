@@ -33,7 +33,7 @@ class MediaScanner:
         return hashlib.sha1(str(root).casefold().encode("utf-8")).hexdigest()[:16]
 
     def scan_folder(
-            self, folder: str | Path, recursive: bool = True
+        self, folder: str | Path, recursive: bool = True
     ) -> list[MediaAsset]:
         root = Path(folder).expanduser().resolve()
         if not root.is_dir():

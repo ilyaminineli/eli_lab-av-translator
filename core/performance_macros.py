@@ -183,8 +183,8 @@ class PerformanceMacroEngine:
                     other
                     for other in self.macros.values()
                     if other.macro_id != item.macro_id
-                       and other.keyboard_shortcut.casefold()
-                       == item.keyboard_shortcut.casefold()
+                    and other.keyboard_shortcut.casefold()
+                    == item.keyboard_shortcut.casefold()
                 ),
                 None,
             )
@@ -196,11 +196,11 @@ class PerformanceMacroEngine:
         self._runtime.pop(item.macro_id, None)
 
     def set_value(
-            self,
-            macro_id: str,
-            value: float,
-            hold_seconds: float = 1.5,
-            now: float | None = None,
+        self,
+        macro_id: str,
+        value: float,
+        hold_seconds: float = 1.5,
+        now: float | None = None,
     ) -> float:
         item = self.macros.get(str(macro_id))
         if item is None:
@@ -228,9 +228,9 @@ class PerformanceMacroEngine:
         return value
 
     def evaluate(
-            self,
-            sources: dict[str, float],
-            now: float | None = None,
+        self,
+        sources: dict[str, float],
+        now: float | None = None,
     ) -> dict[str, float]:
         stamp = time.monotonic() if now is None else float(now)
         outputs: dict[str, float] = {}
@@ -255,8 +255,8 @@ class PerformanceMacroEngine:
                     if runtime.source_missing_since is None:
                         runtime.source_missing_since = stamp
                     if (
-                            stamp - runtime.source_missing_since
-                            <= self.SOURCE_MISSING_HOLD_SECONDS
+                        stamp - runtime.source_missing_since
+                        <= self.SOURCE_MISSING_HOLD_SECONDS
                     ):
                         target = (
                             runtime.current
@@ -286,7 +286,7 @@ class PerformanceMacroEngine:
             item.macro_id: (
                 self._runtime[item.macro_id].current
                 if item.macro_id in self._runtime
-                   and self._runtime[item.macro_id].current is not None
+                and self._runtime[item.macro_id].current is not None
                 else item.value
             )
             for item in self.list_macros()

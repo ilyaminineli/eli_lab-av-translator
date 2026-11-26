@@ -136,10 +136,10 @@ class MediaBrowser(QWidget):
         target_row.addWidget(QLabel("Assign to"))
         self.deck_combo = QComboBox()
         for deck_id, label in (
-                ("deck_a", "Deck A"),
-                ("deck_b", "Deck B"),
-                ("deck_c", "Deck C"),
-                ("deck_d", "Deck D"),
+            ("deck_a", "Deck A"),
+            ("deck_b", "Deck B"),
+            ("deck_c", "Deck C"),
+            ("deck_d", "Deck D"),
         ):
             self.deck_combo.addItem(label, deck_id)
         target_row.addWidget(self.deck_combo, 1)

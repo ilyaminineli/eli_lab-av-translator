@@ -49,16 +49,16 @@ def _classify(path: Path, root: Path) -> tuple[str, tuple[str, ...], tuple[str, 
     if any(word in context for word in ("mask", "matte", "alpha", "silhouette")):
         purposes.update(("mask", "track matte"))
     if any(
-            word in context
-            for word in ("metal", "wood", "stone", "concrete", "bark", "clay")
+        word in context
+        for word in ("metal", "wood", "stone", "concrete", "bark", "clay")
     ):
         purposes.update(("material", "background", "geometry"))
     if any(
-            word in context for word in ("particle", "dust", "smoke", "atmosphere", "spark")
+        word in context for word in ("particle", "dust", "smoke", "atmosphere", "spark")
     ):
         purposes.update(("particles", "atmosphere", "overlay"))
     if any(
-            word in context for word in ("wall", "floor", "ceiling", "sky", "landscape")
+        word in context for word in ("wall", "floor", "ceiling", "sky", "landscape")
     ):
         purposes.update(("background", "environment"))
     category = parts[0] if parts else "uncategorized"
@@ -99,11 +99,11 @@ class VisualAssetIndex:
         return list(self.assets)
 
     def search(
-            self,
-            query: str = "",
-            purpose: str | None = None,
-            kind: str | None = None,
-            category: str | None = None,
+        self,
+        query: str = "",
+        purpose: str | None = None,
+        kind: str | None = None,
+        category: str | None = None,
     ) -> list[VisualAsset]:
         terms = [term.lower() for term in query.split() if term]
         result = []

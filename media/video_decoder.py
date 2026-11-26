@@ -15,15 +15,15 @@ class VideoDecoder:
     """Timestamp-paced decoder with bounded preview output and segment playback."""
 
     def __init__(
-            self,
-            path: str | Path,
-            frame_queue: FrameQueue,
-            loop: bool = True,
-            segment_start: float = 0.0,
-            segment_end: float | None = None,
-            max_output_width: int = MAX_DECODE_WIDTH,
-            max_output_height: int = MAX_DECODE_HEIGHT,
-            max_output_fps: float | None = MAX_DECODE_FPS,
+        self,
+        path: str | Path,
+        frame_queue: FrameQueue,
+        loop: bool = True,
+        segment_start: float = 0.0,
+        segment_end: float | None = None,
+        max_output_width: int = MAX_DECODE_WIDTH,
+        max_output_height: int = MAX_DECODE_HEIGHT,
+        max_output_fps: float | None = MAX_DECODE_FPS,
     ) -> None:
         self.path = Path(path).expanduser().resolve()
         self.frame_queue = frame_queue
@@ -141,9 +141,9 @@ class VideoDecoder:
             self._condition.notify_all()
             thread = self._thread
         if (
-                thread is not None
-                and thread.is_alive()
-                and thread is not threading.current_thread()
+            thread is not None
+            and thread.is_alive()
+            and thread is not threading.current_thread()
         ):
             thread.join(timeout=max(0.0, float(timeout)))
         stopped = thread is None or not thread.is_alive()
@@ -261,8 +261,8 @@ class VideoDecoder:
                             except StopIteration:
                                 break
                             self.decode_time_ms += (
-                                                           time.perf_counter() - decode_started
-                                                   ) * 1000.0
+                                time.perf_counter() - decode_started
+                            ) * 1000.0
 
                             with self._condition:
                                 if not self._running:
@@ -283,8 +283,8 @@ class VideoDecoder:
                             if timestamp + 0.03 < seek_to:
                                 continue
                             if (
-                                    self.segment_end is not None
-                                    and timestamp >= self.segment_end
+                                self.segment_end is not None
+                                and timestamp >= self.segment_end
                             ):
                                 break
 
@@ -307,10 +307,10 @@ class VideoDecoder:
                                 else 0.0
                             )
                             if (
-                                    last_published_timestamp is not None
-                                    and frame_interval > 0
-                                    and timestamp - last_published_timestamp
-                                    < frame_interval * 0.92
+                                last_published_timestamp is not None
+                                and frame_interval > 0
+                                and timestamp - last_published_timestamp
+                                < frame_interval * 0.92
                             ):
                                 self.skipped_output_frames += 1
                                 continue
@@ -318,7 +318,7 @@ class VideoDecoder:
                             conversion_started = time.perf_counter()
                             pixels = self._preview_pixels(frame)
                             conversion_elapsed = (
-                                    time.perf_counter() - conversion_started
+                                time.perf_counter() - conversion_started
                             )
                             self.conversion_time_ms += conversion_elapsed * 1000.0
                             height, width, _ = pixels.shape

@@ -221,12 +221,12 @@ class PerformanceTimelinePanel(QWidget):
 
         control = self.application.performance_control
         internal_running = (
-                self.application.transport.running and not self.application.transport.paused
+            self.application.transport.running and not self.application.transport.paused
         )
         external_running = (
-                control.source_id == "sonic_pi"
-                and control.transport_running
-                and not control.transport_paused
+            control.source_id == "sonic_pi"
+            and control.transport_running
+            and not control.transport_paused
         )
         if snapshot["armed"]:
             if internal_running or external_running:

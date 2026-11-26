@@ -204,12 +204,12 @@ class LayerPanel(QWidget):
             "Move the selected effect stage later in the stack"
         )
         for index, button in enumerate(
-                (
-                        self.fx_stage_add,
-                        self.fx_stage_remove,
-                        self.fx_stage_up,
-                        self.fx_stage_down,
-                )
+            (
+                self.fx_stage_add,
+                self.fx_stage_remove,
+                self.fx_stage_up,
+                self.fx_stage_down,
+            )
         ):
             stage_actions.addWidget(button, index // 2, index % 2)
         stage_actions.setColumnStretch(0, 1)
@@ -234,17 +234,17 @@ class LayerPanel(QWidget):
         layer_fx_layout.addLayout(chain_actions)
         self.layer_fx_sliders = {}
         for key, title, minimum, maximum, default in (
-                ("mix", "FX MIX", 0, 100, 100),
-                ("monochrome", "MONOCHROME", 0, 100, 0),
-                ("invert", "INVERT", 0, 100, 0),
-                ("threshold", "THRESHOLD", 0, 100, 0),
-                ("posterize", "POSTERIZE", 0, 100, 0),
-                ("hue", "HUE", -180, 180, 0),
-                ("contrast", "CONTRAST", 0, 250, 100),
-                ("saturation", "SATURATION", 0, 250, 100),
-                ("brightness", "BRIGHTNESS", -50, 50, 0),
-                ("scanlines", "SCANLINES", 0, 100, 0),
-                ("chromatic", "RGB SPLIT", 0, 100, 0),
+            ("mix", "FX MIX", 0, 100, 100),
+            ("monochrome", "MONOCHROME", 0, 100, 0),
+            ("invert", "INVERT", 0, 100, 0),
+            ("threshold", "THRESHOLD", 0, 100, 0),
+            ("posterize", "POSTERIZE", 0, 100, 0),
+            ("hue", "HUE", -180, 180, 0),
+            ("contrast", "CONTRAST", 0, 250, 100),
+            ("saturation", "SATURATION", 0, 250, 100),
+            ("brightness", "BRIGHTNESS", -50, 50, 0),
+            ("scanlines", "SCANLINES", 0, 100, 0),
+            ("chromatic", "RGB SPLIT", 0, 100, 0),
         ):
             label, slider = self._add_fx_slider(
                 layer_fx_layout,
@@ -335,11 +335,11 @@ class LayerPanel(QWidget):
 
     @staticmethod
     def _add_slider(
-            parent_layout: QVBoxLayout,
-            title: str,
-            minimum: int,
-            maximum: int,
-            value: int,
+        parent_layout: QVBoxLayout,
+        title: str,
+        minimum: int,
+        maximum: int,
+        value: int,
     ) -> tuple[QLabel, QSlider]:
         row = QHBoxLayout()
         row.setContentsMargins(0, 1, 0, 1)
@@ -368,11 +368,11 @@ class LayerPanel(QWidget):
 
     @staticmethod
     def _add_fx_slider(
-            parent_layout: QVBoxLayout,
-            title: str,
-            minimum: int,
-            maximum: int,
-            value: int,
+        parent_layout: QVBoxLayout,
+        title: str,
+        minimum: int,
+        maximum: int,
+        value: int,
     ) -> tuple[QLabel, QSlider]:
         row = QHBoxLayout()
         row.setContentsMargins(0, 1, 0, 1)
@@ -450,8 +450,8 @@ class LayerPanel(QWidget):
             if selected_id:
                 for row in range(self.table.rowCount()):
                     if (
-                            self.table.item(row, 1).data(Qt.ItemDataRole.UserRole)
-                            == selected_id
+                        self.table.item(row, 1).data(Qt.ItemDataRole.UserRole)
+                        == selected_id
                     ):
                         selected_row = row
                         break
@@ -494,8 +494,8 @@ class LayerPanel(QWidget):
                 blend.setCurrentText(layer.blend_mode)
                 blend.blockSignals(False)
             if (
-                    self._selected_layer() is not None
-                    and self._selected_layer().id == layer_id
+                self._selected_layer() is not None
+                and self._selected_layer().id == layer_id
             ):
                 self.selected_blend_combo.blockSignals(True)
                 self.selected_blend_combo.setCurrentText(layer.blend_mode)
@@ -503,11 +503,11 @@ class LayerPanel(QWidget):
             return
 
     def _selection_changed(
-            self,
-            current_row: int,
-            current_column: int,
-            previous_row: int,
-            previous_column: int,
+        self,
+        current_row: int,
+        current_column: int,
+        previous_row: int,
+        previous_column: int,
     ) -> None:
         layer = self._selected_layer()
         sliders = (
@@ -592,8 +592,8 @@ class LayerPanel(QWidget):
             }
             targets.extend(sorted(fields.get(layer.generator_type, set())))
             if (
-                    layer.generator_type == "text"
-                    and layer.generator_settings.get("text_animation", "none") != "none"
+                layer.generator_type == "text"
+                and layer.generator_settings.get("text_animation", "none") != "none"
             ):
                 targets.extend(
                     (
@@ -651,9 +651,9 @@ class LayerPanel(QWidget):
         self.modifier_depth[1].setEnabled(not layer.locked)
         self.modifier_add_button.setEnabled(not layer.locked)
         for button in (
-                self.modifier_beat_button,
-                self.modifier_downbeat_button,
-                self.modifier_phrase_button,
+            self.modifier_beat_button,
+            self.modifier_downbeat_button,
+            self.modifier_phrase_button,
         ):
             button.setEnabled(not layer.locked)
 
@@ -695,10 +695,10 @@ class LayerPanel(QWidget):
         self._create_performance_modifier(source_id, target_id, depth)
 
     def _create_performance_modifier(
-            self,
-            source_id: str,
-            target_id: str,
-            depth: float,
+        self,
+        source_id: str,
+        target_id: str,
+        depth: float,
     ) -> None:
         layer = self._selected_layer()
         if layer is None or layer.locked or not target_id:
@@ -740,7 +740,7 @@ class LayerPanel(QWidget):
         self.refresh_performance_modifiers()
 
     def _toggle_performance_modifier(
-            self, layer_id: str, modifier_id: str, enabled: bool
+        self, layer_id: str, modifier_id: str, enabled: bool
     ) -> None:
         layer = self.application.composition.get_layer(layer_id)
         if layer is None:
@@ -851,9 +851,9 @@ class LayerPanel(QWidget):
                 self.modifier_list.addItem(item)
 
                 def toggle_modifier(
-                        state: bool,
-                        owner: str = layer.id,
-                        mid: str = modifier_id,
+                    state: bool,
+                    owner: str = layer.id,
+                    mid: str = modifier_id,
                 ) -> None:
                     self._toggle_performance_modifier(owner, mid, state)
 
@@ -896,22 +896,22 @@ class LayerPanel(QWidget):
         self.layer_fx_preset.blockSignals(True)
         imported = self.application.composition.metadata.get("layer_fx_presets", {})
         known_names = (
-                list(LY_EFFECT_PSETS)
-                + ["Xerox Stack", "Negative Print", "Signal Scan"]
-                + (list(imported) if isinstance(imported, dict) else [])
+            list(LY_EFFECT_PSETS)
+            + ["Xerox Stack", "Negative Print", "Signal Scan"]
+            + (list(imported) if isinstance(imported, dict) else [])
         )
         self.layer_fx_preset.clear()
         self.layer_fx_preset.addItems(list(dict.fromkeys(known_names)) + ["Custom"])
         self.layer_fx_preset.setCurrentText("Custom")
         for name in LY_EFFECT_PSETS:
             if (
-                    normalize_layer_effects(
-                        {
-                            **LY_EFFECT_PSETS[name],
-                            "enabled": name != "Clean",
-                        }
-                    )
-                    == values
+                normalize_layer_effects(
+                    {
+                        **LY_EFFECT_PSETS[name],
+                        "enabled": name != "Clean",
+                    }
+                )
+                == values
             ):
                 self.layer_fx_preset.setCurrentText(name)
                 break
@@ -922,8 +922,8 @@ class LayerPanel(QWidget):
         if isinstance(imported, dict):
             for name, stages in imported.items():
                 if (
-                        values["stages"]
-                        == normalize_layer_effects({"stages": stages})["stages"]
+                    values["stages"]
+                    == normalize_layer_effects({"stages": stages})["stages"]
                 ):
                     self.layer_fx_preset.setCurrentText(str(name))
                     break

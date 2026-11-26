@@ -99,7 +99,7 @@ class PerformanceModeService:
         )
 
     def mark_armed(
-            self, *, osc_owned: bool, audio_owned: bool, audio_status: str
+        self, *, osc_owned: bool, audio_owned: bool, audio_status: str
     ) -> None:
         state = self.snapshot_state
         state.osc_owned = bool(osc_owned)
@@ -263,7 +263,7 @@ def install_default_performance_macro_routes(matrix: ModulationMatrix) -> int:
                 None,
             )
             if existing is not None and existing.route_id.startswith(
-                    "auto-performance-"
+                "auto-performance-"
             ):
                 changes = {
                     "source_id": source,
@@ -273,7 +273,7 @@ def install_default_performance_macro_routes(matrix: ModulationMatrix) -> int:
                     "intensity_ceiling": ceiling,
                 }
                 if any(
-                        getattr(existing, key) != value for key, value in changes.items()
+                    getattr(existing, key) != value for key, value in changes.items()
                 ):
                     matrix.update_route(existing.route_id, changes)
             continue
@@ -311,7 +311,7 @@ def install_default_matrix_routes(matrix: ModulationMatrix) -> int:
                 (route for route in matrix.routes if route.target_id == target), None
             )
             if existing is not None and existing.route_id.startswith(
-                    "auto-performance-"
+                "auto-performance-"
             ):
                 changes = {
                     "source_id": source,
@@ -322,7 +322,7 @@ def install_default_matrix_routes(matrix: ModulationMatrix) -> int:
                     "enabled": True,
                 }
                 if any(
-                        getattr(existing, key) != value for key, value in changes.items()
+                    getattr(existing, key) != value for key, value in changes.items()
                 ):
                     matrix.update_route(existing.route_id, changes)
             continue
@@ -368,20 +368,20 @@ def install_default_modulators(bank: ModulatorBank) -> dict[str, str]:
 
 
 def _modifier(
-        name: str,
-        source_id: str,
-        target_id: str,
-        depth: float,
-        curve: str = "smoothstep",
-        attack_ms: float = 35.0,
-        release_ms: float = 300.0,
-        polarity: str = "positive",
+    name: str,
+    source_id: str,
+    target_id: str,
+    depth: float,
+    curve: str = "smoothstep",
+    attack_ms: float = 35.0,
+    release_ms: float = 300.0,
+    polarity: str = "positive",
 ) -> LayerPerformanceModifier:
     return LayerPerformanceModifier(
         modifier_id=(
-                        f"auto-{source_id.removeprefix('modulator.').replace('.', '-')}-"
-                        f"{target_id.replace('.', '-')}"
-                    )[:40],
+            f"auto-{source_id.removeprefix('modulator.').replace('.', '-')}-"
+            f"{target_id.replace('.', '-')}"
+        )[:40],
         name=f"AUTO · {name}",
         source_id=source_id,
         target_id=target_id,
@@ -395,10 +395,10 @@ def _modifier(
 
 
 def _performance_macro_modifier(
-        macro_id: str,
-        name: str,
-        target_id: str,
-        depth: float,
+    macro_id: str,
+    name: str,
+    target_id: str,
+    depth: float,
 ) -> LayerPerformanceModifier:
     source_id = f"performance_macro.{macro_id}"
     item = _modifier(name, source_id, target_id, depth)
@@ -524,8 +524,8 @@ def install_default_performance_macro_modifiers(layers: list[object]) -> int:
 
 
 def install_default_layer_modifiers(
-        layers: list[object],
-        modulator_ids: dict[str, str],
+    layers: list[object],
+    modulator_ids: dict[str, str],
 ) -> int:
     """Install GPU-friendly curves and migrate the earlier CPU-raster defaults."""
     energy = f"modulator.{modulator_ids['follower-sonic-pi-energy']}"
@@ -547,13 +547,13 @@ def install_default_layer_modifiers(
                 raw
                 for raw in configured
                 if not (
-                        isinstance(raw, dict)
-                        and str(raw.get("modifier_id", "")).startswith("auto-")
-                        and (
-                            str(raw.get("name", "")),
-                            str(raw.get("target_id", "")),
-                        )
-                        in legacy
+                    isinstance(raw, dict)
+                    and str(raw.get("modifier_id", "")).startswith("auto-")
+                    and (
+                        str(raw.get("name", "")),
+                        str(raw.get("target_id", "")),
+                    )
+                    in legacy
                 )
             ]
         # Migrate prior AUTO curves even on currently locked layers; do not
@@ -919,8 +919,8 @@ def install_default_layer_modifiers(
                 item
                 for item in candidates
                 if (
-                        item.target_id.startswith("layer.")
-                        or available.get(item.target_id) in settings
+                    item.target_id.startswith("layer.")
+                    or available.get(item.target_id) in settings
                 )
             ]
         elif layer.source_type == "overlay":
@@ -1082,10 +1082,10 @@ def install_default_layer_modifiers(
 
 
 def set_default_routing_enabled(
-        matrix: ModulationMatrix,
-        bank: ModulatorBank,
-        layers: list[object],
-        enabled: bool,
+    matrix: ModulationMatrix,
+    bank: ModulatorBank,
+    layers: list[object],
+    enabled: bool,
 ) -> None:
     """Gate only generated AUTO routes, modulators and layer curves."""
     state = bool(enabled)
@@ -1099,6 +1099,6 @@ def set_default_routing_enabled(
         records = getattr(layer, "performance_modifiers", [])
         for record in records:
             if isinstance(record, dict) and str(record.get("name", "")).startswith(
-                    "AUTO ·"
+                "AUTO ·"
             ):
                 record["enabled"] = state
