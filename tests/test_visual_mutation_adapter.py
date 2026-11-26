@@ -7,12 +7,14 @@ from core.automation import AutomationDirector
 from core.composition import Composition, Layer
 from core.event_bus import EventBus
 from core.layer_manager import LayerManager
+from core.modulation import ModulationMatrix
 from core.performance_modifiers import (
     LayerPerformanceModifier,
     LayerPerformanceModifierEngine,
 )
 from core.visual_model import VisualMutationContract
 from core.visual_mutation_adapter import VisualMutationAdapter
+from generators.catalog import default_generator_settings
 
 
 def make_adapter(
@@ -302,9 +304,7 @@ def test_lock_restores_modifier_baseline_before_freezing_layer() -> None:
     application.automation.set_mutation_adapter(adapter)
     application._selected_layer_id = None
     application._modulation_base_values = {}
-    application.modulation = __import__(
-        "core.modulation", fromlist=["ModulationMatrix"]
-    ).ModulationMatrix()
+    application.modulation = ModulationMatrix()
     application.events = EventBus()
 
     modifier = LayerPerformanceModifier(
@@ -346,3 +346,29 @@ def test_lock_restores_modifier_baseline_before_freezing_layer() -> None:
     assert composition.get_layer(layer.id).locked
     assert composition.get_layer(layer.id).opacity == pytest.approx(0.5)
     assert not any(key[0] == layer.id for key in engine.base_values())
+
+
+def test_automation_lock_preparation_releases_temporary_peak_boost() -> None:
+    settings = default_generator_settings("particles")
+    settings["density"] = 40
+    layer = Layer(
+        id="layer-peak-lock",
+        source_type="generator",
+        generator_type="particles",
+        generator_settings=settings,
+    )
+    composition = Composition()
+    composition.add_layer(layer)
+    adapter = make_adapter(composition)
+    director = AutomationDirector(seed=9)
+    director.update_layers(composition.layers)
+    director.set_mutation_adapter(adapter)
+    director._peak_particle_base[layer.id] = ("density", 20.0, "particles")
+    director._layout_morphs[layer.id] = {"started_at": 0.0, "duration": 1.0}
+
+    assert director.prepare_layer_lock(layer.id)
+
+    updated = composition.get_layer(layer.id)
+    assert updated.generator_settings["density"] == pytest.approx(20.0)
+    assert layer.id not in director._peak_particle_base
+    assert layer.id not in director._layout_morphs
