@@ -1219,15 +1219,25 @@ class Application:
         else:
             return False, "visual event requires an explicit object target"
 
-        allowed = {
-            "reveal": {"visible": True},
-            "conceal": {"visible": False},
-            "fade": {"opacity": max(0.0, min(1.0, float(visual_event.payload.get("opacity", 0.0))))},
-            "move": {"position": tuple(visual_event.payload.get("position", ()))},
-            "rotate": {"rotation": float(visual_event.payload.get("rotation", 0.0))},
-        }
-        changes = allowed.get(visual_event.event_type)
-        if changes is None:
+        payload = visual_event.payload
+        if visual_event.event_type == "reveal":
+            changes = {"visible": True}
+        elif visual_event.event_type == "conceal":
+            changes = {"visible": False}
+        elif visual_event.event_type == "fade":
+            opacity = payload.get("opacity", 0.0)
+            changes = {"opacity": max(0.0, min(1.0, float(opacity)))}
+        elif visual_event.event_type == "move":
+            position = payload.get("position")
+            if (
+                not isinstance(position, (list, tuple))
+                or len(position) != 2
+            ):
+                return False, "move event requires a two-value position"
+            changes = {"position": tuple(float(value) for value in position)}
+        elif visual_event.event_type == "rotate":
+            changes = {"rotation": float(payload.get("rotation", 0.0))}
+        else:
             return False, f"event type {visual_event.event_type!r} is not yet executable"
         try:
             self.layer_manager.update_layer(
