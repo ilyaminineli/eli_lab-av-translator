@@ -187,6 +187,9 @@ class VisualMutationContract:
             "motion",
             "blend_mode",
             "visibility",
+            "visible",
+            "z_index",
+            "locked",
         ]
     )
     forbid: list[str] = field(
