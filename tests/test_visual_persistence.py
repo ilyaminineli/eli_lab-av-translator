@@ -6,7 +6,7 @@ from types import SimpleNamespace
 
 import pytest
 
-import core.application as application_module
+from core import application as application_module
 from core.application import Application
 from core.composition import Composition, Layer
 from core.event_bus import EventBus
