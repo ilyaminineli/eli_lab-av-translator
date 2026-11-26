@@ -234,6 +234,7 @@ class VisualMutationContract:
             "layer_effects",
             "overlay_speed",
             "overlay_frame_hold",
+            "lineage.motif_id",
         ]
     )
     forbid: list[str] = field(
@@ -315,6 +316,7 @@ class VisualMutationContract:
                     "layer_effects",
                     "overlay_speed",
                     "overlay_frame_hold",
+                    "lineage.motif_id",
                 )
             )
         elif selected_allow == intermediate_default_allow:
@@ -324,6 +326,7 @@ class VisualMutationContract:
                     "layer_effects",
                     "overlay_speed",
                     "overlay_frame_hold",
+                    "lineage.motif_id",
                 )
             )
         result.normalize()

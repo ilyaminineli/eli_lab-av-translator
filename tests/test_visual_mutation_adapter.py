@@ -265,6 +265,29 @@ def test_historical_default_contract_expands_only_legacy_defaults() -> None:
     assert "layer_effects" in restored.allow
     assert "visible" in restored.allow
     assert "locked" in restored.allow
+    assert "lineage.motif_id" in restored.allow
+
+    intermediate = VisualMutationContract.from_dict(
+        {
+            "preserve": ["object_id", "layer_id", "role", "identity", "lineage"],
+            "allow": [
+                "position",
+                "scale",
+                "rotation",
+                "opacity",
+                "material",
+                "palette",
+                "motion",
+                "blend_mode",
+                "visibility",
+                "visible",
+                "z_index",
+                "locked",
+            ],
+            "forbid": ["replace_source", "reset_identity", "delete"],
+        }
+    )
+    assert "lineage.motif_id" in intermediate.allow
 
     restrictive = VisualMutationContract.from_dict(
         {"preserve": ["position"], "allow": ["rotation"], "forbid": []}

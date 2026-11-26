@@ -316,6 +316,10 @@ class Composition:
                 f"Visual object {visual_object.object_id!r} already references "
                 f"motif {visual_object.lineage.motif_id!r}; unbind it explicitly first."
             )
+        visual_object.mutation_contract.validate(
+            "bind_motif",
+            {"lineage.motif_id"},
+        )
 
         candidate = VisualObject.from_dict(visual_object.to_dict())
         candidate.lineage.motif_id = selected_motif_id
@@ -333,6 +337,10 @@ class Composition:
             raise KeyError(f"Unknown visual object: {object_id}")
         if visual_object.lineage.motif_id is None:
             return False
+        visual_object.mutation_contract.validate(
+            "unbind_motif",
+            {"lineage.motif_id"},
+        )
 
         candidate = VisualObject.from_dict(visual_object.to_dict())
         candidate.lineage.motif_id = None

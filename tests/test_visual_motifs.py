@@ -5,7 +5,13 @@ import pytest
 from core.composition import Composition, Layer
 from core.performance_environment import PerformanceScene, PerformanceSetStore
 from core.project_manager import ProjectManager
-from core.visual_model import VisualIdentity, VisualLineage, VisualMotif, VisualObject
+from core.visual_model import (
+    VisualIdentity,
+    VisualLineage,
+    VisualMotif,
+    VisualMutationContract,
+    VisualObject,
+)
 
 
 def _visual_motif(motif_id: str = "motif-orbit") -> VisualMotif:
@@ -477,3 +483,41 @@ def test_unresolved_legacy_motif_reference_requires_explicit_repair() -> None:
     assert loaded.lineage.source_object_ids == ["historic-parent"]
     assert loaded.lineage.origin == "legacy_import"
     assert loaded.revision == before_revision + 2
+
+
+def test_motif_bind_and_unbind_obey_custom_mutation_contracts() -> None:
+    composition, motif = _unbound_composition()
+    layer = composition.get_layer("bind-primary")
+    assert layer is not None
+    visual_object = composition.visual_object_for_layer(layer.id)
+    assert visual_object is not None
+
+    visual_object.mutation_contract = VisualMutationContract(allow=["opacity"])
+    before = visual_object.to_dict()
+    with pytest.raises(ValueError, match="not allowed by the contract"):
+        composition.bind_visual_object_to_motif(visual_object.object_id, motif.motif_id)
+    assert visual_object.to_dict() == before
+
+    visual_object.mutation_contract = VisualMutationContract()
+    composition.bind_visual_object_to_motif(visual_object.object_id, motif.motif_id)
+    visual_object.mutation_contract = VisualMutationContract(allow=["opacity"])
+    before_unbind = visual_object.to_dict()
+    with pytest.raises(ValueError, match="not allowed by the contract"):
+        composition.unbind_visual_object_from_motif(visual_object.object_id)
+    assert visual_object.to_dict() == before_unbind
+
+
+def test_motif_binding_rejects_explicitly_forbidden_operation() -> None:
+    composition, motif = _unbound_composition()
+    layer = composition.get_layer("bind-primary")
+    assert layer is not None
+    visual_object = composition.visual_object_for_layer(layer.id)
+    assert visual_object is not None
+    visual_object.mutation_contract = VisualMutationContract(
+        forbid=["bind_motif"],
+    )
+    before = visual_object.to_dict()
+
+    with pytest.raises(ValueError, match="forbidden"):
+        composition.bind_visual_object_to_motif(visual_object.object_id, motif.motif_id)
+    assert visual_object.to_dict() == before

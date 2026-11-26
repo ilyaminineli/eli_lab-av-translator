@@ -168,6 +168,15 @@ def test_mutation_contract_allows_declared_transforms_and_rejects_identity_reset
         conflicting.validate("transform", {"position"})
 
 
+def test_mutation_contract_allows_only_explicit_motif_reference_changes() -> None:
+    contract = VisualMutationContract()
+    contract.validate("bind_motif", {"lineage.motif_id"})
+    contract.validate("unbind_motif", {"lineage.motif_id"})
+
+    with pytest.raises(ValueError, match="preserved identity"):
+        contract.validate("transform", {"lineage"})
+
+
 def test_visual_object_rejects_self_parent_and_duplicate_layer_association() -> None:
     object_id = uuid4().hex
     item = VisualObject(
