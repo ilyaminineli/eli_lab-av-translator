@@ -75,7 +75,9 @@ def test_layer_manager_source_replacement_creates_child_identity() -> None:
     assert previous is not None
 
     manager = LayerManager(composition)
-    updated = manager.update_layer(layer.id, source_id="deck_b")
+    updated = manager.update_layer(
+        layer.id, source_replacement=True, source_id="deck_b"
+    )
     replacement = composition.visual_object_for_layer(layer.id)
 
     assert updated.source_id == "deck_b"
