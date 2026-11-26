@@ -8,7 +8,7 @@ from uuid import uuid4
 from config import VID_DECK_IDS
 from core.performance_macros import PERF_MACRO_IDS
 from effects.settings import PSETS
-from generators.palettes import palette_names
+from generators.palettes import palette_names\nfrom core.visual_model import VisualEvent
 
 TMLN_VER = 1
 MAX_TMLN_EVTS = 512
@@ -310,6 +310,17 @@ class PerformanceTimelineEvent:
             if not palette or palette not in palette_names():
                 raise ValueError("Choose a palette from the current palette library.")
             self.payload = {"palette": palette}
+
+        elif self.event_type == "visual_event":
+            visual_event = self.payload.get("event")
+            if not isinstance(visual_event, dict):
+                raise ValueError("Visual timeline events need an event object.")
+            normalized = VisualEvent.from_dict(visual_event).to_dict()
+            if normalized["time_domain"] != "bar_beat":
+                raise ValueError("Timeline visual events must use the bar_beat time domain.")
+            if normalized["position"] != {"bar": self.bar, "beat": float(self.beat)}:
+                raise ValueError("Visual event and timeline event positions must match.")
+            self.payload = {"event": normalized}
 
         elif self.event_type == "modulation":
             macro_id = str(self.payload.get("macro_id", "")).strip()
