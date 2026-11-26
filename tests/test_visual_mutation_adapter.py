@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import pytest
 
+from core.application import Application
 from core.automation import AutomationDirector
 from core.composition import Composition, Layer
 from core.layer_manager import LayerManager
@@ -266,3 +267,20 @@ def test_historical_default_contract_expands_only_legacy_defaults() -> None:
         {"preserve": ["position"], "allow": ["rotation"], "forbid": []}
     )
     assert restrictive.allow == ["rotation"]
+
+
+def test_modulation_target_writer_uses_shared_mutation_adapter() -> None:
+    composition = Composition()
+    layer = Layer(id="layer-modulation-target", opacity=0.8)
+    composition.add_layer(layer)
+    adapter = make_adapter(composition)
+    application = object.__new__(Application)
+    application.composition = composition
+    application._selected_layer_id = layer.id
+    application.visual_mutation_adapter = adapter
+    application.events = __import__("core.event_bus", fromlist=["EventBus"]).EventBus()
+    application._overlay_images = {}
+
+    assert application._set_modulation_target("selected_layer.opacity", 0.3)
+    assert composition.get_layer(layer.id).opacity == pytest.approx(0.3)
+    assert composition.visual_object_for_layer(layer.id).revision == 1
