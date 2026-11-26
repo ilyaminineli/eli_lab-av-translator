@@ -8,7 +8,8 @@ from uuid import uuid4
 from config import VID_DECK_IDS
 from core.performance_macros import PERF_MACRO_IDS
 from effects.settings import PSETS
-from generators.palettes import palette_names\nfrom core.visual_model import VisualEvent
+from core.visual_model import VisualEvent
+from generators.palettes import palette_names
 
 TMLN_VER = 1
 MAX_TMLN_EVTS = 512
