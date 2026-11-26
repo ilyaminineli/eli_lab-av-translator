@@ -99,7 +99,7 @@ def test_motion_gesture_rejects_unknown_kind_easing_and_unbounded_values() -> No
             parameters={"distance": float("inf")},
         ).normalize()
 
-    with pytest.raises(ValueError, match="at most 32 parameters"):
+    with pytest.raises(ValueError, match="more than 32 parameters"):
         MotionGesture(
             gesture_id="too-many-parameters",
             parameters={f"p{i}": i for i in range(33)},
