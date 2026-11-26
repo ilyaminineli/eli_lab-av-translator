@@ -57,6 +57,7 @@ from core.performance_service import (
     set_default_routing_enabled,
 )
 from core.performance_timeline import PerformanceTimeline, PerformanceTimelineEvent
+from core.visual_model import VisualEvent
 from core.performance_transport import InternalTransport, Quantization
 from core.project_manager import ProjectManager
 from core.scene_profiles import SceneProfile, SceneProfileRegistry
