@@ -17,3 +17,21 @@ Version 2 remains backward-compatible with version 1 projects. Missing effect an
 A project stores references to footage, not the footage itself. Media paths are absolute in the first implementation. Missing files are logged when loading.
 
 Writes are atomic: data is serialized to a sibling temporary file and moved into place only after the write completes.
+
+
+## Visual identity extension (M7-C0)
+
+The current project schema remains version 2. Composition payloads may now include an additive `visual_objects` array. Each layer includes a `visual_object_id` stable identifier that references exactly one record in that array.
+
+Each VisualObject record has its own `schema_version` (currently 1) and stores:
+
+- `object_id` and `layer_id` stable association IDs.
+- `role` and `material` semantic descriptors.
+- `identity` geometry, palette, motion and material identity traits.
+- `lineage` origin, parent object, motif reference and source-object IDs.
+- `mutation_contract` preserve/allow/forbid declarations.
+- `revision` object data revision.
+
+Legacy version-1 and version-2 project compositions without `visual_objects` remain loadable. The loader synthesizes a legacy VisualObject for each layer in memory; the next save writes the identity records. Performance-scene snapshots and performance sets use the same Composition serialization, so they retain the same stable IDs.
+
+VisualEvent records are currently an in-memory model and are not yet persisted as a project-level event score. No GPU handles, texture data, simulation state or runtime clock timestamps are serialized as VisualObject state.
