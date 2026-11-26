@@ -86,3 +86,12 @@ Timing is deliberately explicit:
 Composition owns both registries. A pattern may only be registered when all step gesture references exist; removing a referenced gesture is rejected until the consuming patterns are removed or edited. Each composition is limited to 256 gestures and 256 patterns. Old compositions without either field load with empty registries. These additive fields are carried by the shared Composition serializer through .eliav, .eliset and embedded scene snapshots. No project/set schema version bump is required.
 
 These are data definitions only. No autonomous scheduler, audio listener, renderer object or GPU resource is serialized or created by the grammar models.
+
+
+## Seeded variation candidate artifact (M7-C1.5)
+
+A `VisualMotifVariation` is a standalone, self-verifying candidate record, not part of the live Composition registries. It contains motif ID and revision, source VisualObject ID, optional VisualPattern ID/revision, the authored motif/pattern seeds, a seed salt, the derived 64-bit seed, selected field paths, full variation rules, selected values and a deterministic variation ID. It may be serialized separately through its own `to_dict/from_dict` methods, but it is not automatically embedded in a project or performance set until a later acceptance flow explicitly adopts a candidate.
+
+Each variation rule targets exactly one path already declared in `VisualMotif.allowed_variations`. Uniform rules declare `value_type` (`integer` or `number`) and finite bounds; choice rules declare 2–32 unique scalar values of the same type as the authored field. Invariant paths are never eligible. A SHA-256-derived root seed includes motif identity/revision, stable object identity, optional pattern identity/revision, authored seeds and seed salt. A separate hash-derived random stream per field makes output independent of rule order. Candidate deserialization validates both the rule bounds/choices and the deterministic ID.
+
+Candidate generation is pure and does not mutate the motif, Composition, VisualObject or Layer. Applying or accepting a candidate is a later explicit mutation operation.
