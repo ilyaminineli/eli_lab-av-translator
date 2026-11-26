@@ -3,6 +3,7 @@ from __future__ import annotations
 import logging
 import math
 import random
+from copy import deepcopy
 import time
 from collections.abc import Iterable
 from dataclasses import asdict, dataclass
@@ -1172,7 +1173,7 @@ class AutomationDirector:
                         if layer.id in self._peak_particle_base:
                             self._peak_particle_base[layer.id] = (
                                 field,
-                                float(layer.generator_settings[field]),
+                                float(updated.generator_settings[field]),
                                 kind,
                             )
                     if self.generator_settings_changed is not None and self.mutation_adapter is None:
