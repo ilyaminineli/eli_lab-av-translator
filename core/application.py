@@ -17,7 +17,6 @@ from core.automation import AutomationDirector, AutomationSettings
 from core.composition import Composition, Layer
 from core.event_bus import EventBus
 from core.layer_manager import LayerManager
-from core.visual_mutation_adapter import VisualMutationAdapter
 from core.modulation import TARGET_SPECS, ModulationMatrix
 from core.modulator_bank import (
     ModulatorBank,
@@ -59,10 +58,11 @@ from core.performance_service import (
     set_default_routing_enabled,
 )
 from core.performance_timeline import PerformanceTimeline, PerformanceTimelineEvent
-from core.visual_model import VisualEvent
 from core.performance_transport import InternalTransport, Quantization
 from core.project_manager import ProjectManager
 from core.scene_profiles import SceneProfile, SceneProfileRegistry
+from core.visual_model import VisualEvent
+from core.visual_mutation_adapter import VisualMutationAdapter
 from effects.layer_settings import normalize_layer_effects
 from effects.settings import EffectSettings
 from generators.catalog import GEN_TYPES, default_generator_settings, normalize_settings
