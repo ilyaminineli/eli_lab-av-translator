@@ -285,3 +285,64 @@ def test_modulation_target_writer_uses_shared_mutation_adapter() -> None:
     assert application._set_modulation_target("selected_layer.opacity", 0.3)
     assert composition.get_layer(layer.id).opacity == pytest.approx(0.3)
     assert composition.visual_object_for_layer(layer.id).revision == 1
+
+
+def test_lock_restores_modifier_baseline_before_freezing_layer() -> None:
+    composition = Composition()
+    layer = Layer(id="layer-lock-baseline", opacity=0.5)
+    composition.add_layer(layer)
+    adapter = make_adapter(composition)
+    engine = LayerPerformanceModifierEngine(adapter)
+    application = object.__new__(Application)
+    application.composition = composition
+    application.layer_manager = adapter.layer_manager
+    application.visual_mutation_adapter = adapter
+    application.performance_modifier_engine = engine
+    application.automation = AutomationDirector(seed=8)
+    application.automation.set_mutation_adapter(adapter)
+    application._selected_layer_id = None
+    application._modulation_base_values = {}
+    application.modulation = __import__(
+        "core.modulation", fromlist=["ModulationMatrix"]
+    ).ModulationMatrix()
+    application.events = EventBus()
+
+    modifier = LayerPerformanceModifier(
+        modifier_id="lock-opacity",
+        source_id="audio.rms",
+        target_id="layer.opacity",
+        depth=0.2,
+        attack_ms=1.0,
+        release_ms=1.0,
+    )
+    layer.performance_modifiers = [modifier.to_dict()]
+
+    def get_target(layer_id: str, target_id: str) -> float | None:
+        current = composition.get_layer(layer_id)
+        return current.opacity if target_id == "layer.opacity" and current else None
+
+    def set_target(
+        layer_id: str,
+        target_id: str,
+        value: float,
+        candidate: Layer | None = None,
+    ) -> bool:
+        if target_id != "layer.opacity" or candidate is None:
+            return False
+        candidate.opacity = value
+        return True
+
+    engine.evaluate(
+        composition.layers,
+        {"audio.rms": 1.0},
+        get_target,
+        set_target,
+        now=1.0,
+    )
+    assert composition.get_layer(layer.id).opacity == pytest.approx(0.7)
+
+    application.set_layer_locked(layer.id, True)
+
+    assert composition.get_layer(layer.id).locked
+    assert composition.get_layer(layer.id).opacity == pytest.approx(0.5)
+    assert not any(key[0] == layer.id for key in engine.base_values())
