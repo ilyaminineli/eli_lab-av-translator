@@ -187,6 +187,13 @@ class VisualMutationContract:
             "motion",
             "blend_mode",
             "visibility",
+            "visible",
+            "z_index",
+            "locked",
+            "generator_settings",
+            "layer_effects",
+            "overlay_speed",
+            "overlay_frame_hold",
         ]
     )
     forbid: list[str] = field(
@@ -238,6 +245,47 @@ class VisualMutationContract:
             raise ValueError("Visual mutation contract must be an object.")
         allowed = set(cls.__dataclass_fields__)
         result = cls(**{key: value for key, value in data.items() if key in allowed})
+        # Early C0 releases serialized two default allow-list shapes. Expand
+        # only those exact historical defaults; custom restrictive lists remain
+        # untouched.
+        legacy_default_allow = {
+            "position",
+            "scale",
+            "rotation",
+            "opacity",
+            "material",
+            "palette",
+            "motion",
+            "blend_mode",
+            "visibility",
+        }
+        intermediate_default_allow = legacy_default_allow | {
+            "visible",
+            "z_index",
+            "locked",
+        }
+        selected_allow = set(result.allow)
+        if selected_allow == legacy_default_allow:
+            result.allow.extend(
+                (
+                    "visible",
+                    "z_index",
+                    "locked",
+                    "generator_settings",
+                    "layer_effects",
+                    "overlay_speed",
+                    "overlay_frame_hold",
+                )
+            )
+        elif selected_allow == intermediate_default_allow:
+            result.allow.extend(
+                (
+                    "generator_settings",
+                    "layer_effects",
+                    "overlay_speed",
+                    "overlay_frame_hold",
+                )
+            )
         result.normalize()
         return result
 

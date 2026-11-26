@@ -7,6 +7,7 @@ from uuid import uuid4
 
 from config import VID_DECK_IDS
 from core.performance_macros import PERF_MACRO_IDS
+from core.visual_model import VisualEvent
 from effects.settings import PSETS
 from generators.palettes import palette_names
 
@@ -24,6 +25,7 @@ TMLN_EVT_TYPES = (
     "palette_change",
     "modulation",
     "transition_cue",
+    "visual_event",
 )
 
 TMLN_EVT_LABELS = {
@@ -36,6 +38,7 @@ TMLN_EVT_LABELS = {
     "palette_change": "Palette change",
     "modulation": "Modulation event",
     "transition_cue": "Transition cue",
+    "visual_event": "Visual event",
 }
 
 EFFECT_SETTING_FLDS = frozenset(
@@ -311,6 +314,17 @@ class PerformanceTimelineEvent:
                 raise ValueError("Choose a palette from the current palette library.")
             self.payload = {"palette": palette}
 
+        elif self.event_type == "visual_event":
+            visual_event = self.payload.get("event")
+            if not isinstance(visual_event, dict):
+                raise ValueError("Visual timeline events need an event object.")
+            normalized = VisualEvent.from_dict(visual_event).to_dict()
+            if normalized["time_domain"] != "bar_beat":
+                raise ValueError("Timeline visual events must use the bar_beat time domain.")
+            if normalized["position"] != {"bar": self.bar, "beat": float(self.beat)}:
+                raise ValueError("Visual event and timeline event positions must match.")
+            self.payload = {"event": normalized}
+
         elif self.event_type == "modulation":
             macro_id = str(self.payload.get("macro_id", "")).strip()
             if macro_id not in PERF_MACRO_IDS:
@@ -388,6 +402,14 @@ class PerformanceTimeline:
             raise ValueError(f"A timeline can contain at most {MAX_TMLN_EVTS} events.")
         if any(existing.event_id == item.event_id for existing in self.events):
             raise ValueError(f"Duplicate timeline event ID: {item.event_id}")
+        if item.event_type == "visual_event":
+            visual_id = str(item.payload["event"]["event_id"])
+            if any(
+                existing.event_type == "visual_event"
+                and str(existing.payload["event"]["event_id"]) == visual_id
+                for existing in self.events
+            ):
+                raise ValueError(f"Duplicate visual event ID: {visual_id}")
         self.events.append(item)
         self._sort_events()
         self.definition_revision += 1
@@ -414,6 +436,15 @@ class PerformanceTimeline:
             values["event_id"] = existing.event_id
             item = PerformanceTimelineEvent.from_dict(values)
         item.normalize()
+        if item.event_type == "visual_event":
+            visual_id = str(item.payload["event"]["event_id"])
+            if any(
+                existing.event_id != event_id
+                and existing.event_type == "visual_event"
+                and str(existing.payload["event"]["event_id"]) == visual_id
+                for existing in self.events
+            ):
+                raise ValueError(f"Duplicate visual event ID: {visual_id}")
         self.events[index] = item
         self._sort_events()
         self.definition_revision += 1

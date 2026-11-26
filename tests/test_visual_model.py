@@ -75,7 +75,9 @@ def test_layer_manager_source_replacement_creates_child_identity() -> None:
     assert previous is not None
 
     manager = LayerManager(composition)
-    updated = manager.update_layer(layer.id, source_id="deck_b")
+    updated = manager.update_layer(
+        layer.id, source_replacement=True, source_id="deck_b"
+    )
     replacement = composition.visual_object_for_layer(layer.id)
 
     assert updated.source_id == "deck_b"
@@ -218,3 +220,46 @@ def test_visual_identity_traits_round_trip() -> None:
     )
     restored = VisualIdentity.from_dict(identity.__dict__)
     assert restored == identity
+
+
+def test_layer_manager_update_is_atomic_on_late_invalid_value() -> None:
+    composition = Composition()
+    layer = Layer(id="layer-atomic", opacity=0.7)
+    composition.add_layer(layer)
+    manager = LayerManager(composition)
+    before = composition.to_dict()
+
+    with pytest.raises((TypeError, ValueError)):
+        manager.update_layer(layer.id, opacity=0.2, position=(0.1,))
+
+    assert composition.to_dict() == before
+
+
+def test_layer_manager_contract_rejects_unknown_visual_property_without_mutation() -> None:
+    composition = Composition()
+    layer = Layer(id="layer-contract")
+    composition.add_layer(layer)
+    manager = LayerManager(composition)
+    before = composition.to_dict()
+
+    with pytest.raises(ValueError, match="not allowed"):
+        manager.update_layer(layer.id, operation="transform", name="renamed")
+
+    assert composition.to_dict() == before
+
+
+def test_source_replacement_must_be_explicit_and_locked_layers_are_protected() -> None:
+    composition = Composition()
+    layer = Layer(id="layer-source")
+    composition.add_layer(layer)
+    manager = LayerManager(composition)
+    before_id = layer.visual_object_id
+
+    with pytest.raises(ValueError, match="source_replacement=True"):
+        manager.update_layer(layer.id, source_id="other")
+    assert composition.get_layer(layer.id).visual_object_id == before_id
+
+    locked = manager.update_layer(layer.id, locked=True)
+    assert locked.locked
+    with pytest.raises(PermissionError):
+        manager.update_layer(layer.id, opacity=0.4)

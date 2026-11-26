@@ -259,12 +259,35 @@ class _ModifierRuntime:
 class LayerPerformanceModifierEngine:
     """Evaluates saved per-layer modifiers on the application/UI tick."""
 
-    def __init__(self) -> None:
+    def __init__(self, mutation_adapter=None) -> None:
+        self.mutation_adapter = mutation_adapter
         self._runtime: dict[tuple[str, str], _ModifierRuntime] = {}
         self._base_values: dict[tuple[str, str], float] = {}
         self._active_targets: set[tuple[str, str]] = set()
         self._manual_until: dict[tuple[str, str], float] = {}
         self._live_values: dict[tuple[str, str], float] = {}
+
+    def set_mutation_adapter(self, adapter) -> None:
+        """Inject the shared visual mutation transaction boundary."""
+        self.mutation_adapter = adapter
+
+    def _write_target(self, layer_id: str, target_id: str, value: float, set_target) -> bool:
+        if self.mutation_adapter is None:
+            return bool(set_target(layer_id, target_id, value))
+        try:
+            return (
+                self.mutation_adapter.mutate_layer(
+                    layer_id,
+                    lambda candidate: set_target(
+                        layer_id, target_id, value, candidate
+                    ),
+                    source="performance_modifier",
+                    respect_lock=True,
+                )
+                is not None
+            )
+        except (AttributeError, PermissionError, TypeError, ValueError):
+            return False
 
     @staticmethod
     def _curve(value: float, curve: ModifierCurve) -> float:
@@ -332,6 +355,25 @@ class LayerPerformanceModifierEngine:
             ):
                 result.add(modifier.target_id)
         return result
+
+    def release_layer(self, layer_id: str, set_target) -> bool:
+        """Restore active local-modifier baselines before an operator locks a layer."""
+        restored = False
+        for layer_id_key, target_id in tuple(self._active_targets):
+            if layer_id_key != layer_id:
+                continue
+            key = (layer_id_key, target_id)
+            base = self._base_values.pop(key, None)
+            if base is not None and self._write_target(
+                layer_id_key, target_id, base, set_target
+            ):
+                restored = True
+            self._active_targets.discard(key)
+        for runtime_key in tuple(self._runtime):
+            if runtime_key[0] == layer_id:
+                self._runtime.pop(runtime_key, None)
+                self._live_values.pop(runtime_key, None)
+        return restored
 
     def reset(self) -> None:
         self._runtime.clear()
@@ -454,7 +496,7 @@ class LayerPerformanceModifierEngine:
             spec = PERF_MODIFIER_TARGETS[target_id]
             value = self._base_values[target_key] + offset
             value = max(spec.minimum, min(spec.maximum, value))
-            if set_target(layer_id, target_id, value):
+            if self._write_target(layer_id, target_id, value, set_target):
                 outputs[target_key] = value
                 active_targets.add(target_key)
             else:
@@ -464,7 +506,7 @@ class LayerPerformanceModifierEngine:
             layer_id, target_id = target_key
             base = self._base_values.pop(target_key, None)
             if base is not None:
-                set_target(layer_id, target_id, base)
+                self._write_target(layer_id, target_id, base, set_target)
 
         self._active_targets = active_targets
         self._live_values = current_live
