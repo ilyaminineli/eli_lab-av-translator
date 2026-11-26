@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import random
 import tempfile
 import time
@@ -1205,7 +1206,9 @@ class Application:
         )
         return True
 
-    def _execute_visual_timeline_event(self, event: PerformanceTimelineEvent) -> tuple[bool, str]:
+    def _execute_visual_timeline_event(
+        self, event: PerformanceTimelineEvent
+    ) -> tuple[bool, str]:
         raw = event.payload.get("event", {})
         visual_event = VisualEvent.from_dict(raw)
         if visual_event.object_id:
@@ -1226,8 +1229,10 @@ class Application:
         elif visual_event.event_type == "conceal":
             changes = {"visible": False}
         elif visual_event.event_type == "fade":
-            opacity = payload.get("opacity", 0.0)
-            changes = {"opacity": max(0.0, min(1.0, float(opacity)))}
+            opacity = float(payload.get("opacity", 0.0))
+            if not math.isfinite(opacity):
+                return False, "fade opacity must be finite"
+            changes = {"opacity": max(0.0, min(1.0, opacity))}
         elif visual_event.event_type == "move":
             position = payload.get("position")
             if (
@@ -1235,9 +1240,15 @@ class Application:
                 or len(position) != 2
             ):
                 return False, "move event requires a two-value position"
-            changes = {"position": tuple(float(value) for value in position)}
+            coordinates = tuple(float(value) for value in position)
+            if not all(math.isfinite(value) for value in coordinates):
+                return False, "move coordinates must be finite"
+            changes = {"position": coordinates}
         elif visual_event.event_type == "rotate":
-            changes = {"rotation": float(payload.get("rotation", 0.0))}
+            rotation = float(payload.get("rotation", 0.0))
+            if not math.isfinite(rotation):
+                return False, "rotation must be finite"
+            changes = {"rotation": rotation}
         else:
             return False, f"event type {visual_event.event_type!r} is not yet executable"
         try:
