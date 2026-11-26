@@ -416,7 +416,16 @@ class VisualMotif:
                 f"Visual motif invariant {path!r}",
             )
             current = available_values[path]
-            if type(expected) is not type(current) or expected != current:
+            same_scalar_type = (
+                isinstance(expected, bool) and isinstance(current, bool)
+                or isinstance(expected, int)
+                and not isinstance(expected, bool)
+                and isinstance(current, int)
+                and not isinstance(current, bool)
+                or isinstance(expected, float) and isinstance(current, float)
+                or isinstance(expected, str) and isinstance(current, str)
+            )
+            if not same_scalar_type or expected != current:
                 raise ValueError(
                     f"Visual motif invariant {path!r} must match its authored value."
                 )

@@ -286,6 +286,18 @@ def test_visual_motif_rejects_invariant_drift_and_unknown_variation_paths() -> N
         raise AssertionError("Unknown variation paths must be rejected.")
 
 
+def test_visual_motif_invariant_requires_the_original_scalar_type() -> None:
+    motif = _visual_motif()
+    motif.invariants["parameters.period_beats"] = 7.0
+
+    try:
+        motif.normalize()
+    except ValueError as error:
+        assert "must match its authored value" in str(error)
+    else:
+        raise AssertionError("An integer invariant must not silently become a float.")
+
+
 def test_visual_motif_rejects_overlapping_invariants_and_allowed_variations() -> None:
     motif = _visual_motif()
     motif.allowed_variations.append("identity.geometry_signature")
