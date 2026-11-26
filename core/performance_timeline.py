@@ -7,8 +7,8 @@ from uuid import uuid4
 
 from config import VID_DECK_IDS
 from core.performance_macros import PERF_MACRO_IDS
-from effects.settings import PSETS
 from core.visual_model import VisualEvent
+from effects.settings import PSETS
 from generators.palettes import palette_names
 
 TMLN_VER = 1
@@ -25,6 +25,7 @@ TMLN_EVT_TYPES = (
     "palette_change",
     "modulation",
     "transition_cue",
+    "visual_event",
 )
 
 TMLN_EVT_LABELS = {
@@ -37,6 +38,7 @@ TMLN_EVT_LABELS = {
     "palette_change": "Palette change",
     "modulation": "Modulation event",
     "transition_cue": "Transition cue",
+    "visual_event": "Visual event",
 }
 
 EFFECT_SETTING_FLDS = frozenset(
