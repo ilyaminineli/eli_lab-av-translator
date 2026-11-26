@@ -224,4 +224,6 @@ Be factual. Do not mark an item complete because code exists; it is complete onl
 
 ## Immediate instruction
 
-Start by auditing the latest main against the current M7-C0 exit checklist. Finish all remaining C0 acceptance items first. Once C0 is genuinely complete and Windows Quality is green, begin M7-C1 and continue in roadmap order. Implement, test, commit and advance incrementally without waiting for another planning request.
+Start by auditing the latest `main`, the current worktree and the live M7 checklist. Identify the first incomplete item whose dependencies are satisfied; completed milestone checklists are closed unless a concrete regression is found. The current programme state is recorded in `docs/M7.md` and `docs/ROADMAP.md`; do not assume this prompt's original starting milestone is still active.
+
+At the current handoff, M7-C0 is complete and M7-C1 is active. C1.1 (the VisualMotif entity and composition-owned registry) has passed Windows Quality. Continue with C1.2, then C1.3 and subsequent items in dependency order. Re-verify current `main` and CI before assuming the handoff SHA is still current. Implement, test, commit and advance incrementally without waiting for another planning request.

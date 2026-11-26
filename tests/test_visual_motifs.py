@@ -126,6 +126,21 @@ def test_composition_rejects_duplicate_motif_ids_without_replacing_record() -> N
     assert composition.get_visual_motif(original.motif_id).name == "Seven-point orbit"
 
 
+def test_composition_rejects_mismatched_motif_registry_keys() -> None:
+    motif = _visual_motif("actual-motif-id")
+    payload = {
+        "layers": [],
+        "visual_motifs": {"incorrect-registry-key": motif.to_dict()},
+    }
+
+    try:
+        Composition.from_dict(payload)
+    except ValueError as error:
+        assert "registry keys must match" in str(error)
+    else:
+        raise AssertionError("Mismatched motif registry keys should be rejected.")
+
+
 def test_legacy_composition_keeps_unresolved_motif_references_without_inventing_motifs() -> None:
     layer = Layer(id="legacy-motif-layer")
     visual_object = VisualObject(
