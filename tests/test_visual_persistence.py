@@ -13,7 +13,6 @@ from core.performance_environment import PerformanceScene, PerformanceSetStore
 from core.project_manager import ProjectManager
 from core.visual_model import VisualLineage, VisualObject
 
-
 FIXTURES = Path(__file__).parent / "fixtures"
 
 

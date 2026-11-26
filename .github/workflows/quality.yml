@@ -29,8 +29,6 @@ jobs:
           python -m pip install -e . --no-deps
       - name: Compile Python modules
         run: python -m compileall -q .
-      - name: Diagnose persistence-test import ordering
-        run: python -m ruff check --select I --fix --diff tests/test_visual_persistence.py
       - name: Check formatting and lint for M7 changes
         run: >-
           python -m ruff check
