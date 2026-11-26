@@ -884,7 +884,11 @@ class AutomationDirector:
                         layer.id,
                         generator_settings=normalize_settings(kind, values),
                     )
-                    if updated is not None and self.generator_settings_changed is not None and self.mutation_adapter is None:
+                    if (
+                        updated is not None
+                        and self.generator_settings_changed is not None
+                        and self.mutation_adapter is None
+                    ):
                         self.generator_settings_changed(updated)
                 self._peak_particle_base.pop(layer.id, None)
                 changed = True
@@ -1176,7 +1180,10 @@ class AutomationDirector:
                                 float(updated.generator_settings[field]),
                                 kind,
                             )
-                    if self.generator_settings_changed is not None and self.mutation_adapter is None:
+                    if (
+                        self.generator_settings_changed is not None
+                        and self.mutation_adapter is None
+                    ):
                         self.generator_settings_changed(updated)
                     changed += 1
 
@@ -1744,7 +1751,11 @@ class AutomationDirector:
                 layer_id,
                 generator_settings=normalize_settings(kind, values),
             )
-            if updated is not None and self.generator_settings_changed is not None and self.mutation_adapter is None:
+            if (
+                updated is not None
+                and self.generator_settings_changed is not None
+                and self.mutation_adapter is None
+            ):
                 self.generator_settings_changed(updated)
         self._peak_particle_base.clear()
         self._active_variation_layer_ids = ()
