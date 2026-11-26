@@ -261,9 +261,10 @@ class VisualObject:
         self.material = str(self.material).strip() or "unspecified"
         if len(self.role) > 64 or len(self.material) > 128:
             raise ValueError("Visual object role or material is too long.")
+        if isinstance(self.revision, bool) or not isinstance(self.revision, int):
+            raise ValueError("Visual object revision must be an integer.")
         if self.revision < 0:
             raise ValueError("Visual object revision cannot be negative.")
-        self.revision = int(self.revision)
         if isinstance(self.identity, dict):
             self.identity = VisualIdentity.from_dict(self.identity)
         self.identity.normalize()
@@ -351,6 +352,8 @@ class VisualEvent:
             _identifier(self.object_id, "Visual event object ID", optional=True) or None
         )
         self.source_id = _identifier(self.source_id, "Visual event source ID")
+        self.event_type = str(self.event_type).strip()
+        self.time_domain = str(self.time_domain).strip()
         if self.event_type not in VISUAL_EVENT_TYPES:
             raise ValueError(f"Unsupported visual event type: {self.event_type!r}")
         if self.time_domain not in VISUAL_TIME_DOMAINS:
