@@ -5,6 +5,7 @@ import pytest
 from core.application import Application
 from core.automation import AutomationDirector
 from core.composition import Composition, Layer
+from core.event_bus import EventBus
 from core.layer_manager import LayerManager
 from core.performance_modifiers import (
     LayerPerformanceModifier,
@@ -278,7 +279,7 @@ def test_modulation_target_writer_uses_shared_mutation_adapter() -> None:
     application.composition = composition
     application._selected_layer_id = layer.id
     application.visual_mutation_adapter = adapter
-    application.events = __import__("core.event_bus", fromlist=["EventBus"]).EventBus()
+    application.events = EventBus()
     application._overlay_images = {}
 
     assert application._set_modulation_target("selected_layer.opacity", 0.3)
