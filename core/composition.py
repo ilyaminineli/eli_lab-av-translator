@@ -234,7 +234,7 @@ class Composition:
         layer = self.get_layer(layer_id)
         if layer is None:
             return False
-        self.layers = [item for item in self.layers if item.id != layer_id]
+        self.layers[:] = [item for item in self.layers if item.id != layer_id]
         self.visual_objects.pop(layer.visual_object_id, None)
         return True
 
