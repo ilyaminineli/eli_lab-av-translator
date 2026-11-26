@@ -1,7 +1,10 @@
 from __future__ import annotations
 
+from uuid import uuid4
+
 from core.composition import Composition, Layer
 from core.event_bus import EventBus
+from core.visual_model import VisualObject
 
 
 class LayerManager:
@@ -22,12 +25,41 @@ class LayerManager:
         layer = self.composition.get_layer(layer_id)
         if layer is None:
             raise KeyError(f"Unknown layer: {layer_id}")
+        protected = {"id", "visual_object_id"}
+        attempted = protected & set(changes)
+        if attempted:
+            raise AttributeError(
+                "Layer identity fields can only be changed through explicit "
+                "composition operations: " + ", ".join(sorted(attempted))
+            )
+
+        previous_object = self.composition.visual_object_for_layer(layer_id)
+        source_fields = {
+            "source_type",
+            "source_id",
+            "generator_type",
+            "overlay_path",
+            "overlay_kind",
+        }
+        replaces_source = bool(source_fields & set(changes))
         for name, value in changes.items():
             if not hasattr(layer, name):
                 raise AttributeError(f"Layer has no property {name!r}")
             setattr(layer, name, value)
         layer.opacity = min(1.0, max(0.0, float(layer.opacity)))
-        self.composition.sort_layers()
+
+        if replaces_source:
+            layer.visual_object_id = uuid4().hex
+            replacement = VisualObject.from_layer(
+                layer,
+                origin="source_replacement",
+            )
+            if previous_object is not None:
+                replacement.lineage.parent_object_id = previous_object.object_id
+            self.composition.replace_layer(layer, visual_object=replacement)
+        else:
+            self.composition.sort_layers()
+
         if self.events:
             self.events.publish("layer.updated", layer=layer)
         return layer
