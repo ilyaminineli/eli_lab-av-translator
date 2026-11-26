@@ -4,15 +4,13 @@ import logging
 from collections.abc import Callable, Mapping
 from copy import deepcopy
 from dataclasses import fields
-from typing import TypeAlias
-
 from core.composition import Layer
 from core.layer_manager import LayerManager
 
 _LOG = logging.getLogger(__name__)
 
-LayerMutator: TypeAlias = Callable[[Layer], bool | None]
-MutationCommitHook: TypeAlias = Callable[[Layer, frozenset[str], str], None]
+type LayerMutator = Callable[[Layer], bool | None]
+type MutationCommitHook = Callable[[Layer, frozenset[str], str], None]
 MAX_MUTATION_FIELDS = 32
 
 
