@@ -12,6 +12,7 @@ from core.event_bus import EventBus
 from core.layer_manager import LayerManager
 from core.performance_environment import PerformanceScene, PerformanceSetStore
 from core.project_manager import ProjectManager
+from core.visual_model import VisualLineage, VisualObject
 from core.visual_mutation_adapter import VisualMutationAdapter
 
 
@@ -260,6 +261,85 @@ def test_application_scene_recall_keeps_live_locked_layer_and_visual_identity(
     assert app.composition.get_layer("scene-only-layer") is not None
     assert app.composition.get_layer("live-only-unlocked-layer") is None
     _assert_registry_is_one_to_one(app.composition)
+
+
+def test_motif_lineage_contract_preserves_instance_identity_and_provenance() -> None:
+    motif_id = "authored-motif-fragments"
+    root = VisualObject(
+        object_id="object-root",
+        layer_id="layer-root",
+        lineage=VisualLineage(origin="authored", motif_id=motif_id),
+    )
+    duplicate = VisualObject(
+        object_id="object-duplicate",
+        layer_id="layer-duplicate",
+        lineage=VisualLineage(
+            parent_object_id=root.object_id,
+            motif_id=motif_id,
+            origin="duplication",
+            source_object_ids=[root.object_id],
+        ),
+    )
+    left_fragment = VisualObject(
+        object_id="object-fragment-left",
+        layer_id="layer-fragment-left",
+        lineage=VisualLineage(
+            parent_object_id=root.object_id,
+            motif_id=motif_id,
+            origin="fracture",
+            source_object_ids=[root.object_id],
+        ),
+    )
+    right_fragment = VisualObject(
+        object_id="object-fragment-right",
+        layer_id="layer-fragment-right",
+        lineage=VisualLineage(
+            parent_object_id=root.object_id,
+            motif_id=motif_id,
+            origin="fracture",
+            source_object_ids=[root.object_id],
+        ),
+    )
+    assembled = VisualObject(
+        object_id="object-assembled",
+        layer_id="layer-assembled",
+        lineage=VisualLineage(
+            origin="assembly",
+            source_object_ids=[left_fragment.object_id, right_fragment.object_id],
+        ),
+    )
+    returned = VisualObject(
+        object_id="object-returned",
+        layer_id="layer-returned",
+        lineage=VisualLineage(
+            motif_id=motif_id,
+            origin="motif_return",
+            source_object_ids=[root.object_id, assembled.object_id],
+        ),
+    )
+
+    originals = (root, duplicate, left_fragment, right_fragment, assembled, returned)
+    instances = [VisualObject.from_dict(item.to_dict()) for item in originals]
+    assert len({item.object_id for item in instances}) == len(instances)
+    assert duplicate.lineage.parent_object_id == root.object_id
+    assert duplicate.lineage.motif_id == root.lineage.motif_id
+    assert left_fragment.lineage.motif_id == right_fragment.lineage.motif_id == motif_id
+    assert assembled.lineage.parent_object_id is None
+    assert assembled.lineage.motif_id is None
+    assert assembled.lineage.source_object_ids == [
+        left_fragment.object_id,
+        right_fragment.object_id,
+    ]
+    assert returned.lineage.origin == "motif_return"
+    assert returned.lineage.motif_id == motif_id
+    assert returned.lineage.source_object_ids == [
+        root.object_id,
+        assembled.object_id,
+    ]
+    assert all(
+        restored.to_dict() == original.to_dict()
+        for restored, original in zip(instances, originals, strict=True)
+    )
 
 
 def test_visual_registry_rejects_orphan_records_with_actionable_error() -> None:
