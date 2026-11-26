@@ -17,6 +17,7 @@ from core.automation import AutomationDirector, AutomationSettings
 from core.composition import Composition, Layer
 from core.event_bus import EventBus
 from core.layer_manager import LayerManager
+from core.visual_mutation_adapter import VisualMutationAdapter
 from core.modulation import TARGET_SPECS, ModulationMatrix
 from core.modulator_bank import (
     ModulatorBank,
@@ -229,6 +230,13 @@ class Application:
         self._automation_collection_id: str | None = None
         self.composition = Composition()
         self.layer_manager = LayerManager(self.composition, self.events)
+        self.visual_mutation_adapter = VisualMutationAdapter(
+            self.layer_manager, self._on_visual_layer_mutated
+        )
+        self.automation.set_mutation_adapter(self.visual_mutation_adapter)
+        self.performance_modifier_engine.set_mutation_adapter(
+            self.visual_mutation_adapter
+        )
         self._create_default_layers()
         install_default_performance_macro_modifiers(self.composition.layers)
         self.current_project_path: Path | None = None
@@ -262,6 +270,24 @@ class Application:
             layer.generator_type,
             settings,
         )
+
+    def _on_visual_layer_mutated(
+        self,
+        layer: Layer,
+        changed_fields: frozenset[str],
+        source: str,
+    ) -> None:
+        """Refresh dependent CPU services only after a mutation has committed."""
+        if "generator_settings" in changed_fields:
+            self._request_generator_raster(layer)
+        if changed_fields & {"overlay_speed", "overlay_frame_hold"}:
+            player = self._overlay_images.get(layer.id)
+            if player is not None and player.animated:
+                player.configure_playback(
+                    layer.overlay_speed,
+                    layer.overlay_frame_hold,
+                    layer.overlay_loop,
+                )
 
     def _create_default_layers(self) -> None:
         # Start with an asymmetric collage, not four equal tiles. The first deck
@@ -474,6 +500,7 @@ class Application:
         self.generator_raster_service.invalidate_missing(set())
         self.composition = Composition()
         self.layer_manager = LayerManager(self.composition, self.events)
+        self.visual_mutation_adapter.set_layer_manager(self.layer_manager)
         self._create_default_layers()
         install_default_performance_macro_modifiers(self.composition.layers)
         self.automation.update_layers(self.composition.layers)
@@ -1976,9 +2003,27 @@ class Application:
         layer_id: str,
         target_id: str,
         value: float,
+        layer_override: Layer | None = None,
     ) -> bool:
-        layer = self.composition.get_layer(layer_id)
-        if layer is None:
+        if layer_override is None:
+            if self.visual_mutation_adapter is None:
+                return False
+            try:
+                return (
+                    self.visual_mutation_adapter.mutate_layer(
+                        layer_id,
+                        lambda candidate: self._set_layer_modifier_target(
+                            layer_id, target_id, value, candidate
+                        ),
+                        source="performance_modifier",
+                    )
+                    is not None
+                )
+            except (AttributeError, PermissionError, TypeError, ValueError):
+                return False
+
+        layer = layer_override
+        if layer.locked:
             return False
         if target_id.startswith("layer."):
             field = target_id.split(".", 1)[1]
@@ -2026,14 +2071,6 @@ class Application:
             layer.generator_settings = normalize_settings(
                 layer.generator_type, settings
             )
-            if setting_key not in {
-                "animation_speed",
-                "animation_amount",
-                "text_animation_speed",
-                "text_animation_amount",
-                "text_animation_columns",
-            }:
-                self._request_generator_raster(layer)
             return True
         if target_id.startswith("overlay."):
             player = self._overlay_images.get(layer.id)
@@ -2046,13 +2083,9 @@ class Application:
                 layer.overlay_frame_hold = max(1, min(24, int(round(value))))
             else:
                 return False
-            player.configure_playback(
-                layer.overlay_speed,
-                layer.overlay_frame_hold,
-                layer.overlay_loop,
-            )
             return True
         return False
+
 
     def add_layer_performance_modifier(
         self,
@@ -2369,24 +2402,15 @@ class Application:
             return float(value) if isinstance(value, (int, float)) else None
         return None
 
-    def _set_modulation_target(self, target_id: str, value: float) -> bool:
-        if target_id.startswith("master."):
-            field = target_id.split(".", 1)[1]
-            if field not in _MASTER_MODULATION_FLDS:
-                return False
-            current = getattr(self.effects, field)
-            if isinstance(current, int) and not isinstance(current, bool):
-                setattr(self.effects, field, int(round(value)))
-            else:
-                setattr(self.effects, field, float(value))
-            self.effects.clamp()
-            self.effects.preset_name = "Custom"
-            return True
-
+    def _apply_modulation_layer_candidate(
+        self,
+        layer: Layer,
+        target_id: str,
+        value: float,
+    ) -> bool:
+        if layer.locked:
+            return False
         if target_id.startswith("selected_layer."):
-            layer = self.composition.get_layer(self._selected_layer_id or "")
-            if layer is None or layer.locked:
-                return False
             field = target_id.split(".", 1)[1]
             if field in {"opacity", "rotation"}:
                 setattr(layer, field, float(value))
@@ -2399,29 +2423,22 @@ class Application:
                 layer.scale = (scale, scale)
             else:
                 return False
-            self.events.publish("layer.modulated", layer_id=layer.id, target=target_id)
             return True
-
         if target_id.startswith("layer_fx."):
-            layer = self.composition.get_layer(self._selected_layer_id or "")
-            if layer is None or layer.locked:
-                return False
             field = target_id.split(".", 1)[1]
             settings = normalize_layer_effects(layer.layer_effects)
             if field not in settings or field in {"enabled", "stages"}:
                 return False
             settings[field] = float(value)
             layer.layer_effects = normalize_layer_effects(settings)
-            self.events.publish("layer.modulated", layer_id=layer.id, target=target_id)
             return True
-
         if target_id.startswith("generator."):
-            layer = self.composition.get_layer(self._selected_layer_id or "")
-            if layer is None or layer.locked or layer.source_type != "generator":
+            if layer.source_type != "generator" or not layer.generator_type:
                 return False
-            field = target_id.split(".", 1)[1]
-            setting_key = self._generator_modifier_setting_key(field)
-            if not setting_key or not layer.generator_type:
+            setting_key = self._generator_modifier_setting_key(
+                target_id.split(".", 1)[1]
+            )
+            if setting_key is None:
                 return False
             settings = normalize_settings(
                 layer.generator_type, layer.generator_settings
@@ -2437,20 +2454,10 @@ class Application:
             layer.generator_settings = normalize_settings(
                 layer.generator_type, settings
             )
-            self._request_generator_raster(layer)
-            self.events.publish("layer.modulated", layer_id=layer.id, target=target_id)
             return True
-
         if target_id.startswith("overlay."):
-            layer = self.composition.get_layer(self._selected_layer_id or "")
-            player = self._overlay_images.get(layer.id) if layer is not None else None
-            if (
-                layer is None
-                or layer.locked
-                or layer.source_type != "overlay"
-                or player is None
-                or not player.animated
-            ):
+            player = self._overlay_images.get(layer.id)
+            if layer.source_type != "overlay" or player is None or not player.animated:
                 return False
             field = target_id.split(".", 1)[1]
             if field == "playback_speed":
@@ -2459,12 +2466,46 @@ class Application:
                 layer.overlay_frame_hold = max(1, min(24, int(round(value))))
             else:
                 return False
-            player.configure_playback(
-                layer.overlay_speed,
-                layer.overlay_frame_hold,
-                layer.overlay_loop,
+            return True
+        return False
+
+    def _set_modulation_target(self, target_id: str, value: float) -> bool:
+        if target_id.startswith("master."):
+            field = target_id.split(".", 1)[1]
+            if field not in _MASTER_MODULATION_FLDS:
+                return False
+            current = getattr(self.effects, field)
+            if isinstance(current, int) and not isinstance(current, bool):
+                setattr(self.effects, field, int(round(value)))
+            else:
+                setattr(self.effects, field, float(value))
+            self.effects.clamp()
+            self.effects.preset_name = "Custom"
+            return True
+
+        if target_id.startswith(
+            ("selected_layer.", "layer_fx.", "generator.", "overlay.")
+        ):
+            layer = self.composition.get_layer(self._selected_layer_id or "")
+            if layer is None:
+                return False
+            if self.visual_mutation_adapter is None:
+                return False
+            try:
+                updated = self.visual_mutation_adapter.mutate_layer(
+                    layer.id,
+                    lambda candidate: self._apply_modulation_layer_candidate(
+                        candidate, target_id, value
+                    ),
+                    source="modulation",
+                )
+            except (AttributeError, PermissionError, TypeError, ValueError):
+                return False
+            if updated is None:
+                return False
+            self.events.publish(
+                "layer.modulated", layer_id=updated.id, target=target_id
             )
-            self.events.publish("layer.modulated", layer_id=layer.id, target=target_id)
             return True
 
         if target_id.startswith("automation."):
@@ -2508,6 +2549,7 @@ class Application:
             settings.normalize()
             return True
         return False
+
 
     def notify_layer_manual_override(
         self,
@@ -3356,6 +3398,7 @@ class Application:
 
         self.composition = candidate
         self.layer_manager = LayerManager(self.composition, self.events)
+        self.visual_mutation_adapter.set_layer_manager(self.layer_manager)
         self.automation.update_layers(self.composition.layers)
         install_default_performance_macro_modifiers(self.composition.layers)
         self.performance_modifier_engine.reset()
@@ -3734,6 +3777,7 @@ class Application:
         self.generator_raster_service.invalidate_missing(set())
         self.composition = composition
         self.layer_manager = LayerManager(self.composition, self.events)
+        self.visual_mutation_adapter.set_layer_manager(self.layer_manager)
         self.automation.update_layers(self.composition.layers)
         install_default_performance_macro_modifiers(self.composition.layers)
         for layer in self.composition.layers:
