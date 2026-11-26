@@ -24,6 +24,23 @@ VISUAL_ROLES = frozenset(
     }
 )
 
+VISUAL_MOTIF_SCHEMA_VERSION = 1
+
+VISUAL_MOTIF_FAMILIES = frozenset(
+    {
+        "contour",
+        "motion",
+        "spatial",
+        "texture",
+        "typographic",
+        "colour",
+        "framing",
+        "transformation",
+        "absence",
+        "composite",
+    }
+)
+
 VISUAL_EVENT_TYPES = frozenset(
     {
         "spawn",
@@ -286,6 +303,91 @@ class VisualMutationContract:
                     "overlay_frame_hold",
                 )
             )
+        result.normalize()
+        return result
+
+
+@dataclass
+class VisualMotif:
+    """Authored visual identity that can have multiple object realizations."""
+
+    motif_id: str = field(default_factory=lambda: uuid4().hex)
+    name: str = "Untitled Motif"
+    family: str = "contour"
+    identity: VisualIdentity = field(default_factory=VisualIdentity)
+    parameters: dict[str, str | int | float | bool] = field(default_factory=dict)
+    description: str = ""
+    revision: int = 0
+
+    def normalize(self) -> None:
+        self.motif_id = _identifier(self.motif_id, "Visual motif ID")
+        self.name = str(self.name).strip()
+        if not self.name or len(self.name) > 128:
+            raise ValueError("Visual motif name must contain 1–128 characters.")
+        self.family = str(self.family).strip()
+        if self.family not in VISUAL_MOTIF_FAMILIES:
+            raise ValueError(
+                f"Unsupported visual motif family: {self.family!r}"
+            )
+        if isinstance(self.identity, dict):
+            self.identity = VisualIdentity.from_dict(self.identity)
+        self.identity.normalize()
+        if not isinstance(self.parameters, dict):
+            raise ValueError("Visual motif parameters must be an object.")
+        if len(self.parameters) > 64:
+            raise ValueError("Visual motif cannot contain more than 64 parameters.")
+        clean_parameters: dict[str, str | int | float | bool] = {}
+        for raw_key, raw_value in self.parameters.items():
+            key = str(raw_key).strip()
+            if not key or len(key) > 64:
+                raise ValueError("Visual motif parameter names must contain 1–64 characters.")
+            if isinstance(raw_value, bool):
+                value = raw_value
+            elif isinstance(raw_value, int):
+                value = raw_value
+            elif isinstance(raw_value, float):
+                if not math.isfinite(raw_value):
+                    raise ValueError("Visual motif numeric parameters must be finite.")
+                value = raw_value
+            elif isinstance(raw_value, str) and len(raw_value) <= 128:
+                value = raw_value
+            else:
+                raise ValueError(
+                    "Visual motif parameters must be finite numbers, booleans or "
+                    "strings of at most 128 characters."
+                )
+            clean_parameters[key] = value
+        self.parameters = clean_parameters
+        self.description = str(self.description).strip()
+        if len(self.description) > 512:
+            raise ValueError("Visual motif description must be at most 512 characters.")
+        if isinstance(self.revision, bool) or not isinstance(self.revision, int):
+            raise ValueError("Visual motif revision must be an integer.")
+        if self.revision < 0:
+            raise ValueError("Visual motif revision cannot be negative.")
+
+    def to_dict(self) -> dict[str, Any]:
+        self.normalize()
+        return {
+            "schema_version": VISUAL_MOTIF_SCHEMA_VERSION,
+            **asdict(self),
+        }
+
+    @classmethod
+    def from_dict(cls, data: object) -> VisualMotif:
+        if not isinstance(data, dict):
+            raise ValueError("Visual motif must be an object.")
+        version = int(data.get("schema_version", VISUAL_MOTIF_SCHEMA_VERSION))
+        if version > VISUAL_MOTIF_SCHEMA_VERSION:
+            raise ValueError(
+                f"Visual motif schema {version} is newer than supported schema "
+                f"{VISUAL_MOTIF_SCHEMA_VERSION}."
+            )
+        allowed = set(cls.__dataclass_fields__)
+        values = {key: value for key, value in data.items() if key in allowed}
+        if isinstance(values.get("identity"), dict):
+            values["identity"] = VisualIdentity.from_dict(values["identity"])
+        result = cls(**values)
         result.normalize()
         return result
 

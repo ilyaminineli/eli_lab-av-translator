@@ -5,7 +5,7 @@ from typing import Any
 from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from config import DEFAULT_CANVAS_HEIGHT, DEFAULT_CANVAS_WIDTH, DEFAULT_FPS
-from core.visual_model import VisualObject
+from core.visual_model import VisualMotif, VisualObject
 
 
 @dataclass
@@ -134,14 +134,18 @@ class Composition:
     layers: list[Layer] = field(default_factory=list)
     metadata: dict[str, Any] = field(default_factory=dict)
     visual_objects: dict[str, VisualObject] = field(default_factory=dict)
+    # Appended to preserve the positional Composition constructor contract.
+    visual_motifs: dict[str, VisualMotif] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         # Rebuild the registry through the same checks used by add_layer so
         # deserialized and directly constructed compositions share one invariant.
         initial_layers = list(self.layers)
         initial_objects = dict(self.visual_objects)
+        initial_motifs = dict(self.visual_motifs)
         self.layers = []
         self.visual_objects = {}
+        self.visual_motifs = {}
         for layer in initial_layers:
             visual_object = initial_objects.pop(layer.visual_object_id, None)
             if visual_object is not None and not isinstance(visual_object, VisualObject):
@@ -154,6 +158,17 @@ class Composition:
         if initial_objects:
             orphaned = ", ".join(sorted(str(key) for key in initial_objects))
             raise ValueError(f"Composition contains visual objects without layers: {orphaned}")
+        for registry_key, raw_motif in initial_motifs.items():
+            motif = (
+                raw_motif
+                if isinstance(raw_motif, VisualMotif)
+                else VisualMotif.from_dict(raw_motif)
+            )
+            if str(registry_key) != motif.motif_id:
+                raise ValueError(
+                    "Visual motif registry keys must match their motif IDs."
+                )
+            self.add_visual_motif(motif)
 
     def _visual_object_for(
         self,
@@ -238,6 +253,33 @@ class Composition:
         self.visual_objects.pop(layer.visual_object_id, None)
         return True
 
+    def get_visual_motif(self, motif_id: str) -> VisualMotif | None:
+        return self.visual_motifs.get(str(motif_id))
+
+    def add_visual_motif(self, motif: VisualMotif) -> None:
+        """Register one authored motif without changing its object realizations."""
+        if not isinstance(motif, VisualMotif):
+            raise TypeError("Composition motifs must be VisualMotif instances.")
+        motif.normalize()
+        if motif.motif_id in self.visual_motifs:
+            raise ValueError(f"Visual motif ID already exists: {motif.motif_id}")
+        self.visual_motifs[motif.motif_id] = motif
+
+    def remove_visual_motif(self, motif_id: str) -> bool:
+        """Remove an unused motif; object references must be explicitly rebound first."""
+        selected_id = str(motif_id)
+        if selected_id not in self.visual_motifs:
+            return False
+        if any(
+            item.lineage.motif_id == selected_id
+            for item in self.visual_objects.values()
+        ):
+            raise ValueError(
+                f"Visual motif {selected_id!r} is still referenced by visual objects."
+            )
+        self.visual_motifs.pop(selected_id)
+        return True
+
     def get_layer(self, layer_id: str) -> Layer | None:
         return next((layer for layer in self.layers if layer.id == layer_id), None)
 
@@ -264,6 +306,10 @@ class Composition:
                 self.visual_objects[key].to_dict()
                 for key in sorted(self.visual_objects)
             ],
+            "visual_motifs": [
+                self.visual_motifs[key].to_dict()
+                for key in sorted(self.visual_motifs)
+            ],
         }
 
     @classmethod
@@ -285,6 +331,23 @@ class Composition:
         raw_layers = data.get("layers", [])
         if not isinstance(raw_layers, list):
             raise ValueError("Composition layers must be a list.")
+        raw_motifs = data.get("visual_motifs", [])
+        visual_motifs: dict[str, VisualMotif] = {}
+        if isinstance(raw_motifs, dict):
+            motif_values = list(raw_motifs.items())
+        elif isinstance(raw_motifs, list):
+            motif_values = [(None, item) for item in raw_motifs]
+        else:
+            raise ValueError("Composition visual_motifs must be a list or object.")
+        for registry_key, raw_motif in motif_values:
+            item = VisualMotif.from_dict(raw_motif)
+            if registry_key is not None and str(registry_key) != item.motif_id:
+                raise ValueError(
+                    "Visual motif registry keys must match their motif IDs."
+                )
+            if item.motif_id in visual_motifs:
+                raise ValueError(f"Duplicate visual motif ID: {item.motif_id}")
+            visual_motifs[item.motif_id] = item
         metadata = data.get("metadata", {})
         if not isinstance(metadata, dict):
             metadata = {}
@@ -297,4 +360,5 @@ class Composition:
             layers=[Layer.from_dict(item) for item in raw_layers],
             metadata=dict(metadata),
             visual_objects=visual_objects,
+            visual_motifs=visual_motifs,
         )
