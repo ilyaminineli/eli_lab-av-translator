@@ -1,7 +1,7 @@
 # eli_lab AVTranslator — Product Roadmap
 
 **Roadmap snapshot:** 27 November 2026  
-**Current priority:** M7-C0 — Visual Ontology, Object Identity and Mutation Contracts. The restructured M7 programme is defined in [docs/M7.md](M7.md). Its governing creative and architectural reference is the [IDM Visual Instrument manual](guides/IDM_Visual_Instrument_Visual_Composition_Generative_Art_and_Live_Concert_Architecture.md). Implementation is on `m7/m7-c0-visual-ontology`. M5/M6 hardware acceptance and the independent Video Mixer release gate remain open; master-output recording/audio muxing is a separate deferred deliverable.
+**Current priority:** M7-C1 — Visual Motif and Motion Grammar. M7-C0 is complete on `main`; its acceptance checklist and exit review are recorded in [docs/M7.md](M7.md). The governing creative and architectural reference is the [IDM Visual Instrument manual](guides/IDM_Visual_Instrument_Visual_Composition_Generative_Art_and_Live_Concert_Architecture.md). M5/M6 hardware acceptance and the independent Video Mixer release gate remain open; master-output recording/audio muxing is a separate deferred deliverable.
 
 ## Product goal
 
@@ -20,7 +20,7 @@ The roadmap is deliberately staged. M0–M2 establish the visual instrument. M3 
 | M0 — Rendering Core | Core implemented; hardware hardening remains | PySide6 shell, OpenGL/ModernGL render contexts, canvas/layers, project persistence and fullscreen external output are present. |
 | M1 — Video Collage | Core implemented; hardware/release gate open | Folder indexing, four decoder decks, transforms, blending, library cleanup, bounded import workers, decoder retirement and preview output limits are implemented on main. Manual deck, projector and long-run acceptance remains. |
 | M2 — Generative Visuals | Core generator and overlay workflow implemented; advanced extensions remain | Geometry, Text Art, waveform and GPU particle fields are available. Still/animated-image/video overlays, layer effects, shader animation and project persistence are implemented. Vector paths, shape groups and a full particle simulation with lifetime/velocity/acceleration remain future extensions. |
-| M3 — Audio-Reactive Engine & Control Foundation | Software implementation complete; Windows hardware sign-off pending | Internal transport and quantization, SoundCard input/loopback capture, FFT/onset/tempo analysis, scene profiles, editable modulation matrix, lock/manual-override precedence and persistence are implemented. Physical device/reconnect and sustained-session checks remain on the performance PC. The repository unit-test suite was removed at the user's request; current CI performs static checks only. |
+| M3 — Audio-Reactive Engine & Control Foundation | Software implementation complete; Windows hardware sign-off pending | Internal transport and quantization, SoundCard input/loopback capture, FFT/onset/tempo analysis, scene profiles, editable modulation matrix, lock/manual-override precedence and persistence are implemented. Physical device/reconnect and sustained-session checks remain on the performance PC. An initial focused pytest suite has been restored for the M7 visual ontology and persistence seams; broader M3 audio-device and runtime regression coverage remains limited. |
 | M4 — Sonic Pi Integration | Software complete; live rehearsal pending | Versioned `/eli_lab/v1` receiver, test sender, diagnostics, bounded validation, M3 clock/modulation bridge and optional SONATA sender are implemented. Verify the complete 384-bar performance on the target machine. |
 | M5 — Performance Environment | Software implementation merged; target-machine acceptance pending | Performance Mode, AUTO PERF, Modulator Bank, per-layer modifiers, MIDI/performance-set foundations, asynchronous generator rasterization and text-raster controls are on main. Quality #116 passed compile/Ruff. SONATA, audio-device, four-deck and projector checks remain manual; recording/muxing is deferred separately. |
 | M6 — Advanced VJ Environment and performance controls | Initial A1, B1, C1, D1/D2, E1, macros and timeline merged; remaining slices and hardware acceptance open | PR #30 adds normalized Performance Macros; PR #31 adds the saved bar/beat Live Performance Timeline. M6-A2/A3, B2+, later C–E work and Windows live/projector acceptance remain planned. |
@@ -47,14 +47,14 @@ The November 4 RTX 4060 screenshot showed approximately 18.9 FPS. The new counte
 
 # M7 — Unified Generative Audiovisual Instrument
 
-**Status:** Active programme. Current branch: `m7/m7-c0-visual-ontology`. The full programme, sequence, C0 checklist and audit findings are in [M7.md](M7.md). The governing specification is [Volume 11 — IDM Visual Instrument](guides/IDM_Visual_Instrument_Visual_Composition_Generative_Art_and_Live_Concert_Architecture.md).
+**Status:** Active programme. Current branch: `main`. M7-C0 is complete; M7-C1 is active. The programme sequence, C0 exit review and C1 slice plan are in [M7.md](M7.md). The governing specification is [Volume 11 — IDM Visual Instrument](guides/IDM_Visual_Instrument_Visual_Composition_Generative_Art_and_Live_Concert_Architecture.md).
 
 | Workstream | Scope | Status |
 | --- | --- | --- |
 | M7-A — Unified Visual Director | Composition-aware variation, cross-source spatial relationships, visual activity, adaptive per-layer cooldowns and manual-override precedence. Renderer-side telemetry and operator-authored priorities remain open. | Foundation implemented; refinement open |
 | M7-B — Operator Workspace | Perform / Compose / Prepare workspaces, central canvas and macro strip. Context-sensitive inspector, quick/advanced control separation, timeline visibility and target-Windows UI acceptance remain open. | Foundation implemented; refinement open |
-| M7-C0 — Visual Ontology, Object Identity and Mutation Contracts | Renderer-independent visual models, persistent layer/object association, identity, lineage, mutation contracts, event time domains and backward-compatible serialization. | In progress |
-| M7-C1 — Visual Motif and Motion Grammar | Recurring visual motifs, pattern cycles, motion gestures, motif returns and lineage-preserving seeded variation. | Planned |
+| M7-C0 — Visual Ontology, Object Identity and Mutation Contracts | Renderer-independent visual models, persistent layer/object association, identity, lineage, mutation contracts, event time domains and backward-compatible serialization. | Complete — Windows Quality passed (34 tests) |
+| M7-C1 — Visual Motif and Motion Grammar | Recurring visual motifs, pattern cycles, motion gestures, motif returns and lineage-preserving seeded variation. | In progress |
 | M7-C2 — Perceptual Orchestration | Figure/ground, salience, visual density, attention distribution, contrast, legibility and hierarchy. | Planned |
 | M7-C3 — Visual Score and Music Mapping | Explicit mappings between supplied musical facts, audio observations, visual intentions and performer actions, with independent clock domains. | Planned |
 | M7-D — Generative Drawing Engine | GPU/vector paths, Bézier curves, animated strokes, accumulation, hatching, contours, recursive and field-driven geometry. | Planned |
@@ -67,7 +67,7 @@ The November 4 RTX 4060 screenshot showed approximately 18.9 FPS. The new counte
 
 **M7 design rule:** the director should understand the composition, but it must never be afraid to destroy it. CHAOTIC, GENERATIVE and STRCD remain continuous influences on one director, not separate engines.
 
-**Current C0 implementation:** a dedicated renderer-independent visual model, stable layer/object IDs, composition registry, lifecycle-aware registration/removal/replacement, source-replacement lineage, explicit visual-event time domains, additive serialization and focused tests have been added on the feature branch. Mutation contracts are represented and validated as data but are not yet enforced across every automation/modulation path. VisualEvent is not yet connected to a scheduler. Windows CI and historical project/set fixture validation are still required.
+**Current C0 implementation:** complete on `main`. C0 acceptance includes shared VisualMutationAdapter routing for AUTO PERF/modulation/per-layer performance modifiers, operator lock-baseline restoration, bar/beat VisualEvent execution through PerformanceTimeline, additive legacy serialization, representative `.eliav`/`.eliset` fixtures, and Application-level locked-scene/set-restore regressions. Windows Quality #641 passed on `5a9a7bea` with 34 tests. Immediate/performance_seconds VisualEvent execution, first-class motif definitions and motion grammar, whole-composition transaction semantics, and target-GPU/projector validation are explicitly deferred to later milestones.
 
 ---
 
