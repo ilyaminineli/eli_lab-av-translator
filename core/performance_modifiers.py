@@ -356,6 +356,25 @@ class LayerPerformanceModifierEngine:
                 result.add(modifier.target_id)
         return result
 
+    def release_layer(self, layer_id: str, set_target) -> bool:
+        """Restore active local-modifier baselines before an operator locks a layer."""
+        restored = False
+        for layer_id_key, target_id in tuple(self._active_targets):
+            if layer_id_key != layer_id:
+                continue
+            key = (layer_id_key, target_id)
+            base = self._base_values.pop(key, None)
+            if base is not None and self._write_target(
+                layer_id_key, target_id, base, set_target
+            ):
+                restored = True
+            self._active_targets.discard(key)
+        for runtime_key in tuple(self._runtime):
+            if runtime_key[0] == layer_id:
+                self._runtime.pop(runtime_key, None)
+                self._live_values.pop(runtime_key, None)
+        return restored
+
     def reset(self) -> None:
         self._runtime.clear()
         self._base_values.clear()
