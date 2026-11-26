@@ -33,7 +33,8 @@ class LayerManager:
                 "composition operations: " + ", ".join(sorted(attempted))
             )
 
-        previous_object = self.composition.visual_object_for_layer(layer_id)
+        previous_object_id = layer.visual_object_id
+        previous_object = self.composition.get_visual_object(previous_object_id)
         source_fields = {
             "source_type",
             "source_id",
@@ -49,17 +50,22 @@ class LayerManager:
         layer.opacity = min(1.0, max(0.0, float(layer.opacity)))
 
         if replaces_source:
-            layer.visual_object_id = uuid4().hex
-            replacement = VisualObject.from_layer(
-                layer,
-                origin="source_replacement",
-            )
+            replacement_id = uuid4().hex
+            layer.visual_object_id = replacement_id
+            try:
+                replacement = VisualObject.from_layer(
+                    layer,
+                    origin="source_replacement",
+                )
+            except Exception:
+                layer.visual_object_id = previous_object_id
+                raise
             if previous_object is not None:
                 replacement.lineage.parent_object_id = previous_object.object_id
-            self.composition.replace_layer(layer, visual_object=replacement)
-        else:
-            self.composition.sort_layers()
+            self.composition.visual_objects.pop(previous_object_id, None)
+            self.composition.visual_objects[replacement.object_id] = replacement
 
+        self.composition.sort_layers()
         if self.events:
             self.events.publish("layer.updated", layer=layer)
         return layer
