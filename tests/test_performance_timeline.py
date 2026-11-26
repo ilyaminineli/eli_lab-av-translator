@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from core.performance_timeline import PerformanceTimeline, PerformanceTimelineEvent
 from core.visual_model import VisualEvent
 
@@ -36,8 +38,6 @@ def test_visual_event_timeline_rejects_mismatched_position_and_time_domain() -> 
         event_type="visual_event",
         payload={"event": event.to_dict()},
     )
-    import pytest
-
     with pytest.raises(ValueError, match="bar_beat"):
         definition.normalize()
 
