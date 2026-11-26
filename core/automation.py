@@ -206,6 +206,36 @@ class AutomationDirector:
         self._last_visual_activity_at = 0.0
         self.generator_settings_changed = None
         self.palette_changed = None
+        self.mutation_adapter = None
+
+    def set_mutation_adapter(self, adapter) -> None:
+        """Inject the shared composition mutation boundary."""
+        self.mutation_adapter = adapter
+
+    def _apply_layer_changes(self, layer_id: str, **changes: object) -> Layer | None:
+        """Commit one atomic automation mutation while preserving legacy tests."""
+        if self.mutation_adapter is not None:
+            try:
+                return self.mutation_adapter.apply_changes(
+                    layer_id,
+                    changes,
+                    source="automation",
+                    respect_lock=True,
+                )
+            except (AttributeError, PermissionError, TypeError, ValueError) as exc:
+                _LOG.debug("Automation mutation rejected for %s: %s", layer_id, exc)
+                return None
+
+        layer = next((item for item in self._layers if item.id == layer_id), None)
+        if layer is None or layer.locked:
+            return None
+        candidate = deepcopy(layer)
+        for name, value in changes.items():
+            setattr(candidate, name, value)
+        candidate.__post_init__()
+        for name in changes:
+            setattr(layer, name, getattr(candidate, name))
+        return layer
 
     @staticmethod
     def _interval(rng: random.Random, low: float, high: float) -> float:
@@ -755,11 +785,14 @@ class AutomationDirector:
                     "end_blend_mode": target_blend,
                 }
             else:
-                layer.position = target_position
-                layer.scale = (target_scale, target_scale)
-                layer.rotation = target_rotation
-                layer.opacity = target_opacity
-                layer.blend_mode = target_blend
+                self._apply_layer_changes(
+                    layer.id,
+                    position=target_position,
+                    scale=(target_scale, target_scale),
+                    rotation=target_rotation,
+                    opacity=target_opacity,
+                    blend_mode=target_blend,
+                )
             self._mark_layer_varied(layer.id, stamp)
         return len(active)
 
@@ -781,26 +814,34 @@ class AutomationDirector:
             eased = fraction * fraction * (3.0 - 2.0 * fraction)
             start_x, start_y = morph["start_position"]
             end_x, end_y = morph["end_position"]
-            layer.position = (
-                float(start_x) + (float(end_x) - float(start_x)) * eased,
-                float(start_y) + (float(end_y) - float(start_y)) * eased,
-            )
             scale = (
                 float(morph["start_scale"])
                 + (float(morph["end_scale"]) - float(morph["start_scale"])) * eased
             )
-            layer.scale = (scale, scale)
-            layer.rotation = (
+            rotation = (
                 float(morph["start_rotation"])
                 + (float(morph["end_rotation"]) - float(morph["start_rotation"]))
                 * eased
             )
-            layer.opacity = (
+            opacity = (
                 float(morph["start_opacity"])
                 + (float(morph["end_opacity"]) - float(morph["start_opacity"])) * eased
             )
+            changes = {
+                "position": (
+                    float(start_x) + (float(end_x) - float(start_x)) * eased,
+                    float(start_y) + (float(end_y) - float(start_y)) * eased,
+                ),
+                "scale": (scale, scale),
+                "rotation": rotation,
+                "opacity": opacity,
+            }
             if fraction >= 1.0:
-                layer.blend_mode = str(morph["end_blend_mode"])
+                changes["blend_mode"] = str(morph["end_blend_mode"])
+            if self._apply_layer_changes(layer_id, **changes) is None:
+                self._layout_morphs.pop(layer_id, None)
+                continue
+            if fraction >= 1.0:
                 self._layout_morphs.pop(layer_id, None)
                 self._director.mark_transition()
             changed = True
@@ -838,9 +879,12 @@ class AutomationDirector:
                 if layer.source_type == "generator" and kind == stored_kind:
                     values = normalize_settings(kind, layer.generator_settings)
                     values[field] = base_value
-                    layer.generator_settings = normalize_settings(kind, values)
-                    if self.generator_settings_changed is not None:
-                        self.generator_settings_changed(layer)
+                    updated = self._apply_layer_changes(
+                        layer.id,
+                        generator_settings=normalize_settings(kind, values),
+                    )
+                    if updated is not None and self.generator_settings_changed is not None and self.mutation_adapter is None:
+                        self.generator_settings_changed(updated)
                 self._peak_particle_base.pop(layer.id, None)
                 changed = True
             if (
@@ -864,10 +908,14 @@ class AutomationDirector:
             if abs(float(values[base_field]) - desired) < 1e-4:
                 continue
             values[base_field] = desired
-            layer.generator_settings = normalize_settings(kind, values)
-            if self.generator_settings_changed is not None:
-                self.generator_settings_changed(layer)
-            changed = True
+            updated = self._apply_layer_changes(
+                layer.id,
+                generator_settings=normalize_settings(kind, values),
+            )
+            if updated is not None:
+                if self.generator_settings_changed is not None and self.mutation_adapter is None:
+                    self.generator_settings_changed(updated)
+                changed = True
         return changed
 
     def _randomize_effects(self) -> None:
@@ -1113,7 +1161,12 @@ class AutomationDirector:
                     updated = True
 
                 if updated:
-                    layer.generator_settings = normalize_settings(kind, values)
+                    updated = self._apply_layer_changes(
+                        layer.id,
+                        generator_settings=normalize_settings(kind, values),
+                    )
+                    if updated is None:
+                        continue
                     if kind in {"particles", "particle_system_2"}:
                         field = "density" if kind == "particles" else "emission_rate"
                         if layer.id in self._peak_particle_base:
@@ -1122,8 +1175,8 @@ class AutomationDirector:
                                 float(layer.generator_settings[field]),
                                 kind,
                             )
-                    if self.generator_settings_changed is not None:
-                        self.generator_settings_changed(layer)
+                    if self.generator_settings_changed is not None and self.mutation_adapter is None:
+                        self.generator_settings_changed(updated)
                     changed += 1
 
             if (
@@ -1132,14 +1185,17 @@ class AutomationDirector:
                 and time.time()
                 >= float(getattr(layer, "overlay_manual_override_until", 0.0))
             ):
-                layer.opacity = self.rng.uniform(0.82, 1.0)
-                layer.scale = tuple(
-                    max(0.05, min(2.0, value * self.rng.uniform(0.96, 1.04)))
-                    for value in layer.scale
-                )
-                layer.rotation += self.rng.uniform(-2.5, 2.5)
-                layer.blend_mode = self.rng.choice(
-                    ("normal", "screen", "add", "multiply")
+                self._apply_layer_changes(
+                    layer.id,
+                    opacity=self.rng.uniform(0.82, 1.0),
+                    scale=tuple(
+                        max(0.05, min(2.0, value * self.rng.uniform(0.96, 1.04)))
+                        for value in layer.scale
+                    ),
+                    rotation=layer.rotation + self.rng.uniform(-2.5, 2.5),
+                    blend_mode=self.rng.choice(
+                        ("normal", "screen", "add", "multiply")
+                    ),
                 )
                 changed += 1
 
@@ -1155,8 +1211,11 @@ class AutomationDirector:
                 )
                 if fx.get("enabled", False):
                     preset_names = [name for name in LY_EFFECT_PSETS if name != "Clean"]
-                    layer.layer_effects = apply_layer_effect_preset(
-                        self.rng.choice(preset_names)
+                    self._apply_layer_changes(
+                        layer.id,
+                        layer_effects=apply_layer_effect_preset(
+                            self.rng.choice(preset_names)
+                        ),
                     )
                     self._last_layer_fx_variation = True
                     changed += 1
@@ -1655,12 +1714,15 @@ class AutomationDirector:
             if layer is None:
                 continue
             end_x, end_y = morph["end_position"]
-            layer.position = (float(end_x), float(end_y))
             scale = float(morph["end_scale"])
-            layer.scale = (scale, scale)
-            layer.rotation = float(morph["end_rotation"])
-            layer.opacity = float(morph["end_opacity"])
-            layer.blend_mode = str(morph["end_blend_mode"])
+            self._apply_layer_changes(
+                layer_id,
+                position=(float(end_x), float(end_y)),
+                scale=(scale, scale),
+                rotation=float(morph["end_rotation"]),
+                opacity=float(morph["end_opacity"]),
+                blend_mode=str(morph["end_blend_mode"]),
+            )
         self._layout_morphs.clear()
         for layer_id, (field, base_value, kind) in tuple(
             self._peak_particle_base.items()
@@ -1677,9 +1739,12 @@ class AutomationDirector:
                 continue
             values = normalize_settings(kind, layer.generator_settings)
             values[field] = base_value
-            layer.generator_settings = normalize_settings(kind, values)
-            if self.generator_settings_changed is not None:
-                self.generator_settings_changed(layer)
+            updated = self._apply_layer_changes(
+                layer_id,
+                generator_settings=normalize_settings(kind, values),
+            )
+            if updated is not None and self.generator_settings_changed is not None and self.mutation_adapter is None:
+                self.generator_settings_changed(updated)
         self._peak_particle_base.clear()
         self._active_variation_layer_ids = ()
         self.running = False
