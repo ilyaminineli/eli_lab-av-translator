@@ -64,3 +64,27 @@ def test_visual_event_timeline_stable_same_position_order_and_late_skip() -> Non
     due = timeline.tick(1, 3, 4)
     assert [item.event_id for item in due] == ["visual-a", "visual-b"]
     assert timeline.tick(1, 3, 4) == []
+
+
+def test_visual_event_ids_are_unique_within_timeline() -> None:
+    timeline = PerformanceTimeline()
+    embedded_id = "visual-duplicate"
+    for timeline_id in ("line-a", "line-b"):
+        event = VisualEvent(
+            event_type="hold",
+            time_domain="bar_beat",
+            position={"bar": 1, "beat": 1},
+            event_id=embedded_id,
+        )
+        definition = PerformanceTimelineEvent(
+            event_id=timeline_id,
+            bar=1,
+            beat=1,
+            event_type="visual_event",
+            payload={"event": event.to_dict()},
+        )
+        if timeline_id == "line-a":
+            timeline.add_event(definition)
+        else:
+            with pytest.raises(ValueError, match="Duplicate visual event ID"):
+                timeline.add_event(definition)
