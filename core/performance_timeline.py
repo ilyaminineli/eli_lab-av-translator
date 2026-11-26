@@ -399,6 +399,14 @@ class PerformanceTimeline:
             raise ValueError(f"A timeline can contain at most {MAX_TMLN_EVTS} events.")
         if any(existing.event_id == item.event_id for existing in self.events):
             raise ValueError(f"Duplicate timeline event ID: {item.event_id}")
+        if item.event_type == "visual_event":
+            visual_id = str(item.payload["event"]["event_id"])
+            if any(
+                existing.event_type == "visual_event"
+                and str(existing.payload["event"]["event_id"]) == visual_id
+                for existing in self.events
+            ):
+                raise ValueError(f"Duplicate visual event ID: {visual_id}")
         self.events.append(item)
         self._sort_events()
         self.definition_revision += 1
@@ -425,6 +433,15 @@ class PerformanceTimeline:
             values["event_id"] = existing.event_id
             item = PerformanceTimelineEvent.from_dict(values)
         item.normalize()
+        if item.event_type == "visual_event":
+            visual_id = str(item.payload["event"]["event_id"])
+            if any(
+                existing.event_id != event_id
+                and existing.event_type == "visual_event"
+                and str(existing.payload["event"]["event_id"]) == visual_id
+                for existing in self.events
+            ):
+                raise ValueError(f"Duplicate visual event ID: {visual_id}")
         self.events[index] = item
         self._sort_events()
         self.definition_revision += 1
