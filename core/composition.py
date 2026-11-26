@@ -228,7 +228,10 @@ class Composition:
         staged_layers[index] = layer
         staged_layers.sort(key=lambda item: item.z_index)
 
-        self.layers = staged_layers
+        # Preserve the list object shared with runtime services such as
+        # AutomationDirector while swapping the validated Layer entry.
+        self.layers[index] = layer
+        self.layers.sort(key=lambda item: item.z_index)
         self.visual_objects = staged_registry
 
     def remove_layer(self, layer_id: str) -> bool:
