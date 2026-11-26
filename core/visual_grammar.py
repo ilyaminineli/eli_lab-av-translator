@@ -189,6 +189,8 @@ class MotionGesture:
     def from_dict(cls, data: object) -> MotionGesture:
         if not isinstance(data, dict):
             raise ValueError("Motion gesture must be an object.")
+        if not str(data.get("gesture_id", "")).strip():
+            raise ValueError("Motion gesture ID is required.")
         version = int(data.get("schema_version", MOTION_GESTURE_SCHEMA_VERSION))
         if version > MOTION_GESTURE_SCHEMA_VERSION:
             raise ValueError(
@@ -251,6 +253,8 @@ class VisualPatternStep:
     def from_dict(cls, data: object) -> VisualPatternStep:
         if not isinstance(data, dict):
             raise ValueError("Visual pattern step must be an object.")
+        if not str(data.get("step_id", "")).strip():
+            raise ValueError("Visual pattern step ID is required.")
         version = int(data.get("schema_version", VISUAL_PATTERN_STEP_SCHEMA_VERSION))
         if version > VISUAL_PATTERN_STEP_SCHEMA_VERSION:
             raise ValueError(
@@ -370,6 +374,8 @@ class VisualPattern:
     def from_dict(cls, data: object) -> VisualPattern:
         if not isinstance(data, dict):
             raise ValueError("Visual pattern must be an object.")
+        if not str(data.get("pattern_id", "")).strip():
+            raise ValueError("Visual pattern ID is required.")
         version = int(data.get("schema_version", VISUAL_PATTERN_SCHEMA_VERSION))
         if version > VISUAL_PATTERN_SCHEMA_VERSION:
             raise ValueError(

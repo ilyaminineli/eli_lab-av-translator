@@ -75,6 +75,17 @@ def test_motion_gesture_is_renderer_independent_and_round_trips() -> None:
     assert restored.reversible is True
 
 
+def test_grammar_deserialization_requires_stable_authored_ids() -> None:
+    with pytest.raises(ValueError, match="Motion gesture ID is required"):
+        MotionGesture.from_dict({"name": "Missing ID"})
+
+    with pytest.raises(ValueError, match="Visual pattern ID is required"):
+        VisualPattern.from_dict({"name": "Missing ID"})
+
+    with pytest.raises(ValueError, match="Visual pattern step ID is required"):
+        VisualPatternStep.from_dict({"gesture_id": "gesture"})
+
+
 def test_motion_gesture_rejects_unknown_kind_easing_and_unbounded_values() -> None:
     with pytest.raises(ValueError, match="Unsupported motion gesture kind"):
         MotionGesture(gesture_id="bad-kind", kind="audio_follow").normalize()
