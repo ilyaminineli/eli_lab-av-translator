@@ -3,9 +3,9 @@ from __future__ import annotations
 import logging
 import math
 import random
-from copy import deepcopy
 import time
 from collections.abc import Iterable
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
