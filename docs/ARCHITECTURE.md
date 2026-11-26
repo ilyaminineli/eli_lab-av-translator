@@ -2,7 +2,7 @@
 
 ## Product and runtime boundaries
 
-eli_lab AVTranslator is a Windows-first live audiovisual/VJ performance environment with native packaging for Windows x64 and Linux x86_64. The application combines four independent video decks, composition layers, procedural generators, overlays, GPU effects and renderer-independent performance controls. M5 adds autonomous show orchestration and a shared asynchronous generator-raster pipeline. M6 is planned to make the operator experience more like a dedicated live VJ mixer.
+eli_lab AVTranslator is a Windows-first live audiovisual/VJ performance environment with native packaging for Windows x64 and Linux x86_64. The application combines four independent video decks, composition layers, procedural generators, overlays, GPU effects and renderer-independent performance controls. M5 adds autonomous show orchestration and a shared asynchronous generator-raster pipeline; M6 adds the VJ scene, transformation, particle, typography and live-performance foundations. M7 is evolving the application into a generative visual composition instrument. Its governing design reference is the [IDM Visual Instrument manual](guides/IDM_Visual_Instrument_Visual_Composition_Generative_Art_and_Live_Concert_Architecture.md).
 
 The main ownership boundaries are:
 
@@ -13,8 +13,25 @@ The main ownership boundaries are:
 - **Rendering** owns per-window OpenGL resources, video/generator textures, composition and post-processing.
 - **Effects** own master and per-layer effect settings/presets.
 - **Performance control** owns normalized transport, scene, audio, OSC/MIDI, modulation, modifier and Performance Mode state.
+- **Visual model** owns renderer-independent object identity, role/material descriptors, lineage, mutation contracts and visual-event data. It references composition layers but owns no Qt or GPU resources.
 
 Worker threads publish immutable or copied CPU-side data. They do not update Qt widgets, mutate the composition or create/change OpenGL resources.
+
+## Visual identity and event lifecycle
+
+M7-C0 adds a renderer-independent visual ontology without replacing the existing Layer composition model.
+
+- Each Layer has a stable visual_object_id. The field is appended to the dataclass to preserve existing positional constructor compatibility.
+- Composition owns the authoritative visual_objects registry. Each VisualObject references exactly one renderable layer in the current C0 model.
+- Composition.add_layer registers the object, remove_layer removes the paired object, and replace_layer atomically replaces both the renderable layer and its identity record.
+- A source-defining change through LayerManager.update_layer creates a new VisualObject ID and records the previous object as its lineage parent. Ordinary transform changes retain identity.
+- Object identity stores role, material, geometry/palette/motion traits and provenance separately from transient layer transforms.
+- VisualMutationContract declares preserved fields, allowed properties and forbidden operations. The model validator exists, but not every automation/modulation path is yet routed through it.
+- VisualEvent is a renderer-independent event envelope with explicit immediate, performance_seconds or bar_beat timing. It is a data contract only; it is not yet connected to a scheduler.
+- Legacy compositions with no visual_objects field synthesize one legacy object per layer during loading. Project schema version 2 remains unchanged because the new composition data is additive and optional.
+- Performance-scene recall preserves a locked live layer's VisualObject through Composition.replace_layer rather than mutating the candidate layer list directly.
+
+The ontology must remain independent of GPU state. Preview and projector may share the same serialized VisualObject data, but each output continues to own its own GL context, textures, feedback history and particle simulation.
 
 ## Rendering lifecycle
 
@@ -101,7 +118,7 @@ The manual **Cross-platform Versioned Builds** workflow builds Windows and Linux
 
 ## Project data
 
-`.eliav` projects persist composition/layers, deck assignments, effects, Performance Macro definitions/source assignments/shortcuts and performance configuration. VJ Scene snapshots include macro configuration and values. `.eliset` performance sets reuse project serialization and persist a reusable performance setup, including deck state, automation/performance settings, scenes and MIDI mappings. Media files are referenced by path and are not embedded. Runtime handles, GPU objects and transient frame/audio queues are recreated when a project/set is loaded.
+`.eliav` projects persist composition/layers, deck assignments, effects, Performance Macro definitions/source assignments/shortcuts and performance configuration. VJ Scene snapshots include macro configuration and values. `.eliset` performance sets reuse project serialization and persist a reusable performance setup, including deck state, automation/performance settings, scenes and MIDI mappings. Composition serialization includes the VisualObject registry and stable layer associations. Media files are referenced by path and are not embedded. Runtime handles, GPU objects and transient frame/audio queues are recreated when a project/set is loaded.
 
 ## M6 direction
 

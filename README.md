@@ -4,11 +4,13 @@
 
 **Static website:** [English homepage](index.html) · [Japanese homepage](site/ja/index.html) · [Features](site/features.html) · [Field manual](site/manual.html) · [Wiki](site/wiki.html) · [Windows setup](site/guides/windows-setup.html) · [Sonic Pi guide](site/guides/sonic-pi.html). The site is plain HTML/CSS under `site/`, with the real homepage in the repository root and a `.nojekyll` marker. It is ready for GitHub Pages **Deploy from a branch → main → /(root)**. Once Pages is enabled, the project URL is `https://ilyaminineli.github.io/eli_lab-av-translator/`. The Markdown source documents are kept under [docs/](docs/) and the website structure is described in [docs/WEBSITE_PLAN.md](docs/WEBSITE_PLAN.md).
 
-## Project status — 15 November 2026
+## Project status — 27 November 2026
 
 The `main` branch contains the M0–M6 rendering, video, generator, performance-control and live-workspace foundations, plus the first M7 implementation increments. [PR #34](https://github.com/ilyaminineli/eli_lab-av-translator/pull/34) merged the unified visual director and the initial PERF / COMPOSE / PREPARE workspace shell. [PR #35](https://github.com/ilyaminineli/eli_lab-av-translator/pull/35) hardened timeline/macro runtime handling, bounded generator raster work, and introduced the monochrome workspace theme and 16:9 local preview frame.
 
 The freeform multi-source collage layouts, responsive four-deck cards, compact actions, headline-led Text Art and About/version update were merged to `main` in [PR #36](https://github.com/ilyaminineli/eli_lab-av-translator/pull/36). The operator-workspace follow-up added the final 絵 seal, responsive dock sizing, wheel-safe controls and complete English/Japanese navigation in [PR #40](https://github.com/ilyaminineli/eli_lab-av-translator/pull/40), then applied the website-aligned desktop typography hierarchy in [PR #42](https://github.com/ilyaminineli/eli_lab-av-translator/pull/42).
+
+The active M7 roadmap has been restructured through M7-H. Work on M7-C0 — Visual Ontology, Object Identity and Mutation Contracts — is being developed on the `m7/m7-c0-visual-ontology` branch. The governing creative and architectural reference is [Volume 11 — IDM Visual Instrument](docs/guides/IDM_Visual_Instrument_Visual_Composition_Generative_Art_and_Live_Concert_Architecture.md); the implementation sequence and audit are in [docs/M7.md](docs/M7.md).
 
 The Quality workflow performs Python compilation, Ruff, pytest regression tests and a Japanese UI typography proof. Those checks do not replace target-Windows GUI, OpenGL/GPU, four-deck, Sonic Pi, projector and sustained-performance acceptance. Hardware validation remains an explicit release gate; do not treat static CI as a hardware sign-off.
 

@@ -33,6 +33,9 @@ jobs:
         run: >-
           python -m ruff check
           core/application.py
+          core/composition.py
+          core/layer_manager.py
+          core/visual_model.py
           core/automation.py
           core/generative_director.py
           core/performance_control.py

@@ -3290,11 +3290,10 @@ class Application:
         for current in self.composition.layers:
             if not current.locked:
                 continue
-            replacement = candidate.get_layer(current.id)
-            if replacement is not None:
-                candidate.layers[candidate.layers.index(replacement)] = current
-            else:
-                candidate.add_layer(current)
+            # Locked layers keep their live visual identity when a scene snapshot
+            # replaces the rest of the composition.
+            visual_object = self.composition.visual_object_for_layer(current.id)
+            candidate.replace_layer(current, visual_object=visual_object)
 
         self.composition = candidate
         self.layer_manager = LayerManager(self.composition, self.events)

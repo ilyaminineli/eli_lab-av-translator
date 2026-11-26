@@ -1,7 +1,7 @@
 # eli_lab AVTranslator — Product Roadmap
 
-**Roadmap snapshot:** 14 November 2026  
-**Current priority:** M7 — Unified Generative Audiovisual Instrument. The complete design brief is in [docs/M7.md](M7.md). Development is on the dedicated `m7/unified-visual-director` branch. M5/M6 hardware acceptance and the independent Video Mixer release gate remain open; master-output recording/audio muxing is a separate deferred deliverable.
+**Roadmap snapshot:** 27 November 2026  
+**Current priority:** M7-C0 — Visual Ontology, Object Identity and Mutation Contracts. The restructured M7 programme is defined in [docs/M7.md](M7.md). Its governing creative and architectural reference is the [IDM Visual Instrument manual](guides/IDM_Visual_Instrument_Visual_Composition_Generative_Art_and_Live_Concert_Architecture.md). Implementation is on `m7/m7-c0-visual-ontology`. M5/M6 hardware acceptance and the independent Video Mixer release gate remain open; master-output recording/audio muxing is a separate deferred deliverable.
 
 ## Product goal
 
@@ -47,19 +47,27 @@ The November 4 RTX 4060 screenshot showed approximately 18.9 FPS. The new counte
 
 # M7 — Unified Generative Audiovisual Instrument
 
-**Status:** In progress on `m7/unified-visual-director`. Full design brief and implementation log: [M7.md](M7.md). M7-A has dynamic uncapped variation, optional anchors, cross-source spatial mutation, relationship-aware placement, composition Visual Activity, adaptive per-layer cooldowns and manual-override precedence. M7-B has the first central Perform / Compose / Prepare workspaces, macro strip and Qt Material theme. Code validation passed at `ddbff4e` (compile, targeted Ruff, 16 tests); target-Windows GPU/projector acceptance remains open.
+**Status:** Active programme. Current branch: `m7/m7-c0-visual-ontology`. The full programme, sequence, C0 checklist and audit findings are in [M7.md](M7.md). The governing specification is [Volume 11 — IDM Visual Instrument](guides/IDM_Visual_Instrument_Visual_Composition_Generative_Art_and_Live_Concert_Architecture.md).
 
 | Workstream | Scope | Status |
 | --- | --- | --- |
-| M7-A — Unified Visual Director | One director blends chaotic freedom, musical/generative intelligence and compositional structure. Dynamic variation budgets, optional anchors, all visual-layer participation, adaptive transitions, composition Visual Activity, relationship-aware placement, per-layer cooldowns and manual-override precedence. Renderer-side activity telemetry and operator-authored priorities remain open. | In progress |
-| M7-B — Performance UI Redesign | Initial central Perform / Compose / Prepare workspaces, central live canvas, shared macro strip, central media/visual-asset preparation tabs, Qt Material dark-red theme and workspace shortcuts. Context-sensitive inspector, quick/advanced control separation, timeline visibility, responsive refinement and target-Windows UI acceptance remain open. | In progress |
-| M7-C — Generative Drawing Engine | GPU/vector paths, Bézier curves, animated strokes, accumulation, hatching, contours, recursive and field-driven geometry. | Planned |
-| M7-D — Temporal + Print Processing | Extend existing feedback; layer/source routing, temporal echoes/stutter, procedural printmaking and reorderable print stages. | Planned |
-| M7-E — Advanced Signal Visualizer | Phase scope, spectrogram, frequency geometry, spectral particles, signal fields and waveform deformation using existing audio/modulation sources. | Planned |
-| M7-F — 3D Rendering Foundation | Separate renderer, procedural meshes/wireframes, displacement, instancing and camera; expose output as a compositor source. | Research / planned |
-| M7-G — Integration + Release Validation | Persistence, scenes, sets, GPU ownership, preview/projector parity, sustained Windows performance, reference-scene regression and UI acceptance. | Planned |
+| M7-A — Unified Visual Director | Composition-aware variation, cross-source spatial relationships, visual activity, adaptive per-layer cooldowns and manual-override precedence. Renderer-side telemetry and operator-authored priorities remain open. | Foundation implemented; refinement open |
+| M7-B — Operator Workspace | Perform / Compose / Prepare workspaces, central canvas and macro strip. Context-sensitive inspector, quick/advanced control separation, timeline visibility and target-Windows UI acceptance remain open. | Foundation implemented; refinement open |
+| M7-C0 — Visual Ontology, Object Identity and Mutation Contracts | Renderer-independent visual models, persistent layer/object association, identity, lineage, mutation contracts, event time domains and backward-compatible serialization. | In progress |
+| M7-C1 — Visual Motif and Motion Grammar | Recurring visual motifs, pattern cycles, motion gestures, motif returns and lineage-preserving seeded variation. | Planned |
+| M7-C2 — Perceptual Orchestration | Figure/ground, salience, visual density, attention distribution, contrast, legibility and hierarchy. | Planned |
+| M7-C3 — Visual Score and Music Mapping | Explicit mappings between supplied musical facts, audio observations, visual intentions and performer actions, with independent clock domains. | Planned |
+| M7-D — Generative Drawing Engine | GPU/vector paths, Bézier curves, animated strokes, accumulation, hatching, contours, recursive and field-driven geometry. | Planned |
+| M7-E — Temporal and Printmaking Engine | Routed temporal echoes/stutter, erosion, procedural printmaking, grain, halftone and reorderable material stages. | Planned |
+| M7-F — Advanced Signal Visualizer | Phase scope, spectrogram, frequency geometry, spectral particles, signal fields and waveform deformation. | Planned |
+| M7-G — 3D Rendering Foundation | Separate renderer, procedural meshes/wireframes, displacement, instancing and camera; expose output as a compositor source. | Research / planned |
+| M7-H — Integration, Safety and Release Validation | Persistence, scenes, sets, deterministic fixtures, runtime safety, performance tiers, preview/projector parity, sustained Windows performance and venue validation. | Planned |
 
-**M7 design rule:** the director should understand the composition, but it must never be afraid to destroy it. There is no separate legacy-chaos mode. CHAOTIC, GENERATIVE and STRCD are continuous influences on one director, not separate engines.
+**Reindexing:** the former M7-C drawing, M7-D temporal/print, M7-E signal, M7-F 3D and M7-G integration workstreams are retained as M7-D through M7-H. M7-C0/C1/C2/C3 now establish the ontology, visual grammar, perceptual director and semantic visual score required to make those renderers compositional rather than disconnected effect modules.
+
+**M7 design rule:** the director should understand the composition, but it must never be afraid to destroy it. CHAOTIC, GENERATIVE and STRCD remain continuous influences on one director, not separate engines.
+
+**Current C0 implementation:** a dedicated renderer-independent visual model, stable layer/object IDs, composition registry, lifecycle-aware registration/removal/replacement, source-replacement lineage, explicit visual-event time domains, additive serialization and focused tests have been added on the feature branch. Mutation contracts are represented and validated as data but are not yet enforced across every automation/modulation path. VisualEvent is not yet connected to a scheduler. Windows CI and historical project/set fixture validation are still required.
 
 ---
 
