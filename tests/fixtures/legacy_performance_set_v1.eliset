@@ -1,0 +1,265 @@
+{
+  "format": "eli_lab_performance_set",
+  "version": 1,
+  "created_at": 1700000000,
+  "metadata": {
+    "name": "Historical performance set"
+  },
+  "composition": {
+    "name": "Legacy project composition",
+    "width": 1280,
+    "height": 720,
+    "fps": 30,
+    "background": "#101116",
+    "layers": [
+      {
+        "id": "legacy-generator",
+        "name": "Legacy Geometry",
+        "source_type": "generator",
+        "source_id": "",
+        "visible": true,
+        "locked": false,
+        "opacity": 0.72,
+        "blend_mode": "add",
+        "position": [
+          0.18,
+          0.64
+        ],
+        "scale": [
+          1.25,
+          0.85
+        ],
+        "rotation": -22.5,
+        "z_index": 4,
+        "generator_type": "geometry",
+        "generator_settings": {
+          "pattern": "radial",
+          "line_count": 24,
+          "primary_color": "#d03b38",
+          "secondary_color": "#1e2028",
+          "background_color": "#08090b"
+        },
+        "performance_modifiers": [
+          {
+            "modifier_id": "legacy-opacity-modifier",
+            "source_id": "audio.rms",
+            "target_id": "layer.opacity",
+            "depth": 0.2,
+            "polarity": "positive",
+            "attack_ms": 50,
+            "release_ms": 120
+          }
+        ],
+        "layer_effects": {
+          "enabled": true,
+          "mix": 0.35,
+          "monochrome": 0.2,
+          "threshold": 0.4
+        },
+        "fx_manual_override_until": 12.5,
+        "overlay_manual_override_until": 0,
+        "overlay_path": null,
+        "overlay_kind": null,
+        "overlay_in": 0,
+        "overlay_out": null,
+        "overlay_speed": 1,
+        "overlay_frame_hold": 1,
+        "overlay_loop": true,
+        "overlay_scene_sync": false,
+        "overlay_mask_mode": "none",
+        "overlay_mask_source": ""
+      },
+      {
+        "id": "legacy-overlay",
+        "name": "Legacy Film Overlay",
+        "source_type": "overlay",
+        "source_id": "",
+        "visible": false,
+        "locked": false,
+        "opacity": 0.81,
+        "blend_mode": "screen",
+        "position": [
+          0.5,
+          0.5
+        ],
+        "scale": [
+          1,
+          1
+        ],
+        "rotation": 0,
+        "z_index": 8,
+        "generator_type": null,
+        "generator_settings": {},
+        "performance_modifiers": [],
+        "layer_effects": {},
+        "fx_manual_override_until": 0,
+        "overlay_manual_override_until": 8.5,
+        "overlay_path": "C:/AVMedia/film-grain.gif",
+        "overlay_kind": "animated_image",
+        "overlay_in": 1.25,
+        "overlay_out": 5.5,
+        "overlay_speed": 0.75,
+        "overlay_frame_hold": 2,
+        "overlay_loop": true,
+        "overlay_scene_sync": true,
+        "overlay_mask_mode": "luma",
+        "overlay_mask_source": "mask-source-legacy"
+      }
+    ],
+    "metadata": {
+      "author": "ELI LAB",
+      "migration_fixture": "pre-visual-ontology"
+    }
+  },
+  "decks": [
+    {
+      "id": "A",
+      "path": "C:/AVMedia/legacy-clip.mp4",
+      "playing": false,
+      "paused": true,
+      "loop": true,
+      "locked": false,
+      "segment_start": 2,
+      "segment_end": 12,
+      "asset_id": "asset-legacy",
+      "collection_id": "collection-legacy"
+    }
+  ],
+  "effects": {
+    "brightness": 1,
+    "contrast": 1
+  },
+  "automation_settings": {
+    "performance_style": "generative"
+  },
+  "performance_settings": {
+    "active_palette": "Clean"
+  },
+  "scenes": [
+    {
+      "scene_id": "historic-scene",
+      "label": "Historic scene",
+      "snapshot": {
+        "composition": {
+          "name": "Legacy performance scene",
+          "width": 1280,
+          "height": 720,
+          "fps": 30,
+          "background": "#08090b",
+          "layers": [
+            {
+              "id": "legacy-generator",
+              "name": "Legacy Geometry",
+              "source_type": "generator",
+              "source_id": "",
+              "visible": true,
+              "locked": false,
+              "opacity": 0.72,
+              "blend_mode": "add",
+              "position": [
+                0.18,
+                0.64
+              ],
+              "scale": [
+                1.25,
+                0.85
+              ],
+              "rotation": -22.5,
+              "z_index": 4,
+              "generator_type": "geometry",
+              "generator_settings": {
+                "pattern": "radial",
+                "line_count": 24,
+                "primary_color": "#d03b38",
+                "secondary_color": "#1e2028",
+                "background_color": "#08090b"
+              },
+              "performance_modifiers": [
+                {
+                  "modifier_id": "legacy-opacity-modifier",
+                  "source_id": "audio.rms",
+                  "target_id": "layer.opacity",
+                  "depth": 0.2,
+                  "polarity": "positive",
+                  "attack_ms": 50,
+                  "release_ms": 120
+                }
+              ],
+              "layer_effects": {
+                "enabled": true,
+                "mix": 0.35,
+                "monochrome": 0.2,
+                "threshold": 0.4
+              },
+              "fx_manual_override_until": 12.5,
+              "overlay_manual_override_until": 0,
+              "overlay_path": null,
+              "overlay_kind": null,
+              "overlay_in": 0,
+              "overlay_out": null,
+              "overlay_speed": 1,
+              "overlay_frame_hold": 1,
+              "overlay_loop": true,
+              "overlay_scene_sync": false,
+              "overlay_mask_mode": "none",
+              "overlay_mask_source": ""
+            },
+            {
+              "id": "scene-only-layer",
+              "name": "Scene-only footage",
+              "source_type": "video",
+              "source_id": "deck_c",
+              "visible": true,
+              "locked": false,
+              "opacity": 0.9,
+              "blend_mode": "normal",
+              "position": [
+                0.5,
+                0.5
+              ],
+              "scale": [
+                1,
+                1
+              ],
+              "rotation": 0,
+              "z_index": 2,
+              "generator_type": null,
+              "generator_settings": {},
+              "performance_modifiers": [],
+              "layer_effects": {},
+              "fx_manual_override_until": 0,
+              "overlay_manual_override_until": 0,
+              "overlay_path": null,
+              "overlay_kind": null,
+              "overlay_in": 0,
+              "overlay_out": null,
+              "overlay_speed": 1,
+              "overlay_frame_hold": 1,
+              "overlay_loop": true,
+              "overlay_scene_sync": false,
+              "overlay_mask_mode": "none",
+              "overlay_mask_source": ""
+            }
+          ],
+          "metadata": {
+            "migration_fixture": "pre-visual-ontology-scene"
+          }
+        },
+        "decks": [],
+        "palette": "Clean"
+      },
+      "quantization": "bar",
+      "cue": "historic.scene",
+      "tags": [
+        "legacy",
+        "fixture"
+      ],
+      "transition": {
+        "duration": 0,
+        "curve": "smoothstep",
+        "discrete": "cut"
+      }
+    }
+  ],
+  "midi_mappings": []
+}
