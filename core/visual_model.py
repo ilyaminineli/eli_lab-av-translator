@@ -245,9 +245,9 @@ class VisualMutationContract:
             raise ValueError("Visual mutation contract must be an object.")
         allowed = set(cls.__dataclass_fields__)
         result = cls(**{key: value for key, value in data.items() if key in allowed})
-        # C0 initially serialized the default contract before the concrete Layer
-        # settings fields were added. Expand only that exact historical default;
-        # user-authored restrictive allow-lists remain restrictive.
+        # Early C0 releases serialized two default allow-list shapes. Expand
+        # only those exact historical defaults; custom restrictive lists remain
+        # untouched.
         legacy_default_allow = {
             "position",
             "scale",
@@ -258,13 +258,33 @@ class VisualMutationContract:
             "motion",
             "blend_mode",
             "visibility",
+        }
+        intermediate_default_allow = legacy_default_allow | {
             "visible",
             "z_index",
             "locked",
         }
-        if set(result.allow) == legacy_default_allow:
+        selected_allow = set(result.allow)
+        if selected_allow == legacy_default_allow:
             result.allow.extend(
-                ("generator_settings", "layer_effects", "overlay_speed", "overlay_frame_hold")
+                (
+                    "visible",
+                    "z_index",
+                    "locked",
+                    "generator_settings",
+                    "layer_effects",
+                    "overlay_speed",
+                    "overlay_frame_hold",
+                )
+            )
+        elif selected_allow == intermediate_default_allow:
+            result.allow.extend(
+                (
+                    "generator_settings",
+                    "layer_effects",
+                    "overlay_speed",
+                    "overlay_frame_hold",
+                )
             )
         result.normalize()
         return result
