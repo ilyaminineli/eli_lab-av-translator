@@ -5,6 +5,11 @@ from typing import Any
 from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from config import DEFAULT_CANVAS_HEIGHT, DEFAULT_CANVAS_WIDTH, DEFAULT_FPS
+from core.visual_grammar import (
+    MAX_MOTION_GRAMMAR_ENTRIES,
+    MotionGesture,
+    VisualPattern,
+)
 from core.visual_model import VisualMotif, VisualObject
 
 
@@ -136,6 +141,8 @@ class Composition:
     visual_objects: dict[str, VisualObject] = field(default_factory=dict)
     # Appended to preserve the positional Composition constructor contract.
     visual_motifs: dict[str, VisualMotif] = field(default_factory=dict)
+    motion_gestures: dict[str, MotionGesture] = field(default_factory=dict)
+    visual_patterns: dict[str, VisualPattern] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         # Rebuild the registry through the same checks used by add_layer so
@@ -143,9 +150,13 @@ class Composition:
         initial_layers = list(self.layers)
         initial_objects = dict(self.visual_objects)
         initial_motifs = dict(self.visual_motifs)
+        initial_gestures = dict(self.motion_gestures)
+        initial_patterns = dict(self.visual_patterns)
         self.layers = []
         self.visual_objects = {}
         self.visual_motifs = {}
+        self.motion_gestures = {}
+        self.visual_patterns = {}
         for layer in initial_layers:
             visual_object = initial_objects.pop(layer.visual_object_id, None)
             if visual_object is not None and not isinstance(visual_object, VisualObject):
@@ -169,6 +180,29 @@ class Composition:
                     "Visual motif registry keys must match their motif IDs."
                 )
             self.add_visual_motif(motif)
+
+        for registry_key, raw_gesture in initial_gestures.items():
+            gesture = (
+                raw_gesture
+                if isinstance(raw_gesture, MotionGesture)
+                else MotionGesture.from_dict(raw_gesture)
+            )
+            if str(registry_key) != gesture.gesture_id:
+                raise ValueError(
+                    "Motion gesture registry keys must match their gesture IDs."
+                )
+            self.add_motion_gesture(gesture)
+        for registry_key, raw_pattern in initial_patterns.items():
+            pattern = (
+                raw_pattern
+                if isinstance(raw_pattern, VisualPattern)
+                else VisualPattern.from_dict(raw_pattern)
+            )
+            if str(registry_key) != pattern.pattern_id:
+                raise ValueError(
+                    "Visual pattern registry keys must match their pattern IDs."
+                )
+            self.add_visual_pattern(pattern)
 
     def _visual_object_for(
         self,
@@ -351,6 +385,73 @@ class Composition:
         visual_object.revision = candidate.revision
         return True
 
+    def get_motion_gesture(self, gesture_id: str) -> MotionGesture | None:
+        return self.motion_gestures.get(str(gesture_id))
+
+    def add_motion_gesture(self, gesture: MotionGesture) -> None:
+        """Register one reusable renderer-independent motion gesture."""
+        if not isinstance(gesture, MotionGesture):
+            raise TypeError("Composition gestures must be MotionGesture instances.")
+        gesture.normalize()
+        if gesture.gesture_id in self.motion_gestures:
+            raise ValueError(
+                f"Motion gesture ID already exists: {gesture.gesture_id}"
+            )
+        if len(self.motion_gestures) >= MAX_MOTION_GRAMMAR_ENTRIES:
+            raise ValueError(
+                f"Composition cannot contain more than "
+                f"{MAX_MOTION_GRAMMAR_ENTRIES} motion gestures."
+            )
+        self.motion_gestures[gesture.gesture_id] = gesture
+
+    def remove_motion_gesture(self, gesture_id: str) -> bool:
+        """Remove an unused gesture; referenced pattern steps must be edited first."""
+        selected_id = str(gesture_id)
+        if selected_id not in self.motion_gestures:
+            return False
+        if any(
+            step.gesture_id == selected_id
+            for pattern in self.visual_patterns.values()
+            for step in pattern.steps
+        ):
+            raise ValueError(
+                f"Motion gesture {selected_id!r} is still referenced by visual patterns."
+            )
+        self.motion_gestures.pop(selected_id)
+        return True
+
+    def get_visual_pattern(self, pattern_id: str) -> VisualPattern | None:
+        return self.visual_patterns.get(str(pattern_id))
+
+    def add_visual_pattern(self, pattern: VisualPattern) -> None:
+        """Register a bounded cycle whose steps reference existing gestures."""
+        if not isinstance(pattern, VisualPattern):
+            raise TypeError("Composition patterns must be VisualPattern instances.")
+        pattern.normalize()
+        if pattern.pattern_id in self.visual_patterns:
+            raise ValueError(f"Visual pattern ID already exists: {pattern.pattern_id}")
+        if len(self.visual_patterns) >= MAX_MOTION_GRAMMAR_ENTRIES:
+            raise ValueError(
+                f"Composition cannot contain more than "
+                f"{MAX_MOTION_GRAMMAR_ENTRIES} visual patterns."
+            )
+        missing = sorted(
+            {
+                step.gesture_id
+                for step in pattern.steps
+                if step.gesture_id not in self.motion_gestures
+            }
+        )
+        if missing:
+            raise ValueError(
+                "Visual pattern references unknown motion gestures: "
+                + ", ".join(missing)
+            )
+        self.visual_patterns[pattern.pattern_id] = pattern
+
+    def remove_visual_pattern(self, pattern_id: str) -> bool:
+        return self.visual_patterns.pop(str(pattern_id), None) is not None
+
     def get_layer(self, layer_id: str) -> Layer | None:
         return next((layer for layer in self.layers if layer.id == layer_id), None)
 
@@ -380,6 +481,14 @@ class Composition:
             "visual_motifs": [
                 self.visual_motifs[key].to_dict()
                 for key in sorted(self.visual_motifs)
+            ],
+            "motion_gestures": [
+                self.motion_gestures[key].to_dict()
+                for key in sorted(self.motion_gestures)
+            ],
+            "visual_patterns": [
+                self.visual_patterns[key].to_dict()
+                for key in sorted(self.visual_patterns)
             ],
         }
 
@@ -419,6 +528,41 @@ class Composition:
             if item.motif_id in visual_motifs:
                 raise ValueError(f"Duplicate visual motif ID: {item.motif_id}")
             visual_motifs[item.motif_id] = item
+        raw_gestures = data.get("motion_gestures", [])
+        if isinstance(raw_gestures, dict):
+            gesture_values = list(raw_gestures.items())
+        elif isinstance(raw_gestures, list):
+            gesture_values = [(None, item) for item in raw_gestures]
+        else:
+            raise ValueError("Composition motion_gestures must be a list or object.")
+        motion_gestures: dict[str, MotionGesture] = {}
+        for registry_key, raw_gesture in gesture_values:
+            gesture = MotionGesture.from_dict(raw_gesture)
+            if registry_key is not None and str(registry_key) != gesture.gesture_id:
+                raise ValueError(
+                    "Motion gesture registry keys must match their gesture IDs."
+                )
+            if gesture.gesture_id in motion_gestures:
+                raise ValueError(f"Duplicate motion gesture ID: {gesture.gesture_id}")
+            motion_gestures[gesture.gesture_id] = gesture
+
+        raw_patterns = data.get("visual_patterns", [])
+        if isinstance(raw_patterns, dict):
+            pattern_values = list(raw_patterns.items())
+        elif isinstance(raw_patterns, list):
+            pattern_values = [(None, item) for item in raw_patterns]
+        else:
+            raise ValueError("Composition visual_patterns must be a list or object.")
+        visual_patterns: dict[str, VisualPattern] = {}
+        for registry_key, raw_pattern in pattern_values:
+            pattern = VisualPattern.from_dict(raw_pattern)
+            if registry_key is not None and str(registry_key) != pattern.pattern_id:
+                raise ValueError(
+                    "Visual pattern registry keys must match their pattern IDs."
+                )
+            if pattern.pattern_id in visual_patterns:
+                raise ValueError(f"Duplicate visual pattern ID: {pattern.pattern_id}")
+            visual_patterns[pattern.pattern_id] = pattern
         metadata = data.get("metadata", {})
         if not isinstance(metadata, dict):
             metadata = {}
@@ -432,4 +576,6 @@ class Composition:
             metadata=dict(metadata),
             visual_objects=visual_objects,
             visual_motifs=visual_motifs,
+            motion_gestures=motion_gestures,
+            visual_patterns=visual_patterns,
         )

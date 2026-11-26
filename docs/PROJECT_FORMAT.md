@@ -62,3 +62,27 @@ A VisualMotif may carry additive fields within motif schema version 1:
 - `seed`: optional non-negative unsigned 64-bit integer. It is persisted for reproducibility; the actual seeded variation engine is a later C1.5 slice.
 
 The supported path forms are `identity.geometry_signature`, `identity.palette_identity`, `identity.motion_identity`, `identity.material_identity`, `identity.traits.<name>` and `parameters.<name>`. This is declarative authorship, not automatic variation: a future operation must choose only declared fields and preserve every invariant. A legacy C1.1 motif without these fields loads with empty invariants/variations and no seed.
+
+
+## Motion grammar extension (M7-C1.4)
+
+The current project schema remains version 2 and the performance-set format remains version 1. Composition may contain two additive registries:
+
+- motion_gestures: ordered serialization of records keyed by gesture_id.
+- visual_patterns: ordered serialization of records keyed by pattern_id.
+
+A MotionGesture has schema version 1 and stores a stable ID, authored name, one bounded transform kind (translate, rotate, scale, opacity, deform, orbit, palette, material, camera, hold or composite), up to 32 bounded scalar parameters, an easing (linear, smoothstep, ease_in, ease_out, ease_in_out, step or sine), a reversible flag and a non-negative revision. Parameter numbers must be finite and within ±1,000,000,000; strings are at most 128 characters. Gesture definitions are renderer-independent and contain no target layer IDs or GPU state.
+
+A VisualPatternStep has schema version 1 and stores a stable step ID, registered gesture_id, start_fraction in [0, 1), duration_fraction in (0, 1], intensity in [0, 1] and an optional grouping label. Start/duration values are fractions of the pattern cycle, not seconds or beats. A duration that crosses the end of a cycle wraps to the next cycle.
+
+A VisualPattern has schema version 1 and stores a stable ID, name, one of the authored pattern families (pulse_field, displaced_accent, rotating_cycle, unequal_cycle_interlock, phase_drift, omission, burst, sparse_punctuation, density_cloud, call_and_response, unison_fusion, counter_motion, hierarchical_motion, accumulation, erosion, fracture_repair, scan_traverse, memory_echo, stutter_hold or morphing_cycle), positive cycle_length, cycle_unit, timing_basis, normalized phase, up to 64 ordered steps, optional unsigned 64-bit seed and non-negative revision. Cycle limits are 86,400 seconds or 4,096 beats/bars.
+
+Timing is deliberately explicit:
+
+- cycle_unit=seconds requires timing_basis=visual_clock.
+- cycle_unit=beats or bars requires timing_basis=authored_music.
+- Audio-analysis values, including RMS, spectrum, onset and estimated tempo, are not accepted as an authored musical clock. Mapping observations to visual intent belongs to a separately specified later system.
+
+Composition owns both registries. A pattern may only be registered when all step gesture references exist; removing a referenced gesture is rejected until the consuming patterns are removed or edited. Each composition is limited to 256 gestures and 256 patterns. Old compositions without either field load with empty registries. These additive fields are carried by the shared Composition serializer through .eliav, .eliset and embedded scene snapshots. No project/set schema version bump is required.
+
+These are data definitions only. No autonomous scheduler, audio listener, renderer object or GPU resource is serialized or created by the grammar models.
