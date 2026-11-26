@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict, dataclass, field
 from typing import Any
-from uuid import uuid4
+from uuid import NAMESPACE_URL, uuid4, uuid5
 
 from config import DEFAULT_CANVAS_HEIGHT, DEFAULT_CANVAS_WIDTH, DEFAULT_FPS
 from core.visual_model import VisualObject
@@ -113,7 +113,15 @@ class Layer:
             values["layer_effects"] = {}
         if not isinstance(values.get("performance_modifiers", []), list):
             values["performance_modifiers"] = []
-        return cls(**values)
+        layer = cls(**values)
+        if not layer.visual_object_id or "visual_object_id" not in data:
+            # A legacy layer ID is stable across loads, so its synthesized object
+            # identity must also be stable until the project is next saved.
+            layer.visual_object_id = uuid5(
+                NAMESPACE_URL,
+                f"eli_lab_av_translator:visual-object:{layer.id}",
+            ).hex
+        return layer
 
 
 @dataclass
