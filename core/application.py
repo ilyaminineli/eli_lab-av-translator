@@ -1204,11 +1204,48 @@ class Application:
         )
         return True
 
+    def _execute_visual_timeline_event(self, event: PerformanceTimelineEvent) -> tuple[bool, str]:
+        raw = event.payload.get("event", {})
+        visual_event = VisualEvent.from_dict(raw)
+        if visual_event.object_id:
+            target = self.composition.get_visual_object(visual_event.object_id)
+            if target is None:
+                return False, "target visual object no longer exists"
+            layer = self.composition.get_layer(target.layer_id)
+            if layer is None:
+                return False, "target layer no longer exists"
+            if layer.locked:
+                return False, "target layer is locked"
+        else:
+            return False, "visual event requires an explicit object target"
+
+        allowed = {
+            "reveal": {"visible": True},
+            "conceal": {"visible": False},
+            "fade": {"opacity": max(0.0, min(1.0, float(visual_event.payload.get("opacity", 0.0))))},
+            "move": {"position": tuple(visual_event.payload.get("position", ()))},
+            "rotate": {"rotation": float(visual_event.payload.get("rotation", 0.0))},
+        }
+        changes = allowed.get(visual_event.event_type)
+        if changes is None:
+            return False, f"event type {visual_event.event_type!r} is not yet executable"
+        try:
+            self.layer_manager.update_layer(
+                target.layer_id,
+                operation="transform",
+                **changes,
+            )
+        except (AttributeError, PermissionError, TypeError, ValueError) as exc:
+            return False, str(exc)
+        return True, f"{visual_event.event_type} applied to {target.layer_id}"
+
     def _execute_performance_timeline_event(
         self,
         event: PerformanceTimelineEvent,
     ) -> tuple[bool, str]:
         payload = event.payload
+        if event.event_type == "visual_event":
+            return self._execute_visual_timeline_event(event)
         if event.event_type == "scene_marker":
             self.events.publish(
                 "performance.timeline.scene_marker",
