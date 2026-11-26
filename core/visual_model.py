@@ -190,6 +190,10 @@ class VisualMutationContract:
             "visible",
             "z_index",
             "locked",
+            "generator_settings",
+            "layer_effects",
+            "overlay_speed",
+            "overlay_frame_hold",
         ]
     )
     forbid: list[str] = field(
