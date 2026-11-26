@@ -38,6 +38,11 @@ def test_legacy_composition_creates_identity_and_round_trips() -> None:
     assert visual_object.layer_id == layer.id
     assert visual_object.lineage.origin == "legacy_import"
 
+    repeated_legacy_load = Composition.from_dict(legacy)
+    repeated_object = repeated_legacy_load.visual_object_for_layer(layer.id)
+    assert repeated_object is not None
+    assert repeated_object.object_id == visual_object.object_id
+
     restored = Composition.from_dict(composition.to_dict())
     restored_object = restored.visual_object_for_layer(layer.id)
     assert restored_object is not None
