@@ -11,7 +11,6 @@ from core.visual_model import VisualObject
 @dataclass
 class Layer:
     id: str = field(default_factory=lambda: uuid4().hex)
-    visual_object_id: str = field(default_factory=lambda: uuid4().hex)
     name: str = "Video Layer"
     source_type: str = "video"
     source_id: str = ""
@@ -39,6 +38,8 @@ class Layer:
     overlay_scene_sync: bool = False
     overlay_mask_mode: str = "none"
     overlay_mask_source: str = ""
+    # Appended to preserve the positional constructor contract of older Layer callers.
+    visual_object_id: str = field(default_factory=lambda: uuid4().hex)
 
     def __post_init__(self) -> None:
         self.visual_object_id = str(self.visual_object_id or uuid4().hex).strip()
