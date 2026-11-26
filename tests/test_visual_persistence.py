@@ -6,7 +6,6 @@ from types import SimpleNamespace
 
 import pytest
 
-from core import application as application_module
 from core.application import Application
 from core.composition import Composition, Layer
 from core.event_bus import EventBus
@@ -244,8 +243,7 @@ def test_application_scene_recall_keeps_live_locked_layer_and_visual_identity(
         lambda self, snapshot: None,
     )
     monkeypatch.setattr(
-        application_module,
-        "install_default_performance_macro_modifiers",
+        "core.application.install_default_performance_macro_modifiers",
         lambda layers: None,
     )
 
