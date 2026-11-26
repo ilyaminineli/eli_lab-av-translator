@@ -35,7 +35,9 @@ jobs:
           core/application.py
           core/composition.py
           core/layer_manager.py
+          core/performance_modifiers.py
           core/visual_model.py
+          core/visual_mutation_adapter.py
           core/automation.py
           core/generative_director.py
           core/performance_control.py
