@@ -75,8 +75,10 @@ class LayerManager:
             raise RuntimeError(f"Layer {layer_id!r} has no registered visual object.")
         changed_properties = set(changes)
         if replaces_source:
+            # An explicit source-replacement operation changes lineage and creates
+            # a child object; it is not an identity-preserving transform.
             visual_object.mutation_contract.validate(
-                "replace_source", changed_properties
+                "source_replacement", {"material"}
             )
         else:
             visual_object.mutation_contract.validate(operation, changed_properties)
