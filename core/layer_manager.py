@@ -100,23 +100,8 @@ class LayerManager:
                 replacement_object.revision += 1
             replacement_object.normalize()
 
-        # Composition.replace_layer validates before publishing either record.
-        if replaces_source:
-            old_registry = self.composition.visual_objects
-            staged_registry = dict(old_registry)
-            staged_registry.pop(visual_object.object_id, None)
-            if replacement_object.object_id in staged_registry:
-                raise ValueError(
-                    f"Visual object ID already exists: {replacement_object.object_id}"
-                )
-            self.composition.visual_objects = staged_registry
-            try:
-                self.composition.replace_layer(candidate, replacement_object)
-            except Exception:
-                self.composition.visual_objects = old_registry
-                raise
-        else:
-            self.composition.replace_layer(candidate, replacement_object)
+        # Composition.replace_layer stages and validates both records before commit.
+        self.composition.replace_layer(candidate, replacement_object)
 
         if self.events:
             self.events.publish("layer.updated", layer=candidate)
