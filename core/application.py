@@ -1226,8 +1226,19 @@ class Application:
             for key in ("primary_color", "secondary_color", "background_color"):
                 if key in values and key in palette:
                     values[key] = palette[key]
-            layer.generator_settings = normalize_settings(layer.generator_type, values)
-            self._request_generator_raster(layer)
+            try:
+                self.visual_mutation_adapter.apply_changes(
+                    layer.id,
+                    {
+                        "generator_settings": normalize_settings(
+                            layer.generator_type, values
+                        )
+                    },
+                    source="timeline_palette",
+                    respect_lock=True,
+                )
+            except (AttributeError, PermissionError, TypeError, ValueError) as exc:
+                _LOG.debug("Palette mutation skipped for %s: %s", layer.id, exc)
         self.events.publish(
             "performance.palette.changed",
             palette=palette_name,
@@ -1430,8 +1441,15 @@ class Application:
                 use_dictionary=bool(values.get("text_pool_dictionary", True)),
             )
             values["collage_seed"] = seed
-            layer.generator_settings = normalize_settings("text", values)
-            self._request_generator_raster(layer)
+            try:
+                updated = self.visual_mutation_adapter.apply_changes(
+                    layer.id,
+                    {"generator_settings": normalize_settings("text", values)},
+                    source="timeline_text_regenerate",
+                    respect_lock=True,
+                )
+            except (AttributeError, PermissionError, TypeError, ValueError) as exc:
+                return False, f"Text regeneration rejected: {exc}"
             self.events.publish(
                 "performance.timeline.text_regenerated",
                 layer_id=layer.id,
@@ -1706,10 +1724,21 @@ class Application:
                 for key in ("primary_color", "secondary_color", "background_color"):
                     if key in values and key in palette:
                         values[key] = palette[key]
-                layer.generator_settings = normalize_settings(
-                    layer.generator_type, values
-                )
-                self._request_generator_raster(layer)
+                if layer.locked:
+                    continue
+                try:
+                    self.visual_mutation_adapter.apply_changes(
+                        layer.id,
+                        {
+                            "generator_settings": normalize_settings(
+                                layer.generator_type, values
+                            )
+                        },
+                        source="scene_profile_palette",
+                        respect_lock=True,
+                    )
+                except (AttributeError, PermissionError, TypeError, ValueError) as exc:
+                    _LOG.debug("Scene palette mutation skipped for %s: %s", layer.id, exc)
         self.events.publish(
             "performance.scene.activated",
             profile=profile.to_dict(),
@@ -1727,8 +1756,21 @@ class Application:
                 if base is not None:
                     self._set_modulation_target(target_id, base)
                 self.modulation.manual_override(target_id, 0.25)
-        layer.locked = bool(locked)
-        self.events.publish("layer.locked", layer_id=layer_id, locked=layer.locked)
+        try:
+            updated = self.visual_mutation_adapter.apply_changes(
+                layer_id,
+                {"locked": bool(locked)},
+                source="operator_lock",
+                # Explicit operator lock/unlock is the only mutation allowed to
+                # change this field while a layer is currently locked.
+                respect_lock=False,
+            )
+        except (AttributeError, PermissionError, TypeError, ValueError) as exc:
+            _LOG.warning("Could not update layer lock for %s: %s", layer_id, exc)
+            return
+        self.events.publish(
+            "layer.locked", layer_id=layer_id, locked=updated.locked
+        )
 
     def set_selected_layer_id(self, layer_id: str | None) -> None:
         next_id = layer_id or None
