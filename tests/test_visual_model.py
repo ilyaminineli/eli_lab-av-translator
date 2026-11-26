@@ -158,6 +158,13 @@ def test_mutation_contract_allows_declared_transforms_and_rejects_identity_reset
     with pytest.raises(ValueError, match="forbidden"):
         contract.validate("replace_source", {"source_id"})
 
+    conflicting = VisualMutationContract(
+        preserve=["position"],
+        allow=["position"],
+    )
+    with pytest.raises(ValueError, match="both preserve and allow"):
+        conflicting.validate("transform", {"position"})
+
 
 def test_visual_object_rejects_self_parent_and_duplicate_layer_association() -> None:
     object_id = uuid4().hex
