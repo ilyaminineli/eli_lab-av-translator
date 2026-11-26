@@ -280,6 +280,69 @@ class Composition:
         self.visual_motifs.pop(selected_id)
         return True
 
+    def get_visual_objects_for_motif(self, motif_id: str) -> list[VisualObject]:
+        """Return motif realizations in layer order, including unresolved references."""
+        selected_id = str(motif_id)
+        return [
+            self.visual_objects[layer.visual_object_id]
+            for layer in self.layers
+            if layer.visual_object_id in self.visual_objects
+            and self.visual_objects[layer.visual_object_id].lineage.motif_id
+            == selected_id
+        ]
+
+    def bind_visual_object_to_motif(
+        self,
+        object_id: str,
+        motif_id: str,
+    ) -> VisualObject:
+        """Explicitly attach an unbound object to a registered authored motif.
+
+        This is a semantic relationship operation, not a transform of the renderable
+        layer. It stages a complete object before committing only lineage and revision.
+        """
+        visual_object = self.get_visual_object(object_id)
+        if visual_object is None:
+            raise KeyError(f"Unknown visual object: {object_id}")
+        selected_motif_id = str(motif_id).strip()
+        if not selected_motif_id or selected_motif_id not in self.visual_motifs:
+            raise ValueError(
+                f"Cannot bind to unknown visual motif: {selected_motif_id!r}"
+            )
+        if visual_object.lineage.motif_id == selected_motif_id:
+            return visual_object
+        if visual_object.lineage.motif_id is not None:
+            raise ValueError(
+                f"Visual object {visual_object.object_id!r} already references "
+                f"motif {visual_object.lineage.motif_id!r}; unbind it explicitly first."
+            )
+
+        candidate = VisualObject.from_dict(visual_object.to_dict())
+        candidate.lineage.motif_id = selected_motif_id
+        candidate.revision += 1
+        candidate.normalize()
+
+        visual_object.lineage = candidate.lineage
+        visual_object.revision = candidate.revision
+        return visual_object
+
+    def unbind_visual_object_from_motif(self, object_id: str) -> bool:
+        """Explicitly clear a resolved or historical motif reference."""
+        visual_object = self.get_visual_object(object_id)
+        if visual_object is None:
+            raise KeyError(f"Unknown visual object: {object_id}")
+        if visual_object.lineage.motif_id is None:
+            return False
+
+        candidate = VisualObject.from_dict(visual_object.to_dict())
+        candidate.lineage.motif_id = None
+        candidate.revision += 1
+        candidate.normalize()
+
+        visual_object.lineage = candidate.lineage
+        visual_object.revision = candidate.revision
+        return True
+
     def get_layer(self, layer_id: str) -> Layer | None:
         return next((layer for layer in self.layers if layer.id == layer_id), None)
 

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import pytest
+
 from core.composition import Composition, Layer
 from core.performance_environment import PerformanceScene, PerformanceSetStore
 from core.project_manager import ProjectManager
@@ -319,3 +321,159 @@ def test_visual_motif_seed_is_bounded_and_rejects_boolean_values() -> None:
             assert "unsigned 64-bit integer" in str(error)
         else:
             raise AssertionError("Invalid motif seeds must be rejected.")
+
+
+def _unbound_composition() -> tuple[Composition, VisualMotif]:
+    composition = Composition()
+    motif = _visual_motif("registered-orbit")
+    composition.add_visual_motif(motif)
+    composition.add_visual_motif(_visual_motif("registered-texture"))
+    for layer_id in ("bind-primary", "bind-echo"):
+        layer = Layer(id=layer_id, source_type="generator", generator_type="geometry")
+        visual_object = VisualObject(
+            object_id=layer.visual_object_id,
+            layer_id=layer.id,
+            lineage=VisualLineage(
+                parent_object_id="historical-parent",
+                origin="authored",
+                source_object_ids=["historical-parent"],
+            ),
+        )
+        composition.add_layer(layer, visual_object=visual_object)
+    return composition, motif
+
+
+def test_explicit_binding_supports_many_distinct_objects_and_preserves_lineage() -> None:
+    composition, motif = _unbound_composition()
+    first_layer = composition.get_layer("bind-primary")
+    second_layer = composition.get_layer("bind-echo")
+    assert first_layer is not None
+    assert second_layer is not None
+    first = composition.visual_object_for_layer(first_layer.id)
+    second = composition.visual_object_for_layer(second_layer.id)
+    assert first is not None
+    assert second is not None
+    before_layer = first_layer.to_dict()
+    before_revision = first.revision
+
+    bound = composition.bind_visual_object_to_motif(first.object_id, motif.motif_id)
+    assert bound is first
+    assert first.object_id == first_layer.visual_object_id
+    assert first.revision == before_revision + 1
+    assert first.lineage.motif_id == motif.motif_id
+    assert first.lineage.parent_object_id == "historical-parent"
+    assert first.lineage.source_object_ids == ["historical-parent"]
+    assert first.lineage.origin == "authored"
+    assert first_layer.to_dict() == before_layer
+
+    # Repeating the same explicit binding is idempotent and does not bump revision.
+    assert composition.bind_visual_object_to_motif(first.object_id, motif.motif_id) is first
+    assert first.revision == before_revision + 1
+
+    composition.bind_visual_object_to_motif(second.object_id, motif.motif_id)
+    assert first.object_id != second.object_id
+    assert [
+        item.object_id
+        for item in composition.get_visual_objects_for_motif(motif.motif_id)
+    ] == [
+        first.object_id,
+        second.object_id,
+    ]
+
+    restored = Composition.from_dict(composition.to_dict())
+    restored_objects = restored.get_visual_objects_for_motif(motif.motif_id)
+    assert [item.object_id for item in restored_objects] == [
+        first.object_id,
+        second.object_id,
+    ]
+
+
+def test_binding_rejects_unknown_motifs_and_silent_reassignment() -> None:
+    composition, motif = _unbound_composition()
+    layer = composition.get_layer("bind-primary")
+    assert layer is not None
+    visual_object = composition.visual_object_for_layer(layer.id)
+    assert visual_object is not None
+
+    before = visual_object.to_dict()
+    with pytest.raises(ValueError, match="unknown visual motif"):
+        composition.bind_visual_object_to_motif(
+            visual_object.object_id,
+            "missing-motif-definition",
+        )
+    assert visual_object.to_dict() == before
+
+    composition.bind_visual_object_to_motif(visual_object.object_id, motif.motif_id)
+    after_binding = visual_object.to_dict()
+    with pytest.raises(ValueError, match="unbind it explicitly first"):
+        composition.bind_visual_object_to_motif(
+            visual_object.object_id,
+            "registered-texture",
+        )
+    assert visual_object.to_dict() == after_binding
+
+    assert composition.unbind_visual_object_from_motif(visual_object.object_id)
+    composition.bind_visual_object_to_motif(
+        visual_object.object_id,
+        "registered-texture",
+    )
+    assert visual_object.lineage.motif_id == "registered-texture"
+
+
+def test_unbind_is_safe_for_unbound_objects_and_unknown_object_ids() -> None:
+    composition, _ = _unbound_composition()
+    layer = composition.get_layer("bind-primary")
+    assert layer is not None
+    visual_object = composition.visual_object_for_layer(layer.id)
+    assert visual_object is not None
+    revision = visual_object.revision
+
+    assert not composition.unbind_visual_object_from_motif(visual_object.object_id)
+    assert visual_object.revision == revision
+    with pytest.raises(KeyError, match="Unknown visual object"):
+        composition.bind_visual_object_to_motif("missing-object", "registered-orbit")
+    with pytest.raises(KeyError, match="Unknown visual object"):
+        composition.unbind_visual_object_from_motif("missing-object")
+
+
+def test_unresolved_legacy_motif_reference_requires_explicit_repair() -> None:
+    layer = Layer(id="historic-binding-layer")
+    visual_object = VisualObject(
+        object_id=layer.visual_object_id,
+        layer_id=layer.id,
+        lineage=VisualLineage(
+            parent_object_id="historic-parent",
+            motif_id="motif-from-removed-library",
+            origin="legacy_import",
+            source_object_ids=["historic-parent"],
+        ),
+    )
+    composition = Composition.from_dict(
+        {
+            "layers": [layer.to_dict()],
+            "visual_objects": [visual_object.to_dict()],
+        }
+    )
+    motif = _visual_motif("replacement-authored-motif")
+    composition.add_visual_motif(motif)
+
+    assert composition.get_visual_motif("motif-from-removed-library") is None
+    unresolved = composition.get_visual_objects_for_motif(
+        "motif-from-removed-library"
+    )
+    assert len(unresolved) == 1
+    loaded = unresolved[0]
+    before_revision = loaded.revision
+
+    with pytest.raises(ValueError, match="already references"):
+        composition.bind_visual_object_to_motif(loaded.object_id, motif.motif_id)
+    assert loaded.lineage.motif_id == "motif-from-removed-library"
+
+    assert composition.unbind_visual_object_from_motif(loaded.object_id)
+    rebound = composition.bind_visual_object_to_motif(loaded.object_id, motif.motif_id)
+    assert rebound is loaded
+    assert loaded.lineage.motif_id == motif.motif_id
+    assert loaded.lineage.parent_object_id == "historic-parent"
+    assert loaded.lineage.source_object_ids == ["historic-parent"]
+    assert loaded.lineage.origin == "legacy_import"
+    assert loaded.revision == before_revision + 2
