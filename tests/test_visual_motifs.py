@@ -19,6 +19,17 @@ def _visual_motif(motif_id: str = "motif-orbit") -> VisualMotif:
         ),
         parameters={"period_beats": 7, "radius": 0.42, "phase": 0.25},
         description="A recurring seven-position orbital gesture.",
+        invariants={
+            "identity.geometry_signature": "seven-point-cycle",
+            "identity.traits.symmetry": "seven-fold",
+            "parameters.period_beats": 7,
+        },
+        allowed_variations=[
+            "identity.palette_identity",
+            "parameters.radius",
+            "parameters.phase",
+        ],
+        seed=731,
     )
 
 
@@ -221,3 +232,78 @@ def test_project_and_performance_set_scene_snapshots_preserve_visual_motifs(tmp_
     restored_scene.normalize()
     scene_composition = Composition.from_dict(restored_scene.snapshot["composition"])
     assert scene_composition.get_visual_motif(motif.motif_id) == motif
+
+
+def test_historical_visual_motif_defaults_new_c1_2_contract_fields() -> None:
+    restored = VisualMotif.from_dict(
+        {
+            "schema_version": 1,
+            "motif_id": "historical-motif",
+            "name": "Historical Motif",
+            "family": "contour",
+            "identity": {"geometry_signature": "ring"},
+        }
+    )
+
+    assert restored.invariants == {}
+    assert restored.allowed_variations == []
+    assert restored.seed is None
+
+
+def test_visual_motif_invariants_and_variations_are_explicit_and_stable() -> None:
+    motif = _visual_motif()
+    restored = VisualMotif.from_dict(motif.to_dict())
+
+    assert restored.invariants == motif.invariants
+    assert restored.allowed_variations == motif.allowed_variations
+    assert restored.seed == 731
+    assert "identity.geometry_signature" in restored.invariants
+    assert "identity.palette_identity" in restored.allowed_variations
+
+
+def test_visual_motif_rejects_invariant_drift_and_unknown_variation_paths() -> None:
+    motif = _visual_motif()
+    drifted = VisualMotif.from_dict(motif.to_dict())
+    drifted.identity.geometry_signature = "six-point-cycle"
+
+    try:
+        drifted.normalize()
+    except ValueError as error:
+        assert "must match its authored value" in str(error)
+    else:
+        raise AssertionError("A changed invariant must be rejected.")
+
+    unknown_path = VisualMotif(
+        motif_id="unknown-variation",
+        parameters={"radius": 0.4},
+        allowed_variations=["parameters.unregistered"],
+    )
+    try:
+        unknown_path.normalize()
+    except ValueError as error:
+        assert "does not reference an authored field" in str(error)
+    else:
+        raise AssertionError("Unknown variation paths must be rejected.")
+
+
+def test_visual_motif_rejects_overlapping_invariants_and_allowed_variations() -> None:
+    motif = _visual_motif()
+    motif.allowed_variations.append("identity.geometry_signature")
+
+    try:
+        motif.normalize()
+    except ValueError as error:
+        assert "cannot be both invariant and variable" in str(error)
+    else:
+        raise AssertionError("A field cannot be protected and variable together.")
+
+
+def test_visual_motif_seed_is_bounded_and_rejects_boolean_values() -> None:
+    for seed in (-1, True, 18_446_744_073_709_551_616):
+        motif = VisualMotif(motif_id=f"invalid-seed-{seed}", seed=seed)
+        try:
+            motif.normalize()
+        except ValueError as error:
+            assert "unsigned 64-bit integer" in str(error)
+        else:
+            raise AssertionError("Invalid motif seeds must be rejected.")

@@ -43,7 +43,7 @@ The current project schema remains version 2 and the performance-set format rema
 - `motif_id`: stable authored motif identity, independent of any layer or VisualObject ID.
 - `name` and `family`: authored name and one of the Volume 11 families: contour, motion, spatial, texture, typographic, colour, framing, transformation, absence or composite.
 - `identity`: a VisualIdentity record describing the motif's recognisable geometry, palette, motion, material and typed traits.
-- `parameters`: up to 64 authored scalar parameters. Values are finite numbers, booleans or strings (at most 128 characters); nested runtime state is not stored here.
+- `parameters`: up to 64 authored scalar parameters. Numeric values must be finite and within ±1,000,000,000; strings are at most 128 characters. Nested runtime state is not stored here.
 - `description`: optional authored description (at most 512 characters).
 - `revision`: non-negative authored-data revision.
 
@@ -52,3 +52,13 @@ The current project schema remains version 2 and the performance-set format rema
 Legacy compositions without `visual_motifs` remain valid and load with an empty motif registry. A VisualObject may retain a historical motif ID whose definition is not present; this unresolved reference is preserved rather than silently fabricating an authored motif. Removing a layer removes its VisualObject but does not delete the authored motif. Explicit motif removal is rejected while any live VisualObject references it.
 
 The additive field is carried through .eliav projects, performance-set composition snapshots and embedded scene snapshots by the shared Composition serializer. No GPU state, render handles, frame data or musical motif objects are stored in the VisualMotif record. Musical motif relationships remain a distinct C3 mapping concern.
+
+## Motif recognition contract (M7-C1.2)
+
+A VisualMotif may carry additive fields within motif schema version 1:
+
+- `invariants`: up to 64 field-path/value pairs. Paths point to an existing authored field in `identity` or `parameters`; the stored scalar value must exactly match that authored field, including its scalar type.
+- `allowed_variations`: up to 64 unique field paths that exist in the authored identity/parameter map. A field cannot be both invariant and variable.
+- `seed`: optional non-negative unsigned 64-bit integer. It is persisted for reproducibility; the actual seeded variation engine is a later C1.5 slice.
+
+The supported path forms are `identity.geometry_signature`, `identity.palette_identity`, `identity.motion_identity`, `identity.material_identity`, `identity.traits.<name>` and `parameters.<name>`. This is declarative authorship, not automatic variation: a future operation must choose only declared fields and preserve every invariant. A legacy C1.1 motif without these fields loads with empty invariants/variations and no seed.

@@ -102,6 +102,29 @@ def _string_list(values: object, label: str) -> list[str]:
             raise ValueError(f"{label} cannot contain more than 64 entries.")
     return result
 
+def _visual_motif_scalar(
+    value: object,
+    label: str,
+) -> str | int | float | bool:
+    """Normalize one bounded, JSON-safe authored motif scalar."""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, int):
+        if value < -1_000_000_000 or value > 1_000_000_000:
+            raise ValueError(f"{label} must be within ±1,000,000,000.")
+        return value
+    if isinstance(value, float):
+        if not math.isfinite(value) or value < -1_000_000_000 or value > 1_000_000_000:
+            raise ValueError(f"{label} must be finite and within ±1,000,000,000.")
+        return value
+    if isinstance(value, str) and len(value) <= 128:
+        return value
+    raise ValueError(
+        f"{label} must be a finite bounded number, boolean or string "
+        "of at most 128 characters."
+    )
+
+
 
 @dataclass
 class VisualIdentity:
@@ -318,6 +341,9 @@ class VisualMotif:
     parameters: dict[str, str | int | float | bool] = field(default_factory=dict)
     description: str = ""
     revision: int = 0
+    invariants: dict[str, str | int | float | bool] = field(default_factory=dict)
+    allowed_variations: list[str] = field(default_factory=list)
+    seed: int | None = None
 
     def normalize(self) -> None:
         self.motif_id = _identifier(self.motif_id, "Visual motif ID")
@@ -331,6 +357,8 @@ class VisualMotif:
             )
         if isinstance(self.identity, dict):
             self.identity = VisualIdentity.from_dict(self.identity)
+        if not isinstance(self.identity, VisualIdentity):
+            raise ValueError("Visual motif identity must be a VisualIdentity.")
         self.identity.normalize()
         if not isinstance(self.parameters, dict):
             raise ValueError("Visual motif parameters must be an object.")
@@ -341,23 +369,86 @@ class VisualMotif:
             key = str(raw_key).strip()
             if not key or len(key) > 64:
                 raise ValueError("Visual motif parameter names must contain 1–64 characters.")
-            if isinstance(raw_value, bool):
-                value = raw_value
-            elif isinstance(raw_value, int):
-                value = raw_value
-            elif isinstance(raw_value, float):
-                if not math.isfinite(raw_value):
-                    raise ValueError("Visual motif numeric parameters must be finite.")
-                value = raw_value
-            elif isinstance(raw_value, str) and len(raw_value) <= 128:
-                value = raw_value
-            else:
-                raise ValueError(
-                    "Visual motif parameters must be finite numbers, booleans or "
-                    "strings of at most 128 characters."
-                )
-            clean_parameters[key] = value
+            if key in clean_parameters:
+                raise ValueError(f"Duplicate visual motif parameter: {key}")
+            clean_parameters[key] = _visual_motif_scalar(
+                raw_value,
+                f"Visual motif parameter {key!r}",
+            )
         self.parameters = clean_parameters
+
+        available_values: dict[str, str | int | float | bool] = {
+            "identity.geometry_signature": self.identity.geometry_signature,
+            "identity.palette_identity": self.identity.palette_identity,
+            "identity.motion_identity": self.identity.motion_identity,
+            "identity.material_identity": self.identity.material_identity,
+        }
+        available_values.update(
+            {
+                f"identity.traits.{key}": value
+                for key, value in self.identity.traits.items()
+            }
+        )
+        available_values.update(
+            {
+                f"parameters.{key}": value
+                for key, value in self.parameters.items()
+            }
+        )
+
+        if not isinstance(self.invariants, dict):
+            raise ValueError("Visual motif invariants must be an object.")
+        if len(self.invariants) > 64:
+            raise ValueError("Visual motif cannot contain more than 64 invariants.")
+        clean_invariants: dict[str, str | int | float | bool] = {}
+        for raw_path, raw_expected in self.invariants.items():
+            path = str(raw_path).strip()
+            if not path or len(path) > 128:
+                raise ValueError("Visual motif invariant paths must contain 1–128 characters.")
+            if path not in available_values:
+                raise ValueError(
+                    f"Visual motif invariant {path!r} does not reference an authored field."
+                )
+            if path in clean_invariants:
+                raise ValueError(f"Duplicate visual motif invariant path: {path}")
+            expected = _visual_motif_scalar(
+                raw_expected,
+                f"Visual motif invariant {path!r}",
+            )
+            current = available_values[path]
+            if type(expected) is not type(current) or expected != current:
+                raise ValueError(
+                    f"Visual motif invariant {path!r} must match its authored value."
+                )
+            clean_invariants[path] = expected
+        self.invariants = clean_invariants
+
+        if not isinstance(self.allowed_variations, (list, tuple)):
+            raise ValueError("Visual motif allowed_variations must be a list.")
+        if len(self.allowed_variations) > 64:
+            raise ValueError("Visual motif cannot contain more than 64 allowed variations.")
+        clean_variations: list[str] = []
+        seen_variations: set[str] = set()
+        for raw_path in self.allowed_variations:
+            path = str(raw_path).strip()
+            if not path or len(path) > 128:
+                raise ValueError(
+                    "Visual motif variation paths must contain 1–128 characters."
+                )
+            if path in seen_variations:
+                raise ValueError(f"Duplicate visual motif variation path: {path}")
+            if path not in available_values:
+                raise ValueError(
+                    f"Visual motif variation {path!r} does not reference an authored field."
+                )
+            if path in clean_invariants:
+                raise ValueError(
+                    f"Visual motif field {path!r} cannot be both invariant and variable."
+                )
+            clean_variations.append(path)
+            seen_variations.add(path)
+        self.allowed_variations = clean_variations
+
         self.description = str(self.description).strip()
         if len(self.description) > 512:
             raise ValueError("Visual motif description must be at most 512 characters.")
@@ -365,6 +456,13 @@ class VisualMotif:
             raise ValueError("Visual motif revision must be an integer.")
         if self.revision < 0:
             raise ValueError("Visual motif revision cannot be negative.")
+        if self.seed is not None and (
+            isinstance(self.seed, bool)
+            or not isinstance(self.seed, int)
+            or self.seed < 0
+            or self.seed > 18_446_744_073_709_551_615
+        ):
+            raise ValueError("Visual motif seed must be an unsigned 64-bit integer.")
 
     def to_dict(self) -> dict[str, Any]:
         self.normalize()
