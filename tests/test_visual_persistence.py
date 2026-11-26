@@ -9,11 +9,9 @@ import pytest
 from core.application import Application
 from core.composition import Composition, Layer
 from core.event_bus import EventBus
-from core.layer_manager import LayerManager
 from core.performance_environment import PerformanceScene, PerformanceSetStore
 from core.project_manager import ProjectManager
 from core.visual_model import VisualLineage, VisualObject
-from core.visual_mutation_adapter import VisualMutationAdapter
 
 
 FIXTURES = Path(__file__).parent / "fixtures"
@@ -227,7 +225,10 @@ def test_application_scene_recall_keeps_live_locked_layer_and_visual_identity(
     app.performance_scenes = {scene.scene_id: scene}
     app.composition = live
     app.events = EventBus()
-    app.visual_mutation_adapter = VisualMutationAdapter(LayerManager(live, app.events))
+    manager_state: dict[str, object] = {}
+    app.visual_mutation_adapter = SimpleNamespace(
+        set_layer_manager=lambda manager: manager_state.update(layer_manager=manager)
+    )
     app.automation = SimpleNamespace(update_layers=lambda layers: None)
     app.performance_modifier_engine = SimpleNamespace(reset=lambda: None)
     app.active_palette = "Clean"
@@ -258,6 +259,7 @@ def test_application_scene_recall_keeps_live_locked_layer_and_visual_identity(
     assert restored_locked.position == (0.11, 0.89)
     assert restored_locked.rotation == pytest.approx(41.0)
     assert app.composition.visual_object_for_layer(scene_layer_id) is live_object
+    assert manager_state["layer_manager"].composition is app.composition
     assert app.composition.get_layer("scene-only-layer") is not None
     assert app.composition.get_layer("live-only-unlocked-layer") is None
     _assert_registry_is_one_to_one(app.composition)
