@@ -4,6 +4,7 @@ import logging
 from collections.abc import Callable, Mapping
 from copy import deepcopy
 from dataclasses import fields
+
 from core.composition import Layer
 from core.layer_manager import LayerManager
 
