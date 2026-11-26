@@ -1452,10 +1452,10 @@ class Application:
                 return False, f"Text regeneration rejected: {exc}"
             self.events.publish(
                 "performance.timeline.text_regenerated",
-                layer_id=layer.id,
+                layer_id=updated.id,
                 seed=seed,
             )
-            return True, f"TEXT · {layer.name} · SEED {seed}"
+            return True, f"TEXT · {updated.name} · SEED {seed}"
 
         if event.event_type == "palette_change":
             palette = str(payload["palette"])
@@ -1756,6 +1756,13 @@ class Application:
                 if base is not None:
                     self._set_modulation_target(target_id, base)
                 self.modulation.manual_override(target_id, 0.25)
+        if locked:
+            # Return temporary automation/modifier values to their baselines while
+            # the layer is still writable, then commit the operator lock itself.
+            self.automation.prepare_layer_lock(layer_id)
+            self.performance_modifier_engine.release_layer(
+                layer_id, self._set_layer_modifier_target
+            )
         try:
             updated = self.visual_mutation_adapter.apply_changes(
                 layer_id,
