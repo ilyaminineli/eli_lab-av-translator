@@ -224,10 +224,6 @@ class Composition:
                 f"Visual object ID already exists: {layer.visual_object_id}"
             )
         staged_registry[selected.object_id] = selected
-        staged_layers = list(self.layers)
-        staged_layers[index] = layer
-        staged_layers.sort(key=lambda item: item.z_index)
-
         # Preserve the list object shared with runtime services such as
         # AutomationDirector while swapping the validated Layer entry.
         self.layers[index] = layer
