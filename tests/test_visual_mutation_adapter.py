@@ -252,9 +252,6 @@ def test_historical_default_contract_expands_only_legacy_defaults() -> None:
             "motion",
             "blend_mode",
             "visibility",
-            "visible",
-            "z_index",
-            "locked",
         ],
         "forbid": ["replace_source", "reset_identity", "delete"],
     }
@@ -262,6 +259,8 @@ def test_historical_default_contract_expands_only_legacy_defaults() -> None:
     restored = VisualMutationContract.from_dict(historical)
     assert "generator_settings" in restored.allow
     assert "layer_effects" in restored.allow
+    assert "visible" in restored.allow
+    assert "locked" in restored.allow
 
     restrictive = VisualMutationContract.from_dict(
         {"preserve": ["position"], "allow": ["rotation"], "forbid": []}
