@@ -199,7 +199,7 @@ class Composition:
         layer: Layer,
         visual_object: VisualObject | None = None,
     ) -> None:
-        """Replace one layer and its identity record as one composition operation."""
+        """Atomically replace a layer and its visual identity record."""
         index = next(
             (i for i, existing in enumerate(self.layers) if existing.id == layer.id),
             None,
@@ -212,15 +212,24 @@ class Composition:
         previous_object = self.visual_objects.get(previous.visual_object_id)
         if visual_object is None and layer.visual_object_id == previous.visual_object_id:
             visual_object = previous_object
-        self.visual_objects.pop(previous.visual_object_id, None)
-        if layer.visual_object_id in self.visual_objects:
+
+        # Stage all validation against a registry that excludes only the object
+        # being replaced. Do not mutate the authoritative list or dictionary
+        # until the candidate object is known to be valid.
+        staged_registry = dict(self.visual_objects)
+        staged_registry.pop(previous.visual_object_id, None)
+        selected = self._visual_object_for(layer, visual_object)
+        if selected.object_id in staged_registry:
             raise ValueError(
                 f"Visual object ID already exists: {layer.visual_object_id}"
             )
-        selected = self._visual_object_for(layer, visual_object)
-        self.layers[index] = layer
-        self.visual_objects[selected.object_id] = selected
-        self.sort_layers()
+        staged_registry[selected.object_id] = selected
+        staged_layers = list(self.layers)
+        staged_layers[index] = layer
+        staged_layers.sort(key=lambda item: item.z_index)
+
+        self.layers = staged_layers
+        self.visual_objects = staged_registry
 
     def remove_layer(self, layer_id: str) -> bool:
         layer = self.get_layer(layer_id)
