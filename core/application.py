@@ -288,6 +288,7 @@ class Application:
                     layer.overlay_frame_hold,
                     layer.overlay_loop,
                 )
+        _ = source
 
     def _create_default_layers(self) -> None:
         # Start with an asymmetric collage, not four equal tiles. The first deck
